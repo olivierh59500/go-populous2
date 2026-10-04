@@ -637,12 +637,9 @@ func (g *Game) drawMinimap(screen *ebiten.Image) {
 	palette := g.World.Landscape.Palettes[0]
 	for y := 0; y < 64; y++ {
 		for x := 0; x < 64; x++ {
-			p := x + y*64
-			index := int(g.World.Landscape.MapColor[w.MapBlk[p]]) & 15
+			cell := g.World.TerrainCell(x, y)
+			index := int(g.World.Landscape.MapColor[cell.Code]) & 15
 			c := palette[index]
-			if w.MapAlt[p] == 0 {
-				c = color.RGBA{14, 97, 159, 255}
-			}
 			mx, my := 64+x-y, (x+y)/2
 			o := (my*128 + mx) * 4
 			if mx >= 0 && mx < 128 && my < 64 {

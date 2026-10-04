@@ -39,6 +39,27 @@ func TestNativeTerrainGraphicsBanks(t *testing.T) {
 	}
 }
 
+func TestLowFlatLandIsNotWater(t *testing.T) {
+	w := flatGroundWorld(t)
+	cell := w.TerrainCell(32, 32)
+	if cell.BaseAltitude != 0 || cell.IsWater() {
+		t.Fatal("first-height land mistaken for water")
+	}
+	if w.Cast(0, Whirlpool, Target{X: 32, Y: 32}) || w.Cast(0, Tsunami, Target{X: 32, Y: 32}) {
+		t.Fatal("water-only disaster accepted on low flat land")
+	}
+	if !w.Cast(0, Trees, Target{X: 32, Y: 32}) {
+		t.Fatal("vegetation rejected on low flat land")
+	}
+	if w.TerrainCell(32, 32).Code != 15 {
+		t.Fatal("native flat-land minimap code changed")
+	}
+	w.Marks[32+32*64] = Mark{Spell: Flowers, Player: 0, Life: 1, Persistent: true, NativeTile: 245}
+	if w.TerrainCell(32, 32).Code != 245 {
+		t.Fatal("minimap cell lost native ground effect code")
+	}
+}
+
 func TestSculptKeepsSharedCornerGeometryContinuous(t *testing.T) {
 	w, err := NewWorld(testBundle(t), 0, true)
 	if err != nil {

@@ -199,7 +199,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		applied = w.castGroundEffect(player, id, target.X, target.Y)
 	case Trees, Fungus:
 		for _, p := range diskArea(target.X, target.Y, 2) {
-			if w.Core.MapAlt[p] == 0 {
+			if w.isWaterAt(p) {
 				continue
 			}
 			if id == Plague && !w.enemyAt(player, p) {
@@ -210,7 +210,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		}
 	case Road, Wall:
 		for _, p := range line(target.X, target.Y, target.X2, target.Y2) {
-			if w.Core.MapAlt[p] == 0 {
+			if w.isWaterAt(p) {
 				continue
 			}
 			w.Marks[p] = Mark{Spell: id, Player: player, Life: 2000}
@@ -248,7 +248,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 			w.Effects = append(w.Effects, Effect{Spell: id, Player: player, X: target.X, Y: target.Y, Life: 4})
 		}
 	case Whirlwind, Storm, Wind, FireColumn, FireRain, Whirlpool, Tsunami:
-		if (id == Whirlpool || id == Tsunami) && w.Core.MapAlt[target.X+target.Y*64] != 0 {
+		if (id == Whirlpool || id == Tsunami) && !w.isWaterAt(target.X+target.Y*64) {
 			return false
 		}
 		dx, dy := direction(target.Direction)
@@ -369,7 +369,7 @@ func (w *World) tickEffects() {
 			w.damageArea(mark.Player, p%64, p/64, 0, 30, false)
 			if w.Core.GameTurn%16 == 0 {
 				q := p + []int{-64, 1, 64, -1}[w.random()%4]
-				if q >= 0 && q < 4096 && distance(p, q) == 1 && w.Core.MapAlt[q] > 0 && w.Marks[q].Life == 0 {
+				if q >= 0 && q < 4096 && distance(p, q) == 1 && !w.isWaterAt(q) && w.Marks[q].Life == 0 {
 					w.Marks[q] = Mark{Spell: Fungus, Player: mark.Player, Life: 80}
 				}
 			}
@@ -393,7 +393,7 @@ func (w *World) tickEffects() {
 			w.damageArea(effect.Player, effect.X, effect.Y, radius, damage, burn)
 			if burn {
 				for _, p := range diskArea(effect.X, effect.Y, radius) {
-					if w.Core.MapAlt[p] > 0 {
+					if !w.isWaterAt(p) {
 						w.Marks[p] = Mark{Spell: effect.Spell, Player: effect.Player, Life: 100}
 						if w.Core.MapWho[p] == 0 {
 							w.Core.MapBlk[p] = legacy.BadLand

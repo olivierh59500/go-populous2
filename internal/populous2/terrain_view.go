@@ -13,6 +13,14 @@ type TerrainCell struct {
 	Code         uint8
 }
 
+func (cell TerrainCell) IsWater() bool {
+	return cell.Corners == [4]int{}
+}
+
+func (w *World) isWaterAt(pos int) bool {
+	return pos >= 0 && pos < 4096 && w.TerrainCell(pos%64, pos/64).IsWater()
+}
+
 func (w *World) TerrainCell(x, y int) TerrainCell {
 	if !inside(x, y) {
 		return TerrainCell{}
