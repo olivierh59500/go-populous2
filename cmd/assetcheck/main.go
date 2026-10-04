@@ -108,6 +108,40 @@ func run() error {
 		if err := writePNG(filepath.Join(*images, "menu-font.png"), font.Atlas(bundle.Landscapes[0].Palettes[0])); err != nil {
 			return err
 		}
+		rules, err := populous2.DecodeNativeRequesterRules(exe)
+		if err != nil {
+			return err
+		}
+		startup, err := rules.Startup(exe)
+		if err != nil {
+			return err
+		}
+		palette, err := populous2.NativeStartupPalette(exe)
+		if err != nil {
+			return err
+		}
+		startupImage, err := startup.Image(font, palette)
+		if err != nil {
+			return err
+		}
+		if err := writePNG(filepath.Join(*images, "requester-startup.png"), startupImage); err != nil {
+			return err
+		}
+		definition, err := populous2.NativeRequesterTemplate(exe, 0x8c42)
+		if err != nil {
+			return err
+		}
+		options, err := rules.Compile(definition, [][]byte{[]byte("LE BLEU"), nil})
+		if err != nil {
+			return err
+		}
+		optionsImage, err := options.Image(font, bundle.Landscapes[0].Palettes[0])
+		if err != nil {
+			return err
+		}
+		if err := writePNG(filepath.Join(*images, "requester-options.png"), optionsImage); err != nil {
+			return err
+		}
 	}
 	if *jsonOutput {
 		enc := json.NewEncoder(os.Stdout)
