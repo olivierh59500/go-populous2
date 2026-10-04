@@ -16,6 +16,8 @@ distinguishes native translations from provisional behavior.
 
 ![Go Populous II](screenshots/game.png)
 
+![Original deity portrait and profile editor](screenshots/deity.png)
+
 ## Run
 
 Go 1.25 or newer and the normal Ebitengine platform prerequisites are required.
