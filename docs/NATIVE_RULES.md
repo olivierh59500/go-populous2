@@ -55,8 +55,12 @@ targeting, spawning and abduction still require translation.
 
 `$10b38` and `$10cbe` establish the starting groups from each deity's 58-byte
 template. The first four words hold group count, initial population, movement
-speed and search intelligence. Movement speed is not initial mana. The deity
-record is cleared before setup, so the new game begins with zero mana.
+speed and search intelligence. Movement speed is not initial mana. Parameter 4
+supplies initial mana at deity `$02` via `$10b70/$10c0e`; clearing the record
+leaves its upper word zero. Parameter 5 supplies the per-side attrition word
+at deity `$16` via `$10b6a/$10c08`. Both land `$130e8` and water `$11d64`
+subtract it from the corresponding longword at `$14`; fractional movement
+timing and original death animations still require separate translation.
 The original scan starts at tile 1 for the first side and tile 4095 for the
 second, first finding flat land and then falling back to nonwater land.
 
@@ -294,6 +298,36 @@ The twelve isolated traces verify column motion/state and ground mutation on
 empty terrain. Actor death rendering/slot reservation is currently an adapter;
 complete linked-list death metadata and mixed-actor traces remain verification
 targets, rather than being implied by the empty-terrain oracle.
+
+## Whirlwinds
+
+Creation `$15c3e` shares the 250-record effect pool with fire columns. It starts
+at the selected cell center without jitter or random draws, retains reused
+velocity words, and uses life `200 + Air experience` with speed 24. Phases 8,
+10 and 12 use intro/active sequence `$4c8` and extinction sequence `$6cc`.
+Completion and expiry fall through in the same update. Active frames retain
+the original negative loop offset, rather than restarting every sequence.
+
+Routing `$14a8e` scans eight neighbors from a random starting offset and prefers
+lower elevations. Neighbor geometry bit zero adds one to its base height;
+equal-height choices consume successive random bits. The offset-zero fallback
+is preserved. Although `$14b34` computes `255 / speed`, the next random draw
+overwrites it: the actual reroute timer is `random & $78`. Successful movement
+consumes another draw and requests a whirlpool when its remainder modulo five
+is zero. Map exit retains the last valid position before removing the actor.
+
+Twelve independent 68000 parent traces cover flat ground, a slope, water and
+the map edge with Air experience 0, 32 and 255. All 3,550 updates compare actor
+fields, the full random state and every terrain code; 713 child requests match.
+Other effect records are occupied, so original child creation still executes
+but cannot allocate. Empty tile lists exclude follower/town interactions.
+This boundary validates the parent controller without implying child parity.
+
+The integrated controller uses original composite frames and audio cues, has
+no generic radius damage or scorching, and survives version 9 saves. Earlier
+generic whirlwinds migrate into native records while retaining their remaining
+life and direction. Original pickup/immunity, town collapse, captured-follower
+release and water-only child creation remain separate controller work.
 
 ## Main-loop cadence
 

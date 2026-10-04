@@ -176,3 +176,12 @@ func (rules *WhirlwindRules) route(actor *NativeEffectActor, random func() int, 
 	// $14b34 computes 255/speed, but $14b3c overwrites that result with RNG.
 	actor.Timer = int16(random() & 0x78)
 }
+
+func (w *World) tickWhirlwind(actor *NativeEffectActor) {
+	// Child allocation, pickup, town collapse, and follower release are separate
+	// native controllers. Do not substitute generic area damage for them.
+	w.Whirlwinds.Tick(actor, w.random, func(x, y int) (int, uint8) {
+		cell := w.TerrainCell(x, y)
+		return cell.BaseAltitude, cell.Code
+	})
+}

@@ -21,6 +21,7 @@ func main() {
 	deity := flag.Bool("deity", false, "open the original deity profile editor")
 	scenarioRules := flag.Bool("rules", false, "open the per-side scenario rules")
 	fireColumns := flag.Bool("fire-columns", false, "present three native fire columns near the current camera")
+	whirlwinds := flag.Bool("whirlwinds", false, "present three native whirlwinds near the camera with diagnostic attrition/water overrides")
 	simulationRate := flag.Int("simulation-rate", populous2.SimulationRate, "simulation updates per second (nominal PAL: 50)")
 	frames := flag.Int("frames", 0, "close after this number of updates (0: unlimited)")
 	capture := flag.String("screenshot", "", "save the first drawn application frame to a new PNG")
@@ -56,13 +57,28 @@ func main() {
 	if *scenarioRules {
 		g.OpenScenarioRules()
 	}
-	if *fireColumns {
+	if *fireColumns || *whirlwinds {
 		g.Playing = true
 		g.World.Custom = true
 		g.World.Core.Magnets[0].Mana = 1000000
 		g.World.Core.Computer[1].Mode = 0
+		if *whirlwinds {
+			// This bounded art/controller presentation is separate from conquest
+			// pacing: keep followers alive while inspecting the native effects.
+			g.World.Core.FollowerAttrition = func(int, bool) int { return 0 }
+			for player := range g.World.Rules {
+				g.World.Rules[player] = populous2.DecodeScenarioRules(g.World.Rules[player].Raw &^ (1 << 5))
+			}
+			g.Category, g.Selected = populous2.Air, populous2.Whirlwind
+		}
 		for _, p := range [][2]int{{3, 3}, {4, 4}, {5, 3}} {
-			g.World.Cast(0, populous2.FireColumn, populous2.Target{X: g.CameraX + p[0], Y: g.CameraY + p[1]})
+			target := populous2.Target{X: g.CameraX + p[0], Y: g.CameraY + p[1]}
+			if *fireColumns {
+				g.World.Cast(0, populous2.FireColumn, target)
+			}
+			if *whirlwinds {
+				g.World.Cast(0, populous2.Whirlwind, target)
+			}
 		}
 	}
 	g.Limit = *frames

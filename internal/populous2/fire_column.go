@@ -126,6 +126,8 @@ func (w *World) tickNativeEffects() {
 		switch a.Kind {
 		case 0x22:
 			w.tickFireColumn(a)
+		case 0x20:
+			w.tickWhirlwind(a)
 		}
 	}
 }

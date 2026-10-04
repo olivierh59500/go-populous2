@@ -20,6 +20,8 @@ distinguishes native translations from provisional behavior.
 
 ![Native fire columns climbing and burning the landscape](screenshots/fire-columns.png)
 
+![Three native whirlwinds in the diagnostic presentation](screenshots/whirlwinds.png)
+
 ## Run
 
 Go 1.25 or newer and the normal Ebitengine platform prerequisites are required.
@@ -34,6 +36,7 @@ go run ./cmd/populous2 -demo -world 0
 go run ./cmd/populous2 -play -code DOEGAC
 go run ./cmd/populous2 -deity
 go run ./cmd/populous2 -fire-columns
+go run ./cmd/populous2 -whirlwinds
 go run ./cmd/populous2 -custom -rules
 go build -o bin/populous2 ./cmd/populous2
 ```
@@ -46,6 +49,20 @@ targets; the viewport-size value eight is not a simulation-rate setting.
 
 `-custom` currently exposes all 29 Amiga powers for testing. It does not yet
 apply the original conquest-based custom-game unlocking policy.
+
+`-fire-columns` and `-whirlwinds` place three effects near the camera for
+inspecting original composite art and controllers. The whirlwind presentation
+also disables follower attrition and fatal water as diagnostic overrides.
+For a bounded application-buffer capture:
+
+```sh
+go run ./cmd/populous2 -whirlwinds -frames 180 -capture-update 12 -screenshot /tmp/populous2-whirlwinds.png
+```
+
+The screenshot path must not exist. Native pickup/release, town collapse and
+child whirlpools are still being converted; the current whirlwind does not
+substitute generic area damage for those interactions. Campaign movement and
+opponent pacing remain incomplete and can produce unusually early results.
 
 ## Controls
 
@@ -74,10 +91,11 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 8 preserves both scenario option words, native fire-column actors/death animations, the deity profile,
+Version 9 preserves both scenario option words, native fire-column and whirlwind actors/death animations, the deity profile,
 scenery, the 32-bit random state, follower references and town work,
 infection and persistent ground effects. Earlier Go saves remain readable;
-versions 1–2 also receive the corrected Helen/tsunami ID mapping. Original
+versions 1–2 also receive the corrected Helen/tsunami ID mapping. Earlier
+generic whirlwinds migrate into the shared native effect pool. Original
 Amiga GAM saves are not yet supported.
 
 The deity screen uses the original three-part face artwork, eight variants per

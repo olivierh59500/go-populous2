@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 8
+const SaveVersion = 9
 
 type Snapshot struct {
 	Version         int
@@ -111,6 +111,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		if !inside(effect.X, effect.Y) || effect.Player < 0 || effect.Player > 1 || effect.Life < 0 || effect.Life > 2000 {
 			return nil, fmt.Errorf("invalid saved active effect")
 		}
+		if snapshot.Version >= 9 && effect.Spell == Whirlwind {
+			return nil, fmt.Errorf("saved whirlwind requires a native effect record")
+		}
 	}
 	var sceneryTiles [4096]bool
 	for _, actor := range snapshot.Scenery {
@@ -132,10 +135,10 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		if !a.Active {
 			continue
 		}
-		if a.Player > 1 || a.Kind != 0x22 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 || a.State != 2 && a.State != 4 && a.State != 6 {
+		if a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 || !bundle.validNativeEffectPhase(a) {
 			return nil, fmt.Errorf("invalid native effect actor")
 		}
-		if _, ok := bundle.FireColumns.Frames[a.Animation]; !ok {
+		if _, ok := bundle.NativeEffectFrame(a); !ok {
 			return nil, fmt.Errorf("invalid native effect animation")
 		}
 	}
@@ -199,6 +202,30 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 					break
 				}
 			}
+		}
+		w.Effects = live
+	}
+	if snapshot.Version < 9 {
+		live := w.Effects[:0]
+		for _, effect := range w.Effects {
+			if effect.Spell != Whirlwind {
+				live = append(live, effect)
+				continue
+			}
+			slot := -1
+			for i := range w.NativeEffects {
+				if !w.NativeEffects[i].Active {
+					slot = i
+					break
+				}
+			}
+			if !w.Whirlwinds.Create(&w.NativeEffects, effect.Player, effect.X, effect.Y, w.Experience[effect.Player][Air]) {
+				return nil, fmt.Errorf("saved whirlwind exceeds native effect capacity")
+			}
+			actor := &w.NativeEffects[slot]
+			actor.State, actor.Animation = 10, 0x4c8
+			actor.Life = int16(max(1, effect.Life))
+			actor.VX, actor.VY = int16(effect.DX)*int16(actor.Speed), int16(effect.DY)*int16(actor.Speed)
 		}
 		w.Effects = live
 	}

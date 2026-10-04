@@ -10,14 +10,14 @@ power is not sufficient evidence that its original behavior has been ported.
 | Area | Current implementation | Remaining work |
 |---|---|---|
 | Resources | Original compression, tile fragments, masks, sprite differences and relocated descriptors | Original menu composition and font use |
-| Campaign | 1,000 worlds, passwords, starting templates, per-side rules/requester and opponent experience | Scripted events and opponent personalities |
+| Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester and opponent experience | Scripted events and opponent personalities |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
 | Followers | 399 usable records, 16-bit occupancy references and persistent state | Native linked tile occupancy, subpixel movement, combat and invention rules |
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Validated version 8 saves, per-side scenario words, effect/death actors, deity profile and scenery | Original Amiga GAM interoperability |
+| Saving | Validated version 9 saves, per-side scenario words, native effect/death actors, deity profile and scenery | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
@@ -46,7 +46,7 @@ the remaining simulation routines.
 | Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
 | Heracles | 16 | 60 | Native double population and speed bonus; native combat/routing pending |
 | Lightning | 18 | 28 / 30 | Provisional area damage; native target/effect animation pending |
-| Whirlwind | 19 | 22 | Provisional moving damage and native paired sounds; original trajectory/state machine pending |
+| Whirlwind | 19 | 22 | Native fixed-point trajectory, phases, experience lifetime, composite art and frame cues; pickup/release, town collapse and child whirlpools pending |
 | Storm | 20 | 64 | Provisional timed area damage; native rain/lightning/terrain simulation pending |
 | Odysseus | 21 | 66 | Native doubled speed attribute/art; runtime movement still inherited |
 | Hurricane wind | 22 | 76 | Provisional directed movement/damage; native pushing and terrain interactions pending |

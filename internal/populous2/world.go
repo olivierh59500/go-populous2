@@ -23,6 +23,7 @@ type World struct {
 	BatholithRange  int
 	WallRules       WallRules
 	FireColumns     FireColumnRules
+	Whirlwinds      WhirlwindRules
 	NativeEffects   [NativeEffectCapacity]NativeEffectActor
 	FlameDeaths     []FlameDeath
 	flameDeathIndex [legacy.MaxPeeps]bool
@@ -98,7 +99,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		return nil, err
 	}
 	core.OlympianTowns = townRules
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Custom: custom, Random: level.Seed}
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Whirlwinds: bundle.Whirlwinds, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	for player, p := range level.Players {
 		w.Rules[player] = p.ScenarioRules()
@@ -113,6 +114,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), Intelligence: p.SearchIntelligence(), Speed: p.MovementSpeed()}
 	}
 	core.PlaceOlympianPeople(followers)
+	w.initializeScenarioBalances()
 	w.bindHeroCombat()
 	w.bindWallMovement()
 	w.bindFlameDeaths()
@@ -366,7 +368,9 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		}
 	case FireColumn:
 		applied = w.castFireColumn(player, target.X, target.Y)
-	case Whirlwind, Storm, Wind, FireRain, Whirlpool, Tsunami:
+	case Whirlwind:
+		applied = w.Whirlwinds.Create(&w.NativeEffects, player, target.X, target.Y, w.Experience[player][Air])
+	case Storm, Wind, FireRain, Whirlpool, Tsunami:
 		if (id == Whirlpool || id == Tsunami) && !w.isWaterAt(target.X+target.Y*64) {
 			return false
 		}
@@ -516,10 +520,6 @@ func (w *World) tickEffects() {
 			}
 			if effect.Spell == Tsunami {
 				w.Core.PaintLowerAt(effect.X, effect.Y)
-			}
-			if effect.Spell == Whirlwind {
-				d := w.random() % 8
-				effect.DX, effect.DY = direction(d)
 			}
 			if effect.Spell != Storm && effect.Spell != FireRain && effect.Spell != Whirlpool && effect.Spell != Lightning {
 				effect.X += effect.DX

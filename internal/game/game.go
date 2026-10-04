@@ -222,10 +222,14 @@ func (g *Game) Update() error {
 		g.lastNativeEffectSoundTurn = g.World.Core.GameTurn
 		var played [133]bool
 		for _, actor := range g.World.NativeEffects {
-			if !actor.Active || actor.Kind != 0x22 {
+			if !actor.Active {
 				continue
 			}
-			cue := g.Bundle.FireColumns.Frames[actor.Animation].SoundCue
+			frame, ok := g.Bundle.NativeEffectFrame(actor)
+			if !ok {
+				continue
+			}
+			cue := frame.SoundCue
 			if cue > 0 && cue < len(played) && !played[cue] {
 				g.audioReplay.PlayCue(cue)
 				played[cue] = true
@@ -700,13 +704,14 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		}
 		px, py := project(x, y, int(world.MapAlt[effect.X+effect.Y*64]))
 		sprite := 97 + world.GameTurn%8
-		if effect.Spell == populous2.Whirlwind {
-			sprite = 153 + world.GameTurn%3
-		}
 		g.drawSprite(view, sprite, px+32, py+32)
 	}
 	for _, a := range g.World.NativeEffects {
-		if !a.Active || a.Kind != 0x22 {
+		if !a.Active {
+			continue
+		}
+		frame, ok := g.Bundle.NativeEffectFrame(a)
+		if !ok {
 			continue
 		}
 		wx, wy := int(a.X)>>8, int(a.Y)>>8
@@ -717,7 +722,6 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		cell := g.World.TerrainCell(wx, wy)
 		px, py := project(x, y, cell.BaseAltitude)
 		ox, oy := cell.ActorOffset(uint8(a.X), uint8(a.Y))
-		frame := g.Bundle.FireColumns.Frames[a.Animation]
 		for _, layer := range frame.Layers {
 			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
 		}
