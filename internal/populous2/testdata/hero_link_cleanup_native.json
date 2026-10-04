@@ -1,0 +1,1017 @@
+{
+  "Add": 7,
+  "Cases": [
+    {
+      "Name": "nonhero-incoming-only",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 156
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 52
+        },
+        {
+          "Reference": 156,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 52
+        }
+      ],
+      "BeforeSHA256": "ad47b02e9ab85bcdae008d47b2eb90490b1950ed5f10a222a308326ca9899a4f",
+      "AfterSHA256": "68bf1e54ac98aaf4c7e4564df8505c9ed251de9accf1735512134dc65ac65d43",
+      "Writes": [
+        {
+          "BSSAddress": 30590,
+          "Width": 2,
+          "Value": 0
+        }
+      ],
+      "Visits": 0,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "hero-both-reciprocals",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 156
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 104,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 52
+        },
+        {
+          "Reference": 156,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 52
+        }
+      ],
+      "BeforeSHA256": "ff1b1b43680283c24714a5cc09accf59ef8c96b208aa0713ddc8ea95f5011294",
+      "AfterSHA256": "3a021e2248c3f5725f356404b99f9088190ecfc85e99a77285e0e91c58e9cd92",
+      "Writes": [
+        {
+          "BSSAddress": 30540,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30486,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30590,
+          "Width": 2,
+          "Value": 0
+        }
+      ],
+      "Visits": 0,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "hero-mismatched-reciprocals",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 156
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 104,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 156
+        },
+        {
+          "Reference": 156,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 104
+        }
+      ],
+      "BeforeSHA256": "c8ab697255db64e121cf76b004dd20c659c3281a672cdd40f992cdfe5aa22a10",
+      "AfterSHA256": "733c24caf56448822853ba01b43aa1fa2f7b4bbded6dc75de028242611d0abb3",
+      "Writes": [
+        {
+          "BSSAddress": 30486,
+          "Width": 2,
+          "Value": 0
+        }
+      ],
+      "Visits": 0,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "Helen-two-captives",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 156
+        },
+        {
+          "Reference": 156,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 104,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 24
+        },
+        {
+          "Reference": 156,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 8
+        },
+        {
+          "Reference": 104,
+          "Offset": 22,
+          "Width": 1,
+          "Value": 52
+        },
+        {
+          "Reference": 156,
+          "Offset": 22,
+          "Width": 1,
+          "Value": 52
+        }
+      ],
+      "BeforeSHA256": "796a6c41d3458bc5e38439fd658f3bec4eaac04d3e0b98160972f7f0f3306809",
+      "AfterSHA256": "12deedcc0c7179a3751670f45c8f1ce3e01395d9329f35d915a44df794409af9",
+      "Writes": [
+        {
+          "BSSAddress": 30546,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30517,
+          "Width": 1,
+          "Value": 16
+        },
+        {
+          "BSSAddress": 30526,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 30598,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30569,
+          "Width": 1,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30578,
+          "Width": 1,
+          "Value": 2
+        }
+      ],
+      "Visits": 2,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "Helen-inactive-reused-captive",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 104,
+          "Offset": 12,
+          "Width": 1,
+          "Value": 0
+        },
+        {
+          "Reference": 104,
+          "Offset": 0,
+          "Width": 1,
+          "Value": 4
+        },
+        {
+          "Reference": 104,
+          "Offset": 26,
+          "Width": 4,
+          "Value": 0
+        },
+        {
+          "Reference": 104,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 255
+        },
+        {
+          "Reference": 104,
+          "Offset": 22,
+          "Width": 1,
+          "Value": 28
+        }
+      ],
+      "BeforeSHA256": "fa573ab98f383588e1bd180f3961f5271533b039bffcbeac8dcc37895505c8d1",
+      "AfterSHA256": "d70d2ac41ca19769cd2cc6904daf02d51b2f3a31ab7eb18bd64e46b17f33c5ce",
+      "Writes": [
+        {
+          "BSSAddress": 30546,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30517,
+          "Width": 1,
+          "Value": 247
+        },
+        {
+          "BSSAddress": 30526,
+          "Width": 1,
+          "Value": 2
+        }
+      ],
+      "Visits": 1,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "Helen-self-cycle",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 52
+        }
+      ],
+      "BeforeSHA256": "4afd70587b9e1b44640098074a856b348c00eea508604eee75257beb3c323528",
+      "AfterSHA256": "156f4b5abdf9e8e8c99131abeb420082a9436a19a3c6deb4394f87ed2fcd1d3f",
+      "Writes": [
+        {
+          "BSSAddress": 30494,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30465,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 30474,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 30494,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30465,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 30474,
+          "Width": 1,
+          "Value": 2
+        }
+      ],
+      "Visits": 2,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "Helen-two-node-cycle",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 156
+        },
+        {
+          "Reference": 156,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 8
+        },
+        {
+          "Reference": 156,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 8
+        }
+      ],
+      "BeforeSHA256": "68c0a2dccf883c8f12032ae931b7fecc59ab23193cac5ac10cfa5308eb9b3e7e",
+      "AfterSHA256": "d8dfb460b0fef7f65b62419efccf8b17c3586b8b65d8d2833070d37d81862336",
+      "Writes": [
+        {
+          "BSSAddress": 30546,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30517,
+          "Width": 1,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30526,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 30598,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30569,
+          "Width": 1,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30578,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 30546,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30517,
+          "Width": 1,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30526,
+          "Width": 1,
+          "Value": 2
+        }
+      ],
+      "Visits": 3,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "Helen35c-alias",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 860
+        },
+        {
+          "Reference": 860,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 104,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 8
+        }
+      ],
+      "BeforeSHA256": "4d4337f0c6350eb1efbf8ce1d281cd157fedf66d394f095a4d21e25adf7ec1f8",
+      "AfterSHA256": "c7bde37204402f3f577a72c1f30019f6ecefc5201b10abc073c893cf27efc6ce",
+      "Writes": [
+        {
+          "BSSAddress": 30546,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30517,
+          "Width": 1,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30526,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 31302,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 31273,
+          "Width": 1,
+          "Value": 4
+        },
+        {
+          "BSSAddress": 31282,
+          "Width": 1,
+          "Value": 2
+        }
+      ],
+      "Visits": 2,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "Helen35c-speed-following-alias",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 860
+        },
+        {
+          "Reference": 860,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 5120
+        },
+        {
+          "Reference": 5120,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 104,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 8
+        }
+      ],
+      "BeforeSHA256": "482fb3fe0a4acd00a5be2bd50ad05e7c051394e14e75723f6e9233f2ed562bf7",
+      "AfterSHA256": "5c19818f0d97d762b0383d054a402923b1744940eb49cc6314ed9b8614c930fb",
+      "Writes": [
+        {
+          "BSSAddress": 30546,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30517,
+          "Width": 1,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30526,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 31302,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 31273,
+          "Width": 1,
+          "Value": 4
+        },
+        {
+          "BSSAddress": 31282,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 35562,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 35533,
+          "Width": 1,
+          "Value": 96
+        },
+        {
+          "BSSAddress": 35542,
+          "Width": 1,
+          "Value": 2
+        }
+      ],
+      "Visits": 3,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "nonHelen-head-retained",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 8
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        }
+      ],
+      "BeforeSHA256": "7b1c8f0a878c3821bb7f824811dd7ac2a244babb189d961a8a96cddf4ddcc0c3",
+      "AfterSHA256": "7b1c8f0a878c3821bb7f824811dd7ac2a244babb189d961a8a96cddf4ddcc0c3",
+      "Writes": null,
+      "Visits": 0,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "Helen-negative-scenery-alias",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 62736
+        },
+        {
+          "Reference": 62736,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        }
+      ],
+      "BeforeSHA256": "bc208a9f1e9200f9f96f015b60ce5c1609e91f9b2243995b26afeb6340917e2b",
+      "AfterSHA256": "f0540f3a8b21342ac685956987bde1547b3221aa3d0533ea814439aa25cf6980",
+      "Writes": [
+        {
+          "BSSAddress": 27642,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 27613,
+          "Width": 1,
+          "Value": 48
+        },
+        {
+          "BSSAddress": 27622,
+          "Width": 1,
+          "Value": 2
+        }
+      ],
+      "Visits": 1,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    },
+    {
+      "Name": "Helen-incoming-after-release",
+      "Source": 52,
+      "Initial": [
+        {
+          "Reference": 52,
+          "Offset": 13,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "Reference": 52,
+          "Offset": 40,
+          "Width": 2,
+          "Value": 10
+        },
+        {
+          "Reference": 52,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 52,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 156
+        },
+        {
+          "Reference": 52,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 104
+        },
+        {
+          "Reference": 104,
+          "Offset": 36,
+          "Width": 2,
+          "Value": 52
+        },
+        {
+          "Reference": 104,
+          "Offset": 42,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "Reference": 156,
+          "Offset": 34,
+          "Width": 2,
+          "Value": 52
+        }
+      ],
+      "BeforeSHA256": "1a139f9c40f140858c66678dbe3f73b87ff22b7df36284c73361f1a23a492bd9",
+      "AfterSHA256": "8b6801f6204309956722924c6e1bc423d116684572ccc36596ffe256a4a9237f",
+      "Writes": [
+        {
+          "BSSAddress": 30540,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30486,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30546,
+          "Width": 2,
+          "Value": 0
+        },
+        {
+          "BSSAddress": 30517,
+          "Width": 1,
+          "Value": 160
+        },
+        {
+          "BSSAddress": 30526,
+          "Width": 1,
+          "Value": 2
+        },
+        {
+          "BSSAddress": 30590,
+          "Width": 2,
+          "Value": 0
+        }
+      ],
+      "Visits": 1,
+      "D0Before": 2774143266,
+      "D0After": 2774143266,
+      "A1Before": 1118481,
+      "A1After": 1118481
+    }
+  ],
+  "Multiplier": 13,
+  "Source": "Independent relocated68000 complete routine14654, with A0=A2=source as in Entry128fc. No simulation/audio stubs. Full34800-byte retained-image digests and original ordered memory writes.",
+  "SourceSHA256": "86ad7f58200fc3295328d3a7ebad4e0ae6663be402d5ed090981b1e53b0a3841",
+  "GeneratorSHA256": "13a164293603e94775c9bcac2a359279e128ebef4c575ad19c0abb8ec25699f2"
+}
