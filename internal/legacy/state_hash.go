@@ -8,7 +8,7 @@ import (
 
 // StateHashVersion changes whenever the canonical state representation
 // changes. Multiplayer peers must agree on this value during their handshake.
-const StateHashVersion uint16 = 2
+const StateHashVersion uint16 = 3
 
 // StateHash returns a platform-independent SHA-256 digest of every value that
 // can affect future shared simulation. Presentation-only queued sound events
@@ -33,7 +33,9 @@ func (w *World) StateHash() [sha256.Size]byte {
 	digest.Write(w.MapAlt[:])
 	digest.Write(w.MapBlk[:])
 	digest.Write(w.MapBk2[:])
-	digest.Write(w.MapWho[:])
+	for _, occupant := range w.MapWho {
+		hashUint16(digest, occupant)
+	}
 	for _, value := range w.MapSteps {
 		hashUint16(digest, value)
 	}

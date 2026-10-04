@@ -8,7 +8,7 @@ type WorldSnapshot struct {
 	MapAlt             [MapWidth * MapHeight]byte
 	MapBlk             [MapWidth * MapHeight]byte
 	MapBk2             [MapWidth * MapHeight]byte
-	MapWho             [MapWidth * MapHeight]byte
+	MapWho             [MapWidth * MapHeight]uint16
 	MapSteps           [MapWidth * MapHeight]uint16
 	Peeps              []Peep
 	Magnets            [2]Magnet

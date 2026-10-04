@@ -68,7 +68,9 @@ const (
 	MaxFood      = FlatLandFood*17 + StartFood
 	CityFood     = MaxFood * 10
 	MaxMensa     = 4
-	MaxPeeps     = 208
+	// The original pool has 400 records; record zero is reserved.
+	MaxPeeps     = 400
+	MaxFollowers = MaxPeeps - 1
 
 	BadPeople    = 16
 	KnightPeople = 32
@@ -195,7 +197,7 @@ type World struct {
 	MapAlt             [MapWidth * MapHeight]byte
 	MapBlk             [MapWidth * MapHeight]byte
 	MapBk2             [MapWidth * MapHeight]byte
-	MapWho             [MapWidth * MapHeight]byte
+	MapWho             [MapWidth * MapHeight]uint16
 	MapSteps           [MapWidth * MapHeight]uint16
 	Peeps              []Peep
 	Magnets            [2]Magnet
@@ -1240,7 +1242,7 @@ func (w *World) placeInitialSide(player, count, start, end, step int) {
 }
 
 func (w *World) placePeople(player, pos int, leader bool) {
-	if len(w.Peeps) >= MaxPeeps || pos < 0 || pos >= MapWidth*MapHeight {
+	if len(w.Peeps) >= MaxFollowers || pos < 0 || pos >= MapWidth*MapHeight {
 		return
 	}
 	peep := Peep{
@@ -1255,7 +1257,7 @@ func (w *World) placePeople(player, pos int, leader bool) {
 	}
 	w.Peeps = append(w.Peeps, peep)
 	index := len(w.Peeps)
-	w.MapWho[pos] = byte(index)
+	w.MapWho[pos] = uint16(index)
 	if leader {
 		w.Magnets[player].Carried = index
 	}
@@ -1412,7 +1414,7 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 			}
 		case w.Peeps[i].Flags&InRuin != 0:
 			if w.MapWho[w.Peeps[i].AtPos] == 0 {
-				w.MapWho[w.Peeps[i].AtPos] = byte(i + 1)
+				w.MapWho[w.Peeps[i].AtPos] = uint16(i + 1)
 			}
 			oldRuin := w.Peeps[i].BattlePopulation
 			w.Peeps[i].BattlePopulation--
@@ -1770,7 +1772,7 @@ func (w *World) processTownWithLandAI(index int, legacyLandAI bool) {
 		w.Magnets[player].NoTowns++
 	}
 	if w.MapWho[peep.AtPos] == 0 {
-		w.MapWho[peep.AtPos] = byte(index + 1)
+		w.MapWho[peep.AtPos] = uint16(index + 1)
 	}
 	w.collectLegacyTown(index, life)
 
@@ -1837,7 +1839,7 @@ func (w *World) spawnWalkerFromTown(index, life int) {
 		}
 	}
 	if newIndex < 0 {
-		if len(w.Peeps) >= MaxPeeps {
+		if len(w.Peeps) >= MaxFollowers {
 			return
 		}
 		newIndex = len(w.Peeps)
@@ -1870,8 +1872,8 @@ func (w *World) spawnWalkerFromTown(index, life int) {
 		w.Peeps[newIndex] = walker
 	}
 	newIndex++ // MapWho and Carried use one-based IDs.
-	if w.MapWho[walker.AtPos] == 0 || w.MapWho[walker.AtPos] == byte(index+1) {
-		w.MapWho[walker.AtPos] = byte(newIndex)
+	if w.MapWho[walker.AtPos] == 0 || w.MapWho[walker.AtPos] == uint16(index+1) {
+		w.MapWho[walker.AtPos] = uint16(newIndex)
 	}
 	// append may have moved Peeps, so use the copied walker after insertion.
 	if w.Magnets[int(walker.Player)].Carried == index+1 {
@@ -1947,7 +1949,7 @@ func (w *World) moveExplorer(index int) {
 	}
 	peep := &w.Peeps[index]
 
-	id := byte(index + 1)
+	id := uint16(index + 1)
 	oldSource := peep.AtPos - peep.Direction
 	if inMap(oldSource) && w.MapWho[oldSource] == id {
 		w.MapWho[oldSource] = 0
@@ -2063,13 +2065,13 @@ func (w *World) setBattle(attackerIndex, defenderIndex int) {
 	if defender.Flags&InTown != 0 {
 		attacker.AtPos = defender.AtPos
 		attacker.Direction = 0
-		w.MapWho[defender.AtPos] = byte(attackerIndex + 1)
+		w.MapWho[defender.AtPos] = uint16(attackerIndex + 1)
 		return
 	}
 	defender.AtPos = attacker.AtPos
 	defender.Direction = 0
 	if inMap(attacker.AtPos) {
-		w.MapWho[attacker.AtPos] = byte(attackerIndex + 1)
+		w.MapWho[attacker.AtPos] = uint16(attackerIndex + 1)
 	}
 }
 
@@ -2234,7 +2236,7 @@ func (w *World) battleOver(winnerIndex, loserIndex int) {
 	winnerPtr.Flags |= InEffect
 	winnerPtr.Frame = VictorySprite
 	if inMap(winnerPtr.AtPos) {
-		w.MapWho[winnerPtr.AtPos] = byte(winnerIndex + 1)
+		w.MapWho[winnerPtr.AtPos] = uint16(winnerIndex + 1)
 	}
 
 	winnerPlayer := int(winnerPtr.Player)
@@ -2308,7 +2310,7 @@ func (w *World) razeTownToRuin(index int) {
 	if overlay := int(w.MapBk2[ruin.AtPos]); overlay >= FirstTown && overlay <= CityCentre {
 		w.MapBk2[ruin.AtPos] = byte(overlay + ruinDelta)
 	}
-	if w.MapWho[ruin.AtPos] == byte(index+1) {
+	if w.MapWho[ruin.AtPos] == uint16(index+1) {
 		w.MapWho[ruin.AtPos] = 0
 	}
 }
@@ -2370,7 +2372,7 @@ func (w *World) clearPeepMapRefs(index int) {
 	if index < 0 || index >= len(w.Peeps) {
 		return
 	}
-	id := byte(index + 1)
+	id := uint16(index + 1)
 	peep := w.Peeps[index]
 	for _, pos := range [...]int{peep.AtPos, peep.AtPos - peep.Direction} {
 		if inMap(pos) && w.MapWho[pos] == id {

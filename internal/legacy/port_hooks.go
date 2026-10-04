@@ -44,3 +44,72 @@ func (w *World) SprogAt(player, pos int) bool {
 	}
 	return false
 }
+
+// PromoteHero detaches a living carrier without charging legacy knight mana or
+// granting legacy scores, sounds, weapons, or automatic attack targets. The
+// caller applies the independently decoded Populous II hero creation rules.
+func (w *World) PromoteHero(index int) bool {
+	if !w.validPeep(index) || w.Peeps[index].Player > 1 || !inMap(w.Peeps[index].AtPos) {
+		return false
+	}
+	if w.Peeps[index].Flags&InTown != 0 {
+		w.setTown(index, true)
+	}
+	p := &w.Peeps[index]
+	p.Flags &^= InTown | WaitForMe | IAmWaiting | InBattle | InEffect | InRuin
+	p.Flags |= OnMove
+	p.Status = KnightStatus
+	p.HeadFor = 0
+	p.BattlePopulation = 0
+	p.Frame = 0
+	p.Direction = 0
+	if w.Magnets[p.Player].Carried == index+1 {
+		w.Magnets[p.Player].Carried = 0
+	}
+	return true
+}
+
+// AllocateHeroClone reserves the first unused native follower record and copies
+// a live actor without retaining battle or carrier links. Native record zero is
+// reserved, so Go index n represents the native one-based record n+1. The caller
+// owns the hero-specific clone rules and its separate hero metadata.
+func (w *World) AllocateHeroClone(index int) int {
+	if !w.validPeep(index) || w.Peeps[index].Player > 1 || !inMap(w.Peeps[index].AtPos) {
+		return -1
+	}
+	slot := -1
+	for i := range w.Peeps {
+		if w.Peeps[i].Population <= 0 {
+			slot = i
+			break
+		}
+	}
+	if slot < 0 {
+		if len(w.Peeps) >= MaxFollowers {
+			return -1
+		}
+		slot = len(w.Peeps)
+	}
+	clone := w.Peeps[index]
+	clone.Flags = OnMove
+	clone.HeadFor = 0
+	clone.BattlePopulation = 0
+	clone.Frame = 0
+	clone.Direction = 0
+	clone.InOut = clone.AtPos
+	if slot == len(w.Peeps) {
+		w.Peeps = append(w.Peeps, clone)
+	} else {
+		w.clearPeepMapRefs(slot)
+		for player := range w.Magnets {
+			if w.Magnets[player].Carried == slot+1 {
+				w.Magnets[player].Carried = 0
+			}
+		}
+		w.Peeps[slot] = clone
+	}
+	if w.MapWho[clone.AtPos] == 0 {
+		w.MapWho[clone.AtPos] = uint16(slot + 1)
+	}
+	return slot
+}
