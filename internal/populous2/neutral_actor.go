@@ -50,18 +50,18 @@ func DecodeNativeNeutralRules(exe *amiga.Executable) (NativeNeutralRules, error)
 }
 
 type NativeNeutralActorCallbacks struct {
-	Memory          FollowerCleanupMemory
-	Move            func(NativeRecordReference, uint16, uint16) error
-	Unlink          func(NativeRecordReference) error
-	Head            func(NativePackedTile) (NativeRecordReference, error)
-	Tile            func(NativePackedTile) (uint8, error)
-	WriteTile       func(NativePackedTile, uint8) error
-	Random          func() int
-	Lower           func(uint8, uint8) error         // Original direct $d7f0.
-	CreateWhirlwind func(uint8, uint8, uint16) error // Original $15c3e.
-	PlantTree       func(uint8, uint8, uint16) error // Original $db26.
-	PlantFungus     func(uint8, uint8, uint16) error // Original $15b7c.
-	Cleanup         func(NativeRecordReference, uint16) error
+	Memory           FollowerCleanupMemory
+	Move             func(NativeRecordReference, uint16, uint16) error
+	Unlink           func(NativeRecordReference) error
+	Head             func(NativePackedTile) (NativeRecordReference, error)
+	Tile             func(NativePackedTile) (uint8, error)
+	WriteTile        func(NativePackedTile, uint8) error
+	Random           func() int
+	Lower            func(uint8, uint8) error         // Original direct $d7f0.
+	CreateWhirlwind  func(uint8, uint8, uint16) error // Original $15c3e.
+	PlantTree        func(uint8, uint8, uint16) error // Original $db26.
+	CreateFireColumn func(uint8, uint8, uint16) error // Original $15b7c.
+	Cleanup          func(NativeRecordReference, uint16) error
 }
 
 type NativeNeutralStep struct {
@@ -199,15 +199,15 @@ func (rules *NativeNeutralRules) Tick(ref NativeRecordReference, cb NativeNeutra
 		}
 		return step, cb.PlantTree(xb, yb, 3)
 	case 10:
-		if cb.Tile == nil || cb.Random == nil || cb.PlantFungus == nil {
-			return step, fmt.Errorf("native neutral fungus callback missing")
+		if cb.Tile == nil || cb.Random == nil || cb.CreateFireColumn == nil {
+			return step, fmt.Errorf("native neutral fire-column callback missing")
 		}
 		tile, err := cb.Tile(packed)
 		if err != nil {
 			return step, err
 		}
 		if tile != 0 && cb.Random()&31 == 0 {
-			return step, cb.PlantFungus(xb, yb, 3)
+			return step, cb.CreateFireColumn(xb, yb, 3)
 		}
 	case 12:
 		if cb.Head == nil || cb.Cleanup == nil {

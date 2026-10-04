@@ -94,15 +94,15 @@ func TestNativeNeutralRuntimeAgainstOriginalEffectsAndMovement(t *testing.T) {
 					return nil
 				},
 				CreateWhirlwind: func(x, y uint8, owner uint16) error {
-					calls = append(calls, call{"ignite", uint32(x), uint32(y), uint32(owner)})
+					calls = append(calls, call{"whirlwind", uint32(x), uint32(y), uint32(owner)})
 					return nil
 				},
 				PlantTree: func(x, y uint8, owner uint16) error {
 					calls = append(calls, call{"plant", uint32(x), uint32(y), uint32(owner)})
 					return nil
 				},
-				PlantFungus: func(x, y uint8, owner uint16) error {
-					calls = append(calls, call{"fungus", uint32(x), uint32(y), uint32(owner)})
+				CreateFireColumn: func(x, y uint8, owner uint16) error {
+					calls = append(calls, call{"fire-column", uint32(x), uint32(y), uint32(owner)})
 					return nil
 				},
 				Cleanup: func(NativeRecordReference, uint16) error { return fmt.Errorf("unexpected empty-neighbor cleanup") }}
