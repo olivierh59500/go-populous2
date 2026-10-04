@@ -28,6 +28,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Scenery continuation | Original variants, pool recycling, burial counters and save/load |
 | Flame deaths | Retained death frames/slot reservations, current-cell damage and four-neighbor tree spread |
 | Scenario runtime | Independent side rules, height admission, atomic prohibited edits, water, sprog, map visibility and save bindings |
+| Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |
 | Scenario native oracle | 248 cases: 112 height admissions, eight initializations and 128 per-owner attrition updates |
 | Deity interface | Native face parts, name, experience, password import and version 6 profile saves |
 | Desktop application | Bounded launch, native score playback and application-buffer PNG capture; three whirlwind composites, shutdown after 180 updates |
@@ -42,6 +43,12 @@ first-free reuse, correct animation banks across all landscapes, phase-aware
 save validation and deterministic mixed-effect continuation. Pickup, release,
 town collapse and allocated child whirlpools are outside the parent-controller
 fixtures; no generic area damage is substituted for those pending interactions.
+
+Scenario fixtures compare height admission, zero-extended initial balances,
+attrition survivors/death decisions, observer visibility and victim-side swamp
+removal. Death traces stop before native animation helpers, and land movement
+still uses the adapted dispatch. These fixtures do not establish full native
+follower timing, death transitions or propagated-edit rollback parity.
 
 Scenario attrition references compare population arithmetic and native death
 decisions, rather than complete original death animation or fractional movement.
