@@ -17,6 +17,7 @@ type World struct {
 	Spells      []Spell
 	ManaRules   ManaRules
 	GroundRules GroundEffectRules
+	RoadRules   RoadRules
 	Experience  [2][6]uint8
 	Custom      bool
 	Demo        bool
@@ -88,7 +89,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), Intelligence: p.SearchIntelligence(), Speed: p.MovementSpeed()}
 	}
 	core.PlaceOlympianPeople(followers)
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, Custom: custom, Random: level.Seed}
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	return w, nil
 }
@@ -208,7 +209,9 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 			w.Marks[p] = Mark{Spell: id, Player: player, Life: 240}
 			applied = true
 		}
-	case Road, Wall:
+	case Road:
+		applied = w.castRoad(player, target.X, target.Y)
+	case Wall:
 		for _, p := range line(target.X, target.Y, target.X2, target.Y2) {
 			if w.isWaterAt(p) {
 				continue

@@ -46,7 +46,8 @@ apply the original conquest-based custom-game unlocking policy.
 | Release a group from a dwelling | Right click on the dwelling |
 | Move the camera | WASD, arrows, or the world map |
 | Select a power | Element, power, then target |
-| Provisional road/wall line | Two endpoint clicks |
+| Paint/remove roads | Hold left/right mouse button and move |
+| Provisional wall line | Two endpoint clicks |
 | Effect direction | Q / E |
 | Papal magnet / find the leader | M / C |
 | Settle, gather, fight, follow | 1 / 2 / 3 / 4 |

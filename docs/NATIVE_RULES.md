@@ -151,3 +151,12 @@ Infection follows the actor, passes through contact, suppresses town mana and
 removes its victims during Armageddon. It is not an expiring ground-radius
 effect. The vulture sequence at animation offset `$ddc` is decoded, including
 its original caw cue. Full native disease timing and immunity remain pending.
+
+## Roads
+
+Painting at `$1677a` selects straight, joined and slope road tiles using the
+neighbor tables at `$168f0-$16938`. Connection bits and reciprocal updates are
+preserved. A five-placement reference matches every tile code produced by the
+original routine. Removal at `$16744` restores the underlying ground without
+charging mana. The interface paints by dragging instead of selecting two ends.
+Movement speed and fungus-barrier interactions remain separate work.

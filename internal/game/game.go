@@ -58,6 +58,8 @@ type Game struct {
 	muted               bool
 	lastSoundSerial     int
 	lastPlagueSoundTurn int
+	roadLastTile        int
+	roadDragging        bool
 }
 
 func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) {
@@ -290,6 +292,17 @@ func (g *Game) centerPlayer(player int) {
 func (g *Game) handleClick() {
 	left := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
 	right := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
+	if g.Selected == populous2.Road {
+		if !ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && !ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+			g.roadDragging = false
+		}
+		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+			left = true
+		}
+		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+			right = true
+		}
+	}
 	if !left && !right {
 		return
 	}
@@ -338,6 +351,18 @@ func (g *Game) handleClick() {
 	mx, my, ok := g.targetAt(x, y)
 	if !ok {
 		return
+	}
+	if g.Selected == populous2.Road {
+		pos := mx + my*64
+		if g.roadDragging && g.roadLastTile == pos {
+			return
+		}
+		g.roadDragging = true
+		g.roadLastTile = pos
+		if right {
+			g.World.RemoveRoad(mx, my)
+			return
+		}
 	}
 	if g.Selected == populous2.RaiseLower {
 		if right && g.World.Core.SprogAt(0, mx+my*64) {
