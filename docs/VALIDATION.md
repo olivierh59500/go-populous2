@@ -62,6 +62,9 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Captive routes | 446 complete native cases including retained original A1 after backlink repair, signed owner tests, raw `$35c` aliases and zero-timer motion |
 | Native retained victim | State `$46`: 101 original cases/540 updates, complete countdown/removal, static art and leader relocation |
 | Crossing admission | 2,528 original cases cover all raw tiles/heights and rock/wall thresholds, exact hint writes and signed stage indexing; World wall-break case verifies no position jump |
+| Native town economy | 253 complete routines across four LAND tables and two full-pass birth fixtures; World tests cover mana/growth, same-pass emigration, rare slot-250 neutral creation and saved continuation |
+| Native primitive creators | 383 original raw whirlwind/fire-column/single-tree cases retain owner-word aliases, recycled bytes, complete graph/RNG state and XP bypass |
+| Economy simulation regression | 600+30 updates/save per original landscape; headless worlds 0/100 reach 12,000 updates and world 40 reaches the current prototype victory path; no original campaign pacing claim |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |

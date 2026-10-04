@@ -14,10 +14,10 @@ power is not sufficient evidence that its original behavior has been ported.
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
 | Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion; full terrain prepass, water/conversion/burning, magnet/captive routes, exact crossing admission and retained contact/combat outcomes in World | Hero creation/art boundaries, full linked effects, native economy/neutral runtime and inventions |
-| Towns | 19 stages, native mixed support/cache, 49-cell compositor and founding/contact; separately verified native economy | Full native economy/birth dispatcher, land AI and end-to-end town parity |
+| Towns | 19 stages, native mixed support/cache, 49-cell compositor and native founding/economy/emigration in World; rare births allocate original neutral actors | Complete land AI, all neutral/environmental interactions and end-to-end campaign parity |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Version 17 retains actor/deity/marker bytes, managed contacts/combat outcomes, original control latches, town overlays and per-side rules | Original Amiga GAM interoperability |
+| Saving | Version 18 retains native economy/deadline, neutral actors/effects, actor/deity/marker bytes, contacts/combat outcomes, control latches and per-side rules | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |

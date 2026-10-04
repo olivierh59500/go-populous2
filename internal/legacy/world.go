@@ -215,6 +215,7 @@ type World struct {
 	NativeTownClear            func(index int)
 	NativeTownAllocationFailed func()
 	NativePopulationHandled    bool
+	NativeFollowerPassBegin    func()
 	Terrain                    int
 	GameTurn                   int
 	Alt                        [EndWidth * EndWidth]int
@@ -1353,6 +1354,9 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 
 	// Births appended to the table are processed during this same tick, just
 	// like births placed in a dead slot ahead of the current loop index.
+	if w.NativeFollowerPassBegin != nil {
+		w.NativeFollowerPassBegin()
+	}
 	for i := 0; i < len(w.Peeps) && i < MaxPeeps; i++ {
 		if w.NativeEffectFollowerUpdate != nil && w.NativeEffectFollowerUpdate(i) {
 			continue

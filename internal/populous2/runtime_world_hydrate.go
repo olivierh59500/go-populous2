@@ -52,7 +52,7 @@ func nativeRuntimeManagedFollower(actor FollowerEntryActor) bool {
 		return true
 	}
 	if actor.Motion.Kind == 4 {
-		return actor.Motion.State != 6
+		return true
 	}
 	if actor.Motion.Kind != 2 {
 		return true
@@ -116,7 +116,7 @@ func (w *World) hydrateNativeRuntimeRecords() {
 		if actor.Owner == 0 {
 			w.Core.ReleaseDeathOccupancy(index)
 		}
-		if actor.Owner >= 1 && actor.Owner <= 2 {
+		if actor.Owner >= 1 && actor.Owner <= 3 {
 			p.Player = actor.Owner - 1
 		}
 		w.captiveIndex[index] = actor.Motion.Flags&8 != 0
@@ -126,7 +126,7 @@ func (w *World) hydrateNativeRuntimeRecords() {
 			continue
 		}
 		p.Plague = actor.Motion.Flags&16 != 0
-		if actor.Motion.Flags&2 != 0 && actor.Hero40&1 == 0 && actor.Hero40 <= 10 {
+		if actor.Owner <= 2 && actor.Motion.Flags&2 != 0 && actor.Hero40&1 == 0 && actor.Hero40 <= 10 {
 			hero := &w.Heroes[index]
 			hero.Active, hero.Spell, hero.Player, hero.Population, hero.Speed = true, heroIDs[actor.Hero40/2], int(p.Player), p.Population, p.MovementSpeed
 			p.Status = legacy.KnightStatus

@@ -8,43 +8,44 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 17
+const SaveVersion = 18
 
 type Snapshot struct {
-	Version            int
-	LevelIndex         int
-	ScenarioOptions    [2]uint16
-	Custom             bool
-	Demo               bool
-	Experience         [2][6]uint8
-	Deity              Deity
-	Core               legacy.WorldSnapshot
-	Effects            []Effect
-	Marks              [4096]Mark
-	Heroes             [legacy.MaxPeeps]Hero
-	Random             uint16
-	LastSpell          SpellID
-	LastPlayer         int
-	SpellSerial        int
-	HazardSerial       int
-	LastHazardCue      int
-	Scenery            [SceneryCapacity]SceneryActor
-	Walls              WallState
-	NativeEffects      [NativeEffectCapacity]NativeEffectActor
-	NativeFollowers    [legacy.MaxPeeps]NativeFollower
-	Occupancy          NativeWorldOccupancy
-	BasaltState        BasaltState
-	LightningState     LightningState
-	LightningVictims   [legacy.MaxPeeps]NativeLightningFollower
-	FungusState        FungusState
-	FlameDeaths        []FlameDeath
-	RecordImage        NativeRecordImage
-	NativeEntries      [legacy.MaxPeeps]NativeFollowerEntry
-	NativeOverlays     [4096]uint8
-	NativeGlobals      NativeGlobalImage
-	NativeSelected     NativeRecordReference
-	NativeRaiseEnabled uint16
-	NativeBirthBlocked bool
+	Version                int
+	LevelIndex             int
+	ScenarioOptions        [2]uint16
+	Custom                 bool
+	Demo                   bool
+	Experience             [2][6]uint8
+	Deity                  Deity
+	Core                   legacy.WorldSnapshot
+	Effects                []Effect
+	Marks                  [4096]Mark
+	Heroes                 [legacy.MaxPeeps]Hero
+	Random                 uint16
+	LastSpell              SpellID
+	LastPlayer             int
+	SpellSerial            int
+	HazardSerial           int
+	LastHazardCue          int
+	Scenery                [SceneryCapacity]SceneryActor
+	Walls                  WallState
+	NativeEffects          [NativeEffectCapacity]NativeEffectActor
+	NativeFollowers        [legacy.MaxPeeps]NativeFollower
+	Occupancy              NativeWorldOccupancy
+	BasaltState            BasaltState
+	LightningState         LightningState
+	LightningVictims       [legacy.MaxPeeps]NativeLightningFollower
+	FungusState            FungusState
+	FlameDeaths            []FlameDeath
+	RecordImage            NativeRecordImage
+	NativeEntries          [legacy.MaxPeeps]NativeFollowerEntry
+	NativeOverlays         [4096]uint8
+	NativeGlobals          NativeGlobalImage
+	NativeSelected         NativeRecordReference
+	NativeRaiseEnabled     uint16
+	NativeBirthBlocked     bool
+	NativeCreatureDeadline uint32
 }
 
 func (w *World) Snapshot() Snapshot {
@@ -57,7 +58,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -139,7 +140,15 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	for index, p := range snapshot.Core.Peeps {
 		v := snapshot.LightningVictims[index]
 		managedSigned := snapshot.Version >= 14 && v.Active && (v.Victim.State == 0x1c || v.Victim.State == 0x1e) && int32(p.Population) == v.Victim.Population
-		if p.Player > 1 || p.Population < 0 && !managedSigned || p.AtPos < 0 || p.AtPos >= 4096 {
+		neutral := false
+		if snapshot.Version >= 18 && snapshot.NativeEntries[index].Managed {
+			ref := nativeActorReference(NativeFollowerPool, index)
+			owner, _ := snapshot.RecordImage.Read8(ref, 12)
+			neutral = owner == 3 && p.Player == 2
+			rawPopulation, _ := snapshot.RecordImage.Read32(ref, 26)
+			managedSigned = managedSigned || owner >= 1 && owner <= 3 && int32(p.Population) == int32(rawPopulation)
+		}
+		if p.Player > 1 && !neutral || p.Population < 0 && !managedSigned || p.AtPos < 0 || p.AtPos >= 4096 {
 			return nil, fmt.Errorf("invalid saved follower")
 		}
 	}
@@ -149,7 +158,8 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 				continue
 			}
 			a := record.Actor
-			if index >= len(snapshot.Core.Peeps) || record.Generation == 0 || a.Kind != 2 || a.Player > 1 || a.Speed == 0 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.State != 2 && a.State != 4 && a.State != 18 || a.ReturnState != 2 && a.ReturnState != 18 || a.Animation < 0 || a.Animation >= bundle.FollowerMotion.FrameCount*4 || a.Animation%4 != 0 || a.Timer < -1 || a.Timer > 256/int16(a.Speed) {
+			validReturn := a.ReturnState == 2 || a.ReturnState == 18 || snapshot.Version >= 18 && a.State == 2 && a.ReturnState == 0
+			if index >= len(snapshot.Core.Peeps) || record.Generation == 0 || a.Kind != 2 || a.Player > 1 || a.Speed == 0 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.State != 2 && a.State != 4 && a.State != 18 || !validReturn || a.Animation < 0 || a.Animation >= bundle.FollowerMotion.FrameCount*4 || a.Animation%4 != 0 || a.Timer < -1 || a.Timer > 256/int16(a.Speed) {
 				return nil, fmt.Errorf("invalid saved native follower motion")
 			}
 			p := snapshot.Core.Peeps[index]
@@ -232,7 +242,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			continue
 		}
 		if a.Kind == WhirlpoolActorKind {
-			if snapshot.Version < 13 || a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.State != 0x0e || a.Speed == 0 || a.Animation < 0x97 || a.Animation > 0xa3 || (a.Animation-0x97)%4 != 0 {
+			if snapshot.Version < 13 || a.Player > 1 && !(snapshot.Version >= 18 && a.Player == 2) || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.State != 0x0e || a.Speed == 0 || a.Animation < 0x97 || a.Animation > 0xa3 || (a.Animation-0x97)%4 != 0 {
 				return nil, fmt.Errorf("invalid saved native whirlpool")
 			}
 			continue
@@ -248,7 +258,8 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			}
 			continue
 		}
-		if a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 && a.Kind != BasaltActorKind || !bundle.validNativeEffectPhase(a) {
+		neutralEffect := snapshot.Version >= 18 && a.Player == 2 && (a.Kind == 0x20 || a.Kind == 0x22)
+		if a.Player > 1 && !neutralEffect || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 && a.Kind != BasaltActorKind || !bundle.validNativeEffectPhase(a) {
 			return nil, fmt.Errorf("invalid native effect actor")
 		}
 		if _, ok := bundle.NativeEffectFrame(a); !ok {
@@ -320,6 +331,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.RecordImage, w.NativeEntries, w.NativeOverlays = snapshot.RecordImage, snapshot.NativeEntries, snapshot.NativeOverlays
 	w.NativeGlobals, w.NativeSelected = snapshot.NativeGlobals, snapshot.NativeSelected
 	w.NativeRaiseEnabled, w.NativeBirthBlocked = snapshot.NativeRaiseEnabled, snapshot.NativeBirthBlocked
+	w.NativeCreatureDeadline = snapshot.NativeCreatureDeadline
 	if snapshot.Version < 17 && snapshot.Core.War {
 		w.NativeRaiseEnabled = 1
 	}

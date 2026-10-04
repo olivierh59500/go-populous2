@@ -76,8 +76,11 @@ func DecodeWhirlpoolRules(exe *amiga.Executable) (WhirlpoolRules, error) {
 // including when another animated whirlpool covers otherwise level water.
 // Creation stamps the first terrain frame and consumes no random numbers.
 func (rules WhirlpoolRules) Create(pool *[NativeEffectCapacity]NativeEffectActor, player, x, y int, waterExperience uint8, readTile func(int, int) uint8, writeTile func(int, int, uint8)) bool {
-	if pool == nil || player < 0 || player > 1 || !inside(x, y) || readTile == nil || writeTile == nil {
+	if pool == nil || player < 0 || player > 2 || !inside(x, y) || readTile == nil || writeTile == nil {
 		return false
+	}
+	if player == 2 {
+		waterExperience = 0
 	}
 	origin := uint16(x | y<<8)
 	for _, offset := range rules.Footprint {

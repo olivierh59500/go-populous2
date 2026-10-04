@@ -29,7 +29,7 @@ func (w *World) initializeEntryRecord(index int) {
 		a.Motion.Flags |= 2
 		a.Hero40 = uint16(heroIndex(w.Heroes[index].Spell) * 2)
 	}
-	if w.Core.Magnets[p.Player].Carried == index+1 {
+	if p.Player < 2 && w.Core.Magnets[p.Player].Carried == index+1 {
 		a.Motion.Flags |= 1
 	}
 	w.NativeEntries[index] = NativeFollowerEntry{Initialized: true, Actor: a}
@@ -131,7 +131,7 @@ func (w *World) writeEntryRecord(ref NativeRecordReference, a FollowerEntryActor
 	}
 	w.NativeEntries[index] = NativeFollowerEntry{Initialized: true, Actor: a}
 	p := &w.Core.Peeps[index]
-	w.NativeEntries[index].Managed = a.Owner != 0 && (a.Motion.State == 10 || a.Motion.State == 12 || a.Motion.State == 14 || a.Motion.State == 16 || a.Motion.State == 0x24 || a.Motion.State == 0x34)
+	w.NativeEntries[index].Managed = nativeRuntimeManagedFollower(a)
 	p.Population, p.Weapons, p.MovementSpeed = int(a.Motion.Population), int(a.Weapon), a.Motion.Speed
 	if a.Owner > 0 && a.Owner <= 2 {
 		p.Player = a.Owner - 1
@@ -143,7 +143,7 @@ func (w *World) writeEntryRecord(ref NativeRecordReference, a FollowerEntryActor
 	w.moveActor(NativeFollowerPool, index, uint16(a.Motion.X), uint16(a.Motion.Y))
 	p.AtPos = (int(uint16(a.Motion.X)) >> 8) + (int(uint16(a.Motion.Y))>>8)*64
 	w.NativeFollowers[index].Actor = a.Motion
-	w.NativeFollowers[index].Active = a.Motion.Kind == 2 && a.Motion.Flags&2 == 0 && (a.Motion.State == 2 || a.Motion.State == 4)
+	w.NativeFollowers[index].Active = !w.NativeEntries[index].Managed && a.Motion.Kind == 2 && a.Motion.Flags&2 == 0 && (a.Motion.State == 2 || a.Motion.State == 4)
 	if a.Motion.State == 4 && a.Motion.ReturnState == 12 {
 		w.NativeEntries[index].Managed = true
 		w.NativeFollowers[index].Active = true

@@ -47,6 +47,10 @@ type World struct {
 	FollowerMagnet           FollowerMagnetRules
 	FollowerRuin             FollowerRuinVictimRules
 	FollowerCrossing         FollowerCrossingRules
+	PrimitiveCreators        NativePrimitiveCreatorRules
+	NeutralRules             NativeNeutralRules
+	TownEconomy              NativeTownEconomyRules
+	NativeCreatureDeadline   uint32
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
@@ -157,6 +161,11 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.FollowerMagnet = bundle.FollowerMagnet
 	w.FollowerRuin = bundle.FollowerRuin
 	w.FollowerCrossing = bundle.FollowerCrossing
+	w.PrimitiveCreators, w.NeutralRules = bundle.PrimitiveCreators, bundle.NeutralRules
+	w.TownEconomy, err = DecodeNativeTownEconomyRules(land)
+	if err != nil {
+		return nil, err
+	}
 	w.HeroArt = bundle.HeroRules
 	w.FollowerWin, err = DecodeFollowerWinRules(bundle.Executable, land)
 	if err != nil {

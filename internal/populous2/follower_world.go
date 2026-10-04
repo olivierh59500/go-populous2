@@ -147,6 +147,8 @@ func (w *World) updateNativeFollower(index int) bool {
 		p.Frame = actor.Animation / 4
 		w.moveActor(NativeFollowerPool, index, uint16(actor.X), uint16(actor.Y))
 	}
+	w.refreshNativeRecordImage()
+	w.addNativeFollowerPopulation(nativeActorReference(NativeFollowerPool, index))
 	return !entry.ContinueTownUpdate
 }
 

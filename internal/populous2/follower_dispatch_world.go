@@ -7,6 +7,10 @@ func (w *World) enterNativeFollowerCell(index int) FollowerEntryStep {
 	err := w.runNativeFollowerCall(func() error {
 		var err error
 		step, err = w.FollowerEntry.Enter(nativeActorReference(NativeFollowerPool, index), w.nativeEntryCallbacks())
+		if err == nil && step.ContinueTownUpdate {
+			_, err = w.nativeTownEconomyTick(nativeActorReference(NativeFollowerPool, index))
+			step.ContinueTownUpdate = false
+		}
 		return err
 	})
 	if err != nil {
@@ -35,6 +39,10 @@ func (w *World) ManagedFollowerFrame(index int) (AnimationFrame, bool) {
 	}
 	if a.Motion.State == 0x46 {
 		return w.FollowerRuin.Frame, true
+	}
+	if a.Motion.State == 0x44 {
+		frame, ok := w.NeutralRules.Frames[a.Motion.Animation]
+		return frame, ok
 	}
 	for _, frames := range []map[int]AnimationFrame{w.FollowerEntry.WaitingFrames, w.FollowerCombat.Frames, w.FollowerAftermath.Frames, w.FollowerWin.Frames, w.FollowerTerrain.Frames, w.FollowerMagnet.Frames} {
 		if frame, ok := frames[a.Motion.Animation]; ok {
@@ -99,8 +107,14 @@ func (w *World) updateNativeManagedFollower(index int) bool {
 }
 
 func (w *World) updateNativeManagedFollowerDispatch(index int, prepassed bool) bool {
-	if index < 0 || index >= len(w.Core.Peeps) || !w.NativeEntries[index].Initialized || !w.NativeEntries[index].Managed {
+	if index < 0 || index >= len(w.Core.Peeps) {
 		return false
+	}
+	if !w.NativeEntries[index].Initialized || !w.NativeEntries[index].Managed {
+		if w.Core.Peeps[index].Flags&1 == 0 {
+			return false
+		}
+		w.NativeEntries[index] = NativeFollowerEntry{}
 	}
 	ref := nativeActorReference(NativeFollowerPool, index)
 	count := false
@@ -117,6 +131,17 @@ func (w *World) updateNativeManagedFollowerDispatch(index int, prepassed bool) b
 				return err
 			}
 			switch a.Motion.State {
+			case 6:
+				step, err := w.nativeTownEconomyTick(ref)
+				if err != nil {
+					return err
+				}
+				if step.NeedsDecision {
+					entry.RedispatchSearch = true
+				} else {
+					count = step.CurrentTotal
+					return nil
+				}
 			case 2:
 				fallthroughMotion, err := w.nativeSearchFollower(ref)
 				if err != nil {
@@ -242,6 +267,10 @@ func (w *World) updateNativeManagedFollowerDispatch(index int, prepassed bool) b
 				_, err := w.FollowerRuin.Tick(ref, FollowerRuinVictimCallbacks{Memory: w.nativeCleanupMemory(), Tile: w.nativePackedTile, ClearLeader: w.clearNativeLeader, Unlink: w.nativeRuntimeUnlink})
 				count = false
 				return err
+			case 0x44:
+				_, err := w.NeutralRules.Tick(ref, w.nativeNeutralCallbacks())
+				count = false
+				return err
 			case 0x16, 0x36, 0x3c:
 				var step FollowerTerrainStep
 				switch a.Motion.State {
@@ -297,7 +326,8 @@ func (w *World) updateNativeManagedFollowerDispatch(index int, prepassed bool) b
 	if err != nil {
 		panic(err)
 	}
-	if count {
+	if count && w.Core.Peeps[index].Player < 2 {
+		w.addNativeFollowerPopulation(ref)
 		w.Core.Magnets[w.Core.Peeps[index].Player].Population += max(0, w.Core.Peeps[index].Population)
 	}
 	return true

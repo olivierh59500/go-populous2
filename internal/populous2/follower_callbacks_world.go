@@ -2,6 +2,25 @@ package populous2
 
 import "fmt"
 
+func (w *World) addNativeFollowerPopulation(ref NativeRecordReference) {
+	m := w.runtimeMemory()
+	a, err := m.ReadFollowerEntry(ref)
+	if err != nil {
+		panic(err)
+	}
+	god, ok := NativeDeityAddress(a.Owner)
+	if !ok {
+		panic("native population owner outside deities")
+	}
+	value, err := m.Read32(god + 4)
+	if err != nil {
+		panic(err)
+	}
+	if _, err := m.Write32(god+4, value+uint32(a.Motion.Population)); err != nil {
+		panic(err)
+	}
+}
+
 // runNativeFollowerCall keeps original routines' intermediate byte writes
 // authoritative until the complete call returns to the inherited adapter.
 func (w *World) runNativeFollowerCall(call func() error) error {

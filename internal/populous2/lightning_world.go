@@ -111,7 +111,7 @@ func (w *World) lightningRecord(ref NativeRecordReference) (LightningVictim, boo
 			v.Flags = 2
 			v.HeroType = uint16(heroIndex(w.Heroes[index].Spell) * 2)
 		}
-		if w.Core.Magnets[p.Player].Carried == index+1 && w.Core.Magnets[p.Player].Flags == legacy.MagnetMode {
+		if p.Player < 2 && w.Core.Magnets[p.Player].Carried == index+1 && w.Core.Magnets[p.Player].Flags == legacy.MagnetMode {
 			v.State = 0x3a
 		}
 		if owned := w.LightningVictims[index]; owned.Active {

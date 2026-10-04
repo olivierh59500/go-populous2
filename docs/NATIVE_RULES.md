@@ -714,9 +714,10 @@ include pool exhaustion and the allocated selector-zero failure path.
 State `$44` moves with its native velocity, loops its animation and dispatches
 the selector's original tile/lowering/whirlwind/tree/fire-column/victim operations.
 Its 252 comparisons retain complete raw actor/grid/RNG state with external
-primitive bodies recorded at their original boundaries. Full neutral runtime
-effects and nonempty victim neighborhoods still require their own integration
-and comparisons before the rare economic callback can be considered complete.
+primitive bodies recorded at their original boundaries. World now composes the
+native primitive creators and neutral effects; full original-machine composed
+comparisons, including populated victim neighborhoods and direct-lower register
+continuation, remain required before this environmental path is fully proven.
 
 ## Captive and crossing integration
 
@@ -734,3 +735,30 @@ outcomes. Invalid odd stage words report the native address-error condition.
 Both ordinary and managed motion use this admission routine; wall destruction
 executes its recovery branch before any position change. The existing native
 motion comparisons still own bounce timing and velocity proof.
+
+## Native economy in the World loop
+
+State 6 now executes `$11738/$117de` through raw callbacks, with the active LAND
+tables. Per-pass initialization resets deity counters and preserves original
+mana/population maxima, matching `$11252`'s boundaries. Native population totals
+are added at each handler's `$123b4` return, rather than reconstructed afterward.
+
+Work is a wrapping word. Successful emigration subtracts the quota from the
+old population, discarding that cycle's apparent growth. The scan uses only
+owner-zero bytes and sets `$dc2` after a full-pool failure; preexisting inhibition
+skips the scan and keeps growth. Higher newborn slots run during that same
+increasing-address pass, while lower reused slots wait for the next pass.
+
+The rare slot-250 birth keeps both random draws, their overwritten first
+coordinate and raw `$131cc` request. Its neutral owner-3 record remains allocated
+with population zero and runs without entering either player's total. Raw tree,
+whirlwind and fire-column creators preserve native owner-word/XP/RNG behavior.
+Neutral whirlwind children create owner-3 whirlpools with zero Water experience.
+
+Version 18 saves include those records/effects and the wrapping rare-creation
+deadline. World tests compare production, same-pass births, rare creation, all
+four landscapes and byte-identical save continuation. Headless 12,000-update
+runs provide regression evidence; native scenario AI, award/score and complete
+campaign progression remain separate requirements. A desktop launch for this
+slice failed before game startup because Ebitengine could not obtain a macOS
+monitor; it supplies no visual fidelity evidence for this particular slice.

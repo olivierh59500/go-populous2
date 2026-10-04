@@ -11,7 +11,11 @@ func (w *World) TakeEffectSoundCues() []int {
 }
 
 func (w *World) castWhirlpool(player, x, y int) bool {
-	return w.Whirlpools.Create(&w.NativeEffects, player, x, y, w.Experience[player][Water], w.nativeTileAt, w.setWaterTile)
+	experience := uint8(0)
+	if player >= 0 && player < 2 {
+		experience = w.Experience[player][Water]
+	}
+	return w.Whirlpools.Create(&w.NativeEffects, player, x, y, experience, w.nativeTileAt, w.setWaterTile)
 }
 
 func (w *World) setWaterTile(x, y int, tile uint8) {
