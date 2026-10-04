@@ -48,14 +48,24 @@ regression checks, not evidence of original movement or combat behavior.
 - Native movement, linked tile occupancy, combat, inventions and land AI.
 - Remaining vegetation interactions, city/farm composition and environmental automata.
 - Original state machines for the remaining disasters, routes, walls and heroes.
-- Experience awards, all scenario options, opponent
-  personalities, original campaign scoring and world progression.
+- Experience awards, scenario scripts and special editor/battle-mode rules,
+  opponent personalities, original campaign scoring and world progression.
 - Original menus, statistics, transitions and final sequence.
 - Native animation-triggered sound events and hardware timing/mixing comparison.
 - Original GAM interoperability and two-player transport.
 
 The separate Challenge executable is an additional scenario extension, outside
 the main two-disk game.
+
+## Terrain regression coverage
+
+Raising or lowering a vertex affects every tile sharing that corner. The
+conversion derives each tile's shape from all four vertex heights and keeps
+raised land separate from animated sea-level graphics. Regression checks
+exercise repeated edits, shared edges, representable slopes and picking on
+the projected surface. Prohibited edits restore the full propagated terrain
+and mana state. These checks address visible neighboring-tile discontinuities;
+native disaster/editor interactions remain in the feature inventory.
 
 ## Format references
 
