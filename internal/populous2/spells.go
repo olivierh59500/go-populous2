@@ -48,8 +48,8 @@ const (
 	FireRain    SpellID = 25
 	Volcano     SpellID = 26
 	Achilles    SpellID = 27
-	Whirlpool   SpellID = 30
-	Basalt      SpellID = 31
+	Basalt      SpellID = 30
+	Whirlpool   SpellID = 31
 	Baptism     SpellID = 32
 	Helen       SpellID = 33
 	Tsunami     SpellID = 34
@@ -99,11 +99,11 @@ var spellDefinitions = []Spell{
 	{ID: FireRain, Name: "PLUIE DE FEU", Aim: AimPoint, Help: "La pluie de feu embrase toute la zone."},
 	{ID: Volcano, Name: "VOLCAN", Aim: AimPoint, Help: "Fait surgir un volcan et ravage les environs."},
 	{ID: Achilles, Name: "ACHILLE", Aim: AimLeader, Help: "Convertit le chef en un heros qui incendie les terres."},
-	{ID: Whirlpool, Name: "TOURBILLON", Aim: AimPoint, Help: "Cree un tourbillon mortel dans la mer."},
 	{ID: Basalt, Name: "BASALTE", Aim: AimDirection, Help: "Construit un passage de basalte a travers la mer."},
+	{ID: Whirlpool, Name: "TOURBILLON", Aim: AimPoint, Help: "Cree un tourbillon mortel dans la mer."},
 	{ID: Baptism, Name: "BAPTEME", Aim: AimPoint, Help: "Convertit des adorateurs ennemis a ton camp."},
-	{ID: Tsunami, Name: "TSUNAMI", Aim: AimDirection, Help: "Envoie une vague de la mer vers la terre."},
 	{ID: Helen, Name: "HELENE", Aim: AimLeader, Help: "Convertit le chef en une heroine qui attire les ennemis."},
+	{ID: Tsunami, Name: "TSUNAMI", Aim: AimDirection, Help: "Envoie une vague de la mer vers la terre."},
 }
 
 // DecodeSpells gets base mana costs from the actual unsigned-word table at

@@ -16,6 +16,7 @@ func TestNativeCommandPowerBindings(t *testing.T) {
 		{36, Perseus, 0x1783c}, {58, Adonis, 0x17856}, {60, Heracles, 0x17870},
 		{66, Odysseus, 0x1788a}, {68, Achilles, 0x178a4}, {70, Helen, 0x178be},
 		{56, Tsunami, 0x17a7c}, {6, FireColumn, 0x17638},
+		{24, Whirlpool, 0x1775a}, {74, Basalt, 0x17b24},
 	} {
 		action := commands[tc.command]
 		if action.Spell != tc.spell || action.Handler != tc.handler {
@@ -24,6 +25,17 @@ func TestNativeCommandPowerBindings(t *testing.T) {
 	}
 	if Helen != 33 || Tsunami != 34 {
 		t.Fatal("water hero and tsunami IDs inverted")
+	}
+	if Basalt != 30 || Whirlpool != 31 {
+		t.Fatal("water bridge and whirlpool IDs differ from native command debits")
+	}
+	bridge, _ := SpellByID(b.Spells, Basalt)
+	whirlpool, _ := SpellByID(b.Spells, Whirlpool)
+	if bridge.Cost != 250 || whirlpool.Cost != 1000 || bridge.Aim != AimDirection || whirlpool.Aim != AimPoint {
+		t.Fatal("water labels/aims/costs do not follow the original handlers")
+	}
+	if cues := b.CastSoundCues(Whirlpool, 0); len(cues) != 1 || cues[0] != 19 {
+		t.Fatal("native whirlpool cast cue missing")
 	}
 	if cues := b.CastSoundCues(FireColumn, 0); len(cues) != 1 || cues[0] != 115 {
 		t.Fatal("native fire column cue missing")
