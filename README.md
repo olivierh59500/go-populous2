@@ -63,7 +63,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 4 preserves the 32-bit random state, follower references, town work,
+Version 5 preserves scenery, the 32-bit random state, follower references, town work,
 infection and persistent ground effects. Earlier Go saves remain readable;
 versions 1–2 also receive the corrected Helen/tsunami ID mapping. Original
 Amiga GAM saves are not yet supported.

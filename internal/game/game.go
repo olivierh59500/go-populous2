@@ -549,6 +549,25 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 			}
 		}
 	}
+	for _, actor := range g.World.Scenery {
+		if !actor.Active {
+			continue
+		}
+		x, y := actor.X-g.CameraX, actor.Y-g.CameraY
+		if x < 0 || y < 0 || x >= 8 || y >= 8 {
+			continue
+		}
+		cell := g.World.TerrainCell(actor.X, actor.Y)
+		px, py := project(x, y, cell.BaseAltitude)
+		frames := g.Bundle.Scenery.Frames[actor.Animation]
+		if len(frames) == 0 {
+			continue
+		}
+		frame := frames[actor.Frame%len(frames)]
+		for _, layer := range frame.Layers {
+			g.drawSprite(view, layer.Sprite, px+32+layer.X*2, py+32+layer.Y*2)
+		}
+	}
 	for i, peep := range world.Peeps {
 		if peep.Population <= 0 || peep.Flags&legacy.InRuin != 0 {
 			continue

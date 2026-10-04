@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 4
+const SaveVersion = 5
 
 type Snapshot struct {
 	Version     int
@@ -24,6 +24,7 @@ type Snapshot struct {
 	LastSpell   SpellID
 	LastPlayer  int
 	SpellSerial int
+	Scenery     [SceneryCapacity]SceneryActor
 }
 
 func (w *World) Snapshot() Snapshot {
@@ -31,7 +32,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -101,6 +102,22 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			return nil, fmt.Errorf("invalid saved active effect")
 		}
 	}
+	var sceneryTiles [4096]bool
+	for _, actor := range snapshot.Scenery {
+		if actor.Active && (!inside(actor.X, actor.Y) || actor.Kind != SceneryTree && actor.Kind != SceneryBoulder) {
+			return nil, fmt.Errorf("invalid saved scenery actor")
+		}
+		if actor.Active {
+			pos := actor.X + actor.Y*64
+			if sceneryTiles[pos] || actor.Frame < 0 {
+				return nil, fmt.Errorf("invalid saved scenery occupancy/frame")
+			}
+			sceneryTiles[pos] = true
+			if _, ok := bundle.Scenery.Frames[actor.Animation]; !ok {
+				return nil, fmt.Errorf("unknown saved scenery animation")
+			}
+		}
+	}
 	w, err := NewWorld(bundle, snapshot.LevelIndex, snapshot.Custom)
 	if err != nil {
 		return nil, err
@@ -108,6 +125,8 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	townRules := w.Core.OlympianTowns
 	w.Core = legacy.WorldFromSnapshot(snapshot.Core, w.Core.Rules)
 	w.Core.OlympianTowns = townRules
+	w.Core.TileBlocked = func(pos int) bool { return w.sceneryAt(pos) >= 0 }
+	w.Core.HabitatBlocked = func(pos int) bool { i := w.sceneryAt(pos); return i >= 0 && w.Scenery[i].Kind == SceneryBoulder }
 	w.bindHeroCombat()
 	w.Effects = append([]Effect(nil), snapshot.Effects...)
 	w.Experience = snapshot.Experience
@@ -116,6 +135,8 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		w.Heroes[i].Captives = append([]int(nil), w.Heroes[i].Captives...)
 	}
 	w.rebuildCaptiveIndex()
+	w.Scenery = snapshot.Scenery
+	w.rebuildSceneryIndex()
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	return w, nil
 }

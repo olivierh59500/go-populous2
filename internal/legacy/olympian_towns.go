@@ -24,6 +24,9 @@ func (w *World) OlympianTownStage(player, pos int) int {
 			return false
 		}
 		p := x + y*MapWidth
+		if w.HabitatBlocked != nil && w.HabitatBlocked(p) {
+			return false
+		}
 		if w.MapBlk[p] != FlatBlock && int(w.MapBlk[p]) != FarmBlock+player {
 			return false
 		}

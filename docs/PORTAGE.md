@@ -46,7 +46,7 @@ regression checks, not evidence of original movement or combat behavior.
 ## Remaining conversion work
 
 - Native movement, linked tile occupancy, combat, inventions and land AI.
-- Exact natural vegetation, city/farm composition and environmental automata.
+- Remaining vegetation interactions, city/farm composition and environmental automata.
 - Original state machines for the remaining disasters, routes, walls and heroes.
 - Deity creation, experience allocation/awards, all scenario options, opponent
   personalities, original campaign scoring and world progression.

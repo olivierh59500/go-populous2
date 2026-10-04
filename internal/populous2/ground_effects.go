@@ -79,7 +79,7 @@ func (w *World) castGroundEffect(player int, id SpellID, x, y int) bool {
 			if cell.Shape != 15 {
 				continue
 			}
-		} else if w.Core.MapWho[pos] != 0 || r.Properties[cell.Code]&mask == 0 {
+		} else if w.Core.MapWho[pos] != 0 || w.sceneryAt(pos) >= 0 || r.Properties[cell.Code]&mask == 0 {
 			continue
 		}
 		w.Marks[pos] = Mark{Spell: id, Player: player, Life: 1, Persistent: true, NativeTile: tile}

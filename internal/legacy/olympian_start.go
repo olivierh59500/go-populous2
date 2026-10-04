@@ -17,7 +17,7 @@ func (w *World) PlaceOlympianPeople(sides [2]InitialFollowers) {
 		w.Magnets[player] = Magnet{GoTo: 32 + 32*MapWidth, Flags: SettleMode}
 		count := 0
 		place := func(pos int) {
-			if count >= side.Groups || len(w.Peeps) >= MaxFollowers || w.MapWho[pos] != 0 {
+			if count >= side.Groups || len(w.Peeps) >= MaxFollowers {
 				return
 			}
 			w.Peeps = append(w.Peeps, Peep{Flags: OnMove, Player: byte(player), Population: side.Population, IQ: side.Intelligence, Weapons: 1, MovementSpeed: side.Speed, AtPos: pos})

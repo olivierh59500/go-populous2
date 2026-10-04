@@ -30,7 +30,4 @@ func (w *World) GenerateOlympianTerrain(seed uint32, hills [4][4]int) {
 		}
 	}
 	w.makeMap(0, 0, MapWidth-1, MapHeight-1)
-	// Natural vegetation and boulder placement retain the existing adapter
-	// until their separate native actor pools are translated.
-	w.makeWoodsRocks()
 }

@@ -39,3 +39,28 @@ func TestNativeSculptChargesPropagatedChanges(t *testing.T) {
 		t.Fatal("native opponent experience missing")
 	}
 }
+
+func TestSculptClearsGroundOverridesOnAllTouchedNeighbors(t *testing.T) {
+	w := flatGroundWorld(t)
+	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 32 + 32*64, Flags: legacy.OnMove}}
+	w.Core.MapWho[32+32*64] = 1
+	for y := 31; y <= 32; y++ {
+		for x := 31; x <= 32; x++ {
+			w.Marks[x+y*64] = Mark{Spell: Flowers, Player: 0, Life: 1, Persistent: true, NativeTile: 245}
+		}
+	}
+	w.Marks[10+10*64] = Mark{Spell: Flowers, Player: 0, Life: 1, Persistent: true, NativeTile: 245}
+	if !w.Sculpt(0, 32, 32, true) {
+		t.Fatal("valid sculpt rejected")
+	}
+	for y := 31; y <= 32; y++ {
+		for x := 31; x <= 32; x++ {
+			if w.Marks[x+y*64].NativeTile != 0 {
+				t.Fatalf("stale ground graphic at %d,%d", x, y)
+			}
+		}
+	}
+	if w.Marks[10+10*64].NativeTile != 245 {
+		t.Fatal("unrelated ground effect cleared")
+	}
+}

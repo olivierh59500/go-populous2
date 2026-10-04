@@ -29,6 +29,7 @@ type Bundle struct {
 	HillParameters  [4][4]int
 	PlagueAnimation []AnimationFrame
 	RoadRules       RoadRules
+	Scenery         *SceneryBank
 }
 
 func Load() (*Bundle, error) {
@@ -141,6 +142,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.RoadRules, err = DecodeRoadRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.Scenery, err = DecodeScenery(exe)
 	if err != nil {
 		return nil, err
 	}

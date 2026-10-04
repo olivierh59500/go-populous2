@@ -18,6 +18,9 @@ type World struct {
 	ManaRules    ManaRules
 	GroundRules  GroundEffectRules
 	RoadRules    RoadRules
+	SceneryBank  *SceneryBank
+	Scenery      [SceneryCapacity]SceneryActor
+	sceneryIndex [4096]uint16
 	Experience   [2][6]uint8
 	Custom       bool
 	Demo         bool
@@ -86,13 +89,16 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		return nil, err
 	}
 	core.OlympianTowns = townRules
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, Custom: custom, Random: level.Seed}
+	w.Experience[1] = level.OpponentExperience
+	w.initializeScenery()
+	core.TileBlocked = func(pos int) bool { return w.sceneryAt(pos) >= 0 }
+	core.HabitatBlocked = func(pos int) bool { i := w.sceneryAt(pos); return i >= 0 && w.Scenery[i].Kind == SceneryBoulder }
 	var followers [2]legacy.InitialFollowers
 	for player, p := range level.Players {
 		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), Intelligence: p.SearchIntelligence(), Speed: p.MovementSpeed()}
 	}
 	core.PlaceOlympianPeople(followers)
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, Custom: custom, Random: level.Seed}
-	w.Experience[1] = level.OpponentExperience
 	w.bindHeroCombat()
 	return w, nil
 }
@@ -130,14 +136,32 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	w.Core.Magnets[player].Mana = before
 	if applied {
 		changed := 0
+		minX, minY, maxX, maxY := 65, 65, 0, 0
 		for i, altitude := range w.Core.Alt {
 			changed += abs(altitude - altitudes[i])
+			if altitude != altitudes[i] {
+				minX = min(minX, i%65)
+				maxX = max(maxX, i%65)
+				minY = min(minY, i/65)
+				maxY = max(maxY, i/65)
+			}
 		}
 		// $175fa charges every propagated height change and clamps at zero.
 		if changed == 0 {
 			return false
 		}
 		w.Core.Magnets[player].Mana = max(0, before-cost*changed)
+		// Native point edits rewrite every touched tile's shape code. Clear
+		// ground-effect overrides on all four adjacent cells, including those
+		// changed indirectly by slope propagation.
+		for yy := max(0, minY-1); yy <= min(63, maxY); yy++ {
+			for xx := max(0, minX-1); xx <= min(63, maxX); xx++ {
+				a := xx + yy*65
+				if altitudes[a] != w.Core.Alt[a] || altitudes[a+1] != w.Core.Alt[a+1] || altitudes[a+65] != w.Core.Alt[a+65] || altitudes[a+66] != w.Core.Alt[a+66] {
+					w.Marks[xx+yy*64] = Mark{}
+				}
+			}
+		}
 	}
 	if applied && x < 64 && y < 64 {
 		w.Marks[x+y*64] = Mark{}
@@ -201,7 +225,9 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		applied = w.castPlague(player, target.X+target.Y*64)
 	case Swamp, Flowers, Baptism:
 		applied = w.castGroundEffect(player, id, target.X, target.Y)
-	case Trees, Fungus:
+	case Trees:
+		applied = w.plantScenery(SceneryTree, player, target.X, target.Y) > 0
+	case Fungus:
 		for _, p := range diskArea(target.X, target.Y, 2) {
 			if w.isWaterAt(p) {
 				continue
@@ -301,6 +327,7 @@ func (w *World) Tick() {
 	w.applyGroundEffects()
 	w.spreadPlague()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
+	w.tickScenery()
 	w.followHelenCaptives()
 	w.applyGroundEffects()
 	w.spreadPlague()

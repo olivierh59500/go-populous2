@@ -11,13 +11,13 @@ power is not sufficient evidence that its original behavior has been ported.
 |---|---|---|
 | Resources | Original compression, tile fragments, masks, sprite differences and relocated descriptors | Original menu composition and font use |
 | Campaign | 1,000 worlds, passwords, full random seed, starting templates and opponent experience | All scenario options, scripted events and opponent personalities |
-| Terrain | Native four-hill generation; eight complete vertex-grid comparisons against the 68000 routine | Native trees, boulders and later environmental simulation |
+| Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Propagation, per-change mana debit, original graphics-bank selection and slope-aware picking | Every original construction restriction and effect interaction |
 | Followers | 399 usable records, 16-bit occupancy references and persistent state | Native linked tile occupancy, subpixel movement, combat and invention rules |
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Validated version 4 Go saves, wide RNG state and earlier water-ID migration | Original Amiga GAM interoperability and deity profiles |
+| Saving | Validated version 5 Go saves, scenery, wide RNG state and earlier water-ID migration | Original Amiga GAM interoperability and deity profiles |
 | Interface | Playable menu, camera, minimap, power selection, pause, demo and saving | Original menus, god creation, experience allocation, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
@@ -35,7 +35,7 @@ the remaining simulation routines.
 | Perseus | 2 | 36 | Native conversion/art; inherited knight movement and combat |
 | Plague | 3 | 78 | Actor infection, contact, suppressed town mana, Armageddon removal and native vulture art/caw; detailed disease states pending |
 | Armageddon | 4 | 72 | Global battle and plague removal; inherited combat/central gathering |
-| Forest | 6 | 46 | Provisional tree markers; native tree actor allocation/animation and popularity pending |
+| Forest | 6 | 46 | Native sampled allocation, original variants, signed aging/burial counters and rendering; popularity and remaining actor interactions pending |
 | Renew land | 7 | 80 | Native sampled placement and tile 245; later greenery spread and popularity pending |
 | Swamp | 8 | 54 | Native placement/tiles and either-side entry deaths; Heracles immunity; native death animation/options pending |
 | Fungus | 9 | 26 | Provisional propagation and damage; native controller/automaton pending |

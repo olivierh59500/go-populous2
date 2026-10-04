@@ -197,6 +197,8 @@ type World struct {
 	SkipFollower       func(index int) bool
 	CanHeroCrossWater  func(index int) bool
 	HeroTargetAllowed  func(hero, target int) bool
+	TileBlocked        func(pos int) bool
+	HabitatBlocked     func(pos int) bool
 	Terrain            int
 	GameTurn           int
 	Alt                [EndWidth * EndWidth]int
@@ -2884,6 +2886,9 @@ func (w *World) validMove(pos, delta int) int {
 	x := (pos & (MapWidth - 1)) + dx
 	if x < 0 || x >= MapWidth {
 		return 1
+	}
+	if w.HabitatBlocked != nil && w.HabitatBlocked(next) {
+		return 2
 	}
 	switch int(w.MapBlk[next]) {
 	case RockBlock:
