@@ -407,7 +407,7 @@ func (g *Game) handleClick() {
 		}
 	}
 	if g.Selected == populous2.RaiseLower {
-		if right && g.World.Core.SprogAt(0, mx+my*64) {
+		if right && g.World.Sprog(0, mx, my) {
 			g.notify("Les adorateurs sortent de l'habitation.")
 			return
 		}
@@ -804,6 +804,9 @@ func (g *Game) drawMinimap(screen *ebiten.Image) {
 		if p.Population <= 0 {
 			continue
 		}
+		if !g.World.FollowerVisibleOnMap(0, int(p.Player)) {
+			continue
+		}
 		x, y := p.AtPos%64, p.AtPos/64
 		mx, my := 64+x-y, (x+y)/2
 		c := blue
@@ -813,10 +816,29 @@ func (g *Game) drawMinimap(screen *ebiten.Image) {
 		o := (my*128 + mx) * 4
 		g.miniPixels[o], g.miniPixels[o+1], g.miniPixels[o+2], g.miniPixels[o+3] = c.R, c.G, c.B, 255
 	}
+	if g.World.EffectVisibleOnMap(0) {
+		for _, a := range g.World.NativeEffects {
+			if a.Active {
+				g.minimapDot(int(a.X)>>8, int(a.Y)>>8, gold)
+			}
+		}
+		for _, e := range g.World.Effects {
+			g.minimapDot(e.X, e.Y, gold)
+		}
+	}
 	g.minimap.WritePixels(g.miniPixels)
 	drawImage(screen, g.minimap, 8, 56, 2)
 	x, y := g.CameraX+3, g.CameraY+3
 	diamond(screen, 8+(64+x-y)*2, 56+(x+y), ink)
+}
+
+func (g *Game) minimapDot(x, y int, c color.RGBA) {
+	if x < 0 || y < 0 || x >= 64 || y >= 64 {
+		return
+	}
+	mx, my := 64+x-y, (x+y)/2
+	o := (my*128 + mx) * 4
+	g.miniPixels[o], g.miniPixels[o+1], g.miniPixels[o+2], g.miniPixels[o+3] = c.R, c.G, c.B, 255
 }
 
 func (g *Game) drawHelp(screen *ebiten.Image) {

@@ -26,6 +26,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Save continuation | Effects, town work, experience, random state and earlier water-ID migration |
 | Scenery continuation | Original variants, pool recycling, burial counters and save/load |
 | Flame deaths | Retained death frames/slot reservations, current-cell damage and four-neighbor tree spread |
+| Scenario runtime | Independent side rules, height admission, atomic prohibited edits, water, sprog, map visibility and save bindings |
 | Deity interface | Native face parts, name, experience, password import and version 6 profile saves |
 | Desktop application | Bounded launch, native score playback and application-buffer PNG capture |
 

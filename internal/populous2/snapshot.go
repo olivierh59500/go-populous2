@@ -8,27 +8,28 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 7
+const SaveVersion = 8
 
 type Snapshot struct {
-	Version       int
-	LevelIndex    int
-	Custom        bool
-	Demo          bool
-	Experience    [2][6]uint8
-	Deity         Deity
-	Core          legacy.WorldSnapshot
-	Effects       []Effect
-	Marks         [4096]Mark
-	Heroes        [legacy.MaxPeeps]Hero
-	Random        uint16
-	LastSpell     SpellID
-	LastPlayer    int
-	SpellSerial   int
-	Scenery       [SceneryCapacity]SceneryActor
-	Walls         WallState
-	NativeEffects [NativeEffectCapacity]NativeEffectActor
-	FlameDeaths   []FlameDeath
+	Version         int
+	LevelIndex      int
+	ScenarioOptions [2]uint16
+	Custom          bool
+	Demo            bool
+	Experience      [2][6]uint8
+	Deity           Deity
+	Core            legacy.WorldSnapshot
+	Effects         []Effect
+	Marks           [4096]Mark
+	Heroes          [legacy.MaxPeeps]Hero
+	Random          uint16
+	LastSpell       SpellID
+	LastPlayer      int
+	SpellSerial     int
+	Scenery         [SceneryCapacity]SceneryActor
+	Walls           WallState
+	NativeEffects   [NativeEffectCapacity]NativeEffectActor
+	FlameDeaths     []FlameDeath
 }
 
 func (w *World) Snapshot() Snapshot {
@@ -36,7 +37,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -153,6 +154,11 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if err != nil {
 		return nil, err
 	}
+	if snapshot.Version >= 8 {
+		for player, raw := range snapshot.ScenarioOptions {
+			w.Rules[player] = DecodeScenarioRules(raw)
+		}
+	}
 	if err := snapshot.Walls.Validate(&bundle.WallRules); err != nil {
 		return nil, fmt.Errorf("invalid saved walls: %w", err)
 	}
@@ -163,6 +169,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.Core.HabitatBlocked = func(pos int) bool { i := w.sceneryAt(pos); return i >= 0 && w.Scenery[i].Kind == SceneryBoulder }
 	w.bindHabitatTerrain()
 	w.bindHeroCombat()
+	w.bindScenarioRuntime()
 	w.Effects = append([]Effect(nil), snapshot.Effects...)
 	w.Experience = snapshot.Experience
 	w.Deity = snapshot.Deity

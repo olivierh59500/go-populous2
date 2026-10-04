@@ -202,6 +202,8 @@ type World struct {
 	HabitatTerrainAllowed func(player, pos int) bool
 	MovementAllowed       func(index, target int, apply bool) bool
 	FollowerReserved      func(index int) bool
+	WaterFatalForPlayer   func(player int) bool
+	TerrainCommand        func(player, x, y int, raise bool) bool
 	Terrain               int
 	GameTurn              int
 	Alt                   [EndWidth * EndWidth]int
@@ -1361,7 +1363,11 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 			}
 		}
 		if w.Peeps[i].Flags&InWater != 0 {
-			if w.Level.GameMode&GameWaterFatal != 0 {
+			fatal := w.Level.GameMode&GameWaterFatal != 0
+			if w.WaterFatalForPlayer != nil {
+				fatal = w.WaterFatalForPlayer(player)
+			}
+			if fatal {
 				w.zeroPopulation(i)
 				continue
 			}

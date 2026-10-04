@@ -109,6 +109,9 @@ func (w *World) applyGroundEffects() {
 				continue
 			}
 			if p.Flags&legacy.InTown == 0 {
+				if w.Rules[p.Player].ShallowSwamps {
+					w.Marks[p.AtPos] = Mark{}
+				}
 				w.Core.DamagePeep(i, p.Population)
 			}
 		case Baptism:

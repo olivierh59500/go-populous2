@@ -10,14 +10,14 @@ power is not sufficient evidence that its original behavior has been ported.
 | Area | Current implementation | Remaining work |
 |---|---|---|
 | Resources | Original compression, tile fragments, masks, sprite differences and relocated descriptors | Original menu composition and font use |
-| Campaign | 1,000 worlds, passwords, full random seed, starting templates and opponent experience | All scenario options, scripted events and opponent personalities |
+| Campaign | 1,000 worlds, passwords, starting templates, separate scenario rules and opponent experience | Scripted events, scenario requesters and opponent personalities |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
-| Terrain editing | Propagation, per-change mana debit, original graphics-bank selection and slope-aware picking | Every original construction restriction and effect interaction |
+| Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
 | Followers | 399 usable records, 16-bit occupancy references and persistent state | Native linked tile occupancy, subpixel movement, combat and invention rules |
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Validated version 7 saves, fixed-point effect actors/deaths, deity profile and scenery | Original Amiga GAM interoperability |
+| Saving | Validated version 8 saves, per-side scenario words, effect/death actors, deity profile and scenery | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
@@ -30,14 +30,14 @@ the remaining simulation routines.
 
 | Power | Slot | Native command | Current behavior and remaining differences |
 |---|---:|---:|---|
-| Raise/lower land | 0 | 2 / 4 | Native graphics and cost accounting; inherited height propagation; construction options incomplete |
+| Raise/lower land | 0 | 2 / 4 | Native height admission, prohibitions, propagated enemy-land protection and costs; inherited propagation; special editor/battle modes pending |
 | Papal magnet | 1 | 8 | Leader destination and native sound cues; inherited follower routing |
 | Perseus | 2 | 36 | Native conversion/art; inherited knight movement and combat |
 | Plague | 3 | 78 | Actor infection, contact, suppressed town mana, Armageddon removal and native vulture art/caw; detailed disease states pending |
 | Armageddon | 4 | 72 | Global battle and plague removal; inherited combat/central gathering |
 | Forest | 6 | 46 | Native sampled allocation, original variants, signed aging/burial counters and rendering; popularity and remaining actor interactions pending |
 | Renew land | 7 | 80 | Native sampled placement and tile 245; later greenery spread and popularity pending |
-| Swamp | 8 | 54 | Native placement/tiles and either-side entry deaths; Heracles immunity; native death animation/options pending |
+| Swamp | 8 | 54 | Native placement/tiles, victim-side shallow rule and Heracles immunity; native death animation pending |
 | Fungus | 9 | 26 | Provisional propagation and damage; native controller/automaton pending |
 | Adonis | 10 | 58 | Native conversion/art and post-victory hero splitting; native movement/combat and pool-full edge state pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |

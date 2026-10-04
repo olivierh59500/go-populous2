@@ -12,6 +12,7 @@ import (
 // checked against the original routines; see docs/PORTAGE.md.
 type World struct {
 	Level           Level
+	Rules           [2]ScenarioRules
 	Core            *legacy.World
 	Landscape       Landscape
 	Spells          []Spell
@@ -99,6 +100,10 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	core.OlympianTowns = townRules
 	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
+	for player, p := range level.Players {
+		w.Rules[player] = p.ScenarioRules()
+	}
+	w.bindScenarioRuntime()
 	w.initializeScenery()
 	core.TileBlocked = func(pos int) bool { return w.sceneryAt(pos) >= 0 }
 	core.HabitatBlocked = func(pos int) bool { i := w.sceneryAt(pos); return i >= 0 && w.Scenery[i].Kind == SceneryBoulder }
@@ -160,7 +165,7 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	if !w.Available(player, RaiseLower) || x < 0 || y < 0 || x > legacy.MapWidth || y > legacy.MapHeight {
 		return false
 	}
-	if !w.Core.HasBuildPresenceAt(player, clamp(x-4, 0, 56), clamp(y-4, 0, 56), 8, 8, x, y) {
+	if !w.Rules[player].TerrainEditAllowed(w.Core.Alt[x+y*65], raise) {
 		return false
 	}
 	cost := w.ManaCost(player, RaiseLower)
@@ -171,6 +176,13 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	// Adapt that debit without scaling the entire balance or losing odd mana.
 	before := w.Core.Magnets[player].Mana
 	altitudes := w.Core.Alt
+	var protectedFarms [4096]bool
+	if w.Rules[player].ForbidEnemyTerrain {
+		enemy := uint8(47 + 16*(player^1))
+		for pos := range protectedFarms {
+			protectedFarms[pos] = w.nativeTileAt(pos%64, pos/64) == enemy
+		}
+	}
 	hasWalls := false
 	for _, wall := range w.Walls.Actors {
 		if wall.Active {
@@ -180,7 +192,7 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	}
 	var mapAlt, mapBlk, mapBk2 [4096]byte
 	var mapSteps [4096]uint16
-	if hasWalls {
+	if hasWalls || w.Rules[player].ForbidEnemyTerrain {
 		mapAlt, mapBlk, mapBk2, mapSteps = w.Core.MapAlt, w.Core.MapBlk, w.Core.MapBk2, w.Core.MapSteps
 	}
 	w.Core.Magnets[player].Mana = before - cost + legacy.ManaPointCost
@@ -204,6 +216,18 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 			if altitudes[a] != w.Core.Alt[a] || altitudes[a+1] != w.Core.Alt[a+1] || altitudes[a+65] != w.Core.Alt[a+65] || altitudes[a+66] != w.Core.Alt[a+66] {
 				blocked = true
 				break
+			}
+		}
+		if !blocked && w.Rules[player].ForbidEnemyTerrain {
+			for pos, protected := range protectedFarms {
+				if !protected {
+					continue
+				}
+				a := pos%64 + (pos/64)*65
+				if altitudes[a] != w.Core.Alt[a] || altitudes[a+1] != w.Core.Alt[a+1] || altitudes[a+65] != w.Core.Alt[a+65] || altitudes[a+66] != w.Core.Alt[a+66] {
+					blocked = true
+					break
+				}
 			}
 		}
 		if blocked {

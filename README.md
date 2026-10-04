@@ -72,7 +72,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 7 preserves native fire-column actors/death animations, the deity profile,
+Version 8 preserves both scenario option words, native fire-column actors/death animations, the deity profile,
 scenery, the 32-bit random state, follower references and town work,
 infection and persistent ground effects. Earlier Go saves remain readable;
 versions 1–2 also receive the corrected Helen/tsunami ID mapping. Original

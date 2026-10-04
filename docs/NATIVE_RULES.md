@@ -303,3 +303,21 @@ The game therefore uses a nominal 50 Hz PAL simulation cadence. Original CPU
 load may reduce throughput; special mouse-idle pacing is separate. The long
 counter at `$f40` advances once per unpaused loop, with `$f42` as its low word.
 The literal eight at `$f0c` is the viewport size, not an eight-Hz tick setting.
+
+## Per-side scenario rules
+
+Each 58-byte player template contains its own option word at parameter 6
+(deity `$66`). Bits 0/1 admit editing everywhere or only at sea level; the
+native `$d91a/$19de/$1b38` paths inspect vertex height, not nearby population.
+Sea-level-only raising requires height zero, while lowering permits zero/one.
+Bits 3/4 independently forbid raising/lowering. Bit 2 protects enemy farmland
+on every cell affected by propagation; rejected edits preserve heights, farm
+codes, counters, overlays and mana. Computer terrain orders use the same path.
+
+Fatal water (bit 5) is evaluated per follower side. Minimap enemy/disaster
+visibility (6/8) uses the observer's options. Right-button release (7) is checked
+before the ordinary lowering restriction. A shallow swamp (9) restores the
+victim's tile when that side's rule is set. Version 8 saves preserve both raw
+option words, including unidentified bits, and restore their runtime bindings.
+Special editor/battle admission modes and scripted world commands remain
+separate verification targets.

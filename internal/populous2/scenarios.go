@@ -20,7 +20,7 @@ type ScenarioRules struct {
 
 // DecodeScenarioRules preserves the native bit numbering and polarity. The
 // options screen's handlers at CODE:$485e..$48d0 toggle bits zero through nine.
-// Build permissions relax presence checks; independent prohibitions still apply.
+// Build permissions control vertex-height admission; prohibitions are separate.
 func DecodeScenarioRules(raw uint16) ScenarioRules {
 	return ScenarioRules{
 		Raw:                     raw,

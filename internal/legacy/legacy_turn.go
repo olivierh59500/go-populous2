@@ -38,6 +38,9 @@ func (w *World) legacyOrder(player int, kind CommandKind, x, y, value int) bool 
 
 func (w *World) applyLegacyOrder(command Command) bool {
 	p := command.Player
+	if w.TerrainCommand != nil && !w.War && (command.Kind == CommandRaise || command.Kind == CommandLower) {
+		return w.TerrainCommand(p, command.X, command.Y, command.Kind == CommandRaise)
+	}
 	switch command.Kind {
 	case CommandInvalid:
 		return false
