@@ -33,6 +33,7 @@ const (
 	NativeSceneryPool
 	NativeFollowerPool
 	NativeEffectPool
+	NativeMagnetPool
 )
 
 type NativeRecordLocation struct {

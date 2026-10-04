@@ -12,7 +12,7 @@ type NativeWorldOccupancyRecord struct {
 	Linked bool
 }
 
-// NativeWorldOccupancy is the persistent four-pool map graph. Its links and
+// NativeWorldOccupancy is the persistent actor/marker map graph. Its links and
 // full coordinate words are authoritative for map operations; a controller
 // can propose a new position before Move without losing the old splice point.
 // Followers uses Go index zero for native slot one, reference $0034.
@@ -22,6 +22,7 @@ type NativeWorldOccupancy struct {
 	Scenery   [SceneryCapacity]NativeWorldOccupancyRecord
 	Followers [NativeWorldFollowerCapacity]NativeWorldOccupancyRecord
 	Effects   [NativeEffectCapacity]NativeWorldOccupancyRecord
+	Magnets   [NativeMagnetCount]NativeWorldOccupancyRecord
 }
 
 // NativeWorldReference converts a Go pool-array index to the original signed
@@ -37,6 +38,8 @@ func NativeWorldReference(pool NativeRecordPool, index int) (NativeRecordReferen
 		start, stride, capacity = 52, 52, NativeWorldFollowerCapacity
 	case NativeEffectPool:
 		start, stride, capacity = 20800, 32, NativeEffectCapacity
+	case NativeMagnetPool:
+		start, stride, capacity = NativeMagnetImageStart-0x76c0, NativeMagnetStride, NativeMagnetCount
 	default:
 		return 0, false
 	}
@@ -49,6 +52,9 @@ func NativeWorldReference(pool NativeRecordPool, index int) (NativeRecordReferen
 func (state *NativeWorldOccupancy) entry(reference NativeRecordReference) (*NativeWorldOccupancyRecord, bool) {
 	if state == nil {
 		return nil, false
+	}
+	if location, ok := LocateNativeMagnet(reference); ok {
+		return &state.Magnets[location.Index], true
 	}
 	location, ok := LocateNativeRecord(reference)
 	if !ok {
@@ -85,7 +91,7 @@ func (state *NativeWorldOccupancy) Linked(reference NativeRecordReference) (bool
 	return entry.Linked, true
 }
 
-// Access adapts all four pool sizes to the already verified native graph
+// Access adapts the actor pools and markers to the verified native graph
 // operations. SetLinks and SetPosition preserve unrelated record fields.
 // Callers should use Place/Move/Remove to change membership, rather than
 // directly changing a mapped record's links or high coordinate bytes.
@@ -286,6 +292,7 @@ func (state *NativeWorldOccupancy) Validate() error {
 		{NativeSceneryPool, state.Scenery[:]},
 		{NativeFollowerPool, state.Followers[:]},
 		{NativeEffectPool, state.Effects[:]},
+		{NativeMagnetPool, state.Magnets[:]},
 	} {
 		for index, entry := range pool.records {
 			reference, _ := NativeWorldReference(pool.kind, index)
