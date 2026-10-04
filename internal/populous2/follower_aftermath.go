@@ -46,7 +46,12 @@ func DecodeFollowerAftermathRules(exe *amiga.Executable) (FollowerAftermathRules
 	if err != nil {
 		return rules, err
 	}
-	starts := []int{0x1e74, 0x9d4, 0x1b2c, 0x1cd0, 0x178, 0xf10, 0x7f4, 0x7dc, 0x7cc, 0x7d4}
+	starts := []int{0x1e74, 0x9d4, 0x1b2c, 0x1cd0, 0x178, 0xf10, 0x7f4, 0x7dc, 0x7cc, 0x7d4, 0x196c, 0x738, 0x68c, 0x750}
+	for at := 0x20a84; at < 0x20a90; at += 2 {
+		if pointer := binary.BigEndian.Uint16(code[at:]); pointer != 0 {
+			starts = append(starts, int(pointer))
+		}
+	}
 	for _, table := range [][6]uint16{prepass.Swimming, prepass.Fatal, prepass.Swamp} {
 		for _, pointer := range table {
 			if pointer != 0 {
