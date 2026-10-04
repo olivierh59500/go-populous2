@@ -232,3 +232,23 @@ inactive-head quirks while rejecting invalid references.
 Sculpting rejects every propagated edit that touches a wall, preserving terrain
 and mana. Original movement, climbing and strength-based wall destruction are
 separate remaining work; walls are no longer substituted with RockBlock.
+
+## Deity creation and profile passwords
+
+`$10a84` gives a new profile five bolts. `$b8f8` consumes one bolt and adds
+exactly one to the selected unsigned experience byte, rejecting 255 or an
+empty balance. Face parts at deity `$4e-$50` wrap through eight variants.
+The creation-screen artwork is decoded from the three FACES.PAK descriptor
+banks at `$212ba` and composed with the original strip positions.
+
+The sixteen-letter profile password uses `$1047c/$10564`: eight packed bytes,
+bit transposition, fixed XOR words, multiplication by three, base-26 digits
+and a character transpose. It stores faces, the low bolt nibble and six
+experience bytes; it does not store the name or campaign world. The default
+profile encodes as `KIADKCWAZICGZOWD`. Native comparisons cover 1,666 encodes,
+1,666 decodes, 144 allocations and 48 face-cycle cases.
+
+The editor imports these codes and applies experience to gameplay. Version 6
+saves preserve the profile. Native scalar award and world-step thresholds are
+verified independently, but full campaign scoring/statistic collection and
+win/loss progression remain separate work.

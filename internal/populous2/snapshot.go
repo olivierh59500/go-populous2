@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 5
+const SaveVersion = 6
 
 type Snapshot struct {
 	Version     int
@@ -16,6 +16,7 @@ type Snapshot struct {
 	Custom      bool
 	Demo        bool
 	Experience  [2][6]uint8
+	Deity       Deity
 	Core        legacy.WorldSnapshot
 	Effects     []Effect
 	Marks       [4096]Mark
@@ -33,7 +34,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -63,6 +64,11 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		snapshot.Effects = append([]Effect(nil), snapshot.Effects...)
 		for i := range snapshot.Effects {
 			snapshot.Effects[i].Spell = swap(snapshot.Effects[i].Spell)
+		}
+	}
+	for _, part := range snapshot.Deity.FaceParts {
+		if part > 7 {
+			return nil, fmt.Errorf("invalid saved deity face")
 		}
 	}
 	if len(snapshot.Core.Peeps) > legacy.MaxFollowers || len(snapshot.Effects) > 256 || snapshot.Core.GameTurn < 0 {
@@ -134,6 +140,12 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.bindHeroCombat()
 	w.Effects = append([]Effect(nil), snapshot.Effects...)
 	w.Experience = snapshot.Experience
+	w.Deity = snapshot.Deity
+	if snapshot.Version < 6 {
+		w.Deity = NewDeity("PLAYER")
+		w.Deity.Experience = w.Experience[0]
+		w.Deity.Bolts = 0
+	}
 	w.Marks, w.Heroes, w.Random = snapshot.Marks, snapshot.Heroes, snapshot.Random
 	for i := range w.Heroes {
 		w.Heroes[i].Captives = append([]int(nil), w.Heroes[i].Captives...)

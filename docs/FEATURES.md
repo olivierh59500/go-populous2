@@ -17,8 +17,8 @@ power is not sufficient evidence that its original behavior has been ported.
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Validated version 5 Go saves, scenery, wide RNG state and earlier water-ID migration | Original Amiga GAM interoperability and deity profiles |
-| Interface | Playable menu, camera, minimap, power selection, pause, demo and saving | Original menus, god creation, experience allocation, statistics and end sequence |
+| Saving | Validated version 6 Go saves, deity profile, scenery and native profile passwords | Original Amiga GAM interoperability |
+| Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
 

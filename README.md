@@ -28,6 +28,7 @@ go run ./cmd/populous2 -play
 go run ./cmd/populous2 -custom
 go run ./cmd/populous2 -demo -world 0
 go run ./cmd/populous2 -play -code DOEGAC
+go run ./cmd/populous2 -deity
 go build -o bin/populous2 ./cmd/populous2
 ```
 
@@ -56,6 +57,7 @@ apply the original conquest-based custom-game unlocking policy.
 | Save / load | F5 / F9 |
 | Menu / fullscreen | Escape / F |
 | Continue after a result | Enter |
+| Create/edit the deity from the menu | G or the deity button |
 
 Prices shown are the actual mana balance costs, including the original
 per-element experience reductions. The native score and sample bank play
@@ -63,10 +65,16 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 5 preserves scenery, the 32-bit random state, follower references, town work,
+Version 6 preserves the deity profile, scenery, the 32-bit random state, follower references, town work,
 infection and persistent ground effects. Earlier Go saves remain readable;
 versions 1–2 also receive the corrected Helen/tsunami ID mapping. Original
 Amiga GAM saves are not yet supported.
+
+The deity screen uses the original three-part face artwork, eight variants per
+part, five starting bolts and one experience unit per allocated bolt. Click the
+profile code to enter an original sixteen-letter password. The separate name
+field is not included in that code. Campaign scoring and experience awards
+still require their full native statistic integration.
 
 ## Native data and verification
 

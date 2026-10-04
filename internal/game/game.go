@@ -31,6 +31,12 @@ type Game struct {
 	World               *populous2.World
 	LevelIndex          int
 	Playing             bool
+	Profile             populous2.Deity
+	DeityScreen         bool
+	deityPortrait       *ebiten.Image
+	deityPassword       string
+	deityEditing        bool
+	deityNameEditing    bool
 	Paused              bool
 	Help                bool
 	Category            populous2.Element
@@ -69,6 +75,8 @@ func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) 
 	}
 	g := &Game{Bundle: bundle, World: world, LevelIndex: level, Playing: demo, Selected: populous2.RaiseLower, scheduler: fixedstep.New(8, 60), SavePath: "go-populous2.sav"}
 	world.Demo = demo
+	g.Profile = populous2.NewDeity("PLAYER")
+	g.applyDeityProfile()
 	g.background = ebiten.NewImageFromImage(bundle.Background)
 	for terrain := range g.tiles {
 		for _, tile := range bundle.Tiles[terrain] {
@@ -96,15 +104,19 @@ func (g *Game) Update() error {
 	if g.Limit > 0 && g.Updates >= g.Limit {
 		return ebiten.Termination
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyF) {
+	if !g.DeityScreen && inpututil.IsKeyJustPressed(ebiten.KeyF) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+	if !g.DeityScreen && inpututil.IsKeyJustPressed(ebiten.KeyH) {
 		g.Help = !g.Help
 		g.lineStart = nil
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		if g.Help {
+		if g.DeityScreen {
+			g.DeityScreen = false
+			g.deityEditing = false
+			g.applyDeityProfile()
+		} else if g.Help {
 			g.Help = false
 		} else if g.lineStart != nil {
 			g.lineStart = nil
@@ -116,6 +128,9 @@ func (g *Game) Update() error {
 	}
 	if g.Help {
 		return nil
+	}
+	if g.DeityScreen {
+		return g.updateDeity()
 	}
 	if g.audioPlayer == nil {
 		if err := g.initializeAudio(); err != nil {
@@ -202,6 +217,10 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) updateMenu() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
+		g.OpenDeity()
+		return nil
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
 		g.LevelIndex = max(0, g.LevelIndex-1)
 	}
@@ -218,6 +237,10 @@ func (g *Game) updateMenu() error {
 		return nil
 	}
 	x, y := ebiten.CursorPosition()
+	if hit(x, y, 470, 76, 105, 27) {
+		g.OpenDeity()
+		return nil
+	}
 	if hit(x, y, 110, 168, 420, 38) {
 		return g.start(g.LevelIndex, false, false)
 	}
@@ -247,6 +270,7 @@ func (g *Game) start(level int, custom, demo bool) error {
 	}
 	world.Demo = demo
 	g.World = world
+	g.applyDeityProfile()
 	g.LevelIndex = level
 	g.Playing = true
 	g.Paused = false
@@ -464,7 +488,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Scale(2, 2)
 	op.GeoM.Translate(0, 40)
 	screen.DrawImage(g.background, op)
-	if !g.Playing {
+	if g.DeityScreen {
+		g.drawDeity(screen)
+	} else if !g.Playing {
 		g.drawMenu(screen)
 	} else {
 		g.drawGame(screen)
@@ -491,6 +517,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func (g *Game) drawMenu(screen *ebiten.Image) {
 	panel(screen, 90, 70, 460, 340)
 	label(screen, "POPULOUS II", 238, 87, ink)
+	button(screen, 470, 76, 105, 27, "DIEU  (G)", true, false)
 	label(screen, "TRIALS OF THE OLYMPIAN GODS", 163, 111, muted)
 	level := g.Bundle.Levels[g.LevelIndex]
 	label(screen, fmt.Sprintf("MONDE %d  %s  /  DECOR %d", g.LevelIndex+1, level.Code, level.Terrain+1), 146, 139, ink)
@@ -791,6 +818,7 @@ func (g *Game) load() {
 	}
 	g.World = world
 	g.LevelIndex = world.Level.Number
+	g.Profile = world.Deity
 	g.Playing = true
 	g.Paused = false
 	g.lineStart = nil

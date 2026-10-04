@@ -18,6 +18,7 @@ func main() {
 	demo := flag.Bool("demo", false, "start an AI-vs-AI demonstration")
 	custom := flag.Bool("custom", false, "start a free game with every power available")
 	play := flag.Bool("play", false, "start gameplay immediately")
+	deity := flag.Bool("deity", false, "open the original deity profile editor")
 	frames := flag.Int("frames", 0, "close after this number of updates (0: unlimited)")
 	capture := flag.String("screenshot", "", "save the first drawn application frame to a new PNG")
 	captureAfter := flag.Int("capture-update", 0, "minimum update count before saving the screenshot")
@@ -44,6 +45,9 @@ func main() {
 	}
 	if *play || *custom {
 		g.Playing = true
+	}
+	if *deity {
+		g.OpenDeity()
 	}
 	g.Limit = *frames
 	g.Capture = *capture

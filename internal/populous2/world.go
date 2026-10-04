@@ -25,6 +25,7 @@ type World struct {
 	Scenery        [SceneryCapacity]SceneryActor
 	sceneryIndex   [4096]uint16
 	Experience     [2][6]uint8
+	Deity          Deity
 	Custom         bool
 	Demo           bool
 	Effects        []Effect
