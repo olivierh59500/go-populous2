@@ -56,6 +56,7 @@ func TestScenarioProhibitionsAndEnemyPropagationAreAtomic(t *testing.T) {
 
 func TestScenarioFatalWaterAppliesIndependentlyPerSide(t *testing.T) {
 	w := flatGroundWorld(t)
+	w.Level.Players[1].Parameters[5] = 7
 	w.Rules[0] = DecodeScenarioRules(1 << 5)
 	w.Rules[1] = DecodeScenarioRules(0)
 	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 2000, Flags: legacy.OnMove | legacy.InWater}, {Player: 1, Population: 100, AtPos: 2001, Flags: legacy.OnMove | legacy.InWater}}
@@ -64,6 +65,47 @@ func TestScenarioFatalWaterAppliesIndependentlyPerSide(t *testing.T) {
 	w.Core.TickWithComputer([2]bool{})
 	if w.Core.Peeps[0].Population != 0 || w.Core.Peeps[1].Population <= 0 || w.Core.Peeps[1].Population >= 100 {
 		t.Fatal("one global fatal-water rule applied to both sides")
+	}
+}
+
+func TestScenarioStartingManaUsesEachNativeTemplateWord(t *testing.T) {
+	bundle := *testBundle(t)
+	bundle.Levels = append([]Level(nil), bundle.Levels...)
+	bundle.Levels[0].Players[0].Parameters[4] = 1234
+	bundle.Levels[0].Players[1].Parameters[4] = 65535
+	w, err := NewWorld(&bundle, 0, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w.Core.Magnets[0].Mana != 1234 || w.Core.Magnets[1].Mana != 65535 {
+		t.Fatal("starting mana used an inherited default or scaled the native word")
+	}
+	w.Core.Magnets[0].Mana = 91
+	restored, err := Restore(&bundle, w.Snapshot())
+	if err != nil || restored.Core.Magnets[0].Mana != 91 {
+		t.Fatalf("loading reset earned/spent mana to the scenario initial word: %v", err)
+	}
+}
+
+func TestScenarioWaterAttritionUsesVictimWordWithoutDoubling(t *testing.T) {
+	w := flatGroundWorld(t)
+	w.Level.Players[0].Parameters[5] = 1
+	w.Level.Players[1].Parameters[5] = 7
+	w.Rules = [2]ScenarioRules{}
+	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 2000, Flags: legacy.OnMove | legacy.InWater}, {Player: 1, Population: 100, AtPos: 2001, Flags: legacy.OnMove | legacy.InWater}}
+	w.Core.MapBlk[2000], w.Core.MapBlk[2001] = 0, 0
+	w.Core.TickWithComputer([2]bool{})
+	if w.Core.Peeps[0].Population != 99 || w.Core.Peeps[1].Population != 93 {
+		t.Fatalf("nonfatal water used another camp or doubled native attrition: %+v", w.Core.Peeps)
+	}
+	restored, err := Restore(testBundle(t), w.Snapshot())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for player, options := range restored.Level.Players {
+		if restored.Core.FollowerAttrition(player, true) != options.FollowerAttrition() {
+			t.Fatal("save restoration lost scenario attrition binding")
+		}
 	}
 }
 

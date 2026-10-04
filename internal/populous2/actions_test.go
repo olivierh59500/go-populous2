@@ -70,8 +70,8 @@ func TestNativeInitialGroupsAndStrength(t *testing.T) {
 	if len(w.Core.Peeps) != 13 || w.Core.Peeps[0].Population != 100 || w.Core.Peeps[10].Population != 50 || w.Core.Peeps[0].MovementSpeed != 20 {
 		t.Fatal("native starting templates not applied")
 	}
-	if w.Core.Magnets[0].Mana != 0 {
-		t.Fatal("movement speed mistaken for initial mana")
+	if w.Core.Magnets[0].Mana != b.Levels[0].Players[0].InitialMana() {
+		t.Fatal("native initial mana word was not applied")
 	}
 	for _, level := range b.Levels {
 		if level.Players[0].InitialGroups() > 30 {

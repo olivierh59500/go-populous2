@@ -4,7 +4,19 @@ import legacy "go-populous2/internal/legacy"
 
 func (w *World) bindScenarioRuntime() {
 	w.Core.WaterFatalForPlayer = func(player int) bool { return player >= 0 && player < 2 && w.Rules[player].FatalWater }
+	w.Core.FollowerAttrition = func(player int, water bool) int {
+		if player < 0 || player > 1 {
+			return 0
+		}
+		return w.Level.Players[player].FollowerAttrition()
+	}
 	w.Core.TerrainCommand = w.Sculpt
+}
+
+func (w *World) initializeScenarioBalances() {
+	for player, options := range w.Level.Players {
+		w.Core.Magnets[player].Mana = options.InitialMana()
+	}
 }
 
 // TerrainEditAllowed translates the separate height admissions at $19de and

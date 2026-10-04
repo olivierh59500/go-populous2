@@ -25,6 +25,13 @@ func (p PlayerOptions) InitialGroups() int      { return int(p.Parameters[0]) }
 func (p PlayerOptions) InitialPopulation() int  { return int(p.Parameters[1]) }
 func (p PlayerOptions) SearchIntelligence() int { return int(uint8(p.Parameters[3])) }
 
+// InitialMana and FollowerAttrition are the zero-extended template words
+// copied to deity+$02 and deity+$16 at CODE:$10b6a/$10b70 (and $10c08/$10c0e).
+// Mana is already in native ledger units; water and land use the same
+// attrition longword.
+func (p PlayerOptions) InitialMana() int       { return int(p.Parameters[4]) }
+func (p PlayerOptions) FollowerAttrition() int { return int(p.Parameters[5]) }
+
 type Level struct {
 	Number             int
 	Code               string

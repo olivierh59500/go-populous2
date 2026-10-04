@@ -203,6 +203,7 @@ type World struct {
 	MovementAllowed       func(index, target int, apply bool) bool
 	FollowerReserved      func(index int) bool
 	WaterFatalForPlayer   func(player int) bool
+	FollowerAttrition     func(player int, water bool) int
 	TerrainCommand        func(player, x, y int, raise bool) bool
 	Terrain               int
 	GameTurn              int
@@ -1375,7 +1376,7 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 				w.legacyOrder(player, CommandRaise, w.Peeps[i].AtPos%MapWidth, w.Peeps[i].AtPos/MapWidth, 0)
 				w.markComputerAction(player)
 			}
-			w.Peeps[i].Population -= w.walkDeath() << 1
+			w.Peeps[i].Population -= w.followerAttrition(player, true)
 			if w.Peeps[i].Population <= 0 {
 				w.zeroPopulation(i)
 				continue
@@ -1429,12 +1430,12 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 						w.Peeps[i].InOut = 0
 					}
 				}
-				w.Peeps[i].Population -= w.walkDeath()
+				w.Peeps[i].Population -= w.followerAttrition(player, false)
 			}
 			w.signalWaitingOccupant(i)
 		case w.Peeps[i].Flags&(WaitForMe|IAmWaiting) != 0:
 			w.setFrame(i)
-			w.Peeps[i].Population -= w.walkDeath()
+			w.Peeps[i].Population -= w.followerAttrition(player, false)
 			oldWait := w.Peeps[i].BattlePopulation
 			w.Peeps[i].BattlePopulation++
 			if oldWait > 14 {
@@ -2960,6 +2961,19 @@ func (w *World) walkDeath() int {
 		return 0
 	}
 	return w.Rules.WalkDeath
+}
+
+// followerAttrition allows the Olympian scenario to supply its per-owner
+// loss word without changing the first game's terrain-dependent defaults.
+func (w *World) followerAttrition(player int, water bool) int {
+	if w.FollowerAttrition != nil {
+		return max(0, w.FollowerAttrition(player, water))
+	}
+	loss := w.walkDeath()
+	if water {
+		loss *= 2
+	}
+	return loss
 }
 
 func inMap(pos int) bool {
