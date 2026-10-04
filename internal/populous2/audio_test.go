@@ -3,6 +3,7 @@ package populous2
 import (
 	"bytes"
 	"encoding/binary"
+	"io"
 	"testing"
 )
 
@@ -86,5 +87,33 @@ func TestEnvelopeRepeatsApplyEveryDelta(t *testing.T) {
 		if got := e.advance(0); got != want {
 			t.Fatalf("native envelope tick %d: %d want %d", tick, got, want)
 		}
+	}
+}
+
+func TestPCMReaderMakesProgressForSingleBytes(t *testing.T) {
+	bank := testBundle(t).Audio
+	a, b := NewAudioReplay(bank, AudioSampleRate), NewAudioReplay(bank, AudioSampleRate)
+	whole := make([]byte, 1003)
+	bytesRead := make([]byte, len(whole))
+	if _, err := io.ReadFull(a, whole); err != nil {
+		t.Fatal(err)
+	}
+	for i := range bytesRead {
+		if n, err := b.Read(bytesRead[i : i+1]); err != nil || n != 1 {
+			t.Fatal("one-byte PCM reader made no progress")
+		}
+	}
+	if !bytes.Equal(whole, bytesRead) {
+		t.Fatal("partial stereo frames changed PCM")
+	}
+}
+
+func TestCuePreservesNativeChannelWhenOtherEffectsPlay(t *testing.T) {
+	r := NewAudioReplay(testBundle(t).Audio, AudioSampleRate)
+	if !r.PlayCue(78) || !r.PlayCue(79) {
+		t.Fatal("native hero cues rejected")
+	}
+	if r.voices[4].channel != r.bank.Cues[78].Channel || r.voices[5].channel != r.bank.Cues[79].Channel {
+		t.Fatal("first free software voice changed native cue panning")
 	}
 }

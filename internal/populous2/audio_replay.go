@@ -72,6 +72,7 @@ type audioVoice struct {
 	position                       float64
 	inLoop, active                 bool
 	volumeEnvelope, periodEnvelope audioEnvelope
+	channel                        uint8
 }
 
 // AudioReplay is a bounded, deterministic PCM reader. Its four score voices
@@ -85,6 +86,9 @@ type AudioReplay struct {
 	clock      float64
 	tempo      uint8
 	Music      bool
+	pending    [4]byte
+	pendingAt  int
+	pendingLen int
 }
 
 func NewAudioReplay(bank *AudioBank, sampleRate int) *AudioReplay {
@@ -93,12 +97,16 @@ func NewAudioReplay(bank *AudioBank, sampleRate int) *AudioReplay {
 	}
 	r := &AudioReplay{bank: bank, sampleRate: sampleRate, tempo: bank.Tempo, Music: true}
 	for i := range 4 {
-		r.voices[i] = audioVoice{sequence: bank.Channels[i], sample: -1, masterVolume: 63, active: len(bank.Channels[i]) > 0}
+		r.voices[i] = audioVoice{sequence: bank.Channels[i], sample: -1, masterVolume: 63, active: len(bank.Channels[i]) > 0, channel: uint8(i)}
 	}
 	return r
 }
 
 func (r *AudioReplay) PlayPattern(id int, volume uint8) bool {
+	return r.playPattern(id, volume, 0)
+}
+
+func (r *AudioReplay) playPattern(id int, volume, channel uint8) bool {
 	if r == nil || id < 0 || id >= len(r.bank.Patterns) {
 		return false
 	}
@@ -106,7 +114,7 @@ func (r *AudioReplay) PlayPattern(id int, volume uint8) bool {
 	defer r.mu.Unlock()
 	for i := 4; i < len(r.voices); i++ {
 		if !r.voices[i].active {
-			r.voices[i] = audioVoice{sequence: []uint8{uint8(id)}, sample: -1, active: true, masterVolume: min(63, int(volume))}
+			r.voices[i] = audioVoice{sequence: []uint8{uint8(id)}, sample: -1, active: true, masterVolume: min(63, int(volume)), channel: channel & 3}
 			return true
 		}
 	}
@@ -118,10 +126,10 @@ func (r *AudioReplay) PlayCue(id int) bool {
 		return false
 	}
 	cue := r.bank.Cues[id]
-	applied := r.PlayPattern(cue.Pattern, cue.Volume)
+	applied := r.playPattern(cue.Pattern, cue.Volume, cue.Channel)
 	if cue.Companion > 0 && cue.Companion != id {
 		companion := r.bank.Cues[cue.Companion]
-		r.PlayPattern(companion.Pattern, companion.Volume)
+		r.playPattern(companion.Pattern, companion.Volume, companion.Channel)
 	}
 	return applied
 }
@@ -138,6 +146,34 @@ func (r *AudioReplay) SetMusic(enabled bool) {
 func (r *AudioReplay) Read(p []byte) (int, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	written := 0
+	if r.pendingLen > 0 {
+		n := copy(p, r.pending[r.pendingAt:r.pendingAt+r.pendingLen])
+		r.pendingAt += n
+		r.pendingLen -= n
+		written += n
+		p = p[n:]
+	}
+	if len(p) == 0 {
+		return written, nil
+	}
+	aligned := len(p) / 4 * 4
+	if aligned > 0 {
+		r.renderPCM(p[:aligned])
+		written += aligned
+		p = p[aligned:]
+	}
+	if len(p) > 0 {
+		r.renderPCM(r.pending[:])
+		n := copy(p, r.pending[:])
+		r.pendingAt = n
+		r.pendingLen = 4 - n
+		written += n
+	}
+	return written, nil
+}
+
+func (r *AudioReplay) renderPCM(p []byte) {
 	frames := len(p) / 4
 	for frame := range frames {
 		r.clock += AudioTickRate / float64(r.sampleRate)
@@ -174,7 +210,7 @@ func (r *AudioReplay) Read(p []byte) (int, error) {
 			}
 			value := float64(int8(wave[int(v.position)])) * float64(min(64, v.volume)) * 2.0
 			v.position += 3546895.0 / float64(v.period) / float64(r.sampleRate)
-			if i%4 == 0 || i%4 == 3 {
+			if v.channel == 0 || v.channel == 3 {
 				left += value
 				right += value * .25
 			} else {
@@ -185,7 +221,6 @@ func (r *AudioReplay) Read(p []byte) (int, error) {
 		binary.LittleEndian.PutUint16(p[frame*4:], uint16(int16(max(-32768, min(32767, int(math.Round(left)))))))
 		binary.LittleEndian.PutUint16(p[frame*4+2:], uint16(int16(max(-32768, min(32767, int(math.Round(right)))))))
 	}
-	return frames * 4, nil
 }
 
 func (r *AudioReplay) tick() {
