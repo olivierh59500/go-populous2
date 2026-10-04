@@ -34,7 +34,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if snapshot.Version != 1 && snapshot.Version != SaveVersion {
 		return nil, fmt.Errorf("unsupported save version %d", snapshot.Version)
 	}
-	if len(snapshot.Core.Peeps) > legacy.MaxPeeps || len(snapshot.Effects) > 256 || snapshot.Core.GameTurn < 0 {
+	if len(snapshot.Core.Peeps) > legacy.MaxFollowers || len(snapshot.Effects) > 256 || snapshot.Core.GameTurn < 0 {
 		return nil, fmt.Errorf("invalid saved simulation bounds")
 	}
 	for _, h := range snapshot.Core.Alt {

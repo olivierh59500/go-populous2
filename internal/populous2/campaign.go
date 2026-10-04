@@ -17,6 +17,10 @@ type PlayerOptions struct {
 	Powers     [36]bool
 }
 
+// MovementSpeed is the byte copied from deity+$5f into follower+$12 during
+// native allocation at CODE:$10d3c. The template starts at deity+$5a.
+func (p PlayerOptions) MovementSpeed() uint8 { return uint8(p.Parameters[2]) }
+
 type Level struct {
 	Number          int
 	Code            string

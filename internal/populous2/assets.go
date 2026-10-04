@@ -22,6 +22,7 @@ type Bundle struct {
 	Levels     []Level
 	Spells     []Spell
 	ManaRules  ManaRules
+	HeroRules  HeroRules
 }
 
 func Load() (*Bundle, error) {
@@ -106,6 +107,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.ManaRules, err = DecodeManaRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.HeroRules, err = DecodeHeroRules(exe)
 	if err != nil {
 		return nil, err
 	}

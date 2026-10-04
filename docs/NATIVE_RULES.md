@@ -27,3 +27,26 @@ mechanics.
 
 Terrain propagation and combat remain separate verification targets. Passing
 the cost tests establishes this routine's arithmetic, not full-game parity.
+
+## Followers and hero creation
+
+The native pool has 400 records of 52 bytes. Record zero is reserved: allocation
+at `$11846` starts at the next record and visits 399 usable slots. The Go pool
+now preserves that limit and uses 16-bit map references, including in snapshots
+and deterministic state hashes. IDs above 255 therefore remain usable.
+
+Hero creation at `$142d4` detaches the leader. Heracles doubles the leader's
+population (`$14396`); it does not multiply an inherited weapon statistic.
+All six heroes add their elemental experience divided by eight to movement
+speed. Odysseus also adds the original speed again. The result saturates at 255.
+Ordinary movement speed comes from the campaign template's third word: its low
+byte is copied from deity `$5f` to follower `$12` at `$10d3c`.
+
+The animation pointers at `$20a00` address walking sequences in `$23d1a`.
+Their frames point into the composite-image table at `$26956`. Signed image
+offsets and chained layers are retained; this is essential for the additional
+parts of Adonis and Achilles. All six heroes' eight directions are decoded.
+
+These changes establish creation arithmetic and original artwork. The inherited
+movement/combat engine does not yet use the native speed byte, and hero-specific
+targeting, spawning and abduction still require translation.

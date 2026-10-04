@@ -528,7 +528,10 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 			}
 			sprite := base + directionIndex(peep.Direction)*3 + (world.GameTurn/2)%3
 			if i < len(g.World.Heroes) && g.World.Heroes[i].Active {
-				sprite = 194 + int(g.World.Heroes[i].Spell/6)*8 + (world.GameTurn/2)%3
+				for _, layer := range g.Bundle.HeroRules.Layers(g.World.Heroes[i].Spell, directionIndex(peep.Direction), world.GameTurn) {
+					g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
+				}
+				continue
 			}
 			g.drawSprite(view, sprite, cx, cy)
 		}

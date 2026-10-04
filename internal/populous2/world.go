@@ -50,6 +50,7 @@ type Hero struct {
 	Active     bool
 	Player     int
 	Population int
+	Speed      uint8
 }
 
 type Target struct{ X, Y, X2, Y2, Direction int }
@@ -142,14 +143,14 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		if index < 0 || index >= len(w.Core.Peeps) || w.Core.Peeps[index].Population <= 0 {
 			return false
 		}
-		if !w.legacyPower(player, spell.Cost, legacy.ManaKnightCost, func() bool { return w.Core.Knight(player) }) {
+		if !w.Core.PromoteHero(index) {
 			return false
 		}
 		p := &w.Core.Peeps[index]
-		w.Heroes[index] = Hero{Spell: id, Active: true, Player: player, Population: p.Population}
-		if id == Heracles {
-			p.Weapons *= 4
-		}
+		population, speed, _ := HeroAttributes(id, p.Population, w.Level.Players[player].MovementSpeed(), w.Experience[player])
+		p.Population = population
+		w.Heroes[index] = Hero{Spell: id, Active: true, Player: player, Population: p.Population, Speed: speed}
+		w.Core.Magnets[player].Mana -= spell.Cost
 		w.recordCast(player, id)
 		return true
 	}
