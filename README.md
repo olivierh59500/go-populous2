@@ -18,6 +18,8 @@ distinguishes native translations from provisional behavior.
 
 ![Original deity portrait and profile editor](screenshots/deity.png)
 
+![Native fire columns climbing and burning the landscape](screenshots/fire-columns.png)
+
 ## Run
 
 Go 1.25 or newer and the normal Ebitengine platform prerequisites are required.
@@ -31,6 +33,7 @@ go run ./cmd/populous2 -custom
 go run ./cmd/populous2 -demo -world 0
 go run ./cmd/populous2 -play -code DOEGAC
 go run ./cmd/populous2 -deity
+go run ./cmd/populous2 -fire-columns
 go build -o bin/populous2 ./cmd/populous2
 ```
 
