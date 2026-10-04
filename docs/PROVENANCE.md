@@ -11,8 +11,9 @@ Les références fournies restent dans `previous/` et n'ont pas été modifiées
 | `previous/Populous2_PatchFR/populous.ii` | Exécutable français valide, utilisé pour ses tables et l'analyse 68000 |
 | `previous/Populous2_PatchFR/CHALLENGE` et `.TAM` | Inventoriés ; extension non intégrée au jeu |
 
-Les ajouts à l'ancien moteur sont isolés dans `internal/legacy/port_hooks.go`.
-Les autres fichiers copiés gardent leur contenu. Aucune image ou musique de
+Le moteur copié est adapté dans `internal/legacy`, notamment pour les références
+16 bits, le générateur aléatoire, les populations, les habitations et le terrain.
+Les sources de référence locales restent inchangées. Aucune image ou musique de
 Populous 1 n'est utilisée pour le rendu de Populous II.
 
 ## Empreintes des sources

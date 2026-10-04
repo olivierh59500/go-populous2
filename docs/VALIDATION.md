@@ -1,42 +1,34 @@
-# Validation de la base jouable
+# Validation
 
-Vérifications exécutées sur macOS ARM64, avec Go 1.27.1 et Ebitengine 2.9.11.
-Elles concernent le code actuel ; aucune parité de simulation Amiga n'est revendiquée.
+Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 
-| Vérification | Résultat |
+| Check | Result |
 |---|---|
-| `go test ./...` | Réussi |
-| `go vet ./...` | Réussi |
-| `go test -race ./internal/amiga ./internal/populous2` | Réussi |
-| Fuzz ADF, deux workers | 36 440 entrées, aucun échec |
-| Fuzz Hunk, deux workers | 340 040 entrées, aucun échec |
-| Fuzz décompression, deux workers | 56 506 entrées, aucun échec |
-| 26 ressources attendues | Présentes, décodées ; XOR validés pour toutes les ressources compressées |
-| Quatre décors | 255 tuiles et 830 descripteurs de sprites par décor ; différences de bâtiments appliquées |
-| Campagne | 200 enregistrements, 1 000 mondes, premier code `DOEGAC` |
-| Sauvegarde | Reprise avec effet de feu et RNG : même état après 120 tours supplémentaires |
-| Fenêtre Ebitengine | Lancement, progression de 80 tours et capture du seul tampon de l'application |
+| `go test ./...` | Passed |
+| `go vet ./...` | Passed |
+| Race tests for Amiga data, simulation and adapted engine | Passed |
+| Original resource catalog | 26 resources decoded, compressed XOR checks verified |
+| Landscape graphics | Four variants, 255 tiles and 830 sprite descriptors each |
+| Campaign data | 1,000 worlds with native codes and starting templates |
+| Terrain oracle | Eight native executions, 4,225 matching heights per seed |
+| Ground-effect oracle | Nine matching tile maps and final 32-bit random states |
+| Followers | 399 usable records; references above 255 survive save/load |
+| Mana | Native divisor thresholds, quarter-mana units and propagated sculpt debits |
+| Heroes | Six conversion types and eight-direction composite artwork |
+| Ground rules | Persistent fonts/swamps/greenery, two-way faith reversal and plague contact |
+| Audio | 31 samples, 133 patterns, signed PCM and read-size-independent playback |
+| Save continuation | Effects, town work, experience, random state and earlier water-ID migration |
+| Desktop application | Bounded launch, native score playback and application-buffer PNG capture |
 
-La capture de la partie est [screenshots/game.png](../screenshots/game.png).
-Les changements de décor se vérifient notamment sur les mondes 0, 25, 30 et 35,
-premiers représentants de chacun des quatre jeux de graphismes.
+The native oracle executes the supplied executable's relocated routines inside
+an isolated memory image. Its harness and raw results remain local; production
+tests store only the derived reference hashes. The game executes Go code.
 
-## Simulations de travail
+Graphics-bank tests cover the shore/raised-land distinction and every water
+animation phase. Repeated raises/lowers verify shared-corner continuity and
+slope representability. Picking follows the actual four-corner surface.
 
-`go run ./cmd/simcheck -world 0 -ticks 4800` a terminé sur élimination au tour
-4595, avec les populations `[31160, 0]`, 105 pouvoirs lancés et cette empreinte :
-
-```text
-13fac5a9175373e7d2034303b7d04dcfc0a5c175adc0c96a455699ef2f8ede76
-```
-
-Une seconde exécution a produit exactement la même empreinte. Le monde 500 a
-terminé au tour 480, avec les populations `[0, 1791]` et 14 pouvoirs lancés :
-
-```text
-75a3d523cdc64f116945c20539eae288cf6c87b2e9a97121ce38109a02f0868b
-```
-
-Ces résultats montrent des parties reproductibles et des éliminations dans le
-moteur de travail. Ils ne démontrent ni un équilibrage identique ni une IA
-équivalente à Populous II. Les limites sont détaillées dans [PORTAGE.md](PORTAGE.md).
+These tests validate the documented portions of the conversion. They do not
+establish complete original-game parity; [FEATURES.md](FEATURES.md) lists the
+remaining work. Previous prototype simulation hashes are superseded by the
+native economy, random generator and terrain changes.
