@@ -88,9 +88,25 @@ func TestFungusAgainstOriginal68000Traces(t *testing.T) {
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
+	if len(fixture.Cases) != 6 {
+		t.Fatalf("native fungus catalog has %d cases, expected six", len(fixture.Cases))
+	}
 	rules := fungusTestRules(t)
 	for _, reference := range fixture.Cases {
 		t.Run(reference.Name, func(t *testing.T) {
+			if len(reference.Snapshots) == 0 {
+				t.Fatal("native case has no snapshots")
+			}
+			for _, snapshot := range reference.Snapshots {
+				if len(snapshot.Tiles) != 4096 {
+					t.Fatalf("native tick %d has %d map cells", snapshot.Tick, len(snapshot.Tiles))
+				}
+				for _, actor := range snapshot.Actors {
+					if actor.Index < 0 || actor.Index >= NativeEffectCapacity {
+						t.Fatalf("invalid native actor index %d", actor.Index)
+					}
+				}
+			}
 			tiles := fungusTestTiles()
 			read := func(index int) uint8 { return tiles[index] }
 			write := func(index int, tile uint8) { tiles[index] = tile }
@@ -100,6 +116,9 @@ func TestFungusAgainstOriginal68000Traces(t *testing.T) {
 				tiles[point.X+point.Y*64] = point.Tile
 			}
 			for _, initial := range reference.ActorInitial {
+				if initial.Index < 0 || initial.Index >= NativeEffectCapacity {
+					t.Fatalf("invalid native initial actor index %d", initial.Index)
+				}
 				raw, err := hex.DecodeString(initial.Raw)
 				if err != nil || len(raw) != 32 {
 					t.Fatalf("invalid native initial record: %v", err)

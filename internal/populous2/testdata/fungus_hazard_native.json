@@ -1,0 +1,319 @@
+{
+  "cases": [
+    {
+      "activeOwner": 1,
+      "animation": 0,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 2,
+      "name": "ordinary-tile-145",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 100,
+      "soundArguments": [],
+      "state": 2,
+      "steps": 37,
+      "tile": 145,
+      "xFraction": 17,
+      "yFraction": 43
+    },
+    {
+      "activeOwner": 1,
+      "animation": 2012,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 16,
+      "name": "ordinary-tile-146",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 75,
+      "tile": 146,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 2012,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 16,
+      "name": "ordinary-tile-147",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 75,
+      "tile": 147,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 2012,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 16,
+      "name": "ordinary-tile-148",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 75,
+      "tile": 148,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 2012,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 16,
+      "name": "ordinary-tile-149",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 75,
+      "tile": 149,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 2012,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 16,
+      "name": "ordinary-tile-150",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 75,
+      "tile": 150,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 0,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 2,
+      "name": "ordinary-tile-151",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 100,
+      "soundArguments": [],
+      "state": 2,
+      "steps": 19,
+      "tile": 151,
+      "xFraction": 17,
+      "yFraction": 43
+    },
+    {
+      "activeOwner": 1,
+      "animation": 0,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 2,
+      "name": "ordinary-tile-245",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 100,
+      "soundArguments": [],
+      "state": 2,
+      "steps": 19,
+      "tile": 245,
+      "xFraction": 17,
+      "yFraction": 43
+    },
+    {
+      "activeOwner": 1,
+      "animation": 3736,
+      "hero": 0,
+      "initialSubstate": 36,
+      "kind": 16,
+      "name": "hero-0-mature",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 84,
+      "tile": 149,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 0,
+      "hero": 1,
+      "initialSubstate": 36,
+      "kind": 2,
+      "name": "hero-1-mature",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 100,
+      "soundArguments": [],
+      "state": 36,
+      "steps": 43,
+      "tile": 149,
+      "xFraction": 17,
+      "yFraction": 43
+    },
+    {
+      "activeOwner": 1,
+      "animation": 3652,
+      "hero": 2,
+      "initialSubstate": 36,
+      "kind": 16,
+      "name": "hero-2-mature",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 84,
+      "tile": 149,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 10792,
+      "hero": 3,
+      "initialSubstate": 36,
+      "kind": 16,
+      "name": "hero-3-mature",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 84,
+      "tile": 149,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 10884,
+      "hero": 4,
+      "initialSubstate": 36,
+      "kind": 16,
+      "name": "hero-4-mature",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 84,
+      "tile": 149,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 10752,
+      "hero": 5,
+      "initialSubstate": 36,
+      "kind": 16,
+      "name": "hero-5-mature",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 84,
+      "tile": 149,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 1,
+      "animation": 2012,
+      "hero": -1,
+      "initialSubstate": 58,
+      "kind": 16,
+      "name": "magnet-state-mature",
+      "occupancy": 52,
+      "owner": 1,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 75,
+      "tile": 149,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 2,
+      "animation": 2012,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 16,
+      "name": "evil-owner-mature",
+      "occupancy": 52,
+      "owner": 2,
+      "population": 0,
+      "soundArguments": [
+        260
+      ],
+      "state": 56,
+      "steps": 75,
+      "tile": 149,
+      "xFraction": 128,
+      "yFraction": 128
+    },
+    {
+      "activeOwner": 3,
+      "animation": 0,
+      "hero": -1,
+      "initialSubstate": 2,
+      "kind": 2,
+      "name": "neutral-owner-mature",
+      "occupancy": 52,
+      "owner": 3,
+      "population": 100,
+      "soundArguments": [],
+      "state": 2,
+      "steps": 3,
+      "tile": 149,
+      "xFraction": 17,
+      "yFraction": 43
+    }
+  ],
+  "source": "relocated native common follower prepass12c3c; only184f6 hardware audio stubbed toRTS after recording argument",
+  "executableSHA256": "c148b9bdcc543d89bf788d86886eb5ac9320ad66b09ef92792ec24314bfee803"
+}
