@@ -22,6 +22,8 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Fire column oracle | Twelve full traces: actor, RNG and every terrain tile per update |
 | Whirlwind oracle | Twelve parent traces, 3,550 matching updates and 713 child requests; actor, RNG and terrain compared |
 | Followers | 399 usable records; references above 255 survive save/load |
+| Follower motion oracle | 72 traces / 528 updates, direction-image banks, cell heads and two full-dispatch/prepass references |
+| Follower motion integration | Fixed-leg Core replays, precise crossing contacts, same-slot generations and save 12 continuation |
 | Mana | Native divisor thresholds, quarter-mana units and propagated sculpt debits |
 | Heroes | Six conversion types and eight-direction composite artwork |
 | Ground rules | Persistent fonts/swamps/greenery, two-way faith reversal and plague contact |
@@ -34,7 +36,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |
 | Scenario native oracle | 248 cases: 112 height admissions, eight initializations and 128 per-owner attrition updates |
 | Deity interface | Native face parts, name, experience, password import and version 6 profile saves |
-| Desktop application | Bounded launch, native score playback and application-buffer PNG capture; three whirlwind composites, shutdown after 180 updates |
+| Desktop application | Bounded launch, native score playback and application-buffer PNG capture; three whirlwind composites and ordinary native walking art, shutdown after 180 updates |
 
 The native oracle executes the supplied executable's relocated routines inside
 an isolated memory image. Its harness and raw results remain local; production
@@ -49,8 +51,8 @@ fixtures; no generic area damage is substituted for those pending interactions.
 
 Scenario fixtures compare height admission, zero-extended initial balances,
 attrition survivors/death decisions, observer visibility and victim-side swamp
-removal. Death traces stop before native animation helpers, and land movement
-still uses the adapted dispatch. These fixtures do not establish full native
+removal. Death traces stop before native animation helpers. Ordinary walking
+now uses the native motion dispatch; other follower state handlers remain adapted. These fixtures do not establish full native
 follower timing, death transitions or propagated-edit rollback parity.
 
 Fungus fixtures include inland oscillation, stable growth, row-edge aliasing,
@@ -81,3 +83,11 @@ These tests validate the documented portions of the conversion. They do not
 establish complete original-game parity; [FEATURES.md](FEATURES.md) lists the
 remaining work. Previous prototype simulation hashes are superseded by the
 native economy, random generator and terrain changes.
+
+Ordinary walking uses the native controller. Its world adapter replays the
+fixed-leg portion of all 72 references, stopping before the untranslated target
+decision boundary. The standalone dispatcher references verify same-update
+fallthrough separately. Waiting, water and hero motion are not covered by these
+ordinary walking traces. Version 12 also migrates earlier swapped basalt and
+whirlpool IDs, and rejects invalid motion coordinates, velocities, phases,
+image banks and pool-relative references.

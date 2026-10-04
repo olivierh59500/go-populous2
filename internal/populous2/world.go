@@ -27,6 +27,8 @@ type World struct {
 	FungusRules     FungusRules
 	FungusHazards   FungusHazardRules
 	FungusState     FungusState
+	FollowerMotion  FollowerMotionRules
+	NativeFollowers [legacy.MaxPeeps]NativeFollower
 	NativeEffects   [NativeEffectCapacity]NativeEffectActor
 	FlameDeaths     []FlameDeath
 	flameDeathIndex [legacy.MaxPeeps]bool
@@ -108,6 +110,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.Experience[1] = level.OpponentExperience
 	w.FungusRules = bundle.FungusRules
 	w.FungusHazards = bundle.FungusHazards
+	w.FollowerMotion = bundle.FollowerMotion
 	for player, p := range level.Players {
 		w.Rules[player] = p.ScenarioRules()
 	}
@@ -120,6 +123,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	for player, p := range level.Players {
 		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), Intelligence: p.SearchIntelligence(), Speed: p.MovementSpeed()}
 	}
+	w.bindFollowerMotion()
 	core.PlaceOlympianPeople(followers)
 	w.initializeScenarioBalances()
 	w.bindHeroCombat()

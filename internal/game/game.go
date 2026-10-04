@@ -667,13 +667,17 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		if peep.Population <= 0 || peep.Flags&legacy.InRuin != 0 {
 			continue
 		}
-		x, y := peep.AtPos%64-g.CameraX, peep.AtPos/64-g.CameraY
+		wx, wy, fx, fy := peep.AtPos%64, peep.AtPos/64, uint8(128), uint8(128)
+		if nativeX, nativeY, ok := g.World.FollowerPosition(i); ok {
+			wx, wy, fx, fy = int(nativeX)>>8, int(nativeY)>>8, uint8(nativeX), uint8(nativeY)
+		}
+		x, y := wx-g.CameraX, wy-g.CameraY
 		if x < 0 || y < 0 || x >= 8 || y >= 8 {
 			continue
 		}
-		cell := g.World.TerrainCell(peep.AtPos%64, peep.AtPos/64)
+		cell := g.World.TerrainCell(wx, wy)
 		px, py := project(x, y, cell.BaseAltitude)
-		ox, oy := cell.ActorOffset(128, 128)
+		ox, oy := cell.ActorOffset(fx, fy)
 		cx, cy := px+32+ox*2, py+16+oy*2
 		if peep.Plague && len(g.Bundle.PlagueAnimation) > 0 {
 			frame := g.Bundle.PlagueAnimation[world.GameTurn%len(g.Bundle.PlagueAnimation)]
@@ -691,6 +695,12 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 			}
 			vector.DrawFilledRect(view, float32(cx+2), float32(py+8), 3, 10, c, false)
 		} else {
+			if frame, ok := g.World.FollowerFrame(i); ok {
+				for _, layer := range frame.Layers {
+					g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
+				}
+				continue
+			}
 			base := 1
 			if peep.Player == 1 {
 				base = 49

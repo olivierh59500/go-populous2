@@ -7,10 +7,11 @@ The playable version includes an isometric world, followers, settlements,
 power selection, computer opposition, a demonstration mode and Go saves.
 Native translations now replace several parts of the supplied Populous I
 foundation: terrain generation, random streams, starting populations, town
-work, mana costs, hero creation and persistent ground effects.
+work, mana costs, ordinary fractional walking, hero creation and persistent
+ground effects.
 
 **The complete original feature set is still being converted.** Several
-powers, native movement/combat, god creation, campaign progression and
+powers, hero movement, native combat, campaign progression and
 multiplayer remain incomplete. [The feature inventory](docs/FEATURES.md)
 distinguishes native translations from provisional behavior.
 
@@ -21,6 +22,8 @@ distinguishes native translations from provisional behavior.
 ![Native fire columns climbing and burning the landscape](screenshots/fire-columns.png)
 
 ![Three native whirlwinds in the diagnostic presentation](screenshots/whirlwinds.png)
+
+![Original follower animation banks with native fractional walking](screenshots/ordinary-motion.png)
 
 ## Run
 
@@ -93,15 +96,16 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 11 preserves follower hazard states/sound events, fungus controller
-bounds and pending references, both
-scenario option words, native fire-column and whirlwind actors/death animations, the deity profile,
-scenery, the 32-bit random state, follower references and town work,
-infection and persistent ground effects. Earlier Go saves remain readable;
-versions 1–2 also receive the corrected Helen/tsunami ID mapping. Earlier
-generic whirlwinds migrate into the shared native effect pool. Earlier fungus
-damage marks migrate to native seeds and collecting controllers; their
-provisional damage/lifetime rules are replaced. Original
+Version 12 preserves ordinary walkers' fractional positions, animation clocks
+and timers, along with follower hazard states and sound events, fungus bounds
+and pending references, both scenario option words, native effects and death
+animations, the deity profile, scenery, the 32-bit random state, follower
+references, town work, infection and persistent ground effects.
+
+Earlier Go saves remain readable. Versions 1–2 receive the corrected
+Helen/tsunami ID mapping; version 12 also corrects earlier basalt/whirlpool IDs
+30/31. Generic whirlwinds migrate into native effect records. Earlier fungus
+damage marks migrate to native seeds and collecting controllers. Original
 Amiga GAM saves are not yet supported.
 
 The deity screen uses the original three-part face artwork, eight variants per
@@ -130,7 +134,10 @@ compare all 4,225 heights against eight executions of the original 68000
 routine. Nine ground-effect references compare complete tile maps and final
 random states. Other checks cover original resource integrity, graphics,
 wide follower IDs, mana, hero attributes, save continuation, audio and slopes.
-These checks establish the tested routines; they do not establish complete
+Ordinary follower tests compare 72 native movement traces and retain the
+original per-owner animation banks, including high-speed facing quirks.
+Target selection, waiting, swimming, hero movement and combat still use
+inherited adapters. These checks establish the tested routines; they do not establish complete
 original-game parity.
 
 [Native rules](docs/NATIVE_RULES.md), [conversion notes](docs/PORTAGE.md),

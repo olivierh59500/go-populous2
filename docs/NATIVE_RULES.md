@@ -48,8 +48,9 @@ offsets and chained layers are retained; this is essential for the additional
 parts of Adonis and Achilles. All six heroes' eight directions are decoded.
 
 These changes establish creation arithmetic and original artwork. The inherited
-movement/combat engine does not yet use the native speed byte, and hero-specific
-targeting, spawning and abduction still require translation.
+hero movement/combat engine does not yet use the native speed byte. Ordinary
+walkers now use the verified controller described below; hero-specific native
+routing and other state transitions remain separate work.
 
 ## Starting populations and settlements
 
@@ -59,8 +60,9 @@ speed and search intelligence. Movement speed is not initial mana. Parameter 4
 supplies initial mana at deity `$02` via `$10b70/$10c0e`; clearing the record
 leaves its upper word zero. Parameter 5 supplies the per-side attrition word
 at deity `$16` via `$10b6a/$10c08`. Both land `$130e8` and water `$11d64`
-subtract it from the corresponding longword at `$14`; fractional movement
-timing and original death animations still require separate translation.
+subtract it from the corresponding longword at `$14`. Land subtraction occurs
+at decision dispatch, rather than at every ordinary fractional movement tick.
+Native water/waiting timing and remaining death animations are separate work.
 The original scan starts at tile 1 for the first side and tile 4095 for the
 second, first finding flat land and then falling back to nonwater land.
 
@@ -101,6 +103,12 @@ so they do not restart the background score.
 slots. The water hero command 70 calls `$142d4` with hero type 10 and uses power
 slot 33. Tsunami command 56 uses slot 34. The earlier prototype inverted these
 two slots; save versions 1 and 2 are migrated when loaded by version 3.
+
+The supplied executable also assigns command 24 to whirlpool creation
+`$1775a/$15cc8` and slot 31, while command 74 calls the directed basalt routine
+`$17b24/$171ea` and slot 30. These names were inverted in earlier Go versions.
+Version 12 migrates old numeric IDs 30/31 in effect records, ground marks and
+the last selected spell, without mutating the caller's effect slice.
 
 ## Terrain graphics and pointer targeting
 
@@ -271,7 +279,58 @@ corner mask. Fractional coordinates use unsigned bytes; X projection uses their
 difference, while the Y formulas split the original triangular tile surfaces.
 The Go formulas match 576 original instruction executions. Scenery, walls and
 walking sprites now use this point of support instead of a fixed center height.
-Native fractional movement and full linked actor drawing order remain pending.
+Ordinary walking now uses native fractions. Other follower state movement and
+full linked actor drawing order remain pending.
+
+## Ordinary follower motion
+
+`$13126` computes signed 8.8 velocity from the unsigned speed byte at record
+`$12`. Each nonzero component is exactly that speed; diagonals are not normalized.
+A target in another cell uses `floor(256 / speed)` updates. Same-cell targets
+use the larger fractional distance. Speed zero raises original processor
+exception 5; the Go controller returns an error for that unsupported case.
+
+State 4 at `$1156c` advances a four-frame animation clock independently of
+speed, decrements the leg timer, and moves while it is nonnegative. Expiry
+redispatches record `$17` during the same update. Ordinary search state 2 can
+start and move a new leg immediately, including a second clock advance after
+expiry. The magnet handler `$11bb4/$140f0` instead sets return state 18 and
+ends the update before its first move; `$14646` recenters its fractions.
+Target selection itself remains an inherited adapter.
+
+Crossing checks at `$115c6` run when the high coordinate bytes change, not at
+leg completion. Rejected terrain applies the original bounce lookup at `$1171e`
+without committing position. Lookup bytes supply signs, not magnitudes; two
+bottom-row indices read adjacent instruction bytes, retaining their signs.
+`$12518` relocates native linked membership immediately at a committed crossing.
+The current world bridge preserves that crossing point, with single-head
+occupancy and contact still awaiting the full mixed actor graph.
+
+Hazard prepass `$12c3c` runs before initial dispatch and again before timer-expiry
+redispatch. It does not run immediately on the new cell after a committed move.
+The integrated controller owns those prepasses for ordinary walking; the
+inherited fallback does not advance the same walker a second time.
+
+Walking artwork at `$e658` uses current velocity, the original angle lookup at
+`$f71c`, direction offsets `$20d34`, owner/variant banks `$209e0/$209f0`, and the
+current four-frame clock. Its asymmetric shift registers can give different
+facing at high speeds; a sign-only direction approximation would change the
+original images. All ordinary variants retain their composite layers. Their
+original walking-frame sound cue words are zero.
+
+Seventy-two independent traces cover eight directions and speeds 20, 40 and
+255 on flat ground, slopes and water boundaries. They compare all 528 updates,
+rendered animation offsets and every cell head. Two full-dispatch references
+also prove clock fallthrough and the one-versus-two prepass count. World tests
+replay each fixed leg through the actual Core hook up to its next decision
+boundary, verify contact timing, reused-slot generations and saved continuation.
+
+Version 12 saves preserve ordinary fractional motion, clock and timers.
+Allocation hooks reinitialize startup, birth and clone slots, including a reused
+slot on the same cell with the same owner. Earlier saves start centered with
+per-side template speed. Waiting, swimming, hero movement, search, settlement
+and combat are still inherited state/decision adapters; these motion traces do
+not establish their native parity.
 
 ## Fire columns
 

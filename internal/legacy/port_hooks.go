@@ -156,6 +156,7 @@ func (w *World) AllocateHeroClone(index int) int {
 		}
 		w.Peeps[slot] = clone
 	}
+	w.notifyFollowerAllocated(slot)
 	if w.MapWho[clone.AtPos] == 0 {
 		w.MapWho[clone.AtPos] = uint16(slot + 1)
 	}

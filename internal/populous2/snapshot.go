@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 11
+const SaveVersion = 12
 
 type Snapshot struct {
 	Version         int
@@ -31,6 +31,7 @@ type Snapshot struct {
 	Scenery         [SceneryCapacity]SceneryActor
 	Walls           WallState
 	NativeEffects   [NativeEffectCapacity]NativeEffectActor
+	NativeFollowers [legacy.MaxPeeps]NativeFollower
 	FungusState     FungusState
 	FlameDeaths     []FlameDeath
 }
@@ -40,7 +41,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -72,6 +73,27 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			snapshot.Effects[i].Spell = swap(snapshot.Effects[i].Spell)
 		}
 	}
+	if snapshot.Version < 12 {
+		// Commands 24 and 74 use water slots 31 and 30, respectively.
+		// Earlier Go saves named those slots in the opposite order.
+		swap := func(id SpellID) SpellID {
+			if id == 30 {
+				return 31
+			}
+			if id == 31 {
+				return 30
+			}
+			return id
+		}
+		snapshot.LastSpell = swap(snapshot.LastSpell)
+		for i := range snapshot.Marks {
+			snapshot.Marks[i].Spell = swap(snapshot.Marks[i].Spell)
+		}
+		snapshot.Effects = append([]Effect(nil), snapshot.Effects...)
+		for i := range snapshot.Effects {
+			snapshot.Effects[i].Spell = swap(snapshot.Effects[i].Spell)
+		}
+	}
 	for _, part := range snapshot.Deity.FaceParts {
 		if part > 7 {
 			return nil, fmt.Errorf("invalid saved deity face")
@@ -88,6 +110,28 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	for _, p := range snapshot.Core.Peeps {
 		if p.Player > 1 || p.Population < 0 || p.AtPos < 0 || p.AtPos >= 4096 {
 			return nil, fmt.Errorf("invalid saved follower")
+		}
+	}
+	if snapshot.Version >= 12 {
+		for index, record := range snapshot.NativeFollowers {
+			if !record.Active {
+				continue
+			}
+			a := record.Actor
+			if index >= len(snapshot.Core.Peeps) || record.Generation == 0 || a.Kind != 2 || a.Player > 1 || a.Speed == 0 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.State != 2 && a.State != 4 && a.State != 18 || a.ReturnState != 2 && a.ReturnState != 18 || a.Animation < 0 || a.Animation >= bundle.FollowerMotion.FrameCount*4 || a.Animation%4 != 0 || a.Timer < -1 || a.Timer > 256/int16(a.Speed) {
+				return nil, fmt.Errorf("invalid saved native follower motion")
+			}
+			p := snapshot.Core.Peeps[index]
+			if p.Population <= 0 || p.Flags != legacy.OnMove || p.Status == legacy.KnightStatus || snapshot.Heroes[index].Active || a.Player != p.Player || int(a.X)>>8+(int(a.Y)>>8)*64 != p.AtPos {
+				return nil, fmt.Errorf("saved native follower identity mismatch")
+			}
+			if _, _, ok := bundle.FollowerMotion.Frame(a); !ok {
+				return nil, fmt.Errorf("invalid saved native follower image bank")
+			}
+			velocity := func(value int16) bool { return value == 0 || value == int16(a.Speed) || value == -int16(a.Speed) }
+			if !velocity(a.VX) || !velocity(a.VY) || !validNativeFollowerLink(a.Next) || !validNativeFollowerLink(a.Previous) {
+				return nil, fmt.Errorf("invalid saved native follower velocity/link")
+			}
 		}
 	}
 	for _, index := range snapshot.Core.MapWho {
@@ -270,6 +314,14 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		}
 	}
 	w.FlameDeaths = append([]FlameDeath(nil), snapshot.FlameDeaths...)
+	w.NativeFollowers = snapshot.NativeFollowers
+	if snapshot.Version < 12 {
+		w.NativeFollowers = [legacy.MaxPeeps]NativeFollower{}
+		for index := range w.Core.Peeps {
+			w.initializeNativeFollower(index)
+		}
+	}
+	w.bindFollowerMotion()
 	w.bindFlameDeaths()
 	w.bindFollowerHazards()
 	w.bindWallMovement()

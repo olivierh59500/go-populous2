@@ -203,6 +203,8 @@ type World struct {
 	MovementAllowed       func(index, target int, apply bool) bool
 	FollowerReserved      func(index int) bool
 	BeforeFollower        func(index int) bool
+	NativeFollowerUpdate  func(index int) bool
+	OnFollowerAllocated   func(index int)
 	WaterFatalForPlayer   func(player int) bool
 	FollowerAttrition     func(player int, water bool) int
 	TerrainCommand        func(player, x, y int, raise bool) bool
@@ -1278,6 +1280,7 @@ func (w *World) placePeople(player, pos int, leader bool) {
 		Direction:  0,
 	}
 	w.Peeps = append(w.Peeps, peep)
+	w.notifyFollowerAllocated(len(w.Peeps) - 1)
 	index := len(w.Peeps)
 	w.MapWho[pos] = uint16(index)
 	if leader {
@@ -1350,6 +1353,10 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 		player := int(w.Peeps[i].Player)
 		if player < 0 || player >= len(w.Magnets) || !inMap(w.Peeps[i].AtPos) {
 			w.zeroPopulation(i)
+			continue
+		}
+		if w.NativeFollowerUpdate != nil && w.NativeFollowerUpdate(i) {
+			w.Magnets[player].Population += max(0, w.Peeps[i].Population)
 			continue
 		}
 		if w.BeforeFollower != nil && !w.BeforeFollower(i) {
@@ -1446,7 +1453,9 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 				w.Peeps[i].Flags &^= WaitForMe | IAmWaiting
 				w.setFrame(i)
 				if w.Peeps[i].Flags == OnMove {
-					w.moveExplorer(i)
+					if w.NativeFollowerUpdate == nil || !w.NativeFollowerUpdate(i) {
+						w.moveExplorer(i)
+					}
 				}
 			}
 		case w.Peeps[i].Flags&InBattle != 0:
@@ -1916,6 +1925,7 @@ func (w *World) spawnWalkerFromTown(index, life int) {
 		}
 		w.Peeps[newIndex] = walker
 	}
+	w.notifyFollowerAllocated(newIndex)
 	newIndex++ // MapWho and Carried use one-based IDs.
 	if w.MapWho[walker.AtPos] == 0 || w.MapWho[walker.AtPos] == uint16(index+1) {
 		w.MapWho[walker.AtPos] = uint16(newIndex)
@@ -1976,22 +1986,7 @@ func (w *World) moveExplorer(index int) {
 	if index < 0 || index >= len(w.Peeps) || w.Peeps[index].Population <= 0 {
 		return
 	}
-	player := int(w.Peeps[index].Player)
-	goTo := noMove
-	if w.War {
-		goTo = w.moveMagnetPeeps(index)
-	} else if isHeadedPeep(w.Peeps[index]) {
-		goTo = w.moveKnightPeep(index)
-		if goTo == noMove && w.legacyTurn.active && w.legacyTurn.advancedPlayer == player {
-			if move, ok := w.advancedKnightEscape(index); ok {
-				goTo = move
-			}
-		}
-	} else if player >= 0 && player < len(w.Magnets) && w.Magnets[player].Flags == MagnetMode {
-		goTo = w.moveMagnetPeeps(index)
-	} else {
-		goTo = w.whereDoIGo(index)
-	}
+	goTo := w.chooseExplorerDirection(index)
 	peep := &w.Peeps[index]
 
 	id := uint16(index + 1)

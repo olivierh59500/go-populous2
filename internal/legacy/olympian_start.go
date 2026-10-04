@@ -21,6 +21,7 @@ func (w *World) PlaceOlympianPeople(sides [2]InitialFollowers) {
 				return
 			}
 			w.Peeps = append(w.Peeps, Peep{Flags: OnMove, Player: byte(player), Population: side.Population, IQ: side.Intelligence, Weapons: 1, MovementSpeed: side.Speed, AtPos: pos})
+			w.notifyFollowerAllocated(len(w.Peeps) - 1)
 			w.MapWho[pos] = uint16(len(w.Peeps))
 			if count == 0 {
 				w.Magnets[player].Carried = len(w.Peeps)
