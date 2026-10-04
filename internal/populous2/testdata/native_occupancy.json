@@ -1,0 +1,1074 @@
+{
+  "actors": [
+    {
+      "Name": "tree",
+      "Address": 2124752,
+      "Ref": 62736,
+      "Kind": 22
+    },
+    {
+      "Name": "follower",
+      "Address": 2127604,
+      "Ref": 52,
+      "Kind": 2
+    },
+    {
+      "Name": "effect",
+      "Address": 2148352,
+      "Ref": 20800,
+      "Kind": 34
+    },
+    {
+      "Name": "wall",
+      "Address": 2121552,
+      "Ref": 59536,
+      "Kind": 26
+    }
+  ],
+  "operations": [
+    {
+      "operation": {
+        "Name": "insert-tree",
+        "Kind": "insert",
+        "Actor": "tree",
+        "X": 32,
+        "Y": 32
+      },
+      "return": 4294964496
+    },
+    {
+      "operation": {
+        "Name": "insert-follower",
+        "Kind": "insert",
+        "Actor": "follower",
+        "X": 32,
+        "Y": 32
+      },
+      "return": 52
+    },
+    {
+      "operation": {
+        "Name": "insert-effect",
+        "Kind": "insert",
+        "Actor": "effect",
+        "X": 32,
+        "Y": 32
+      },
+      "return": 20800
+    },
+    {
+      "operation": {
+        "Name": "insert-wall",
+        "Kind": "insert",
+        "Actor": "wall",
+        "X": 32,
+        "Y": 32
+      },
+      "return": 4294961296
+    },
+    {
+      "operation": {
+        "Name": "move-fraction-only",
+        "Kind": "move",
+        "Actor": "follower",
+        "X": 8256,
+        "Y": 8384
+      },
+      "return": 0
+    },
+    {
+      "operation": {
+        "Name": "move-middle-new-cell",
+        "Kind": "move",
+        "Actor": "follower",
+        "X": 8576,
+        "Y": 8320
+      },
+      "return": 1
+    },
+    {
+      "operation": {
+        "Name": "remove-middle-effect",
+        "Kind": "remove",
+        "Actor": "effect",
+        "X": 0,
+        "Y": 0
+      },
+      "return": 0
+    },
+    {
+      "operation": {
+        "Name": "remove-head-wall",
+        "Kind": "remove",
+        "Actor": "wall",
+        "X": 0,
+        "Y": 0
+      },
+      "return": 0
+    },
+    {
+      "operation": {
+        "Name": "position-effect-for-reinsert",
+        "Kind": "position",
+        "Actor": "effect",
+        "X": 8576,
+        "Y": 8320
+      },
+      "return": 0
+    },
+    {
+      "operation": {
+        "Name": "reinsert-effect",
+        "Kind": "insert",
+        "Actor": "effect",
+        "X": 33,
+        "Y": 32
+      },
+      "return": 20800
+    },
+    {
+      "operation": {
+        "Name": "move-head-effect",
+        "Kind": "move",
+        "Actor": "effect",
+        "X": 8832,
+        "Y": 8320
+      },
+      "return": 1
+    },
+    {
+      "operation": {
+        "Name": "remove-tail-follower",
+        "Kind": "remove",
+        "Actor": "follower",
+        "X": 0,
+        "Y": 0
+      },
+      "return": 0
+    },
+    {
+      "operation": {
+        "Name": "remove-final-tree",
+        "Kind": "remove",
+        "Actor": "tree",
+        "X": 0,
+        "Y": 0
+      },
+      "return": 0
+    },
+    {
+      "operation": {
+        "Name": "remove-already-unlinked",
+        "Kind": "remove",
+        "Actor": "tree",
+        "X": 0,
+        "Y": 0
+      },
+      "return": 0
+    }
+  ],
+  "snapshots": [
+    {
+      "cells": [
+        {
+          "head": 0,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 255,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "initial",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 62736,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 255,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "insert-tree",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 52,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 255,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "insert-follower",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 52,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 62736,
+          "previous": 0,
+          "reference": 52,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 20800,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 255,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "insert-effect",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 52,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 62736,
+          "previous": 20800,
+          "reference": 52,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 52,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 59536,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 255,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "insert-wall",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 52,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 62736,
+          "previous": 20800,
+          "reference": 52,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 52,
+          "previous": 59536,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 20800,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 59536,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 255,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "move-fraction-only",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 52,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 62736,
+          "previous": 20800,
+          "reference": 52,
+          "x": 8256,
+          "y": 8384
+        },
+        {
+          "name": "effect",
+          "next": 52,
+          "previous": 59536,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 20800,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 59536,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 52,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "move-middle-new-cell",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 20800,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 62736,
+          "previous": 59536,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 20800,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 59536,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 52,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "remove-middle-effect",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 59536,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 62736,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 62736,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 52,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "remove-head-wall",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 62736,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 52,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "position-effect-for-reinsert",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 62736,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 20800,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 5,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "reinsert-effect",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 20800,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 52,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 62736,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 52,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 20800,
+          "header": 13,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "move-head-effect",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8832,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 62736,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 20800,
+          "header": 13,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "remove-tail-follower",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8832,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 0,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 20800,
+          "header": 13,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "remove-final-tree",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8832,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    },
+    {
+      "cells": [
+        {
+          "head": 0,
+          "header": 253,
+          "tile": 15,
+          "x": 32,
+          "y": 32
+        },
+        {
+          "head": 0,
+          "header": 7,
+          "tile": 15,
+          "x": 33,
+          "y": 32
+        },
+        {
+          "head": 20800,
+          "header": 13,
+          "tile": 15,
+          "x": 34,
+          "y": 32
+        }
+      ],
+      "name": "remove-already-unlinked",
+      "records": [
+        {
+          "name": "tree",
+          "next": 0,
+          "previous": 0,
+          "reference": 62736,
+          "x": 8320,
+          "y": 8320
+        },
+        {
+          "name": "follower",
+          "next": 0,
+          "previous": 0,
+          "reference": 52,
+          "x": 8576,
+          "y": 8320
+        },
+        {
+          "name": "effect",
+          "next": 0,
+          "previous": 0,
+          "reference": 20800,
+          "x": 8832,
+          "y": 8320
+        },
+        {
+          "name": "wall",
+          "next": 0,
+          "previous": 0,
+          "reference": 59536,
+          "x": 8320,
+          "y": 8320
+        }
+      ]
+    }
+  ],
+  "source": "Independent relocated68000 execution of125a0/12518/125da; mixed four native actor pools, no routine stubs",
+  "executableSHA256": "c148b9bdcc543d89bf788d86886eb5ac9320ad66b09ef92792ec24314bfee803"
+}
