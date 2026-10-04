@@ -199,6 +199,7 @@ type World struct {
 	HeroTargetAllowed  func(hero, target int) bool
 	TileBlocked        func(pos int) bool
 	HabitatBlocked     func(pos int) bool
+	MovementAllowed    func(index, target int, apply bool) bool
 	Terrain            int
 	GameTurn           int
 	Alt                [EndWidth * EndWidth]int
@@ -2027,6 +2028,11 @@ func (w *World) moveExplorer(index int) {
 		w.setTown(index, false)
 		return
 	}
+	if w.MovementAllowed != nil && !w.MovementAllowed(index, peep.AtPos+goTo, true) {
+		peep.Flags |= IAmWaiting
+		peep.BattlePopulation = 7
+		return
+	}
 
 	if move := w.validMove(peep.AtPos, goTo); move != 0 && !(w.War && move == 2) && !(w.CanHeroCrossWater != nil && w.CanHeroCrossWater(index) && inMap(peep.AtPos+goTo) && w.MapBlk[peep.AtPos+goTo] == WaterBlock) {
 		peep.Flags |= IAmWaiting
@@ -2526,7 +2532,7 @@ func (w *World) moveToward(index, target int, avoidSwamp bool) int {
 	}
 
 	pos := toDelta[(dx+1)*3+dy+1]
-	if delta := toOffset[pos]; w.canMoveToward(peep, delta, avoidSwamp, true) {
+	if delta := toOffset[pos]; w.canMoveToward(index, delta, avoidSwamp, true) {
 		peep.MagnetLastMove = delta
 		return delta
 	}
@@ -2539,7 +2545,7 @@ func (w *World) moveToward(index, target int, avoidSwamp bool) int {
 			dir = 0
 		}
 		delta := toOffset[dir]
-		if delta == peep.MagnetLastMove || !w.canMoveToward(peep, delta, avoidSwamp, false) {
+		if delta == peep.MagnetLastMove || !w.canMoveToward(index, delta, avoidSwamp, false) {
 			continue
 		}
 		peep.MagnetLastMove = toOffset[opposite[dir]]
@@ -2548,9 +2554,13 @@ func (w *World) moveToward(index, target int, avoidSwamp bool) int {
 	return noMove
 }
 
-func (w *World) canMoveToward(peep *Peep, delta int, avoidSwamp, allowWarSpecial bool) bool {
+func (w *World) canMoveToward(index int, delta int, avoidSwamp, allowWarSpecial bool) bool {
+	peep := &w.Peeps[index]
 	move := w.validMove(peep.AtPos, delta)
 	target := peep.AtPos + delta
+	if w.MovementAllowed != nil && !w.MovementAllowed(index, target, false) {
+		return false
+	}
 	if move == 0 && inMap(target) && (!avoidSwamp || int(w.MapBlk[target]) != SwampBlock) {
 		return true
 	}
@@ -2633,6 +2643,9 @@ func (w *World) whereDoIGo(index int) int {
 		offset := peep.AtPos
 		for c2 := 0; c2 != iq; c2++ {
 			if w.validMove(offset, offsetVector[c1]) != 0 {
+				break
+			}
+			if w.MovementAllowed != nil && !w.MovementAllowed(index, offset+offsetVector[c1], false) {
 				break
 			}
 			offset += offsetVector[c1]

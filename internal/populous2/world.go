@@ -104,7 +104,29 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	}
 	core.PlaceOlympianPeople(followers)
 	w.bindHeroCombat()
+	w.bindWallMovement()
 	return w, nil
+}
+
+func (w *World) bindWallMovement() {
+	w.Core.MovementAllowed = func(index, target int, apply bool) bool {
+		if index < 0 || index >= len(w.Core.Peeps) || target < 0 || target >= 4096 {
+			return false
+		}
+		slot := w.Walls.At(target%64, target/64)
+		if slot < 0 {
+			return true
+		}
+		p := w.Core.Peeps[index]
+		decision := w.WallRules.DecideCrossing(int(p.Player), int(w.Walls.Actors[slot].Player), w.Experience[p.Player][Earth], p.Population, w.Heroes[index].Active)
+		if decision.Crossing == WallBlocked {
+			return false
+		}
+		if apply && decision.Crossing == WallBreak {
+			w.Walls.Break(&w.WallRules, slot)
+		}
+		return true
+	}
 }
 
 func (w *World) Available(player int, id SpellID) bool {

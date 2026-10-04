@@ -153,6 +153,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.rebuildCaptiveIndex()
 	w.Scenery = snapshot.Scenery
 	w.Walls = snapshot.Walls
+	w.bindWallMovement()
 	w.rebuildSceneryIndex()
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	return w, nil

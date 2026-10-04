@@ -51,3 +51,30 @@ func TestWallRejectsSculptWithoutMutatingTerrainOrMana(t *testing.T) {
 		t.Fatal("rejected wall sculpt changed state")
 	}
 }
+
+func TestWallCrossingCandidatesDoNotBreakActors(t *testing.T) {
+	w := flatGroundWorld(t)
+	w.Scenery = [SceneryCapacity]SceneryActor{}
+	w.rebuildSceneryIndex()
+	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 31 + 32*64, Flags: legacy.OnMove}}
+	w.bindWallMovement()
+	if !w.Walls.Place(&w.WallRules, 1, 32, 32, w.nativeTileAt) {
+		t.Fatal("enemy wall placement rejected")
+	}
+	target := 32 + 32*64
+	if w.Core.MovementAllowed(0, target, false) {
+		t.Fatal("weak group passed enemy wall")
+	}
+	w.Core.Peeps[0].Population = 100000
+	before := w.Walls
+	if !w.Core.MovementAllowed(0, target, false) || w.Walls != before {
+		t.Fatal("candidate crossing mutated wall")
+	}
+	if !w.Core.MovementAllowed(0, target, true) || w.Walls.At(32, 32) >= 0 {
+		t.Fatal("strong committed crossing did not break wall")
+	}
+	restored, err := Restore(testBundle(t), w.Snapshot())
+	if err != nil || restored.Core.MovementAllowed == nil {
+		t.Fatalf("save lost wall movement binding: %v", err)
+	}
+}

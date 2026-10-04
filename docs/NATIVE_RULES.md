@@ -230,8 +230,13 @@ failed placements and construction ticks. Save validation retains native
 inactive-head quirks while rejecting invalid references.
 
 Sculpting rejects every propagated edit that touches a wall, preserving terrain
-and mana. Original movement, climbing and strength-based wall destruction are
-separate remaining work; walls are no longer substituted with RockBlock.
+and mana. Crossing at `$141a2` uses the walker's Earth experience and population;
+same-owner walls pass immediately. The native byte move preserves an owner-index
+prefix in the register, so the original thresholds differ between sides. Strict
+climb/break limits match 120 original CPU cases. Candidate routing leaves walls
+intact; a committed strong crossing starts variant-specific break artwork.
+Fractional climb/hero attack and broken-wall cleanup remain separate states.
+Walls are no longer substituted with RockBlock.
 
 ## Deity creation and profile passwords
 
