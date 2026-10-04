@@ -12,7 +12,11 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Campaign data | 1,000 worlds with native codes and starting templates |
 | Terrain oracle | Eight native executions, 4,225 matching heights per seed |
 | Ground-effect oracle | Nine matching tile maps and final 32-bit random states |
-| Scenery oracle | Three matching original object pools and final random states |
+| Scenery oracle | Original object pools/RNG, including register-continuing seed 777 |
+| Batholith oracle | Four height/object/RNG references covering raising and boulders |
+| Wall oracle | Nine actor/head states, gates, joins and construction ticks |
+| Deity oracle | 1,666 native encodes/decodes; allocation, face-cycle and scalar threshold references |
+| Actor projection oracle | 576 original slope/fraction positions |
 | Followers | 399 usable records; references above 255 survive save/load |
 | Mana | Native divisor thresholds, quarter-mana units and propagated sculpt debits |
 | Heroes | Six conversion types and eight-direction composite artwork |
@@ -20,6 +24,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Audio | 31 samples, 133 patterns, signed PCM and read-size-independent playback |
 | Save continuation | Effects, town work, experience, random state and earlier water-ID migration |
 | Scenery continuation | Original variants, pool recycling, burial counters and save/load |
+| Deity interface | Native face parts, name, experience, password import and version 6 profile saves |
 | Desktop application | Bounded launch, native score playback and application-buffer PNG capture |
 
 The native oracle executes the supplied executable's relocated routines inside

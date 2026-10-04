@@ -48,7 +48,7 @@ regression checks, not evidence of original movement or combat behavior.
 - Native movement, linked tile occupancy, combat, inventions and land AI.
 - Remaining vegetation interactions, city/farm composition and environmental automata.
 - Original state machines for the remaining disasters, routes, walls and heroes.
-- Deity creation, experience allocation/awards, all scenario options, opponent
+- Experience awards, all scenario options, opponent
   personalities, original campaign scoring and world progression.
 - Original menus, statistics, transitions and final sequence.
 - Native animation-triggered sound events and hardware timing/mixing comparison.
