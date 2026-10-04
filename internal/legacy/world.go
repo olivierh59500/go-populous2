@@ -189,31 +189,33 @@ var toOffset = [...]int{-64, -63, 1, 65, 64, 63, -1, -65}
 var opposite = [...]int{4, 5, 6, 7, 0, 1, 2, 3}
 
 type World struct {
-	Level              Level
-	Rules              TerrainRules
-	OlympianTowns      *OlympianTownRules
-	OnBattleWon        func(winner, loser int)
-	BeforeBattle       func(attacker, defender int) bool
-	SkipFollower       func(index int) bool
-	CanHeroCrossWater  func(index int) bool
-	HeroTargetAllowed  func(hero, target int) bool
-	TileBlocked        func(pos int) bool
-	HabitatBlocked     func(pos int) bool
-	MovementAllowed    func(index, target int, apply bool) bool
-	Terrain            int
-	GameTurn           int
-	Alt                [EndWidth * EndWidth]int
-	MapAlt             [MapWidth * MapHeight]byte
-	MapBlk             [MapWidth * MapHeight]byte
-	MapBk2             [MapWidth * MapHeight]byte
-	MapWho             [MapWidth * MapHeight]uint16
-	MapSteps           [MapWidth * MapHeight]uint16
-	Peeps              []Peep
-	Magnets            [2]Magnet
-	Computer           [2]ComputerStats
-	ComputerControlled [2]bool
-	BattleWon          [2]int
-	War                bool
+	Level                 Level
+	Rules                 TerrainRules
+	OlympianTowns         *OlympianTownRules
+	OnBattleWon           func(winner, loser int)
+	BeforeBattle          func(attacker, defender int) bool
+	SkipFollower          func(index int) bool
+	CanHeroCrossWater     func(index int) bool
+	HeroTargetAllowed     func(hero, target int) bool
+	TileBlocked           func(pos int) bool
+	HabitatBlocked        func(pos int) bool
+	HabitatTerrainAllowed func(player, pos int) bool
+	MovementAllowed       func(index, target int, apply bool) bool
+	FollowerReserved      func(index int) bool
+	Terrain               int
+	GameTurn              int
+	Alt                   [EndWidth * EndWidth]int
+	MapAlt                [MapWidth * MapHeight]byte
+	MapBlk                [MapWidth * MapHeight]byte
+	MapBk2                [MapWidth * MapHeight]byte
+	MapWho                [MapWidth * MapHeight]uint16
+	MapSteps              [MapWidth * MapHeight]uint16
+	Peeps                 []Peep
+	Magnets               [2]Magnet
+	Computer              [2]ComputerStats
+	ComputerControlled    [2]bool
+	BattleWon             [2]int
+	War                   bool
 	// Scores is the canonical, shared score state for both players. Score and
 	// ScorePlayer below are retained as the selected local view for save-game
 	// compatibility and UI callers.
@@ -1328,6 +1330,9 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 	}
 	for len(w.Peeps) > 0 && w.Peeps[len(w.Peeps)-1].Population <= 0 {
 		last := len(w.Peeps) - 1
+		if w.FollowerReserved != nil && w.FollowerReserved(last) {
+			break
+		}
 		w.zeroPopulation(last)
 		w.Peeps = w.Peeps[:last]
 	}
@@ -1862,7 +1867,7 @@ func (w *World) spawnWalkerFromTown(index, life int) {
 	// table's high-water mark must not prevent surviving towns from emigrating.
 	newIndex := -1
 	for i := range w.Peeps {
-		if w.Peeps[i].Population <= 0 {
+		if w.Peeps[i].Population <= 0 && (w.FollowerReserved == nil || !w.FollowerReserved(i)) {
 			newIndex = i
 			break
 		}

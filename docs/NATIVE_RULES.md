@@ -235,7 +235,9 @@ same-owner walls pass immediately. The native byte move preserves an owner-index
 prefix in the register, so the original thresholds differ between sides. Strict
 climb/break limits match 120 original CPU cases. Candidate routing leaves walls
 intact; a committed strong crossing starts variant-specific break artwork.
-Fractional climb/hero attack and broken-wall cleanup remain separate states.
+Original broken walls retain their actor and terminal destruction frame;
+32 native tick comparisons confirm that they are not automatically unlinked.
+Fractional climb/hero attack remain separate states.
 Walls are no longer substituted with RockBlock.
 
 ## Deity creation and profile passwords
@@ -266,3 +268,38 @@ difference, while the Y formulas split the original triangular tile surfaces.
 The Go formulas match 576 original instruction executions. Scenery, walls and
 walking sprites now use this point of support instead of a fixed center height.
 Native fractional movement and full linked actor drawing order remain pending.
+
+## Fire columns
+
+Creation `$15b7c` uses the first free 32-byte record of the 250-slot effects pool.
+It samples a 3x3 position, consumes the native unused second random draw, and
+starts centered in 8.8 coordinates with life `200 + Fire experience` and speed 16.
+Introduction, active movement and extinction use sequences `$1a0`, `$4b8`
+and `$660`. Intro completion and extinction transitions fall through during
+the same update; map exit removes the actor immediately.
+
+The active route scans eight neighbors from a randomized start, rejects lower
+base elevation and uses successive random bits for equal heights. Original
+offset-zero fallback behavior is preserved. Its reroute timer is 30 updates.
+Original composite flame frames contain up to 47 layers, exceeding the earlier
+decoder's artificial 32-layer limit; actual cycles remain rejected.
+
+Burning `$1735a/$16542` affects the current tile, without an owner filter or a
+radius damage amount. Suitable flat terrain becomes code 95 and ceases to
+support settlements. Achilles is immune to the direct-hit death table;
+tree-spread fire instead spares heroic walkers and visits four orthogonal cells.
+Original death images retain their follower slots until the sequence completes.
+Native fixed-point effect and death state are preserved in version 7 saves.
+The twelve isolated traces verify column motion/state and ground mutation on
+empty terrain. Actor death rendering/slot reservation is currently an adapter;
+complete linked-list death metadata and mixed-actor traces remain verification
+targets, rather than being implied by the empty-terrain oracle.
+
+## Main-loop cadence
+
+The main loop runs the clock, people, strategy, effects, walls and scenery in
+that order. `$72e` clears a VBlank flag and `$786` waits for the next blank.
+The game therefore uses a nominal 50 Hz PAL simulation cadence. Original CPU
+load may reduce throughput; special mouse-idle pacing is separate. The long
+counter at `$f40` advances once per unpaused loop, with `$f42` as its low word.
+The literal eight at `$f0c` is the viewport size, not an eight-Hz tick setting.

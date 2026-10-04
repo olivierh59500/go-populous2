@@ -32,6 +32,18 @@ func (w *World) MoveFollowerDirect(index, pos int) bool {
 	return true
 }
 
+func (w *World) ReserveDeathOccupancy(index int) {
+	if index < 0 || index >= len(w.Peeps) || !inMap(w.Peeps[index].AtPos) {
+		return
+	}
+	pos := w.Peeps[index].AtPos
+	if w.MapWho[pos] == 0 {
+		w.MapWho[pos] = uint16(index + 1)
+	}
+}
+
+func (w *World) ReleaseDeathOccupancy(index int) { w.clearPeepMapRefs(index) }
+
 // The small hooks in this file are additions for the Populous II prototype.
 // The underlying engine remains the supplied Populous 1 conversion.
 
@@ -115,7 +127,7 @@ func (w *World) AllocateHeroClone(index int) int {
 	}
 	slot := -1
 	for i := range w.Peeps {
-		if w.Peeps[i].Population <= 0 {
+		if w.Peeps[i].Population <= 0 && (w.FollowerReserved == nil || !w.FollowerReserved(i)) {
 			slot = i
 			break
 		}

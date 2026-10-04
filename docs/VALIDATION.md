@@ -17,6 +17,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Wall oracle | Nine actor/head states, gates, joins and construction ticks |
 | Deity oracle | 1,666 native encodes/decodes; allocation, face-cycle and scalar threshold references |
 | Actor projection oracle | 576 original slope/fraction positions |
+| Fire column oracle | Twelve full traces: actor, RNG and every terrain tile per update |
 | Followers | 399 usable records; references above 255 survive save/load |
 | Mana | Native divisor thresholds, quarter-mana units and propagated sculpt debits |
 | Heroes | Six conversion types and eight-direction composite artwork |
@@ -24,6 +25,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Audio | 31 samples, 133 patterns, signed PCM and read-size-independent playback |
 | Save continuation | Effects, town work, experience, random state and earlier water-ID migration |
 | Scenery continuation | Original variants, pool recycling, burial counters and save/load |
+| Flame deaths | Retained death frames/slot reservations, current-cell damage and four-neighbor tree spread |
 | Deity interface | Native face parts, name, experience, password import and version 6 profile saves |
 | Desktop application | Bounded launch, native score playback and application-buffer PNG capture |
 

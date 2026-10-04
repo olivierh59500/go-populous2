@@ -27,45 +27,46 @@ const Width, Height = 640, 480
 const spellButtonsY, spellButtonStep = 252, 34
 
 type Game struct {
-	Bundle              *populous2.Bundle
-	World               *populous2.World
-	LevelIndex          int
-	Playing             bool
-	Profile             populous2.Deity
-	DeityScreen         bool
-	deityPortrait       *ebiten.Image
-	deityPassword       string
-	deityEditing        bool
-	deityNameEditing    bool
-	Paused              bool
-	Help                bool
-	Category            populous2.Element
-	Selected            populous2.SpellID
-	CameraX, CameraY    int
-	Direction           int
-	lineStart           *image.Point
-	scheduler           *fixedstep.Scheduler
-	background          *ebiten.Image
-	tiles               [4][]*ebiten.Image
-	sprites             [4][]*ebiten.Image
-	minimap             *ebiten.Image
-	miniPixels          []byte
-	Message             string
-	messageTicks        int
-	Updates             int
-	Limit               int
-	Capture             string
-	CaptureAfter        int
-	captured            bool
-	failure             error
-	SavePath            string
-	audioReplay         *populous2.AudioReplay
-	audioPlayer         *audio.Player
-	muted               bool
-	lastSoundSerial     int
-	lastPlagueSoundTurn int
-	roadLastTile        int
-	roadDragging        bool
+	Bundle                    *populous2.Bundle
+	World                     *populous2.World
+	LevelIndex                int
+	Playing                   bool
+	Profile                   populous2.Deity
+	DeityScreen               bool
+	deityPortrait             *ebiten.Image
+	deityPassword             string
+	deityEditing              bool
+	deityNameEditing          bool
+	Paused                    bool
+	Help                      bool
+	Category                  populous2.Element
+	Selected                  populous2.SpellID
+	CameraX, CameraY          int
+	Direction                 int
+	lineStart                 *image.Point
+	scheduler                 *fixedstep.Scheduler
+	background                *ebiten.Image
+	tiles                     [4][]*ebiten.Image
+	sprites                   [4][]*ebiten.Image
+	minimap                   *ebiten.Image
+	miniPixels                []byte
+	Message                   string
+	messageTicks              int
+	Updates                   int
+	Limit                     int
+	Capture                   string
+	CaptureAfter              int
+	captured                  bool
+	failure                   error
+	SavePath                  string
+	audioReplay               *populous2.AudioReplay
+	audioPlayer               *audio.Player
+	muted                     bool
+	lastSoundSerial           int
+	lastPlagueSoundTurn       int
+	lastNativeEffectSoundTurn int
+	roadLastTile              int
+	roadDragging              bool
 }
 
 func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) {
@@ -73,7 +74,7 @@ func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) 
 	if err != nil {
 		return nil, err
 	}
-	g := &Game{Bundle: bundle, World: world, LevelIndex: level, Playing: demo, Selected: populous2.RaiseLower, scheduler: fixedstep.New(8, 60), SavePath: "go-populous2.sav"}
+	g := &Game{Bundle: bundle, World: world, LevelIndex: level, Playing: demo, Selected: populous2.RaiseLower, scheduler: fixedstep.New(populous2.SimulationRate, 60), SavePath: "go-populous2.sav"}
 	world.Demo = demo
 	g.Profile = populous2.NewDeity("PLAYER")
 	g.applyDeityProfile()
@@ -203,6 +204,20 @@ func (g *Game) Update() error {
 	if g.lastSoundSerial != g.World.SpellSerial {
 		g.lastSoundSerial = g.World.SpellSerial
 		g.playPowerSound(g.World.LastSpell, g.World.LastPlayer)
+	}
+	if g.audioReplay != nil && g.lastNativeEffectSoundTurn != g.World.Core.GameTurn {
+		g.lastNativeEffectSoundTurn = g.World.Core.GameTurn
+		var played [133]bool
+		for _, actor := range g.World.NativeEffects {
+			if !actor.Active || actor.Kind != 0x22 {
+				continue
+			}
+			cue := g.Bundle.FireColumns.Frames[actor.Animation].SoundCue
+			if cue > 0 && cue < len(played) && !played[cue] {
+				g.audioReplay.PlayCue(cue)
+				played[cue] = true
+			}
+		}
 	}
 	if g.audioReplay != nil && len(g.Bundle.PlagueAnimation) > 0 && g.World.Core.GameTurn%len(g.Bundle.PlagueAnimation) == 0 && g.lastPlagueSoundTurn != g.World.Core.GameTurn {
 		g.lastPlagueSoundTurn = g.World.Core.GameTurn
@@ -668,6 +683,35 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 			sprite = 153 + world.GameTurn%3
 		}
 		g.drawSprite(view, sprite, px+32, py+32)
+	}
+	for _, a := range g.World.NativeEffects {
+		if !a.Active || a.Kind != 0x22 {
+			continue
+		}
+		wx, wy := int(a.X)>>8, int(a.Y)>>8
+		x, y := wx-g.CameraX, wy-g.CameraY
+		if x < 0 || y < 0 || x >= 8 || y >= 8 {
+			continue
+		}
+		cell := g.World.TerrainCell(wx, wy)
+		px, py := project(x, y, cell.BaseAltitude)
+		ox, oy := cell.ActorOffset(uint8(a.X), uint8(a.Y))
+		frame := g.Bundle.FireColumns.Frames[a.Animation]
+		for _, layer := range frame.Layers {
+			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
+		}
+	}
+	for _, death := range g.World.FlameDeaths {
+		x, y := death.X-g.CameraX, death.Y-g.CameraY
+		if x < 0 || y < 0 || x >= 8 || y >= 8 {
+			continue
+		}
+		cell := g.World.TerrainCell(death.X, death.Y)
+		px, py := project(x, y, cell.BaseAltitude)
+		ox, oy := cell.ActorOffset(128, 128)
+		for _, layer := range g.Bundle.FireColumns.Frames[death.Animation].Layers {
+			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
+		}
 	}
 	if !g.World.Demo {
 		x, y := ebiten.CursorPosition()

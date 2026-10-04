@@ -8,25 +8,27 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 6
+const SaveVersion = 7
 
 type Snapshot struct {
-	Version     int
-	LevelIndex  int
-	Custom      bool
-	Demo        bool
-	Experience  [2][6]uint8
-	Deity       Deity
-	Core        legacy.WorldSnapshot
-	Effects     []Effect
-	Marks       [4096]Mark
-	Heroes      [legacy.MaxPeeps]Hero
-	Random      uint16
-	LastSpell   SpellID
-	LastPlayer  int
-	SpellSerial int
-	Scenery     [SceneryCapacity]SceneryActor
-	Walls       WallState
+	Version       int
+	LevelIndex    int
+	Custom        bool
+	Demo          bool
+	Experience    [2][6]uint8
+	Deity         Deity
+	Core          legacy.WorldSnapshot
+	Effects       []Effect
+	Marks         [4096]Mark
+	Heroes        [legacy.MaxPeeps]Hero
+	Random        uint16
+	LastSpell     SpellID
+	LastPlayer    int
+	SpellSerial   int
+	Scenery       [SceneryCapacity]SceneryActor
+	Walls         WallState
+	NativeEffects [NativeEffectCapacity]NativeEffectActor
+	FlameDeaths   []FlameDeath
 }
 
 func (w *World) Snapshot() Snapshot {
@@ -34,7 +36,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -125,6 +127,28 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			}
 		}
 	}
+	for _, a := range snapshot.NativeEffects {
+		if !a.Active {
+			continue
+		}
+		if a.Player > 1 || a.Kind != 0x22 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 || a.State != 2 && a.State != 4 && a.State != 6 {
+			return nil, fmt.Errorf("invalid native effect actor")
+		}
+		if _, ok := bundle.FireColumns.Frames[a.Animation]; !ok {
+			return nil, fmt.Errorf("invalid native effect animation")
+		}
+	}
+	if len(snapshot.FlameDeaths) > legacy.MaxFollowers {
+		return nil, fmt.Errorf("too many saved flame deaths")
+	}
+	for _, death := range snapshot.FlameDeaths {
+		if !inside(death.X, death.Y) || death.Animation >= death.End || death.Follower < 0 || death.Follower >= len(snapshot.Core.Peeps) {
+			return nil, fmt.Errorf("invalid saved flame death")
+		}
+		if _, ok := bundle.FireColumns.Frames[death.Animation]; !ok {
+			return nil, fmt.Errorf("unknown saved flame death frame")
+		}
+	}
 	w, err := NewWorld(bundle, snapshot.LevelIndex, snapshot.Custom)
 	if err != nil {
 		return nil, err
@@ -137,6 +161,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.Core.OlympianTowns = townRules
 	w.Core.TileBlocked = func(pos int) bool { return w.sceneryAt(pos) >= 0 }
 	w.Core.HabitatBlocked = func(pos int) bool { i := w.sceneryAt(pos); return i >= 0 && w.Scenery[i].Kind == SceneryBoulder }
+	w.bindHabitatTerrain()
 	w.bindHeroCombat()
 	w.Effects = append([]Effect(nil), snapshot.Effects...)
 	w.Experience = snapshot.Experience
@@ -153,6 +178,25 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.rebuildCaptiveIndex()
 	w.Scenery = snapshot.Scenery
 	w.Walls = snapshot.Walls
+	w.NativeEffects = snapshot.NativeEffects
+	if snapshot.Version < 7 {
+		live := w.Effects[:0]
+		for _, effect := range w.Effects {
+			if effect.Spell != FireColumn {
+				live = append(live, effect)
+				continue
+			}
+			for i := range w.NativeEffects {
+				if !w.NativeEffects[i].Active {
+					w.NativeEffects[i] = NativeEffectActor{Active: true, Kind: 0x22, Player: uint8(effect.Player), X: int16(effect.X*256 + 128), Y: int16(effect.Y*256 + 128), VX: int16(effect.DX) * 16, VY: int16(effect.DY) * 16, Speed: 16, State: 4, Animation: 0x4b8, Timer: 1, Life: int16(max(1, effect.Life))}
+					break
+				}
+			}
+		}
+		w.Effects = live
+	}
+	w.FlameDeaths = append([]FlameDeath(nil), snapshot.FlameDeaths...)
+	w.bindFlameDeaths()
 	w.bindWallMovement()
 	w.rebuildSceneryIndex()
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial

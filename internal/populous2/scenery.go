@@ -221,9 +221,11 @@ func (w *World) tickScenery() {
 			}
 			a.Frame++
 			if a.Frame >= len(w.SceneryBank.Frames[a.Animation]) {
+				x, y := a.X, a.Y
 				a.Age = -1
 				a.Animation = w.SceneryBank.RemovalStart
 				a.Frame = 0
+				w.spreadTreeFire(x, y)
 			}
 			continue
 		}

@@ -77,7 +77,7 @@ func decodeImageLayers(code []byte, image uint16) ([]SpriteLayer, error) {
 	layers := make([]SpriteLayer, 0, 3)
 	seen := make(map[uint16]bool)
 	for {
-		if seen[image] || len(layers) >= 32 {
+		if seen[image] || len(layers) >= 256 {
 			return nil, fmt.Errorf("cyclic composite image %d", image)
 		}
 		seen[image] = true

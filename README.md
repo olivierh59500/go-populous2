@@ -35,8 +35,10 @@ go build -o bin/populous2 ./cmd/populous2
 ```
 
 The default window is 960 × 720, with a 640 × 480 logical display and doubled
-Amiga artwork. Input updates at 60 Hz; the current simulation advances eight
-times per second. Original-machine timing remains a comparison target.
+Amiga artwork. Input updates at 60 Hz; the simulation uses the nominal PAL
+VBlank cadence of 50 updates per second. `-simulation-rate` selects a diagnostic
+rate. Original CPU-bound throughput and special idle pacing remain comparison
+targets; the viewport-size value eight is not a simulation-rate setting.
 
 `-custom` currently exposes all 29 Amiga powers for testing. It does not yet
 apply the original conquest-based custom-game unlocking policy.
@@ -67,7 +69,8 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 6 preserves the deity profile, scenery, the 32-bit random state, follower references, town work,
+Version 7 preserves native fire-column actors/death animations, the deity profile,
+scenery, the 32-bit random state, follower references and town work,
 infection and persistent ground effects. Earlier Go saves remain readable;
 versions 1–2 also receive the corrected Helen/tsunami ID mapping. Original
 Amiga GAM saves are not yet supported.

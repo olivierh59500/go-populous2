@@ -11,31 +11,35 @@ import (
 // are independent of this baseline. Its new effect rules are provisional until
 // checked against the original routines; see docs/PORTAGE.md.
 type World struct {
-	Level          Level
-	Core           *legacy.World
-	Landscape      Landscape
-	Spells         []Spell
-	ManaRules      ManaRules
-	GroundRules    GroundEffectRules
-	RoadRules      RoadRules
-	SceneryBank    *SceneryBank
-	BatholithRange int
-	WallRules      WallRules
-	Walls          WallState
-	Scenery        [SceneryCapacity]SceneryActor
-	sceneryIndex   [4096]uint16
-	Experience     [2][6]uint8
-	Deity          Deity
-	Custom         bool
-	Demo           bool
-	Effects        []Effect
-	Marks          [legacy.MapWidth * legacy.MapHeight]Mark
-	Heroes         [legacy.MaxPeeps]Hero
-	Random         uint16
-	LastSpell      SpellID
-	LastPlayer     int
-	SpellSerial    int
-	captiveIndex   [legacy.MaxPeeps]bool
+	Level           Level
+	Core            *legacy.World
+	Landscape       Landscape
+	Spells          []Spell
+	ManaRules       ManaRules
+	GroundRules     GroundEffectRules
+	RoadRules       RoadRules
+	SceneryBank     *SceneryBank
+	BatholithRange  int
+	WallRules       WallRules
+	FireColumns     FireColumnRules
+	NativeEffects   [NativeEffectCapacity]NativeEffectActor
+	FlameDeaths     []FlameDeath
+	flameDeathIndex [legacy.MaxPeeps]bool
+	Walls           WallState
+	Scenery         [SceneryCapacity]SceneryActor
+	sceneryIndex    [4096]uint16
+	Experience      [2][6]uint8
+	Deity           Deity
+	Custom          bool
+	Demo            bool
+	Effects         []Effect
+	Marks           [legacy.MapWidth * legacy.MapHeight]Mark
+	Heroes          [legacy.MaxPeeps]Hero
+	Random          uint16
+	LastSpell       SpellID
+	LastPlayer      int
+	SpellSerial     int
+	captiveIndex    [legacy.MaxPeeps]bool
 }
 
 type Effect struct {
@@ -93,11 +97,12 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		return nil, err
 	}
 	core.OlympianTowns = townRules
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, Custom: custom, Random: level.Seed}
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	w.initializeScenery()
 	core.TileBlocked = func(pos int) bool { return w.sceneryAt(pos) >= 0 }
 	core.HabitatBlocked = func(pos int) bool { i := w.sceneryAt(pos); return i >= 0 && w.Scenery[i].Kind == SceneryBoulder }
+	w.bindHabitatTerrain()
 	var followers [2]legacy.InitialFollowers
 	for player, p := range level.Players {
 		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), Intelligence: p.SearchIntelligence(), Speed: p.MovementSpeed()}
@@ -105,7 +110,21 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	core.PlaceOlympianPeople(followers)
 	w.bindHeroCombat()
 	w.bindWallMovement()
+	w.bindFlameDeaths()
 	return w, nil
+}
+
+func (w *World) bindHabitatTerrain() {
+	w.Core.HabitatTerrainAllowed = func(player, pos int) bool {
+		if pos < 0 || pos >= 4096 || player < 0 || player > 1 {
+			return false
+		}
+		property := w.GroundRules.Properties[w.nativeTileAt(pos%64, pos/64)]
+		if property&0x17 == 0 || property&0x10 != 0 {
+			return false
+		}
+		return property&(1<<uint((player^1)+1)) == 0
+	}
 }
 
 func (w *World) bindWallMovement() {
@@ -321,7 +340,9 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		if applied {
 			w.Effects = append(w.Effects, Effect{Spell: id, Player: player, X: target.X, Y: target.Y, Life: 4})
 		}
-	case Whirlwind, Storm, Wind, FireColumn, FireRain, Whirlpool, Tsunami:
+	case FireColumn:
+		applied = w.castFireColumn(player, target.X, target.Y)
+	case Whirlwind, Storm, Wind, FireRain, Whirlpool, Tsunami:
 		if (id == Whirlpool || id == Tsunami) && !w.isWaterAt(target.X+target.Y*64) {
 			return false
 		}
@@ -369,8 +390,10 @@ func (w *World) Tick() {
 	w.applyGroundEffects()
 	w.spreadPlague()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
-	w.tickScenery()
+	w.tickFlameDeaths()
+	w.tickNativeEffects()
 	w.Walls.Tick(&w.WallRules, w.nativeTileAt)
+	w.tickScenery()
 	w.followHelenCaptives()
 	w.applyGroundEffects()
 	w.spreadPlague()
@@ -384,8 +407,7 @@ func (w *World) Tick() {
 		}
 		p := &w.Core.Peeps[i]
 		if hero.Spell == Achilles {
-			w.Marks[p.AtPos] = Mark{Spell: FireColumn, Player: hero.Player, Life: 80}
-			w.damageArea(hero.Player, p.AtPos%64, p.AtPos/64, 1, 50, true)
+			w.burnFireCell(p.AtPos%64, p.AtPos/64)
 		}
 		w.Heroes[i].Population = p.Population
 	}
@@ -456,7 +478,7 @@ func (w *World) tickEffects() {
 			if effect.Spell == Storm || effect.Spell == FireRain {
 				radius, damage = 3, 100
 			}
-			burn := effect.Spell == FireColumn || effect.Spell == FireRain
+			burn := effect.Spell == FireRain
 			w.damageArea(effect.Player, effect.X, effect.Y, radius, damage, burn)
 			if burn {
 				for _, p := range diskArea(effect.X, effect.Y, radius) {
@@ -471,7 +493,7 @@ func (w *World) tickEffects() {
 			if effect.Spell == Tsunami {
 				w.Core.PaintLowerAt(effect.X, effect.Y)
 			}
-			if effect.Spell == FireColumn || effect.Spell == Whirlwind {
+			if effect.Spell == Whirlwind {
 				d := w.random() % 8
 				effect.DX, effect.DY = direction(d)
 			}

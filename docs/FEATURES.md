@@ -17,7 +17,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Validated version 6 Go saves, deity profile, scenery and native profile passwords | Original Amiga GAM interoperability |
+| Saving | Validated version 7 saves, fixed-point effect actors/deaths, deity profile and scenery | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
@@ -41,7 +41,7 @@ the remaining simulation routines.
 | Fungus | 9 | 26 | Provisional propagation and damage; native controller/automaton pending |
 | Adonis | 10 | 58 | Native conversion/art and post-victory hero splitting; native movement/combat and pool-full edge state pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
-| City walls | 13 | 34 | Native placement/art/gates, saves, sculpt protection, crossing thresholds and break art; fractional climb/hero attack and destruction cleanup pending |
+| City walls | 13 | 34 | Native placement/art/gates, saves, sculpt protection, crossing thresholds and terminal break art; fractional climb/hero attack states pending |
 | Earthquake | 14 | 40 | Inherited earthquake with native cost/sound; directed native fault pending |
 | Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
 | Heracles | 16 | 60 | Native double population and speed bonus; native combat/routing pending |
@@ -50,7 +50,7 @@ the remaining simulation routines.
 | Storm | 20 | 64 | Provisional timed area damage; native rain/lightning/terrain simulation pending |
 | Odysseus | 21 | 66 | Native doubled speed attribute/art; runtime movement still inherited |
 | Hurricane wind | 22 | 76 | Provisional directed movement/damage; native pushing and terrain interactions pending |
-| Fire column | 24 | 6 | Provisional wandering damage; native uphill routing, burning and lifetime pending |
+| Fire column | 24 | 6 | Native fixed-point pool, phases, uphill routing, experience lifetime and current-cell burns; full mixed actor-list parity/timing pending |
 | Fire rain | 25 | 38 | Provisional timed damage; native drops and burn propagation pending |
 | Volcano | 26 | 62 | Inherited volcano with native cost/sound; native lava, basalt and damage recovery pending |
 | Achilles | 27 | 68 | Native conversion/art; provisional burning; native movement/combat pending |

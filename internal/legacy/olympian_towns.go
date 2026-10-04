@@ -24,6 +24,9 @@ func (w *World) OlympianTownStage(player, pos int) int {
 			return false
 		}
 		p := x + y*MapWidth
+		if w.HabitatTerrainAllowed != nil && !w.HabitatTerrainAllowed(player, p) {
+			return false
+		}
 		if w.HabitatBlocked != nil && w.HabitatBlocked(p) {
 			return false
 		}

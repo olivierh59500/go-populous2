@@ -26,7 +26,7 @@ type result struct {
 
 func main() {
 	world := flag.Int("world", 0, "original campaign world index (0..999)")
-	ticks := flag.Int("ticks", 4800, "maximum simulation ticks at eight ticks per second")
+	ticks := flag.Int("ticks", 4800, "maximum simulation steps (nominal PAL rate: 50 per second)")
 	custom := flag.Bool("custom", false, "enable all 29 powers")
 	flag.Parse()
 	if *ticks < 0 {

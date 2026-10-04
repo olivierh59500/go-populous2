@@ -19,13 +19,15 @@ func main() {
 	custom := flag.Bool("custom", false, "start a free game with every power available")
 	play := flag.Bool("play", false, "start gameplay immediately")
 	deity := flag.Bool("deity", false, "open the original deity profile editor")
+	fireColumns := flag.Bool("fire-columns", false, "present three native fire columns near the current camera")
+	simulationRate := flag.Int("simulation-rate", populous2.SimulationRate, "simulation updates per second (nominal PAL: 50)")
 	frames := flag.Int("frames", 0, "close after this number of updates (0: unlimited)")
 	capture := flag.String("screenshot", "", "save the first drawn application frame to a new PNG")
 	captureAfter := flag.Int("capture-update", 0, "minimum update count before saving the screenshot")
 	width := flag.Int("width", 960, "window width")
 	height := flag.Int("height", 720, "window height")
 	flag.Parse()
-	if *width < 320 || *height < 240 || *frames < 0 || *captureAfter < 0 || *frames > 0 && *captureAfter >= *frames {
+	if *width < 320 || *height < 240 || *frames < 0 || *captureAfter < 0 || *frames > 0 && *captureAfter >= *frames || *simulationRate < 1 || *simulationRate > 120 {
 		log.Fatal("invalid window size or update limit")
 	}
 	if *code != "" {
@@ -43,11 +45,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	g.SetSimulationRate(*simulationRate)
 	if *play || *custom {
 		g.Playing = true
 	}
 	if *deity {
 		g.OpenDeity()
+	}
+	if *fireColumns {
+		g.Playing = true
+		g.World.Custom = true
+		g.World.Core.Magnets[0].Mana = 1000000
+		g.World.Core.Computer[1].Mode = 0
+		for _, p := range [][2]int{{3, 3}, {4, 4}, {5, 3}} {
+			g.World.Cast(0, populous2.FireColumn, populous2.Target{X: g.CameraX + p[0], Y: g.CameraY + p[1]})
+		}
 	}
 	g.Limit = *frames
 	g.Capture = *capture

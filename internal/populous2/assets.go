@@ -32,6 +32,7 @@ type Bundle struct {
 	Scenery         *SceneryBank
 	BatholithRange  int
 	DeityArt        *DeityArt
+	FireColumns     FireColumnRules
 	WallRules       WallRules
 }
 
@@ -161,6 +162,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.DeityArt, err = DecodeDeityArt(exe, b.Raw["faces.pak"], b.Landscapes[0].Palettes[0])
+	if err != nil {
+		return nil, err
+	}
+	b.FireColumns, err = DecodeFireColumnRules(exe)
 	if err != nil {
 		return nil, err
 	}
