@@ -207,12 +207,13 @@ func (state *NativeWorldOccupancy) Word(offset int) (uint16, bool) {
 }
 
 // NativeFollowerPrefix contains the non-graph fields within the first sixteen
-// native follower bytes. Flags is native byte1, not inherited Go state flags;
-// Owner is the original owner byte (0 inactive,1/2 deities,3 special owner).
-// Byte13 and Word14 retain their exact native values without reinterpretation.
+// native follower bytes. Byte1 is state-specific (including town stage), while
+// Flags is native byte13, as in FollowerMotionActor, not inherited Go state
+// flags. Owner is the original byte (0 inactive,1/2 deities,3 special owner).
+// Word14 retains its exact native value, ordinarily the X velocity word.
 type NativeFollowerPrefix struct {
-	Kind, Flags, Owner, Byte13 uint8
-	Animation, Word14          uint16
+	Kind, Byte1, Owner, Flags uint8
+	Animation, Word14         uint16
 }
 
 // FollowerPrefixWord supplies WhirlwindRecordPrefix reads at offsets0..14.
@@ -229,7 +230,7 @@ func (state *NativeWorldOccupancy) FollowerPrefixWord(reference NativeRecordRefe
 	}
 	switch offset {
 	case 0:
-		return uint16(prefix.Kind)<<8 | uint16(prefix.Flags), true
+		return uint16(prefix.Kind)<<8 | uint16(prefix.Byte1), true
 	case 2:
 		return uint16(record.Next), true
 	case 4:
@@ -241,7 +242,7 @@ func (state *NativeWorldOccupancy) FollowerPrefixWord(reference NativeRecordRefe
 	case 10:
 		return prefix.Animation, true
 	case 12:
-		return uint16(prefix.Owner)<<8 | uint16(prefix.Byte13), true
+		return uint16(prefix.Owner)<<8 | uint16(prefix.Flags), true
 	default:
 		return prefix.Word14, true
 	}

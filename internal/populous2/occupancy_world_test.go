@@ -263,7 +263,7 @@ func TestNativeWorldOccupancyRawWordAndNativeFollowerPrefixes(t *testing.T) {
 			reference, _ := NativeWorldReference(NativeFollowerPool, group.Slot-1)
 			entry, _ := state.entry(reference)
 			entry.Record = NativeOccupancyRecord{Next: NativeRecordReference(binary.BigEndian.Uint16(raw[2:])), Previous: NativeRecordReference(binary.BigEndian.Uint16(raw[4:])), X: binary.BigEndian.Uint16(raw[6:]), Y: binary.BigEndian.Uint16(raw[8:])}
-			prefix := NativeFollowerPrefix{Kind: raw[0], Flags: raw[1], Animation: binary.BigEndian.Uint16(raw[10:]), Owner: raw[12], Byte13: raw[13], Word14: binary.BigEndian.Uint16(raw[14:])}
+			prefix := NativeFollowerPrefix{Kind: raw[0], Byte1: raw[1], Animation: binary.BigEndian.Uint16(raw[10:]), Owner: raw[12], Flags: raw[13], Word14: binary.BigEndian.Uint16(raw[14:])}
 			for offset := uint16(0); offset <= 14; offset += 2 {
 				want := binary.BigEndian.Uint16(raw[offset:])
 				if got, ok := state.FollowerPrefixWord(reference, offset, prefix); !ok || got != want {
