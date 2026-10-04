@@ -43,7 +43,11 @@ func (w *World) PlanWalkerStep(index int) (int, bool) {
 		p.BattlePopulation = w.GameTurn
 		p.Frame, p.Direction = 0, 0
 		w.setFrame(index)
-		w.setTown(index, false)
+		if w.NativeTownEvaluate != nil {
+			p.TownStage = w.NativeTownEvaluate(index)
+		} else {
+			w.setTown(index, false)
+		}
 		return 0, false
 	}
 	return delta, true

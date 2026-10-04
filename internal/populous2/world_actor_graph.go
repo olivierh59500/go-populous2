@@ -121,6 +121,7 @@ func (w *World) placeActor(pool NativeRecordPool, index int, x, y uint16) {
 		panic(err)
 	}
 	after, _ := w.Occupancy.Record(ref)
+	w.patchGraphImage(ref, before, after)
 	w.syncFollowerGraphReferences(ref, before.Next, before.Previous, after.Next, after.Previous)
 }
 
@@ -133,6 +134,8 @@ func (w *World) unlinkActor(pool NativeRecordPool, index int) {
 			panic(err)
 		}
 	}
+	after, _ := w.Occupancy.Record(ref)
+	w.patchGraphImage(ref, before, after)
 	w.syncFollowerGraphReferences(ref, before.Next, before.Previous)
 }
 
@@ -148,7 +151,26 @@ func (w *World) moveActor(pool NativeRecordPool, index int, x, y uint16) {
 		panic(err)
 	}
 	after, _ := w.Occupancy.Record(ref)
+	w.patchGraphImage(ref, before, after)
 	w.syncFollowerGraphReferences(ref, before.Next, before.Previous, after.Next, after.Previous)
+}
+
+func (w *World) patchGraphImage(ref NativeRecordReference, before, after NativeOccupancyRecord) {
+	for _, reference := range []NativeRecordReference{ref, before.Next, before.Previous, after.Next, after.Previous} {
+		if reference == 0 {
+			continue
+		}
+		record, ok := w.Occupancy.Record(reference)
+		if !ok {
+			panic("unknown graph image reference")
+		}
+		for _, field := range []struct {
+			off   int
+			value uint16
+		}{{2, uint16(record.Next)}, {4, uint16(record.Previous)}, {6, record.X}, {8, record.Y}} {
+			w.patchNativeWord(reference, field.off, field.value)
+		}
+	}
 }
 
 func (w *World) syncFollowerGraphReferences(references ...NativeRecordReference) {

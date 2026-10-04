@@ -35,9 +35,13 @@ type World struct {
 	FungusState              FungusState
 	FollowerMotion           FollowerMotionRules
 	FollowerDecision         FollowerDecisionRules
+	TownEvaluator            NativeTownEvaluator
+	NativeOverlays           [4096]uint8
 	NativeFollowers          [legacy.MaxPeeps]NativeFollower
 	NativeEffects            [NativeEffectCapacity]NativeEffectActor
 	Occupancy                NativeWorldOccupancy
+	RecordImage              NativeRecordImage
+	NativeEntries            [legacy.MaxPeeps]NativeFollowerEntry
 	effectViewX, effectViewY int
 	effectSoundCues          []int
 	FlameDeaths              []FlameDeath
@@ -73,11 +77,12 @@ type Effect struct {
 }
 
 type Mark struct {
-	Spell      SpellID
-	Player     int
-	Life       int
-	Persistent bool
-	NativeTile uint8
+	Spell           SpellID
+	Player          int
+	Life            int
+	Persistent      bool
+	NativeTile      uint8
+	NativeCodeValid bool
 }
 
 type Hero struct {
@@ -124,6 +129,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.FungusHazards = bundle.FungusHazards
 	w.FollowerMotion = bundle.FollowerMotion
 	w.FollowerDecision = bundle.FollowerDecision
+	w.TownEvaluator = bundle.TownEvaluator
 	for player, p := range level.Players {
 		w.Rules[player] = p.ScenarioRules()
 	}
@@ -146,6 +152,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.bindFollowerHazards()
 	w.bindLightningVictims()
 	w.bindActorGraphHooks()
+	w.bindNativeTownEvaluator()
 	return w, nil
 }
 
@@ -445,6 +452,7 @@ func (w *World) recordCast(player int, id SpellID) {
 
 func (w *World) Tick() {
 	w.reconcileActorGraph()
+	w.refreshNativeRecordImage()
 	w.rebuildCaptiveIndex()
 	w.tickEffects()
 	w.applyGroundEffects()
@@ -479,6 +487,7 @@ func (w *World) Tick() {
 		}
 	}
 	w.reconcileActorGraph()
+	w.refreshNativeRecordImage()
 }
 
 func (w *World) tickEffects() {

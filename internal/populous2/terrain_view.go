@@ -47,7 +47,7 @@ func (w *World) TerrainCell(x, y int) TerrainCell {
 	case legacy.FarmBlock + 1:
 		cell.Code = 63
 	}
-	if mark := w.Marks[x+y*legacy.MapWidth]; mark.Life > 0 && mark.NativeTile != 0 {
+	if mark := w.Marks[x+y*legacy.MapWidth]; mark.Life > 0 && (mark.NativeTile != 0 || mark.NativeCodeValid) {
 		cell.Code = mark.NativeTile
 		if mark.Spell == Basalt && mark.NativeTile&0xf0 == 0xe0 {
 			// Native terrain edits retain the basalt prefix and change only

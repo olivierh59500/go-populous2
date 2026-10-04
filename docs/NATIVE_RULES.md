@@ -534,9 +534,10 @@ so an occupied reused slot can keep an older victim reference alive.
 Walker cleanup retains its death animation and map reservation, then removes
 it on completion; surviving walkers play recovery before ordinary redispatch.
 The common terrain prepass can supersede lightning, including the first water
-entry. A town survivor uses the translated support-stage calculation with the
-existing farm compositor. Exact `$13352` mixed support, farm repaint and the
-remaining inherited water/hero transitions are still separate requirements.
+entry. A town survivor uses the native `$13352` support evaluator and its
+49-cell farm compositor, preserving the town's work timer and founding tick.
+The remaining inherited water/hero transitions and complete founding/contact
+state dispatch are still separate requirements.
 
 Beam artwork is four procedural lines in palette index 5, with three native
 alternating kinks. The marker sprite is raised 80 native pixels. The beam's
@@ -556,7 +557,7 @@ metadata resolver even when their owner byte is zero. Join/fight modes request
 the corresponding native owner; magnet and hero routines are delegated.
 
 Road priority is evaluated before the later boulder scan. A road leg adds the
-native twenty-byte speed bonus, initializes velocity/timer, then subtracts that
+native twenty-unit speed bonus, initializes velocity/timer, then subtracts that
 full bonus from the speed byte. Saturation can therefore leave speed 235 with
 velocity 255; normalizing velocity back to the stored byte would change the
 original leg. The save validator accepts those proven native velocities.
@@ -566,3 +567,41 @@ not settle on the current tile: native settlement and delayed friendly/enemy
 contacts begin in `$1275a` and its subsequent state handlers. Their full World
 integration, native magnet/hero decisions and the remaining inherited contact
 path remain required work.
+
+## Settlement support and farm artwork
+
+The native town evaluator uses all 19 stages and a 49-cell footprint. Its
+support scan examines the center and successive rings; trees permit support
+while boulders block it. The property word's high owner bits govern support,
+independently of the low farm flags. A cached nonzero stage can survive between
+its assigned four-tick evaluations when the center retains support properties.
+
+Painting and removal use the original structure tile table and eight neighbor
+overlay codes. Healthy centers use the stage table at `$20b14`, not consecutive
+sprite numbers. The kind-4 renderer adds eight native pixels before drawing
+the composite; its owner flag alternates with the tick and rises with population
+according to the stage divisor. Neighbor overlays remain separate. Competing settlements
+lose their farms and return to ordinary follower state through the evaluator.
+World town updates and lightning recovery share this compositor. The standalone
+component matches all 530 native cases; the World adapter matches the 523 cases
+that do not require the remaining competitor/contact integration.
+The work timer remains an unsigned 16-bit word: incrementing 65,535 wraps to
+zero before the production threshold is tested. Record projection and saves
+retain that timer independently of the support-stage calculation.
+
+## Retained native record bytes
+
+The retained image covers all 34,800 bytes of the four native actor pools,
+including reserved and inactive slots. Typed follower changes patch only fields
+that changed, preserving bytes whose meaning depends on the current state.
+Map-link changes update the corresponding image fields. Reads and writes use
+byte offsets, so an unaligned reference can affect a neighboring physical slot.
+
+Eleven original alias cases verify complete image hashes, and every one of the
+1,050 physical slots has coverage. This is evidence for byte storage and its
+typed adapters, not proof that all original actor handlers have been integrated.
+Full entry/combat dispatch and all affected-slot hydration remain required.
+Save version 15 retains the record image, follower entry state and town overlays.
+Regression checks also cover an explicit tile-zero write on raised terrain,
+retired effect fields, reused follower generations, and the record projection
+of lightning victims and demoted towns.

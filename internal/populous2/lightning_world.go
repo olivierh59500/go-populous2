@@ -181,6 +181,11 @@ func (w *World) updateLightningVictim(index int) bool {
 				w.Core.ReserveDeathOccupancy(index)
 			} else {
 				managed.Active = false
+				if victim.Kind == 4 {
+					if err := w.clearNativeFarms(nativeActorReference(NativeFollowerPool, index), 15); err != nil {
+						panic(err)
+					}
+				}
 				w.Core.DetachFollower(index)
 				w.Core.DamagePeep(index, max(1, p.Population))
 				victim.Population = 0
@@ -201,7 +206,32 @@ func (w *World) updateLightningVictim(index int) bool {
 			if w.Heroes[index].Active {
 				w.Core.DetachFollower(index)
 			} else {
-				w.Core.ReformOlympianTown(index)
+				ref := nativeActorReference(NativeFollowerPool, index)
+				a, err := w.readEntryRecord(ref)
+				if err != nil {
+					panic(err)
+				}
+				a.Motion.Kind, a.Motion.State, a.Byte1, a.Byte19, a.Founded46 = 4, 6, 0, 0, uint16(w.Core.GameTurn)
+				if err := w.writeEntryRecord(ref, a); err != nil {
+					panic(err)
+				}
+				stage, err := w.evaluateNativeTown(ref)
+				if err != nil {
+					panic(err)
+				}
+				if stage == 0 {
+					if err := w.clearNativeFarms(ref, 15); err != nil {
+						panic(err)
+					}
+					a, err = w.readEntryRecord(ref)
+					if err != nil {
+						panic(err)
+					}
+					a.Motion.Kind, a.Motion.State, a.Motion.Animation = 2, 2, 0
+					if err := w.writeEntryRecord(ref, a); err != nil {
+						panic(err)
+					}
+				}
 			}
 		},
 	})

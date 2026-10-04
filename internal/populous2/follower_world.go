@@ -52,6 +52,7 @@ func (w *World) bindFollowerMotion() {
 		w.Heroes[index] = Hero{}
 		w.captiveIndex[index] = false
 		w.LightningVictims[index] = NativeLightningFollower{}
+		w.NativeEntries[index] = NativeFollowerEntry{}
 		w.unlinkActor(NativeFollowerPool, index)
 		w.initializeNativeFollower(index)
 	}

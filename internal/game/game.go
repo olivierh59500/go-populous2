@@ -640,7 +640,12 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 			block := cell.Tile(world.GameTurn, x, y)
 			px, py := project(x, y, cell.BaseAltitude)
 			drawImage(view, g.tiles[terrain][block], px, py, 2)
-			if overlay := world.MapBk2[pos]; overlay != 0 {
+			if overlay := g.World.NativeOverlays[pos]; overlay != 0 {
+				frame := g.World.TownEvaluator.OverlayFrames[overlay]
+				for _, layer := range frame.Layers {
+					g.drawSprite(view, layer.Sprite, px+32+layer.X*2, py+16+layer.Y*2)
+				}
+			} else if overlay := world.MapBk2[pos]; overlay != 0 {
 				sprite := 697
 				if overlay >= legacy.TreeBlock && overlay < legacy.TreeBlock+3 {
 					sprite = 696
@@ -730,13 +735,11 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		}
 		if peep.Flags&legacy.InTown != 0 {
 			stage := clamp(peep.TownStage, 0, populous2.TownStages-1)
-			sprite := 681 + stage
-			g.drawSprite(view, sprite, cx, py+48)
-			c := blue
-			if peep.Player == 1 {
-				c = red
+			if frame, ok := g.Bundle.TownCenterArt.Frame(stage, peep.Player+1, uint32(peep.Population), uint16(world.GameTurn)); ok {
+				for _, layer := range frame.Layers {
+					g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
+				}
 			}
-			vector.DrawFilledRect(view, float32(cx+2), float32(py+8), 3, 10, c, false)
 		} else {
 			if frame, ok := g.World.FollowerFrame(i); ok {
 				for _, layer := range frame.Layers {

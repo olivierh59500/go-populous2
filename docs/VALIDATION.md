@@ -38,6 +38,9 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Water controllers | 166 Whirlpool cases/3,599 ticks and 358 Basalt cases; world replays 40 ordered Basalt traces/7,228 passes |
 | Whirlwind water children | Eight combined world replays, 5,090 full pool passes, 644 native checkpoints and 74 births; complete pool/grid/RNG agree |
 | Lightning | Five lifecycle traces/825 updates, 205 native victim cases, 16 beam segment cases and 12 endpoint cases; World replays all lifecycle traces and 66 ordinary-victim states |
+| Native town compositor | 530 complete native map/overlay/record comparisons; World replays 523 noncompeting cases and tests mixed tree/boulder support and 49-cell cleanup |
+| Native town center artwork | 233 original renderer comparisons covering all 19 stages, both owners, tick phases, population height and signed-word/division overflow; desktop castle capture inspected |
+| Native actor byte image | Eleven original instruction aliases, 1,050 physical slots and retained-byte codec checks; version 15 continuation, final effect writes, reused followers and struck/demoted towns |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |
@@ -120,6 +123,8 @@ therefore do not prove Whirlwind pickup/release or all environment interactions.
 Lightning world tests cover free marker placement, unconditional activation
 debits/partial volleys, gradual signed damage, managed population exclusion,
 ownership-based reservations, stale effect references, first water entry and
-saved continuation. Town reform still uses the current support/farm adapter;
-it does not yet reproduce all native `$13352` mixed support and 49-cell repaint.
-The retained 210-case identity data documents those separate requirements.
+saved continuation. Town reform uses the translated native evaluator and
+49-cell compositor. The retained 210-case identity data documents its work,
+tick and cleanup boundaries. The full founding/contact dispatcher and native
+opponent/remaining town-work states are separate requirements; these map
+comparisons do not prove them.

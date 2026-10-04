@@ -151,6 +151,7 @@ func (w *World) tickNativeEffects() {
 				w.moveActor(NativeEffectPool, i, uint16(a.X), uint16(a.Y))
 			}
 		}
+		w.projectNativeEffectRecord(i)
 	}
 }
 

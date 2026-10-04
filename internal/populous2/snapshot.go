@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 14
+const SaveVersion = 15
 
 type Snapshot struct {
 	Version          int
@@ -38,9 +38,13 @@ type Snapshot struct {
 	LightningVictims [legacy.MaxPeeps]NativeLightningFollower
 	FungusState      FungusState
 	FlameDeaths      []FlameDeath
+	RecordImage      NativeRecordImage
+	NativeEntries    [legacy.MaxPeeps]NativeFollowerEntry
+	NativeOverlays   [4096]uint8
 }
 
 func (w *World) Snapshot() Snapshot {
+	w.refreshNativeRecordImage()
 	canonical := *w
 	canonical.reconcileActorGraph()
 	w = &canonical
@@ -48,12 +52,17 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if snapshot.Version < 1 || snapshot.Version > SaveVersion {
 		return nil, fmt.Errorf("unsupported save version %d", snapshot.Version)
+	}
+	for _, code := range snapshot.NativeOverlays {
+		if int(code) >= len(bundle.TownEvaluator.OverlayFrames) {
+			return nil, fmt.Errorf("invalid saved native town overlay")
+		}
 	}
 	if snapshot.Version >= 13 {
 		if err := snapshot.Occupancy.Validate(); err != nil {
@@ -303,6 +312,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		w.Deity.Bolts = 0
 	}
 	w.Marks, w.Heroes, w.Random = snapshot.Marks, snapshot.Heroes, snapshot.Random
+	w.RecordImage, w.NativeEntries, w.NativeOverlays = snapshot.RecordImage, snapshot.NativeEntries, snapshot.NativeOverlays
 	for i := range w.Heroes {
 		w.Heroes[i].Captives = append([]int(nil), w.Heroes[i].Captives...)
 	}
@@ -441,6 +451,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		w.reconcileActorGraph()
 	}
 	w.bindActorGraphHooks()
+	w.bindNativeTownEvaluator()
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	w.HazardSerial, w.LastHazardCue = snapshot.HazardSerial, snapshot.LastHazardCue
 	return w, nil

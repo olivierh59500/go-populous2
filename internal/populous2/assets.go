@@ -25,6 +25,8 @@ type Bundle struct {
 	HeroRules        HeroRules
 	FollowerMotion   FollowerMotionRules
 	FollowerDecision FollowerDecisionRules
+	TownEvaluator    NativeTownEvaluator
+	TownCenterArt    NativeTownCenterArt
 	Audio            *AudioBank
 	Actions          []NativeAction
 	GroundRules      GroundEffectRules
@@ -138,6 +140,14 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.FollowerDecision, err = DecodeFollowerDecisionRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.TownEvaluator, err = DecodeNativeTownEvaluator(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.TownCenterArt, err = DecodeNativeTownCenterArt(exe)
 	if err != nil {
 		return nil, err
 	}

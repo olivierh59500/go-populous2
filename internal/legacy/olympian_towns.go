@@ -75,9 +75,18 @@ func (w *World) OlympianTownStage(player, pos int) int {
 func (w *World) processOlympianTown(index int, landAI bool) {
 	p := &w.Peeps[index]
 	player := int(p.Player)
-	stage := w.OlympianTownStage(player, p.AtPos)
+	stage := 0
+	if w.NativeTownEvaluate != nil {
+		stage = w.NativeTownEvaluate(index)
+	} else {
+		stage = w.OlympianTownStage(player, p.AtPos)
+	}
 	if w.War || p.HeadFor != 0 || stage == 0 {
-		w.setTown(index, true)
+		if w.NativeTownClear != nil {
+			w.NativeTownClear(index)
+		} else {
+			w.setTown(index, true)
+		}
 		p.Flags = OnMove
 		p.Frame = 0
 		p.TownStage = 0
@@ -102,10 +111,11 @@ func (w *World) processOlympianTown(index int, landAI bool) {
 			p.LandComplete = w.computerMakeLevel(p.AtPos, player)
 		}
 	}
-	if oldFrame != p.Frame || int(w.MapBk2[p.AtPos]) != p.Frame || w.townHasFlatFootprint(p.AtPos) {
+	if w.NativeTownEvaluate == nil && (oldFrame != p.Frame || int(w.MapBk2[p.AtPos]) != p.Frame || w.townHasFlatFootprint(p.AtPos)) {
 		w.setTown(index, false)
 	}
-	p.TownWork++
+	// The native work counter is an unsigned word, including its wrap.
+	p.TownWork = int(uint16(p.TownWork + 1))
 	r := w.OlympianTowns
 	if p.TownWork < r.WorkTicks[stage] {
 		return

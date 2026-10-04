@@ -101,7 +101,8 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 14 preserves lightning markers, bolt chains, managed victim states,
+Version 15 preserves retained native record bytes, town structure overlays,
+lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
 and timers, along with follower hazard states and sound events, fungus bounds
@@ -124,8 +125,9 @@ Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can
 create a partial volley when the effect pool fills. A victim remains allocated
 through its stun/recovery/death sequence, including signed population results.
-The native town-support/farm repaint and remaining water/hero handlers still
-need their complete conversions.
+Town support and farm repaint now use the native compositor, including all
+49 cells at the largest stage. Founding/contact dispatch and remaining
+water/hero handlers still need their complete World integrations.
 
 The deity screen uses the original three-part face artwork, eight variants per
 part, five starting bolts and one experience unit per allocated bolt. Click the

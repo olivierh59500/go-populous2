@@ -19,6 +19,7 @@ so linear disassembly alone is insufficient to identify routines.
 | `$105ca`–`$1069c` | Backward decompression and XOR validation |
 | `$10df2` / `$11044` | Player templates and 200 campaign records, five worlds each |
 | `$117de` | Nineteen-stage settlement work and economy |
+| `$13352` | Settlement support, 49-cell farms and neighbor overlays |
 | `$bef4` / `$bfac` | Tiles made from six 16×8 fragments |
 | `$19cd0` / `$19e4a` | The 26-resource loader catalog |
 | `$1a3f0` | Tile fragment arrangement for the blitter |
@@ -46,7 +47,9 @@ regression checks, not evidence of original movement or combat behavior.
 ## Remaining conversion work
 
 - Native movement, linked tile occupancy, combat, inventions and land AI.
-- Remaining vegetation interactions, city/farm composition and environmental automata.
+- Remaining vegetation interactions, full settlement founding/contact state
+  dispatch and environmental automata. Native support and farm composition are
+  integrated into ordinary town updates and lightning recovery.
 - Original state machines for the remaining disasters, routes, walls and heroes.
 - Experience awards, scenario scripts and special editor/battle-mode rules,
   opponent personalities, original campaign scoring and world progression.

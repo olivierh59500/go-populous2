@@ -211,6 +211,8 @@ type World struct {
 	WaterFatalForPlayer        func(player int) bool
 	FollowerAttrition          func(player int, water bool) int
 	TerrainCommand             func(player, x, y int, raise bool) bool
+	NativeTownEvaluate         func(index int) int
+	NativeTownClear            func(index int)
 	Terrain                    int
 	GameTurn                   int
 	Alt                        [EndWidth * EndWidth]int
