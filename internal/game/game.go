@@ -557,13 +557,14 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		button(screen, 4+(i%3)*41, 200+(i/3)*25, 39, 23, name, true, g.Category == populous2.Element(i))
 	}
 	for i, spell := range g.categorySpells() {
+		cost := g.World.ManaCost(0, spell.ID)
 		available := g.World.Available(0, spell.ID)
 		button(screen, 4, spellButtonsY+i*spellButtonStep, 123, 32, spell.Name, available, g.Selected == spell.ID)
 		c := muted
-		if available && world.Magnets[0].Mana >= spell.Cost {
+		if available && world.Magnets[0].Mana >= cost {
 			c = gold
 		}
-		label(screen, fmt.Sprintf("%d mana", spell.Cost), 10, spellButtonsY+17+i*spellButtonStep, c)
+		label(screen, fmt.Sprintf("%d mana", cost), 10, spellButtonsY+17+i*spellButtonStep, c)
 	}
 	label(screen, fmt.Sprintf("DIR %d  Q / E", g.Direction), 6, 423, muted)
 	for i, name := range []string{"COLONISER", "RASSEMBLER", "COMBATTRE", "SUIVRE CHEF"} {

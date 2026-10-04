@@ -45,15 +45,15 @@ func TestNativeManaHeroAndGlobalPowers(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			w.Core.Magnets[0].Mana = 100000
+			w.Core.Magnets[0].Mana = 1000000
 			carrier := w.Core.Magnets[0].Carried - 1
 			target := Target{X: w.Core.Peeps[carrier].AtPos % 64, Y: w.Core.Peeps[carrier].AtPos / 64}
-			spell, _ := SpellByID(b.Spells, id)
+			cost := w.ManaCost(0, id)
 			if !w.Cast(0, id, target) {
 				t.Fatal("available funded cast rejected")
 			}
-			if got := w.Core.Magnets[0].Mana; got != 100000-spell.Cost {
-				t.Fatalf("mana %d, want %d", got, 100000-spell.Cost)
+			if got := w.Core.Magnets[0].Mana; got != 1000000-cost {
+				t.Fatalf("mana %d, want %d", got, 1000000-cost)
 			}
 			if id.IsHero() && (!w.Heroes[carrier].Active || w.Core.Peeps[carrier].Status != legacy.KnightStatus || w.Core.Magnets[0].Carried != 0) {
 				t.Fatal("leader was not converted")

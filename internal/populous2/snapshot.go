@@ -8,13 +8,14 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 1
+const SaveVersion = 2
 
 type Snapshot struct {
 	Version     int
 	LevelIndex  int
 	Custom      bool
 	Demo        bool
+	Experience  [2][6]uint8
 	Core        legacy.WorldSnapshot
 	Effects     []Effect
 	Marks       [4096]Mark
@@ -26,11 +27,11 @@ type Snapshot struct {
 }
 
 func (w *World) Snapshot() Snapshot {
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: w.Heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: w.Heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
-	if snapshot.Version != SaveVersion {
+	if snapshot.Version != 1 && snapshot.Version != SaveVersion {
 		return nil, fmt.Errorf("unsupported save version %d", snapshot.Version)
 	}
 	if len(snapshot.Core.Peeps) > legacy.MaxPeeps || len(snapshot.Effects) > 256 || snapshot.Core.GameTurn < 0 {
@@ -72,6 +73,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	}
 	w.Core = legacy.WorldFromSnapshot(snapshot.Core, w.Core.Rules)
 	w.Effects = append([]Effect(nil), snapshot.Effects...)
+	w.Experience = snapshot.Experience
 	w.Marks, w.Heroes, w.Random = snapshot.Marks, snapshot.Heroes, snapshot.Random
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	return w, nil

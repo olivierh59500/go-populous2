@@ -107,7 +107,7 @@ var spellDefinitions = []Spell{
 }
 
 // DecodeSpells gets base mana costs from the actual unsigned-word table at
-// 0x21238. The per-deity experience adjustment in 0x14768 is not yet applied.
+// 0x21238. ManaRules applies the per-deity adjustment from CODE:$14768.
 func DecodeSpells(exe *amiga.Executable) ([]Spell, error) {
 	if exe == nil || len(exe.Hunks) == 0 || len(exe.Hunks[0].Data) < 0x21238+72 {
 		return nil, fmt.Errorf("Populous II power table missing")

@@ -21,6 +21,7 @@ type Bundle struct {
 	Background *image.RGBA
 	Levels     []Level
 	Spells     []Spell
+	ManaRules  ManaRules
 }
 
 func Load() (*Bundle, error) {
@@ -101,6 +102,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.Spells, err = DecodeSpells(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.ManaRules, err = DecodeManaRules(exe)
 	if err != nil {
 		return nil, err
 	}

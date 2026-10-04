@@ -15,6 +15,8 @@ type World struct {
 	Core        *legacy.World
 	Landscape   Landscape
 	Spells      []Spell
+	ManaRules   ManaRules
+	Experience  [2][6]uint8
 	Custom      bool
 	Demo        bool
 	Effects     []Effect
@@ -71,7 +73,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		PlayerPopulation: byte(clamp(int(level.Players[0].Parameters[0]), 1, 30)), EnemyPopulation: byte(clamp(int(level.Players[1].Parameters[0]), 1, 30)),
 		EnemyRating: 10, EnemyReactionSpeed: 5, GameMode: legacy.GameWaterFatal}
 	core := legacy.GenerateWorldWithRules(baseline, rules)
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, Custom: custom, Random: level.Seed}
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, Custom: custom, Random: level.Seed}
 	for player := range core.Magnets {
 		core.Magnets[player].Mana = int(level.Players[player].Parameters[2])
 	}
@@ -93,20 +95,24 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	if !w.Core.HasBuildPresenceAt(player, clamp(x-4, 0, 56), clamp(y-4, 0, 56), 8, 8, x, y) {
 		return false
 	}
-	if w.Core.Magnets[player].Mana < 5 {
+	cost := w.ManaCost(player, RaiseLower)
+	if w.Core.Magnets[player].Mana < cost {
 		return false
 	}
-	// The original table prices a terrain action at 5, versus 10 in the first
-	// game's engine. Scaling both balance and its propagated debit preserves
-	// the inherited terrain economy without giving free edits.
-	w.Core.Magnets[player].Mana *= 2
+	// Terrain propagation charges the inherited engine's terrain price once.
+	// Adapt that debit without scaling the entire balance or losing odd mana.
+	before := w.Core.Magnets[player].Mana
+	w.Core.Magnets[player].Mana = before - cost + legacy.ManaPointCost
 	var applied bool
 	if raise {
 		applied = w.Core.RaiseAt(player, x, y)
 	} else {
 		applied = w.Core.LowerAt(player, x, y)
 	}
-	w.Core.Magnets[player].Mana /= 2
+	w.Core.Magnets[player].Mana = before
+	if applied {
+		w.Core.Magnets[player].Mana -= cost
+	}
 	if applied && x < 64 && y < 64 {
 		w.Marks[x+y*64] = Mark{}
 	}
@@ -118,6 +124,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	if !exists || !w.Available(player, id) || id == RaiseLower || w.Core.War {
 		return false
 	}
+	spell.Cost = w.ManaCost(player, id)
 	if w.Core.Magnets[player].Mana < spell.Cost {
 		return false
 	}
