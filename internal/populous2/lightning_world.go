@@ -146,7 +146,12 @@ func (w *World) scorchLightningTile(x, y int) {
 }
 
 func (w *World) bindLightningVictims() {
-	w.Core.NativeEffectFollowerUpdate = w.updateLightningVictim
+	w.Core.NativeEffectFollowerUpdate = func(index int) bool {
+		if w.updateLightningVictim(index) {
+			return true
+		}
+		return w.updateNativeManagedFollower(index)
+	}
 }
 
 func (w *World) updateLightningVictim(index int) bool {
@@ -161,6 +166,7 @@ func (w *World) updateLightningVictim(index int) bool {
 		// drowning state16 before lightning dispatch. Release ownership to
 		// the water handler; it must not take a lightning damage step here.
 		managed.Active = false
+		w.NativeEntries[index] = NativeFollowerEntry{}
 		if p.Flags&legacy.InTown != 0 {
 			w.Core.DetachFollower(index)
 		}
@@ -171,6 +177,7 @@ func (w *World) updateLightningVictim(index int) bool {
 	// The native common terrain prepass still precedes the managed dispatch.
 	if w.Core.BeforeFollower != nil && !w.Core.BeforeFollower(index) {
 		managed.Active = false
+		w.NativeEntries[index] = NativeFollowerEntry{}
 		return true
 	}
 	victim.Population = int32(p.Population)
@@ -199,13 +206,17 @@ func (w *World) updateLightningVictim(index int) bool {
 				w.Core.DamagePeep(index, max(1, p.Population))
 				victim.Population = 0
 				w.unlinkActor(NativeFollowerPool, index)
+				w.NativeEntries[index] = NativeFollowerEntry{}
+				w.patchNativeByte(nativeActorReference(NativeFollowerPool, index), 12, 0)
 			}
 		},
 		Remove: func() {
 			managed.Active = false
+			w.NativeEntries[index] = NativeFollowerEntry{}
 			w.unlinkActor(NativeFollowerPool, index)
 			w.Core.ReleaseDeathOccupancy(index)
 			victim.Owner, victim.Population = 0, 0
+			w.patchNativeByte(nativeActorReference(NativeFollowerPool, index), 12, 0)
 		},
 		ReformTown: func() {
 			managed.Active = false
@@ -250,6 +261,7 @@ func (w *World) updateLightningVictim(index int) bool {
 	p.Population = int(victim.Population)
 	if step.NeedsDecision {
 		managed.Active = false
+		w.NativeEntries[index] = NativeFollowerEntry{}
 		p.Flags, p.Frame = legacy.OnMove, 0
 		w.initializeNativeFollower(index)
 		// Native recovery redispatches its ordinary decision in the same

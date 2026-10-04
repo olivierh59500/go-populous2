@@ -1,5 +1,11 @@
 package populous
 
+// DirectRaiseTerrain exposes the unpriced propagation primitive used by the
+// second game's native hero/environment handlers, independently of commands.
+func (w *World) DirectRaiseTerrain(x, y int) bool {
+	return w.forceRaiseAt(x, y)
+}
+
 func (w *World) NextRandom() int { return w.rng.next() }
 
 // DirectLowerTerrain is the unpriced native effect operation. It bypasses

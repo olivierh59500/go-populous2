@@ -42,7 +42,19 @@ func DecodeFollowerAftermathRules(exe *amiga.Executable) (FollowerAftermathRules
 	for terminal := range towns.Loops {
 		rules.Terminals[terminal] = true
 	}
-	for _, pointer := range []int{0x1e74, 0x9d4, 0x1b2c, 0x1cd0, 0x178, 0xf10} {
+	prepass, err := DecodeCommonPrepassRules(exe)
+	if err != nil {
+		return rules, err
+	}
+	starts := []int{0x1e74, 0x9d4, 0x1b2c, 0x1cd0, 0x178, 0xf10, 0x7f4, 0x7dc, 0x7cc, 0x7d4}
+	for _, table := range [][6]uint16{prepass.Swimming, prepass.Fatal, prepass.Swamp} {
+		for _, pointer := range table {
+			if pointer != 0 {
+				starts = append(starts, int(pointer))
+			}
+		}
+	}
+	for _, pointer := range starts {
 		frames, err := DecodeAnimation(exe, pointer)
 		if err != nil {
 			return FollowerAftermathRules{}, err
@@ -53,6 +65,21 @@ func DecodeFollowerAftermathRules(exe *amiga.Executable) (FollowerAftermathRules
 		rules.Terminals[pointer+len(frames)*4] = true
 	}
 	return rules, nil
+}
+
+func aftermathHandler(state uint8) uint8 {
+	switch state {
+	case 8, 0x2c, 0x2e:
+		return 8 // $1199e: retained animation followed by complete cleanup0.
+	case 0x18, 0x20, 0x32, 0x38, 0x3e, 0x40:
+		return 0x18 // $11e00: terminal clears leader/owner/map, no second loss.
+	case 0x1a, 0x2a, 0x42:
+		return 0x42 // $11ce8: terminal resumes ordinary state2 next update.
+	case 0x28, 0x30:
+		return state
+	default:
+		return 0
+	}
 }
 
 type FollowerAftermathCallbacks struct {
@@ -207,12 +234,11 @@ func (r *FollowerAftermathRules) Tick(reference NativeRecordReference, cb Follow
 	if err != nil {
 		return step, err
 	}
-	switch a.Motion.State {
-	case 0x18, 0x40, 0x42, 8, 0x28, 0x30:
-		step.Handled = true
-	default:
+	family := aftermathHandler(a.Motion.State)
+	if family == 0 {
 		return step, nil
 	}
+	step.Handled = true
 	if a.Motion.State == 0x30 {
 		return r.tickRuin(reference, cb, step)
 	}
@@ -240,8 +266,8 @@ func (r *FollowerAftermathRules) Tick(reference NativeRecordReference, cb Follow
 			return step, err
 		}
 	} else {
-		switch a.Motion.State {
-		case 0x18, 0x40:
+		switch family {
+		case 0x18:
 			if err := aftermathRemove(reference, cb); err != nil {
 				return step, err
 			}
@@ -270,7 +296,7 @@ func (r *FollowerAftermathRules) Tick(reference NativeRecordReference, cb Follow
 	if a.Motion.State == 0x28 || a.Motion.State == 0x30 {
 		return r.tickRuin(reference, cb, step)
 	}
-	step.CurrentTotal = a.Motion.State == 0x42 || a.Motion.State == 2 || a.Motion.State == 8 && !terminal
+	step.CurrentTotal = family == 0x42 || a.Motion.State == 2 || family == 8 && !terminal
 	step.NextFollower = !step.CurrentTotal
 	return step, nil
 }

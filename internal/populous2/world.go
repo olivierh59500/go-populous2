@@ -37,9 +37,20 @@ type World struct {
 	FollowerDecision         FollowerDecisionRules
 	TownEvaluator            NativeTownEvaluator
 	MagnetRules              NativeMagnetRules
+	FollowerEntry            FollowerEntryRules
+	FollowerCombat           FollowerCombatRules
+	TownCombat               TownCombatRules
+	FollowerAftermath        FollowerAftermathRules
+	CommonPrepass            CommonPrepassRules
+	FollowerHero             FollowerHeroRules
+	HeroArt                  HeroRules
+	FollowerWin              FollowerWinRules
+	NativeBirthBlocked       bool
+	NativeRaiseEnabled       uint16
 	NativeGlobals            NativeGlobalImage
 	NativeSelected           NativeRecordReference
 	nativeCallDepth          int
+	nativeEntryCrossing      func(int) FollowerEntryStep
 	NativeOverlays           [4096]uint8
 	NativeFollowers          [legacy.MaxPeeps]NativeFollower
 	NativeEffects            [NativeEffectCapacity]NativeEffectActor
@@ -135,6 +146,14 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.FollowerDecision = bundle.FollowerDecision
 	w.TownEvaluator = bundle.TownEvaluator
 	w.MagnetRules = bundle.MagnetRules
+	w.FollowerEntry, w.FollowerCombat, w.TownCombat, w.FollowerAftermath = bundle.FollowerEntry, bundle.FollowerCombat, bundle.TownCombat, bundle.FollowerAftermath
+	w.CommonPrepass = bundle.CommonPrepass
+	w.FollowerHero = bundle.FollowerHero
+	w.HeroArt = bundle.HeroRules
+	w.FollowerWin, err = DecodeFollowerWinRules(bundle.Executable, land)
+	if err != nil {
+		return nil, err
+	}
 	for player, p := range level.Players {
 		w.Rules[player] = p.ScenarioRules()
 	}
@@ -374,6 +393,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	case Armageddon:
 		applied = w.legacyPower(player, spell.Cost, legacy.ManaWarCost, func() bool { return w.Core.WarPower(player) })
 		if applied {
+			w.NativeRaiseEnabled = 1
 			w.removePlagueVictims()
 		}
 	case Plague:
@@ -457,6 +477,7 @@ func (w *World) recordCast(player int, id SpellID) {
 }
 
 func (w *World) Tick() {
+	w.NativeBirthBlocked = false
 	w.reconcileActorGraph()
 	w.syncNativeRuntimeBridge()
 	w.refreshNativeRecordImage()

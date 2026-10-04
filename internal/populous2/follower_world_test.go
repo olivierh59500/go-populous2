@@ -13,8 +13,9 @@ import (
 )
 
 // The original traces stop before the next target decision. Replay their
-// complete fixed-leg portion through the real Core hook, admission, position,
-// occupancy and rendering adapters, without translating search AI here.
+// complete fixed-leg portion through the Core hook, admission, position,
+// occupancy and rendering adapters. The native oracle stubs $1275a entry;
+// this component comparison omits that separate call at the same boundary.
 func TestFollowerWorldFixedLegsAgainstOriginal68000(t *testing.T) {
 	data, err := os.ReadFile("testdata/follower_motion_native.json")
 	if err != nil {
@@ -46,6 +47,7 @@ func TestFollowerWorldFixedLegsAgainstOriginal68000(t *testing.T) {
 			w.Core.MapWho = [4096]uint16{}
 			w.Core.MapWho[32+32*64] = 1
 			w.initializeNativeFollower(0)
+			w.nativeEntryCrossing = nil
 			initial := fixture.Initial
 			a := &w.NativeFollowers[0].Actor
 			a.X, a.Y, a.VX, a.VY, a.Timer, a.State, a.ReturnState, a.Animation = int16(initial.FixedX), int16(initial.FixedY), initial.VelocityX, initial.VelocityY, initial.Timer, initial.State, initial.ReturnState, int(initial.Animation)
@@ -156,17 +158,23 @@ func TestFollowerWorldContactOccursOnceAtNativeCrossing(t *testing.T) {
 		t.Fatal(err)
 	}
 	a.State = 4
-	contacts := 0
-	w.Core.BeforeBattle = func(int, int) bool { contacts++; return true }
 	for range 6 {
 		w.updateNativeFollower(0)
 	}
-	if contacts != 0 || w.Core.Peeps[0].AtPos != 2000 {
+	if w.NativeEntries[0].Managed || w.Core.Peeps[0].AtPos != 2000 {
 		t.Fatal("contact preceded fractional cell crossing")
 	}
 	w.updateNativeFollower(0)
-	if contacts != 1 || w.Core.Peeps[0].AtPos != 2001 {
-		t.Fatal("native crossing did not resolve exactly one contact")
+	attacker, err := w.RecordImage.ReadFollowerEntry(nativeActorReference(NativeFollowerPool, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defender, err := w.RecordImage.ReadFollowerEntry(nativeActorReference(NativeFollowerPool, 1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if attacker.Motion.State != 14 || defender.Motion.State != 16 || attacker.Contact30 != 104 || defender.Contact30 != 52 || w.Core.Peeps[0].AtPos != 2001 || attacker.Motion.Population != 10000 || defender.Motion.Population != 10000 {
+		t.Fatal("native crossing did not prepare one reciprocal battle without early damage")
 	}
 }
 

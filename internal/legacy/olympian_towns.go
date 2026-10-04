@@ -142,6 +142,9 @@ func (w *World) processOlympianTown(index int, landAI bool) {
 	// not add growth to both groups. A full pool leaves the original unchanged.
 	newIndex := w.AllocateHeroClone(index)
 	if newIndex < 0 {
+		if w.NativeTownAllocationFailed != nil {
+			w.NativeTownAllocationFailed()
+		}
 		return
 	}
 	w.Peeps[index].Population -= population

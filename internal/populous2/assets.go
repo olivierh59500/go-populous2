@@ -12,39 +12,45 @@ import (
 )
 
 type Bundle struct {
-	Executable       *amiga.Executable
-	Resources        []Resource
-	Raw              map[string][]byte
-	Landscapes       [4]Landscape
-	Tiles            [4][]*image.RGBA
-	Sprites          [4][]Sprite
-	Background       *image.RGBA
-	Levels           []Level
-	Spells           []Spell
-	ManaRules        ManaRules
-	HeroRules        HeroRules
-	FollowerMotion   FollowerMotionRules
-	FollowerDecision FollowerDecisionRules
-	TownEvaluator    NativeTownEvaluator
-	TownCenterArt    NativeTownCenterArt
-	MagnetRules      NativeMagnetRules
-	Audio            *AudioBank
-	Actions          []NativeAction
-	GroundRules      GroundEffectRules
-	HillParameters   [4][4]int
-	PlagueAnimation  []AnimationFrame
-	RoadRules        RoadRules
-	Scenery          *SceneryBank
-	BatholithRange   int
-	DeityArt         *DeityArt
-	FireColumns      FireColumnRules
-	Whirlwinds       WhirlwindRules
-	Whirlpools       WhirlpoolRules
-	BasaltRules      BasaltRules
-	LightningRules   LightningRules
-	FungusRules      FungusRules
-	FungusHazards    FungusHazardRules
-	WallRules        WallRules
+	Executable        *amiga.Executable
+	Resources         []Resource
+	Raw               map[string][]byte
+	Landscapes        [4]Landscape
+	Tiles             [4][]*image.RGBA
+	Sprites           [4][]Sprite
+	Background        *image.RGBA
+	Levels            []Level
+	Spells            []Spell
+	ManaRules         ManaRules
+	HeroRules         HeroRules
+	FollowerMotion    FollowerMotionRules
+	FollowerDecision  FollowerDecisionRules
+	TownEvaluator     NativeTownEvaluator
+	TownCenterArt     NativeTownCenterArt
+	MagnetRules       NativeMagnetRules
+	FollowerEntry     FollowerEntryRules
+	FollowerCombat    FollowerCombatRules
+	TownCombat        TownCombatRules
+	FollowerAftermath FollowerAftermathRules
+	CommonPrepass     CommonPrepassRules
+	FollowerHero      FollowerHeroRules
+	Audio             *AudioBank
+	Actions           []NativeAction
+	GroundRules       GroundEffectRules
+	HillParameters    [4][4]int
+	PlagueAnimation   []AnimationFrame
+	RoadRules         RoadRules
+	Scenery           *SceneryBank
+	BatholithRange    int
+	DeityArt          *DeityArt
+	FireColumns       FireColumnRules
+	Whirlwinds        WhirlwindRules
+	Whirlpools        WhirlpoolRules
+	BasaltRules       BasaltRules
+	LightningRules    LightningRules
+	FungusRules       FungusRules
+	FungusHazards     FungusHazardRules
+	WallRules         WallRules
 }
 
 func Load() (*Bundle, error) {
@@ -153,6 +159,30 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.MagnetRules, err = DecodeNativeMagnetRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FollowerEntry, err = DecodeFollowerEntryRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FollowerCombat, err = DecodeFollowerCombatRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.TownCombat, err = DecodeTownCombatRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FollowerAftermath, err = DecodeFollowerAftermathRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.CommonPrepass, err = DecodeCommonPrepassRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FollowerHero, err = DecodeFollowerHeroRules(exe)
 	if err != nil {
 		return nil, err
 	}

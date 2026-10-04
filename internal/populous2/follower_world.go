@@ -47,6 +47,7 @@ func (w *World) initializeNativeFollower(index int) {
 }
 
 func (w *World) bindFollowerMotion() {
+	w.nativeEntryCrossing = w.enterNativeFollowerCell
 	w.Core.OnFollowerAllocated = func(index int) {
 		// Same faith and position can belong to a new record generation.
 		w.Heroes[index] = Hero{}
@@ -73,6 +74,7 @@ func (w *World) updateNativeFollower(index int) bool {
 		record = &w.NativeFollowers[index]
 	}
 	actor := &record.Actor
+	var entry FollowerEntryStep
 	actor.Player, actor.Population, actor.Speed = p.Player, int32(p.Population), p.MovementSpeed
 	w.FollowerMotion.Tick(actor, FollowerMotionCallbacks{
 		Prepass: func(actor *FollowerMotionActor) bool {
@@ -97,9 +99,16 @@ func (w *World) updateNativeFollower(index int) bool {
 		},
 		Move: func(actor *FollowerMotionActor, oldX, oldY int16) {
 			position := (int(actor.X) >> 8) + (int(actor.Y)>>8)*64
+			previous := (int(oldX) >> 8) + (int(oldY)>>8)*64
 			w.moveActor(NativeFollowerPool, index, uint16(actor.X), uint16(actor.Y))
-			w.Core.MapWho[position] = w.legacyFollowerHead(position, index)
-			w.Core.CommitWalkerEntry(index, position)
+			if w.Core.MapWho[previous] == uint16(index+1) {
+				w.Core.MapWho[previous] = w.legacyFollowerHead(previous, index)
+			}
+			w.Core.Peeps[index].AtPos = position
+			if w.nativeEntryCrossing != nil {
+				entry = w.nativeEntryCrossing(index)
+			}
+			w.Core.MapWho[position] = w.legacyFollowerHead(position, -1)
 			w.Core.MapSteps[position] = (w.Core.MapSteps[position] + 1) & 31
 			actor.Population = int32(w.Core.Peeps[index].Population)
 		},
@@ -110,7 +119,7 @@ func (w *World) updateNativeFollower(index int) bool {
 		p.Frame = actor.Animation / 4
 		w.moveActor(NativeFollowerPool, index, uint16(actor.X), uint16(actor.Y))
 	}
-	return true
+	return !entry.ContinueTownUpdate
 }
 
 func (w *World) planNativeWalker(index int, actor *FollowerMotionActor) bool {
@@ -123,14 +132,36 @@ func (w *World) planNativeWalker(index int, actor *FollowerMotionActor) bool {
 	if w.Core.FollowerAttrition != nil {
 		attrition = w.Core.FollowerAttrition(int(p.Player), false)
 	}
-	if actor.State == 2 && magnet {
-		// The initial mode switch subtracts at both $1132e and $11bd0.
-		attrition *= 2
-	}
-	w.Core.DamagePeep(index, attrition)
-	actor.Population = int32(w.Core.Peeps[index].Population)
-	if w.Core.Peeps[index].Population <= 0 {
+	if int32(uint32(actor.Population)-uint32(attrition)) <= 0 {
+		err := w.runNativeFollowerCall(func() error {
+			_, err := ApplyFollowerAttrition(nativeActorReference(NativeFollowerPool, index), uint32(attrition), FollowerAttritionCallbacks{Read: w.readEntryRecord, Write: w.writeEntryRecord, Cleanup: w.cleanupNativeFollower})
+			return err
+		})
+		if err != nil {
+			panic(err)
+		}
 		return false
+	}
+	p.Population = int(int32(uint32(actor.Population) - uint32(attrition)))
+	actor.Population = int32(p.Population)
+	if p.Population <= 0 {
+		return false
+	}
+	if actor.State == 2 && magnet {
+		// The two native calls have distinct death boundaries. The second
+		// subtraction occurs only after the first call leaves a survivor.
+		if int32(uint32(actor.Population)-uint32(attrition)) <= 0 {
+			err := w.runNativeFollowerCall(func() error {
+				_, err := ApplyFollowerAttrition(nativeActorReference(NativeFollowerPool, index), uint32(attrition), FollowerAttritionCallbacks{Read: w.readEntryRecord, Write: w.writeEntryRecord, Cleanup: w.cleanupNativeFollower})
+				return err
+			})
+			if err != nil {
+				panic(err)
+			}
+			return false
+		}
+		p.Population = int(int32(uint32(actor.Population) - uint32(attrition)))
+		actor.Population = int32(p.Population)
 	}
 	if !magnet {
 		decision, err := w.FollowerDecision.Select(actor, uint8(p.IQ), w.nativeFollowerMode(int(p.Player)), &w.Occupancy.Grid, FollowerDecisionCallbacks{Record: w.followerDecisionRecord, Random: w.random})

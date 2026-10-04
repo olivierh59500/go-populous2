@@ -13,11 +13,11 @@ power is not sufficient evidence that its original behavior has been ported.
 | Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester and opponent experience | Scripted events and opponent personalities |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
-| Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion, retained actor/deity/marker bytes and generation-safe reuse; independently verified entry/combat/winner/aftermath controllers | Complete World contact/combat dispatcher, magnet/hero decisions, remaining waiting/water states and inventions |
-| Towns | 19 stages, native mixed support/cache, 49-cell farm/overlay compositor, growth/mana/capacity/emigration tables | Native founding/contact dispatcher, remaining work counters/land AI and end-to-end town parity |
+| Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion; World entry, delayed contact, combat, rewards and retained aftermath; raw actor/deity/marker bytes | Complete ordinary prepass, remaining hazard/captive handlers, native magnet decisions, hero creation/motion boundaries and inventions |
+| Towns | 19 stages, native mixed support/cache, 49-cell compositor and founding/contact; separately verified native economy | Full native economy/birth dispatcher, land AI and end-to-end town parity |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Version 16 retains native actor/deity/marker bytes and town overlays, lightning states, mixed actor graph and per-side rules | Original Amiga GAM interoperability |
+| Saving | Version 17 retains actor/deity/marker bytes, managed contacts/combat outcomes, original control latches, town overlays and per-side rules | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |

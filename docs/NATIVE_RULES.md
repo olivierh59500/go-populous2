@@ -651,5 +651,28 @@ Post-combat handlers retain death sprites and map membership until their native
 terminals. A recovering winner returns to search on the next update. A destroyed
 town becomes a ruin with a 400-word countdown, tested against the native raster
 table. These components have complete isolated routine comparisons; their
-combined normal World dispatcher, common prepass and hero decisions remain
-required integration work.
+World contact/combat dispatcher now composes these routines, with the common
+prepass before managed states and a raw call boundary around nested operations.
+Native movement crossings trigger entry rather than the first game's immediate
+contact routine. Friendly contacts retain their homing leg before merging;
+attacker/defender states retain their reciprocal links, and owned zero-population
+deaths remain mapped through their terminal animations.
+
+Terminal handlers preserve raw aliases in the native dispatch table: states
+`$08/$2c/$2e` share `$1199e`, `$18/$20/$32/$38/$3e/$40` share `$11e00`, and
+`$1a/$2a/$42` share `$11ce8`. They use their shared handler without rewriting
+the stored state. Ordinary starvation keeps animation `$7f4`, positive owner
+and map membership until its second, terminal cleanup. A World test verifies
+that complete lifecycle.
+
+Component movement fixtures explicitly omit the entry call that their original
+CPU harness stubs. Separate World tests cover actual entry, delayed merging,
+reciprocal battle, passive-defense RNG, same-update waiting redispatch and saved
+death continuation. Bounded 900- and 1,800-update desktop runs completed and their application
+capture was inspected. These checks do not establish every hazard/hero path:
+remaining water/conversion/captive states, native magnet decisions, complete
+ordinary prepass and all hero movement boundaries remain required.
+
+The hero planner reads the original `$f12` latch, set by Armageddon and cleared
+at new-world initialization. It is not inferred from an inherited game option.
+Version 17 saves retain this latch and the native allocation-inhibition flag.

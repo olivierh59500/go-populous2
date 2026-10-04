@@ -73,6 +73,7 @@ func (w *World) clearNativeFarms(ref NativeRecordReference, tile uint8) error {
 }
 
 func (w *World) bindNativeTownEvaluator() {
+	w.Core.NativeTownAllocationFailed = func() { w.NativeBirthBlocked = true }
 	w.Core.NativeTownEvaluate = func(index int) int {
 		stage, err := w.evaluateNativeTown(nativeActorReference(NativeFollowerPool, index))
 		if err != nil {

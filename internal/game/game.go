@@ -702,14 +702,15 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 	for i, peep := range world.Peeps {
 		// Followers are drawn after scenery and wall actor layers.
 		managedLightning := g.World.LightningVictims[i].Active
-		if peep.Population <= 0 && !managedLightning || peep.Flags&legacy.InRuin != 0 {
+		managedNative := g.World.NativeEntries[i].Managed && g.World.NativeEntries[i].Actor.Owner != 0
+		if peep.Population <= 0 && !managedLightning && !managedNative || peep.Flags&legacy.InRuin != 0 {
 			continue
 		}
 		wx, wy, fx, fy := peep.AtPos%64, peep.AtPos/64, uint8(128), uint8(128)
 		if nativeX, nativeY, ok := g.World.FollowerPosition(i); ok {
 			wx, wy, fx, fy = int(nativeX)>>8, int(nativeY)>>8, uint8(nativeX), uint8(nativeY)
 		}
-		if managedLightning {
+		if managedLightning || managedNative {
 			graph := g.World.Occupancy.Followers[i].Record
 			wx, wy, fx, fy = int(graph.X>>8), int(graph.Y>>8), uint8(graph.X), uint8(graph.Y)
 		}
@@ -721,6 +722,12 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		px, py := project(x, y, cell.BaseAltitude)
 		ox, oy := cell.ActorOffset(fx, fy)
 		cx, cy := px+32+ox*2, py+16+oy*2
+		if frame, ok := g.World.ManagedFollowerFrame(i); ok {
+			for _, layer := range frame.Layers {
+				g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
+			}
+			continue
+		}
 		if frame, ok := g.World.LightningFollowerFrame(i); ok {
 			for _, layer := range frame.Layers {
 				g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)

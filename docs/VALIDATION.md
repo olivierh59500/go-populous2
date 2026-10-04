@@ -48,6 +48,12 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Combat winner | 87 complete native routine comparisons with real town/cleanup/graph callbacks and exact Adonis clone failure behavior |
 | Town combat | 70 native destruction/reform cases, complete maps/overlays/records/deity data and original A0 alias behavior |
 | Combat aftermath | 90 native cases and 1,214 updates across retained deaths, winner recovery, town destruction/ruins and linked cardinal-neighbor effects |
+| World contact/combat integration | Native crossing prepares reciprocal battle without early damage; friendly homing merges only at completion; passive defender consumes no RNG; normal World loop, same-update waiting search and retained death/save continuation checked |
+| Native prepass | 210 complete original BSS/source/sound comparisons with real cleanup, leader and farm operations; integrated into managed dispatch |
+| Native attrition | 180 original stored-result, signed-overflow and retained-death comparisons |
+| Hero decisions | 1,571 complete native BSS cases across all six hero types, target ties, wall thresholds, raw aliases and homing branches |
+| Native direct raising | 666 cases/948 operations compare all 4,225 heights, Basalt preservation and direct operation admission |
+| Raw follower contact | 292 original CPU cases covering all hero types, 19 town stages, self/overlapping references, Helen captive chains and exact sound/write boundaries |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |

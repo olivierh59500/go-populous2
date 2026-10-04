@@ -122,12 +122,13 @@ func TestNativeRoadDecisionSavedLegRetainsVelocity(t *testing.T) {
 			t.Fatal(err)
 		}
 		restored.Level.Players[0].Parameters[5] = 0
+		restored.Core.FollowerAttrition = func(int, bool) int { return 0 }
 		for range 5 {
 			w.updateNativeFollower(0)
 			restored.updateNativeFollower(0)
 		}
 		if !bytes.Equal(encodeSnapshot(t, w), encodeSnapshot(t, restored)) {
-			t.Fatal("loading changed native accelerated road leg or RNG")
+			t.Fatalf("loading changed native accelerated road leg or RNG at speed %d", speed)
 		}
 	}
 }

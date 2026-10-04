@@ -213,6 +213,7 @@ type World struct {
 	TerrainCommand             func(player, x, y int, raise bool) bool
 	NativeTownEvaluate         func(index int) int
 	NativeTownClear            func(index int)
+	NativeTownAllocationFailed func()
 	Terrain                    int
 	GameTurn                   int
 	Alt                        [EndWidth * EndWidth]int
