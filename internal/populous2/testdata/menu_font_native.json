@@ -1,0 +1,69 @@
+{
+  "fixtures": [
+    {
+      "column": 0,
+      "indices_sha256": "a75ae2573ea3e471cf8e1eb4a9e4888f94d120f23861a7be82f7ab3fd0598d13",
+      "name": "all-printable-glyphs",
+      "row": 0,
+      "steps": 4265,
+      "text": " !\"#$%&'()*+,-./0123456789:;<=>?\n@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_\n`abcdefghijklmnopqrstuvwxyz{|}~\u007f"
+    },
+    {
+      "column": 3,
+      "indices_sha256": "082ab65238907e0b1b11c883731e84218b4a94897b53479a1d35bc456095398d",
+      "name": "menu-title",
+      "row": 5,
+      "steps": 1201,
+      "text": "POPULOUS II - OLYMPIAN GODS"
+    },
+    {
+      "column": 4,
+      "indices_sha256": "54aa3c4a45991d3c96a9018dcda279f93c17b46ae1e75464f109d88c07c0af95",
+      "name": "digits",
+      "row": 16,
+      "steps": 937,
+      "text": "0123456789 999 DOEGAC"
+    },
+    {
+      "column": 1,
+      "indices_sha256": "97c7be5dbd459badec4316e0d9f60d6b57dadf15cb9b4c11a8d116dcaf36d9a7",
+      "name": "checkbox-glyphs",
+      "row": 8,
+      "steps": 893,
+      "text": "y z g h CONSTRUCTION"
+    },
+    {
+      "column": 3,
+      "indices_sha256": "a6ad2702f46f1c05881b473f428f4dc25aa54ed6adfaaa44cdd8744a28b0caa4",
+      "name": "line-breaks",
+      "row": 11,
+      "steps": 745,
+      "text": "FIRST\nSECOND\nTHIRD"
+    },
+    {
+      "column": 38,
+      "indices_sha256": "61a2c84057fe8962bed21989ec0927dc577b4d7542ad2b615a3804140202b944",
+      "name": "right-edge-stops",
+      "row": 20,
+      "steps": 107,
+      "text": "ABC\nAFTER"
+    },
+    {
+      "column": 0,
+      "indices_sha256": "4f7988030a00d082fe445e00a2ac5dab502300ff1b80e8592dd569867b60ef74",
+      "name": "empty",
+      "row": 0,
+      "steps": 13,
+      "text": ""
+    },
+    {
+      "column": 35,
+      "indices_sha256": "956264e58a7c96dabf8fbb1b835812e14447a3123b17caf88def760526e1133c",
+      "name": "last-bottom-row",
+      "row": 192,
+      "steps": 145,
+      "text": "END"
+    }
+  ],
+  "source": "Independent relocated execution of the original Amiga menu text renderer at CODE $509a on a cleared four-plane 320x200 buffer; hashes cover all 64000 color indices."
+}

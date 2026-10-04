@@ -101,6 +101,13 @@ func run() error {
 		if err := writePNG(filepath.Join(*images, "interface.png"), bundle.Background); err != nil {
 			return err
 		}
+		font, err := populous2.DecodeNativeMenuFont(exe)
+		if err != nil {
+			return err
+		}
+		if err := writePNG(filepath.Join(*images, "menu-font.png"), font.Atlas(bundle.Landscapes[0].Palettes[0])); err != nil {
+			return err
+		}
 	}
 	if *jsonOutput {
 		enc := json.NewEncoder(os.Stdout)
