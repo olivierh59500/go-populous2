@@ -90,7 +90,7 @@ var spellDefinitions = []Spell{
 	{ID: Earthquake, Name: "SEISME", Aim: AimDirection, Help: "Secoue le sol dans la direction choisie."},
 	{ID: Batholith, Name: "BATHOLITE", Aim: AimPoint, Help: "Fait surgir une masse de roche sur les terres."},
 	{ID: Heracles, Name: "HERACLES", Aim: AimLeader, Help: "Convertit le chef en heros d'une force exceptionnelle."},
-	{ID: Lightning, Name: "FOUDRE", Aim: AimPoint, Help: "Frappe les habitations et les adorateurs ennemis."},
+	{ID: Lightning, Name: "FOUDRE", Aim: AimPoint, Help: "Clic gauche: marqueur. ENTREE: activer les eclairs. Clic droit: annuler."},
 	{ID: Whirlwind, Name: "TORNADE", Aim: AimPoint, Help: "Un vortex traverse le terrain et detruit sur son passage."},
 	{ID: Storm, Name: "TEMPETE", Aim: AimPoint, Help: "Une tempete frappe les habitations de la zone."},
 	{ID: Odysseus, Name: "ULYSSE", Aim: AimLeader, Help: "Convertit le chef en un heros tres rapide."},

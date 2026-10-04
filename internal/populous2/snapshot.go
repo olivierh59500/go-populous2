@@ -8,34 +8,36 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 13
+const SaveVersion = 14
 
 type Snapshot struct {
-	Version         int
-	LevelIndex      int
-	ScenarioOptions [2]uint16
-	Custom          bool
-	Demo            bool
-	Experience      [2][6]uint8
-	Deity           Deity
-	Core            legacy.WorldSnapshot
-	Effects         []Effect
-	Marks           [4096]Mark
-	Heroes          [legacy.MaxPeeps]Hero
-	Random          uint16
-	LastSpell       SpellID
-	LastPlayer      int
-	SpellSerial     int
-	HazardSerial    int
-	LastHazardCue   int
-	Scenery         [SceneryCapacity]SceneryActor
-	Walls           WallState
-	NativeEffects   [NativeEffectCapacity]NativeEffectActor
-	NativeFollowers [legacy.MaxPeeps]NativeFollower
-	Occupancy       NativeWorldOccupancy
-	BasaltState     BasaltState
-	FungusState     FungusState
-	FlameDeaths     []FlameDeath
+	Version          int
+	LevelIndex       int
+	ScenarioOptions  [2]uint16
+	Custom           bool
+	Demo             bool
+	Experience       [2][6]uint8
+	Deity            Deity
+	Core             legacy.WorldSnapshot
+	Effects          []Effect
+	Marks            [4096]Mark
+	Heroes           [legacy.MaxPeeps]Hero
+	Random           uint16
+	LastSpell        SpellID
+	LastPlayer       int
+	SpellSerial      int
+	HazardSerial     int
+	LastHazardCue    int
+	Scenery          [SceneryCapacity]SceneryActor
+	Walls            WallState
+	NativeEffects    [NativeEffectCapacity]NativeEffectActor
+	NativeFollowers  [legacy.MaxPeeps]NativeFollower
+	Occupancy        NativeWorldOccupancy
+	BasaltState      BasaltState
+	LightningState   LightningState
+	LightningVictims [legacy.MaxPeeps]NativeLightningFollower
+	FungusState      FungusState
+	FlameDeaths      []FlameDeath
 }
 
 func (w *World) Snapshot() Snapshot {
@@ -46,7 +48,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -120,8 +122,10 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			return nil, fmt.Errorf("invalid saved altitude %d", h)
 		}
 	}
-	for _, p := range snapshot.Core.Peeps {
-		if p.Player > 1 || p.Population < 0 || p.AtPos < 0 || p.AtPos >= 4096 {
+	for index, p := range snapshot.Core.Peeps {
+		v := snapshot.LightningVictims[index]
+		managedSigned := snapshot.Version >= 14 && v.Active && (v.Victim.State == 0x1c || v.Victim.State == 0x1e) && int32(p.Population) == v.Victim.Population
+		if p.Player > 1 || p.Population < 0 && !managedSigned || p.AtPos < 0 || p.AtPos >= 4096 {
 			return nil, fmt.Errorf("invalid saved follower")
 		}
 	}
@@ -177,6 +181,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		if snapshot.Version >= 13 && effect.Spell == Whirlpool {
 			return nil, fmt.Errorf("saved whirlpool requires a native effect record")
 		}
+		if snapshot.Version >= 14 && effect.Spell == Lightning {
+			return nil, fmt.Errorf("saved lightning requires a native marker/bolt")
+		}
 	}
 	var sceneryTiles [4096]bool
 	for _, actor := range snapshot.Scenery {
@@ -210,6 +217,17 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			}
 			continue
 		}
+		if a.Kind == 0x28 || a.Kind == 0x2a {
+			if snapshot.Version < 14 || a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Kind == 0x28 && a.State != 22 && a.State != 26 || a.Kind == 0x2a && a.State != 24 {
+				return nil, fmt.Errorf("invalid saved lightning actor")
+			}
+			if a.Kind == 0x28 {
+				if _, ok := bundle.LightningRules.Frames[a.Animation]; !ok {
+					return nil, fmt.Errorf("invalid saved lightning marker frame")
+				}
+			}
+			continue
+		}
 		if a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 && a.Kind != BasaltActorKind || !bundle.validNativeEffectPhase(a) {
 			return nil, fmt.Errorf("invalid native effect actor")
 		}
@@ -224,6 +242,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	}
 	if !validSavedFungus(&snapshot.NativeEffects, &snapshot.FungusState) {
 		return nil, fmt.Errorf("invalid saved fungus controller/reference")
+	}
+	if err := validateLightningSave(bundle, snapshot); err != nil {
+		return nil, err
 	}
 	if len(snapshot.FlameDeaths) > legacy.MaxFollowers {
 		return nil, fmt.Errorf("too many saved flame deaths")
@@ -283,6 +304,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.Scenery = snapshot.Scenery
 	w.Walls = snapshot.Walls
 	w.NativeEffects = snapshot.NativeEffects
+	w.LightningState, w.LightningVictims = snapshot.LightningState, snapshot.LightningVictims
 	w.BasaltState = snapshot.BasaltState
 	w.FungusState = snapshot.FungusState
 	if snapshot.Version < 7 {
@@ -370,6 +392,25 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			}
 		}
 	}
+	if snapshot.Version < 14 {
+		live := w.Effects[:0]
+		for _, effect := range w.Effects {
+			if effect.Spell != Lightning {
+				live = append(live, effect)
+				continue
+			}
+			// An obsolete instantaneous-area effect has no native bolt chain.
+			// Preserve its location as a marker; no invented damage is replayed.
+			placed, err := w.LightningRules.Place(&w.LightningState, &w.NativeEffects, effect.Player, effect.X, effect.Y, w.lightningCallbacks())
+			if err != nil {
+				return nil, fmt.Errorf("saved lightning migration: %w", err)
+			}
+			if !placed {
+				return nil, fmt.Errorf("saved lightning exceeds native marker capacity")
+			}
+		}
+		w.Effects = live
+	}
 	w.FlameDeaths = append([]FlameDeath(nil), snapshot.FlameDeaths...)
 	w.NativeFollowers = snapshot.NativeFollowers
 	if snapshot.Version < 12 {
@@ -381,10 +422,14 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.bindFollowerMotion()
 	w.bindFlameDeaths()
 	w.bindFollowerHazards()
+	w.bindLightningVictims()
 	w.bindWallMovement()
 	w.rebuildSceneryIndex()
 	if snapshot.Version >= 13 {
 		w.Occupancy = snapshot.Occupancy
+		if snapshot.Version < 14 {
+			w.reconcileActorGraph()
+		}
 	} else {
 		w.initializeActorGraph()
 		w.reconcileActorGraph()

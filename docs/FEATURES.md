@@ -17,7 +17,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Validated version 13 saves, mixed actor graph/pressure, native water controllers, followers, deity profile and per-side rules | Original Amiga GAM interoperability |
+| Saving | Validated version 14 saves, lightning marker/bolt/victim states, mixed actor graph/pressure, followers, deity profile and per-side rules | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
@@ -45,7 +45,7 @@ the remaining simulation routines.
 | Earthquake | 14 | 40 | Inherited earthquake with native cost/sound; directed native fault pending |
 | Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
 | Heracles | 16 | 60 | Native double population and speed bonus; native combat/routing pending |
-| Lightning | 18 | 28 / 30 | Provisional area damage; native target/effect animation pending |
+| Lightning | 18 | 28 / 30 / 32 | Native free marker placement, charged activation, linked bolts, gradual victim states and procedural beams; exact town reform/farm compositor and remaining terrain prepass branches pending |
 | Whirlwind | 19 | 22 | Native fixed-point trajectory, phases, experience lifetime, composite art and frame cues; pickup/release, town collapse and child whirlpools pending |
 | Storm | 20 | 64 | Provisional timed area damage; native rain/lightning/terrain simulation pending |
 | Odysseus | 21 | 66 | Native doubled speed attribute/art; runtime movement still inherited |

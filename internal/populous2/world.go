@@ -27,6 +27,9 @@ type World struct {
 	Whirlpools               WhirlpoolRules
 	BasaltRules              BasaltRules
 	BasaltState              BasaltState
+	LightningRules           LightningRules
+	LightningState           LightningState
+	LightningVictims         [legacy.MaxPeeps]NativeLightningFollower
 	FungusRules              FungusRules
 	FungusHazards            FungusHazardRules
 	FungusState              FungusState
@@ -115,6 +118,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Whirlwinds: bundle.Whirlwinds, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	w.Whirlpools, w.BasaltRules = bundle.Whirlpools, bundle.BasaltRules
+	w.LightningRules = bundle.LightningRules
 	w.FungusRules = bundle.FungusRules
 	w.FungusHazards = bundle.FungusHazards
 	w.FollowerMotion = bundle.FollowerMotion
@@ -138,6 +142,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.bindWallMovement()
 	w.bindFlameDeaths()
 	w.bindFollowerHazards()
+	w.bindLightningVictims()
 	w.bindActorGraphHooks()
 	return w, nil
 }
@@ -306,6 +311,9 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	if !exists || !w.Available(player, id) || id == RaiseLower || w.Core.War {
 		return false
 	}
+	if id == Lightning {
+		return w.PlaceLightning(player, target.X, target.Y)
+	}
 	spell.Cost = w.ManaCost(player, id)
 	if w.Core.Magnets[player].Mana < spell.Cost {
 		return false
@@ -382,11 +390,6 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		applied = w.castBatholith(target.X, target.Y)
 	case Basalt:
 		applied = w.castBasalt(player, target.X, target.Y, target.Direction)
-	case Lightning:
-		applied = w.damageArea(player, target.X, target.Y, 1, 600, false)
-		if applied {
-			w.Effects = append(w.Effects, Effect{Spell: id, Player: player, X: target.X, Y: target.Y, Life: 4})
-		}
 	case FireColumn:
 		applied = w.castFireColumn(player, target.X, target.Y)
 	case Whirlwind:
@@ -576,6 +579,9 @@ func (w *World) computerPower(player int) {
 			continue
 		}
 		if w.Cast(player, id, Target{X: target % 64, Y: target / 64, Direction: w.random() % 8}) {
+			if id == Lightning {
+				w.ActivateLightning(player)
+			}
 			return
 		}
 	}

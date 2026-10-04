@@ -175,6 +175,11 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyC) {
 		g.centerPlayer(0)
 	}
+	if g.Selected == populous2.Lightning && inpututil.IsKeyJustPressed(ebiten.KeyEnter) && !g.Paused && !g.World.Demo {
+		if g.World.ActivateLightning(0) {
+			g.notify("Foudre activee.")
+		}
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
 		step := 1
 		if g.Selected == populous2.Basalt {
@@ -460,6 +465,16 @@ func (g *Game) handleClick() {
 		}
 		return
 	}
+	if g.Selected == populous2.Lightning {
+		if right {
+			g.World.DismissLightning(0)
+			return
+		}
+		if g.World.PlaceLightning(0, mx, my) {
+			g.notify("Marqueur place. ENTREE: activer. Clic droit: annuler.")
+		}
+		return
+	}
 	if right {
 		g.Selected = populous2.RaiseLower
 		g.lineStart = nil
@@ -681,12 +696,17 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 	}
 	for i, peep := range world.Peeps {
 		// Followers are drawn after scenery and wall actor layers.
-		if peep.Population <= 0 || peep.Flags&legacy.InRuin != 0 {
+		managedLightning := g.World.LightningVictims[i].Active
+		if peep.Population <= 0 && !managedLightning || peep.Flags&legacy.InRuin != 0 {
 			continue
 		}
 		wx, wy, fx, fy := peep.AtPos%64, peep.AtPos/64, uint8(128), uint8(128)
 		if nativeX, nativeY, ok := g.World.FollowerPosition(i); ok {
 			wx, wy, fx, fy = int(nativeX)>>8, int(nativeY)>>8, uint8(nativeX), uint8(nativeY)
+		}
+		if managedLightning {
+			graph := g.World.Occupancy.Followers[i].Record
+			wx, wy, fx, fy = int(graph.X>>8), int(graph.Y>>8), uint8(graph.X), uint8(graph.Y)
 		}
 		x, y := wx-g.CameraX, wy-g.CameraY
 		if x < 0 || y < 0 || x >= 8 || y >= 8 {
@@ -696,6 +716,12 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		px, py := project(x, y, cell.BaseAltitude)
 		ox, oy := cell.ActorOffset(fx, fy)
 		cx, cy := px+32+ox*2, py+16+oy*2
+		if frame, ok := g.World.LightningFollowerFrame(i); ok {
+			for _, layer := range frame.Layers {
+				g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
+			}
+			continue
+		}
 		if peep.Plague && len(g.Bundle.PlagueAnimation) > 0 {
 			frame := g.Bundle.PlagueAnimation[world.GameTurn%len(g.Bundle.PlagueAnimation)]
 			for _, layer := range frame.Layers {
@@ -757,8 +783,25 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		cell := g.World.TerrainCell(wx, wy)
 		px, py := project(x, y, cell.BaseAltitude)
 		ox, oy := cell.ActorOffset(uint8(a.X), uint8(a.Y))
+		baseY := py + 16 + oy*2
+		if a.Kind == 0x28 {
+			baseY = max(0, baseY-160)
+		}
 		for _, layer := range frame.Layers {
-			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
+			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, baseY+layer.Y*2)
+		}
+	}
+	beams := g.World.LightningBeams(func(fixedX, fixedY int16) (populous2.LightningPoint, bool) {
+		wx, wy := int(fixedX)>>8, int(fixedY)>>8
+		cell := g.World.TerrainCell(wx, wy)
+		px, py := project(wx-g.CameraX, wy-g.CameraY, cell.BaseAltitude)
+		ox, oy := cell.ActorOffset(uint8(fixedX), uint8(fixedY))
+		return populous2.LightningPoint{X: int16(px/2 + 16 + ox), Y: int16(py/2 + 8 + oy)}, wx >= g.CameraX && wy >= g.CameraY && wx < g.CameraX+8 && wy < g.CameraY+8
+	})
+	for _, beam := range beams {
+		for _, segment := range beam {
+			c := g.World.Landscape.Palettes[0][segment.PaletteIndex]
+			vector.StrokeLine(view, float32(segment.From.X)*2, float32(segment.From.Y)*2, float32(segment.To.X)*2, float32(segment.To.Y)*2, 2, c, false)
 		}
 	}
 	for _, death := range g.World.FlameDeaths {

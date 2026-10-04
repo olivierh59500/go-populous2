@@ -136,6 +136,13 @@ func (w *World) tickNativeEffects() {
 			w.tickWhirlpool(a)
 		case BasaltActorKind:
 			w.tickBasalt(i)
+		case 0x28, 0x2a:
+			if err := w.LightningRules.Tick(&w.LightningState, &w.NativeEffects, i, w.lightningCallbacks()); err != nil {
+				panic(err)
+			}
+			if a.Active {
+				w.moveActor(NativeEffectPool, i, uint16(a.X), uint16(a.Y))
+			}
 		}
 		if wasLinked && (a.Kind == 0x20 || a.Kind == 0x22) {
 			if !a.Active {

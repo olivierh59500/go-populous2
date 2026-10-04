@@ -189,41 +189,42 @@ var toOffset = [...]int{-64, -63, 1, 65, 64, 63, -1, -65}
 var opposite = [...]int{4, 5, 6, 7, 0, 1, 2, 3}
 
 type World struct {
-	Level                 Level
-	Rules                 TerrainRules
-	OlympianTowns         *OlympianTownRules
-	OnBattleWon           func(winner, loser int)
-	BeforeBattle          func(attacker, defender int) bool
-	SkipFollower          func(index int) bool
-	CanHeroCrossWater     func(index int) bool
-	HeroTargetAllowed     func(hero, target int) bool
-	TileBlocked           func(pos int) bool
-	HabitatBlocked        func(pos int) bool
-	HabitatTerrainAllowed func(player, pos int) bool
-	MovementAllowed       func(index, target int, apply bool) bool
-	FollowerReserved      func(index int) bool
-	BeforeFollower        func(index int) bool
-	NativeFollowerUpdate  func(index int) bool
-	OnFollowerAllocated   func(index int)
-	OnFollowerMoved       func(index int)
-	OnFollowerRemoved     func(index int)
-	WaterFatalForPlayer   func(player int) bool
-	FollowerAttrition     func(player int, water bool) int
-	TerrainCommand        func(player, x, y int, raise bool) bool
-	Terrain               int
-	GameTurn              int
-	Alt                   [EndWidth * EndWidth]int
-	MapAlt                [MapWidth * MapHeight]byte
-	MapBlk                [MapWidth * MapHeight]byte
-	MapBk2                [MapWidth * MapHeight]byte
-	MapWho                [MapWidth * MapHeight]uint16
-	MapSteps              [MapWidth * MapHeight]uint16
-	Peeps                 []Peep
-	Magnets               [2]Magnet
-	Computer              [2]ComputerStats
-	ComputerControlled    [2]bool
-	BattleWon             [2]int
-	War                   bool
+	Level                      Level
+	Rules                      TerrainRules
+	OlympianTowns              *OlympianTownRules
+	OnBattleWon                func(winner, loser int)
+	BeforeBattle               func(attacker, defender int) bool
+	SkipFollower               func(index int) bool
+	CanHeroCrossWater          func(index int) bool
+	HeroTargetAllowed          func(hero, target int) bool
+	TileBlocked                func(pos int) bool
+	HabitatBlocked             func(pos int) bool
+	HabitatTerrainAllowed      func(player, pos int) bool
+	MovementAllowed            func(index, target int, apply bool) bool
+	FollowerReserved           func(index int) bool
+	BeforeFollower             func(index int) bool
+	NativeFollowerUpdate       func(index int) bool
+	NativeEffectFollowerUpdate func(index int) bool
+	OnFollowerAllocated        func(index int)
+	OnFollowerMoved            func(index int)
+	OnFollowerRemoved          func(index int)
+	WaterFatalForPlayer        func(player int) bool
+	FollowerAttrition          func(player int, water bool) int
+	TerrainCommand             func(player, x, y int, raise bool) bool
+	Terrain                    int
+	GameTurn                   int
+	Alt                        [EndWidth * EndWidth]int
+	MapAlt                     [MapWidth * MapHeight]byte
+	MapBlk                     [MapWidth * MapHeight]byte
+	MapBk2                     [MapWidth * MapHeight]byte
+	MapWho                     [MapWidth * MapHeight]uint16
+	MapSteps                   [MapWidth * MapHeight]uint16
+	Peeps                      []Peep
+	Magnets                    [2]Magnet
+	Computer                   [2]ComputerStats
+	ComputerControlled         [2]bool
+	BattleWon                  [2]int
+	War                        bool
 	// Scores is the canonical, shared score state for both players. Score and
 	// ScorePlayer below are retained as the selected local view for save-game
 	// compatibility and UI callers.
@@ -1349,6 +1350,9 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 	// Births appended to the table are processed during this same tick, just
 	// like births placed in a dead slot ahead of the current loop index.
 	for i := 0; i < len(w.Peeps) && i < MaxPeeps; i++ {
+		if w.NativeEffectFollowerUpdate != nil && w.NativeEffectFollowerUpdate(i) {
+			continue
+		}
 		if w.Peeps[i].Population <= 0 {
 			continue
 		}

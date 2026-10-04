@@ -15,7 +15,7 @@ func (w *World) ordinaryWalker(index int) bool {
 		return false
 	}
 	p := w.Core.Peeps[index]
-	return p.Population > 0 && p.Flags == legacy.OnMove && p.Status != legacy.KnightStatus && !w.Heroes[index].Active && !w.isCaptive(index)
+	return p.Population > 0 && p.Flags == legacy.OnMove && p.Status != legacy.KnightStatus && !w.Heroes[index].Active && !w.isCaptive(index) && !w.LightningVictims[index].Active
 }
 
 func (w *World) initializeNativeFollower(index int) {
@@ -51,6 +51,7 @@ func (w *World) bindFollowerMotion() {
 		// Same faith and position can belong to a new record generation.
 		w.Heroes[index] = Hero{}
 		w.captiveIndex[index] = false
+		w.LightningVictims[index] = NativeLightningFollower{}
 		w.unlinkActor(NativeFollowerPool, index)
 		w.initializeNativeFollower(index)
 	}

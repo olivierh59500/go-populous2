@@ -36,7 +36,7 @@ func (w *World) bindActorGraphHooks() {
 		w.moveActor(NativeFollowerPool, index, uint16((p.AtPos%64)*256+128), uint16((p.AtPos/64)*256+128))
 	}
 	w.Core.OnFollowerRemoved = func(index int) {
-		if index >= 0 && index < NativeWorldFollowerCapacity && !w.flameDeathIndex[index] {
+		if index >= 0 && index < NativeWorldFollowerCapacity && !w.flameDeathIndex[index] && !w.LightningVictims[index].Active {
 			w.unlinkActor(NativeFollowerPool, index)
 		}
 	}
@@ -47,7 +47,7 @@ func (w *World) bindActorGraphHooks() {
 // from scalar MapWho. Native allocation/motion paths use direct notifications.
 func (w *World) reconcileActorGraph() {
 	for index, entry := range w.Occupancy.Followers {
-		alive := index < len(w.Core.Peeps) && (w.Core.Peeps[index].Population > 0 || w.flameDeathIndex[index])
+		alive := index < len(w.Core.Peeps) && (w.Core.Peeps[index].Population > 0 || w.flameDeathIndex[index] || w.LightningVictims[index].Active)
 		if !alive {
 			if entry.Linked {
 				w.unlinkActor(NativeFollowerPool, index)
@@ -55,7 +55,7 @@ func (w *World) reconcileActorGraph() {
 			continue
 		}
 		p := w.Core.Peeps[index]
-		if w.flameDeathIndex[index] && entry.Linked {
+		if (w.flameDeathIndex[index] || w.LightningVictims[index].Active) && entry.Linked {
 			continue // Fire retains native fractions; Fungus centers at entry.
 		}
 		x, y := uint16((p.AtPos%64)*256+128), uint16((p.AtPos/64)*256+128)
@@ -90,7 +90,7 @@ func (w *World) reconcileActorGraph() {
 	}
 	for index, entry := range w.Occupancy.Effects {
 		actor := w.NativeEffects[index]
-		mapped := actor.Active && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind)
+		mapped := actor.Active && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a)
 		if !mapped {
 			if entry.Linked {
 				w.unlinkActor(NativeEffectPool, index)
@@ -246,7 +246,7 @@ func validateSavedActorGraph(snapshot Snapshot) error {
 		}
 	}
 	for index, entry := range snapshot.Occupancy.Followers {
-		live := index < len(snapshot.Core.Peeps) && (snapshot.Core.Peeps[index].Population > 0 || deaths[index])
+		live := index < len(snapshot.Core.Peeps) && (snapshot.Core.Peeps[index].Population > 0 || deaths[index] || snapshot.LightningVictims[index].Active)
 		if entry.Linked != live {
 			return fmt.Errorf("saved follower graph membership differs at slot %d", index)
 		}
@@ -271,7 +271,7 @@ func validateSavedActorGraph(snapshot Snapshot) error {
 	}
 	for index, entry := range snapshot.Occupancy.Effects {
 		actor := snapshot.NativeEffects[index]
-		mapped := actor.Active && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind)
+		mapped := actor.Active && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a)
 		if entry.Linked != mapped || mapped && (entry.Record.X != uint16(actor.X) || entry.Record.Y != uint16(actor.Y)) {
 			return fmt.Errorf("saved effect graph differs at slot %d", index)
 		}

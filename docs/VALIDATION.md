@@ -36,6 +36,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Scenario runtime | Independent side rules, height admission, atomic prohibited edits, water, sprog, map visibility and save bindings |
 | Water controllers | 166 Whirlpool cases/3,599 ticks and 358 Basalt cases; world replays 40 ordered Basalt traces/7,228 passes |
 | Whirlwind water children | Eight combined world replays, 5,090 full pool passes, 644 native checkpoints and 74 births; complete pool/grid/RNG agree |
+| Lightning | Five lifecycle traces/825 updates, 205 native victim cases, 16 beam segment cases and 12 endpoint cases; World replays all lifecycle traces and 66 ordinary-victim states |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |
@@ -77,10 +78,11 @@ capture also verifies ordinary/hero death artwork and the surviving Adonis.
 
 Scenario attrition references compare population arithmetic and native death
 decisions, rather than complete original death animation or fractional movement.
-A traced world-zero simulation ends early because the provisional Lightning
-area damage removes the remaining enemy groups at turns 24 and 48. Native
-Lightning is a separate marker/activation system and remains to be integrated.
-This observed prototype result is not a measurement of native campaign pacing.
+The traced earlier world-zero prototype ended at update 48 because its generic
+Lightning area damage removed the remaining enemy groups. Native marker/bolt
+integration now leaves both camps alive at update 600 in the same bounded
+custom demonstration. This verifies removal of that specific discrepancy;
+it does not establish native campaign pacing or opponent strategy.
 
 Graphics-bank tests cover the shore/raised-land distinction and every water
 animation phase. Repeated raises/lowers verify shared-corner continuity and
@@ -106,3 +108,10 @@ accumulated pressure; malformed graph/actor membership is rejected. Whirlpool
 audio depends on the current view but does not change the saved state.
 The controlled combined-water references contain no followers or scenery and
 therefore do not prove Whirlwind pickup/release or all environment interactions.
+
+Lightning world tests cover free marker placement, unconditional activation
+debits/partial volleys, gradual signed damage, managed population exclusion,
+ownership-based reservations, stale effect references, first water entry and
+saved continuation. Town reform still uses the current support/farm adapter;
+it does not yet reproduce all native `$13352` mixed support and 49-cell repaint.
+The retained 210-case identity data documents those separate requirements.

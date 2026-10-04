@@ -23,6 +23,8 @@ distinguishes native translations from provisional behavior.
 
 ![Native Whirlpool terrain and Basalt propagation](screenshots/water-effects.png)
 
+![Native Lightning marker, beams and retained victim artwork](screenshots/lightning.png)
+
 ![Three native whirlwinds in the diagnostic presentation](screenshots/whirlwinds.png)
 
 ![Original follower animation banks with native fractional walking](screenshots/ordinary-motion.png)
@@ -82,6 +84,7 @@ opponent pacing remain incomplete and can produce unusually early results.
 | Paint/remove roads | Hold left/right mouse button and move |
 | Extend city walls | Place each cell beside an existing wall |
 | Effect direction | Q / E |
+| Place/activate/dismiss Lightning | Left click / Enter / right click while Lightning is selected |
 | Papal magnet / find the leader | M / C |
 | Settle, gather, fight, follow | 1 / 2 / 3 / 4 |
 | Pause / help | Space / H |
@@ -98,7 +101,8 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 13 preserves the mixed actor graph and movement-pressure bytes, native
+Version 14 preserves lightning markers, bolt chains, managed victim states,
+the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
 and timers, along with follower hazard states and sound events, fungus bounds
 and pending references, both scenario option words, native effects and death
@@ -115,6 +119,13 @@ Earlier generic whirlpools migrate to native controller records. Earlier
 basalt marks retain their existing terrain and become persistent native-family
 tiles. Old saves did not record mixed actor order/pressure; their graph is
 initialized from the retained actor pools during migration.
+
+Lightning uses the original marker/activation interaction. Placing or moving
+the marker does not debit mana; activation uses the native power price and can
+create a partial volley when the effect pool fills. A victim remains allocated
+through its stun/recovery/death sequence, including signed population results.
+The native town-support/farm repaint and remaining water/hero handlers still
+need their complete conversions.
 
 The deity screen uses the original three-part face artwork, eight variants per
 part, five starting bolts and one experience unit per allocated bolt. Click the

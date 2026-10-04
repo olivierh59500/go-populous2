@@ -17,6 +17,25 @@ func (w *World) DirectLowerTerrain(x, y int) bool {
 	return true
 }
 
+// ReformOlympianTown reconnects the translated support/stage calculation with
+// the current farm compositor after a native effect releases a surviving town.
+// Original $13352 farm composition remains a separate translation target.
+func (w *World) ReformOlympianTown(index int) bool {
+	if !w.validPeep(index) || w.OlympianTowns == nil {
+		return false
+	}
+	p := &w.Peeps[index]
+	stage := w.OlympianTownStage(int(p.Player), p.AtPos)
+	p.TownStage = stage
+	p.Flags, p.Frame = InTown, FirstTown+stage*10/18
+	if stage == 0 {
+		p.Flags, p.Frame = OnMove, 0
+		return false
+	}
+	w.setTown(index, false)
+	return true
+}
+
 // DetachFollower removes a group from town/combat bookkeeping without changing
 // its allegiance or population, for native abduction and actor state changes.
 func (w *World) DetachFollower(index int) bool {

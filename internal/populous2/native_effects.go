@@ -16,6 +16,9 @@ func (b *Bundle) NativeEffectFrame(actor NativeEffectActor) (AnimationFrame, boo
 	case BasaltActorKind:
 		frame, ok := b.BasaltRules.Frames[actor.Animation]
 		return frame, ok
+	case 0x28:
+		frame, ok := b.LightningRules.Frames[actor.Animation]
+		return frame, ok
 	}
 	return AnimationFrame{}, false
 }

@@ -37,6 +37,7 @@ type Bundle struct {
 	Whirlwinds      WhirlwindRules
 	Whirlpools      WhirlpoolRules
 	BasaltRules     BasaltRules
+	LightningRules  LightningRules
 	FungusRules     FungusRules
 	FungusHazards   FungusHazardRules
 	WallRules       WallRules
@@ -188,6 +189,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.BasaltRules, err = DecodeBasaltRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.LightningRules, err = DecodeLightningRules(exe)
 	if err != nil {
 		return nil, err
 	}

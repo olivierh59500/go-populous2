@@ -512,3 +512,36 @@ including corners and the native operation's lack of an Armageddon input gate.
 Basalt world comparisons retain the complete pool, raw grid and RNG through
 40 ordered traces. These empty/controlled actor cases do not establish all
 wave, volcano, fire and inherited-handler interactions.
+
+## Lightning marker, activation and victims
+
+Commands 28/30/32 place, activate and dismiss the owner marker. Placement at
+`$15de2` consumes no mana and preserves an existing marker's lifetime.
+Activation at `$15e8a` allocates `2 + (Air experience >> 5)` jittered bolts
+in the shared pool; partial allocation is retained. Its command handler charges
+slot 18 even when the helper cannot create another bolt. Marker word `$1a`
+holds the bolt chain; each bolt's `$1c` identifies its marker. Both actor kinds
+retain native map links. Dismissal removes the bolts and plays the marker outro.
+
+The bolts walk the ordered mixed occupancy chain without an owner filter.
+Walls stop the scan/scorch path. A struck walker/town enters its native effect
+state and loses `(int32(population << 3) >> 7) + 4` per managed update, preserving
+32-bit signed arithmetic. These records do not contribute to the current
+population total while managed and cannot be reused merely because population
+is zero or negative. Referenced-effect liveness tests the positive owner byte,
+so an occupied reused slot can keep an older victim reference alive.
+
+Walker cleanup retains its death animation and map reservation, then removes
+it on completion; surviving walkers play recovery before ordinary redispatch.
+The common terrain prepass can supersede lightning, including the first water
+entry. A town survivor uses the translated support-stage calculation with the
+existing farm compositor. Exact `$13352` mixed support, farm repaint and the
+remaining inherited water/hero transitions are still separate requirements.
+
+Beam artwork is four procedural lines in palette index 5, with three native
+alternating kinks. The marker sprite is raised 80 native pixels. The beam's
+marker endpoint is raised 90 pixels and uses the CURRENT BOLT cell's header
+height; it does not use marker fractions or marker-cell height. The endpoint
+is clipped at the top. Version 14 saves retain chains, random words and victim
+states; old generic radius effects migrate to markers rather than replaying
+invented damage.

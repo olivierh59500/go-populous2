@@ -10,7 +10,7 @@ type FlameDeath struct {
 func (w *World) bindFlameDeaths() {
 	w.rebuildFlameDeathIndex()
 	w.Core.FollowerReserved = func(index int) bool {
-		return index >= 0 && index < len(w.flameDeathIndex) && w.flameDeathIndex[index]
+		return index >= 0 && index < len(w.flameDeathIndex) && (w.flameDeathIndex[index] || w.LightningVictims[index].Active)
 	}
 }
 
@@ -107,6 +107,7 @@ func (w *World) burnActorsAt(x, y int, treeSpread, scorch bool) {
 			if w.Core.OnFollowerMoved != nil {
 				w.Core.OnFollowerMoved(i)
 			}
+			w.LightningVictims[i].Active = false
 			w.FlameDeaths = append(w.FlameDeaths, FlameDeath{Follower: i, X: x, Y: y, Animation: animation, End: animation + w.FireColumns.SequenceLengths[animation]*4})
 			w.flameDeathIndex[i] = true
 		}
