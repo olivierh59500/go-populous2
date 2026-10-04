@@ -1,38 +1,48 @@
 # Provenance
 
-Les références fournies restent dans `previous/` et n'ont pas été modifiées.
+The supplied references remain unchanged in the locally excluded `previous/`
+directory.
 
-| Source | Usage |
+| Source | Use |
 |---|---|
-| `previous/go-populous/internal/populous/*.go` | Copie des 20 fichiers de production dans `internal/legacy` |
-| `previous/go-populous/internal/fixedstep/fixedstep.go` | Cadence conservée dans `internal/fixedstep` |
-| `previous/go-populous/LICENSE` | Licence GPL-3.0 du code réutilisé |
-| Disquette B, volume `POPULOUS II` | 26 fichiers graphiques, sonores et de campagne dans `assets/amiga` |
-| `previous/Populous2_PatchFR/populous.ii` | Exécutable français valide, utilisé pour ses tables et l'analyse 68000 |
-| `previous/Populous2_PatchFR/CHALLENGE` et `.TAM` | Inventoriés ; extension non intégrée au jeu |
+| `previous/go-populous/internal/populous/*.go` | Twenty production files copied into `internal/legacy` |
+| `previous/go-populous/internal/fixedstep/fixedstep.go` | Scheduler retained in `internal/fixedstep` |
+| `previous/go-populous/LICENSE` | GPL-3.0 license for the reused code |
+| Disk B, volume `POPULOUS II` | Twenty-six graphics, sound and campaign files in `assets/amiga` |
+| `previous/Populous2_PatchFR/populous.ii` | Valid French executable used for its tables and native routine comparisons |
+| `previous/Populous2_PatchFR/CHALLENGE` and `.TAM` | Cataloged; this extension is not integrated into the game |
 
-Le moteur copié est adapté dans `internal/legacy`, notamment pour les références
-16 bits, le générateur aléatoire, les populations, les habitations et le terrain.
-Les sources de référence locales restent inchangées. Aucune image ou musique de
-Populous 1 n'est utilisée pour le rendu de Populous II.
+The copied engine is adapted in `internal/legacy`, including its 16-bit
+references, random generator, populations, settlements and terrain. The local
+reference sources remain unchanged. No Populous I image or music is used to
+render or play Populous II.
 
-## Empreintes des sources
+## Source fingerprints
 
 | Source | SHA-256 |
 |---|---|
-| Disquette A | `96e40c15b3eac984e6e54c91b11a2d5cd7fa4ba69d5ecc6ef7e4b17bc1d4a17a` |
-| Disquette B | `88f30eb7dc754bd59f42fc5e4b6371ecbcc0b37a0cbc8f1548f9fa0d650a8893` |
-| Exécutable FR | `c148b9bdcc543d89bf788d86886eb5ac9320ad66b09ef92792ec24314bfee803` |
-| ADF isolé de Populous 1 | `55f74cacf20baca2ff23d7543617d90739c3fb277d670ef9725424b7843a07da` |
+| Disk A | `96e40c15b3eac984e6e54c91b11a2d5cd7fa4ba69d5ecc6ef7e4b17bc1d4a17a` |
+| Disk B | `88f30eb7dc754bd59f42fc5e4b6371ecbcc0b37a0cbc8f1548f9fa0d650a8893` |
+| French executable | `c148b9bdcc543d89bf788d86886eb5ac9320ad66b09ef92792ec24314bfee803` |
+| Separate Populous I ADF | `55f74cacf20baca2ff23d7543617d90739c3fb277d670ef9725424b7843a07da` |
 
-[assets-manifest.json](assets-manifest.json) donne la taille et l'empreinte des
-27 fichiers embarqués. [ressources.json](ressources.json) conserve les 26
-descripteurs lus dans le chargeur du programme.
+[assets-manifest.json](assets-manifest.json) records the size and fingerprint
+of all 27 embedded files. [ressources.json](ressources.json) preserves the 26
+descriptors read from the original resource loader.
 
-Le chargeur Hunk strict signale une séparation de segments invalide dans
-`POPULOUS.II` de la disquette A. L'exécutable FR fourni se décode normalement :
-six segments, dont un CODE et quatre BSS. Le portage utilise ce fichier sans
-modifier les deux exécutables d'origine.
+The strict Hunk parser reports an invalid segment boundary in disk A's
+`POPULOUS.II`. The supplied French executable parses normally: six segments,
+including one CODE segment and four BSS segments. The conversion uses that
+file without changing either original executable.
 
-Les graphismes et données d'origine appartiennent à leurs ayants droit ; la
-licence du code Go ne leur attribue pas une nouvelle licence.
+## Native comparison fixtures
+
+The isolated analysis harness relocates and executes bounded original routines.
+It stays local and is not part of the game. Tests in `internal/populous2/testdata`
+retain derived numeric states and hashes; they contain no executable bytes or
+original audiovisual payloads. These fixtures establish the specific routines
+and conditions described in [VALIDATION.md](VALIDATION.md), rather than complete
+gameplay parity.
+
+Original graphics and data remain the property of their respective rights
+holders; the Go code license does not assign them a new license.
