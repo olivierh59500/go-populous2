@@ -30,6 +30,7 @@ type Bundle struct {
 	PlagueAnimation []AnimationFrame
 	RoadRules       RoadRules
 	Scenery         *SceneryBank
+	BatholithRange  int
 }
 
 func Load() (*Bundle, error) {
@@ -146,6 +147,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.Scenery, err = DecodeScenery(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.BatholithRange, err = DecodeBatholithRange(exe)
 	if err != nil {
 		return nil, err
 	}

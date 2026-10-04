@@ -43,7 +43,7 @@ the remaining simulation routines.
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
 | City walls | 13 | 34 | Provisional line obstacles; original connected-wall rules and breaking/climbing pending |
 | Earthquake | 14 | 40 | Inherited earthquake with native cost/sound; directed native fault pending |
-| Batholith | 15 | 48 | Provisional raising/boulders; original held-button expansion pending |
+| Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
 | Heracles | 16 | 60 | Native double population and speed bonus; native combat/routing pending |
 | Lightning | 18 | 28 / 30 | Provisional area damage; native target/effect animation pending |
 | Whirlwind | 19 | 22 | Provisional moving damage and native paired sounds; original trajectory/state machine pending |

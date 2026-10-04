@@ -96,3 +96,26 @@ func (cell TerrainCell) Contains(x, y int) bool {
 	}
 	return !(positive && negative)
 }
+
+func (w *World) clearChangedGround(before [legacy.EndWidth * legacy.EndWidth]int) {
+	minX, minY, maxX, maxY := 65, 65, -1, -1
+	for i, h := range w.Core.Alt {
+		if before[i] != h {
+			minX = min(minX, i%65)
+			maxX = max(maxX, i%65)
+			minY = min(minY, i/65)
+			maxY = max(maxY, i/65)
+		}
+	}
+	if maxX < 0 {
+		return
+	}
+	for y := max(0, minY-1); y <= min(63, maxY); y++ {
+		for x := max(0, minX-1); x <= min(63, maxX); x++ {
+			a := x + y*65
+			if before[a] != w.Core.Alt[a] || before[a+1] != w.Core.Alt[a+1] || before[a+65] != w.Core.Alt[a+65] || before[a+66] != w.Core.Alt[a+66] {
+				w.Marks[x+y*64] = Mark{}
+			}
+		}
+	}
+}

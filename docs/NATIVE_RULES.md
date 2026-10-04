@@ -202,3 +202,12 @@ Initial placement can share scenery/occupied cells: the original prepends a
 follower to its linked tile list. Ordinary movement and settlement support
 reject boulders, while trees can remain under a settlement. Full linked actor
 occupancy and the remaining destruction/interaction states still need work.
+
+## Batholith
+
+`$df68` samples a nearby point using two bytes of one random draw. A second
+draw chooses either terrain raising or original boulder allocation. Successful
+boulder creation uses the shared scenery pool and preserves the rare-variant
+draw. Four native references match the full height grid, boulder variant and
+final random state, covering both branches. Holding the button issues repeated
+casts; the interface cadence still awaits original-input timing comparison.

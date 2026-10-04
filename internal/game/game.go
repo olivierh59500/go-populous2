@@ -303,6 +303,9 @@ func (g *Game) handleClick() {
 			right = true
 		}
 	}
+	if g.Selected == populous2.Batholith && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && g.Updates%8 == 0 {
+		left = true
+	}
 	if !left && !right {
 		return
 	}

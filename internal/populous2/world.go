@@ -11,27 +11,28 @@ import (
 // are independent of this baseline. Its new effect rules are provisional until
 // checked against the original routines; see docs/PORTAGE.md.
 type World struct {
-	Level        Level
-	Core         *legacy.World
-	Landscape    Landscape
-	Spells       []Spell
-	ManaRules    ManaRules
-	GroundRules  GroundEffectRules
-	RoadRules    RoadRules
-	SceneryBank  *SceneryBank
-	Scenery      [SceneryCapacity]SceneryActor
-	sceneryIndex [4096]uint16
-	Experience   [2][6]uint8
-	Custom       bool
-	Demo         bool
-	Effects      []Effect
-	Marks        [legacy.MapWidth * legacy.MapHeight]Mark
-	Heroes       [legacy.MaxPeeps]Hero
-	Random       uint16
-	LastSpell    SpellID
-	LastPlayer   int
-	SpellSerial  int
-	captiveIndex [legacy.MaxPeeps]bool
+	Level          Level
+	Core           *legacy.World
+	Landscape      Landscape
+	Spells         []Spell
+	ManaRules      ManaRules
+	GroundRules    GroundEffectRules
+	RoadRules      RoadRules
+	SceneryBank    *SceneryBank
+	BatholithRange int
+	Scenery        [SceneryCapacity]SceneryActor
+	sceneryIndex   [4096]uint16
+	Experience     [2][6]uint8
+	Custom         bool
+	Demo           bool
+	Effects        []Effect
+	Marks          [legacy.MapWidth * legacy.MapHeight]Mark
+	Heroes         [legacy.MaxPeeps]Hero
+	Random         uint16
+	LastSpell      SpellID
+	LastPlayer     int
+	SpellSerial    int
+	captiveIndex   [legacy.MaxPeeps]bool
 }
 
 type Effect struct {
@@ -89,7 +90,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		return nil, err
 	}
 	core.OlympianTowns = townRules
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, Custom: custom, Random: level.Seed}
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	w.initializeScenery()
 	core.TileBlocked = func(pos int) bool { return w.sceneryAt(pos) >= 0 }
@@ -252,13 +253,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 			applied = true
 		}
 	case Batholith:
-		for _, p := range diskArea(target.X, target.Y, 2) {
-			w.Core.PaintRaiseAt(p%64, p/64)
-			if w.Core.MapWho[p] == 0 {
-				w.Core.MapBk2[p] = legacy.RockBlock
-			}
-			applied = true
-		}
+		applied = w.castBatholith(target.X, target.Y)
 	case Basalt:
 		dx, dy := direction(target.Direction)
 		for i := 0; i < 12; i++ {

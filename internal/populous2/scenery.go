@@ -84,6 +84,11 @@ func DecodeScenery(exe *amiga.Executable) (*SceneryBank, error) {
 		}
 		b.Frames[offset] = frames
 	}
+	frames, err := DecodeAnimation(exe, 0xf10)
+	if err != nil {
+		return nil, err
+	}
+	b.Frames[0xf10] = frames
 	return b, nil
 }
 
@@ -194,9 +199,10 @@ func (w *World) tickScenery() {
 		}
 		if a.Removing {
 			if a.Age > 0 {
-				a.Age = -a.Age
+				a.Age--
 				a.Animation = w.SceneryBank.RemovalEnd
 				a.Frame = 0
+				continue
 			}
 			if a.Age < 0 {
 				age := -int(a.Age) + 1
