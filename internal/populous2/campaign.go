@@ -21,15 +21,20 @@ type PlayerOptions struct {
 // native allocation at CODE:$10d3c. The template starts at deity+$5a.
 func (p PlayerOptions) MovementSpeed() uint8 { return uint8(p.Parameters[2]) }
 
+func (p PlayerOptions) InitialGroups() int      { return int(p.Parameters[0]) }
+func (p PlayerOptions) InitialPopulation() int  { return int(p.Parameters[1]) }
+func (p PlayerOptions) SearchIntelligence() int { return int(uint8(p.Parameters[3])) }
+
 type Level struct {
-	Number          int
-	Code            string
-	Terrain         int
-	Seed            uint16
-	Players         [2]PlayerOptions
-	WorldParameters [60]byte
-	OpponentText    string
-	Raw             [CampaignRecordSize]byte
+	Number             int
+	Code               string
+	Terrain            int
+	Seed               uint16
+	Players            [2]PlayerOptions
+	WorldParameters    [60]byte
+	OpponentText       string
+	OpponentExperience [6]uint8
+	Raw                [CampaignRecordSize]byte
 }
 
 var worldSyllables = [64]string{
@@ -92,6 +97,8 @@ func DecodeCampaign(data []byte) ([]Level, error) {
 			}
 		}
 		copy(level.WorldParameters[:], record[122:182])
+		// CODE:$10e58 copies this shared opponent profile to deity+$52.
+		copy(level.OpponentExperience[:], record[116:122])
 		text := record[186:]
 		if end := strings.IndexByte(string(text), 0); end >= 0 {
 			text = text[:end]

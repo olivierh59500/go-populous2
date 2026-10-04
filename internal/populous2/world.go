@@ -71,13 +71,21 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	// Spell AI is handled through Cast below, so the reused land AI cannot
 	// silently invoke the first game's different spell set and mana prices.
 	baseline := legacy.Level{Number: 0, Code: level.Code, Terrain: byte(level.Terrain), SeedOffset: level.Seed,
-		PlayerPopulation: byte(clamp(int(level.Players[0].Parameters[0]), 1, 30)), EnemyPopulation: byte(clamp(int(level.Players[1].Parameters[0]), 1, 30)),
+		PlayerPopulation: byte(level.Players[0].InitialGroups()), EnemyPopulation: byte(level.Players[1].InitialGroups()),
 		EnemyRating: 10, EnemyReactionSpeed: 5, GameMode: legacy.GameWaterFatal}
 	core := legacy.GenerateWorldWithRules(baseline, rules)
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, Custom: custom, Random: level.Seed}
-	for player := range core.Magnets {
-		core.Magnets[player].Mana = int(level.Players[player].Parameters[2])
+	townRules, err := DecodeTownRules(bundle.Executable, land)
+	if err != nil {
+		return nil, err
 	}
+	core.OlympianTowns = townRules
+	var followers [2]legacy.InitialFollowers
+	for player, p := range level.Players {
+		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), Intelligence: p.SearchIntelligence(), Speed: p.MovementSpeed()}
+	}
+	core.PlaceOlympianPeople(followers)
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, Custom: custom, Random: level.Seed}
+	w.Experience[1] = level.OpponentExperience
 	return w, nil
 }
 
@@ -103,6 +111,7 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	// Terrain propagation charges the inherited engine's terrain price once.
 	// Adapt that debit without scaling the entire balance or losing odd mana.
 	before := w.Core.Magnets[player].Mana
+	altitudes := w.Core.Alt
 	w.Core.Magnets[player].Mana = before - cost + legacy.ManaPointCost
 	var applied bool
 	if raise {
@@ -112,7 +121,15 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	}
 	w.Core.Magnets[player].Mana = before
 	if applied {
-		w.Core.Magnets[player].Mana -= cost
+		changed := 0
+		for i, altitude := range w.Core.Alt {
+			changed += abs(altitude - altitudes[i])
+		}
+		// $175fa charges every propagated height change and clamps at zero.
+		if changed == 0 {
+			return false
+		}
+		w.Core.Magnets[player].Mana = max(0, before-cost*changed)
 	}
 	if applied && x < 64 && y < 64 {
 		w.Marks[x+y*64] = Mark{}
@@ -147,8 +164,9 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 			return false
 		}
 		p := &w.Core.Peeps[index]
-		population, speed, _ := HeroAttributes(id, p.Population, w.Level.Players[player].MovementSpeed(), w.Experience[player])
+		population, speed, _ := HeroAttributes(id, p.Population, p.MovementSpeed, w.Experience[player])
 		p.Population = population
+		p.MovementSpeed = speed
 		w.Heroes[index] = Hero{Spell: id, Active: true, Player: player, Population: p.Population, Speed: speed}
 		w.Core.Magnets[player].Mana -= spell.Cost
 		w.recordCast(player, id)

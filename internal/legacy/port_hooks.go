@@ -37,6 +37,10 @@ func (w *World) SprogAt(player, pos int) bool {
 	for i := range w.Peeps {
 		p := &w.Peeps[i]
 		if int(p.Player) == player && p.AtPos == pos && p.Population > 10 && p.Flags == InTown {
+			if w.OlympianTowns != nil {
+				p.ForceEmigration = true
+				return true
+			}
 			before := p.Population
 			w.spawnWalkerFromTown(i, min(before-1, w.checkLife(player, pos)))
 			return w.Peeps[i].Population < before

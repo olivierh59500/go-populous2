@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -52,6 +53,10 @@ type Game struct {
 	captured         bool
 	failure          error
 	SavePath         string
+	audioReplay      *populous2.AudioReplay
+	audioPlayer      *audio.Player
+	muted            bool
+	lastSoundSerial  int
 }
 
 func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) {
@@ -109,6 +114,19 @@ func (g *Game) Update() error {
 	if g.Help {
 		return nil
 	}
+	if g.audioPlayer == nil {
+		if err := g.initializeAudio(); err != nil {
+			return err
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyN) {
+		g.muted = !g.muted
+		if g.muted {
+			g.audioPlayer.SetVolume(0)
+		} else {
+			g.audioPlayer.SetVolume(.35)
+		}
+	}
 	if !g.Playing {
 		return g.updateMenu()
 	}
@@ -163,6 +181,10 @@ func (g *Game) Update() error {
 				g.messageTicks--
 			}
 		}
+	}
+	if g.lastSoundSerial != g.World.SpellSerial {
+		g.lastSoundSerial = g.World.SpellSerial
+		g.playPowerSound(g.World.LastSpell, g.World.LastPlayer)
 	}
 	return nil
 }
@@ -381,20 +403,19 @@ func (g *Game) targetAt(x, y int) (int, int, bool) {
 	if x < 128 || y < 100 || y >= 440 {
 		return 0, 0, false
 	}
-	best := 3.0
+	found := false
 	mx, my := 0, 0
 	for row := 0; row < 8; row++ {
 		for column := 0; column < 8; column++ {
-			p := g.CameraX + column + (g.CameraY+row)*64
-			px, py := project(column, row, int(g.World.Core.MapAlt[p]))
-			d := float64(abs(x-(px+32)))/32 + float64(abs(y-(py+32)))/16
-			if d <= 1.2 && d < best {
-				best = d
+			cell := g.World.TerrainCell(g.CameraX+column, g.CameraY+row)
+			px, py := project(column, row, cell.BaseAltitude)
+			if cell.Contains((x-px)/2, (y-py)/2) {
+				found = true
 				mx, my = g.CameraX+column, g.CameraY+row
 			}
 		}
 	}
-	return mx, my, best < 3
+	return mx, my, found
 }
 
 func project(x, y, alt int) (int, int) { return (176 + (x-y)*16) * 2, 40 + (64+(x+y)*8-alt*8)*2 }
@@ -470,18 +491,9 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 	for y := 0; y < 8; y++ {
 		for x := 0; x < 8; x++ {
 			pos := g.CameraX + x + (g.CameraY+y)*64
-			alt := int(world.MapAlt[pos])
-			block := int(world.MapBlk[pos])
-			if block == legacy.FarmBlock {
-				block = 31
-			}
-			if block > 31 {
-				block = 15
-			}
-			if block == 0 {
-				block = (world.GameTurn % 8) * 16
-			}
-			px, py := project(x, y, alt)
+			cell := g.World.TerrainCell(g.CameraX+x, g.CameraY+y)
+			block := cell.Tile(world.GameTurn, x, y)
+			px, py := project(x, y, cell.BaseAltitude)
 			drawImage(view, g.tiles[terrain][block], px, py, 2)
 			if overlay := world.MapBk2[pos]; overlay != 0 {
 				sprite := 697
@@ -513,7 +525,7 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		px, py := project(x, y, int(world.MapAlt[peep.AtPos]))
 		cx, cy := px+32, py+32
 		if peep.Flags&legacy.InTown != 0 {
-			stage := clamp(peep.Frame-legacy.FirstTown, 0, 10)
+			stage := clamp(peep.TownStage, 0, populous2.TownStages-1)
 			sprite := 681 + stage
 			g.drawSprite(view, sprite, cx, py+48)
 			c := blue

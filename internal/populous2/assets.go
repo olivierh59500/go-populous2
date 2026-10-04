@@ -23,6 +23,8 @@ type Bundle struct {
 	Spells     []Spell
 	ManaRules  ManaRules
 	HeroRules  HeroRules
+	Audio      *AudioBank
+	Actions    []NativeAction
 }
 
 func Load() (*Bundle, error) {
@@ -111,6 +113,14 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.HeroRules, err = DecodeHeroRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.Audio, err = DecodeAudioBank(exe, b.Raw["fx.dat"])
+	if err != nil {
+		return nil, err
+	}
+	b.Actions, err = DecodeActions(exe)
 	if err != nil {
 		return nil, err
 	}

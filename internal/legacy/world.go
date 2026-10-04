@@ -191,6 +191,7 @@ var opposite = [...]int{4, 5, 6, 7, 0, 1, 2, 3}
 type World struct {
 	Level              Level
 	Rules              TerrainRules
+	OlympianTowns      *OlympianTownRules
 	Terrain            int
 	GameTurn           int
 	Alt                [EndWidth * EndWidth]int
@@ -235,6 +236,11 @@ type Peep struct {
 	Status           int
 	LandComplete     bool
 	MagnetLastMove   int
+	TownStage        int
+	TownWork         int
+	Plague           bool
+	ForceEmigration  bool
+	MovementSpeed    uint8
 }
 
 type Magnet struct {
@@ -1743,6 +1749,10 @@ func (w *World) processTown(index int) {
 
 func (w *World) processTownWithLandAI(index int, legacyLandAI bool) {
 	if index < 0 || index >= len(w.Peeps) || w.Peeps[index].Population <= 0 {
+		return
+	}
+	if w.OlympianTowns != nil {
+		w.processOlympianTown(index, legacyLandAI)
 		return
 	}
 	peep := &w.Peeps[index]

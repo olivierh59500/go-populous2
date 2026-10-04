@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 2
+const SaveVersion = 3
 
 type Snapshot struct {
 	Version     int
@@ -31,8 +31,33 @@ func (w *World) Snapshot() Snapshot {
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
-	if snapshot.Version != 1 && snapshot.Version != SaveVersion {
+	if snapshot.Version < 1 || snapshot.Version > SaveVersion {
 		return nil, fmt.Errorf("unsupported save version %d", snapshot.Version)
+	}
+	if snapshot.Version < 3 {
+		// Earlier prototypes inverted the two final water powers. Their
+		// numeric save IDs are migrated before native catalog validation.
+		swap := func(id SpellID) SpellID {
+			if id == 33 {
+				return 34
+			}
+			if id == 34 {
+				return 33
+			}
+			return id
+		}
+		snapshot.LastSpell = swap(snapshot.LastSpell)
+		for i := range snapshot.Heroes {
+			snapshot.Heroes[i].Spell = swap(snapshot.Heroes[i].Spell)
+		}
+		for i := range snapshot.Marks {
+			snapshot.Marks[i].Spell = swap(snapshot.Marks[i].Spell)
+		}
+		// The caller may retain its snapshot slice; migration must not edit it.
+		snapshot.Effects = append([]Effect(nil), snapshot.Effects...)
+		for i := range snapshot.Effects {
+			snapshot.Effects[i].Spell = swap(snapshot.Effects[i].Spell)
+		}
 	}
 	if len(snapshot.Core.Peeps) > legacy.MaxFollowers || len(snapshot.Effects) > 256 || snapshot.Core.GameTurn < 0 {
 		return nil, fmt.Errorf("invalid saved simulation bounds")
@@ -71,7 +96,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if err != nil {
 		return nil, err
 	}
+	townRules := w.Core.OlympianTowns
 	w.Core = legacy.WorldFromSnapshot(snapshot.Core, w.Core.Rules)
+	w.Core.OlympianTowns = townRules
 	w.Effects = append([]Effect(nil), snapshot.Effects...)
 	w.Experience = snapshot.Experience
 	w.Marks, w.Heroes, w.Random = snapshot.Marks, snapshot.Heroes, snapshot.Random

@@ -51,8 +51,8 @@ const (
 	Whirlpool   SpellID = 30
 	Basalt      SpellID = 31
 	Baptism     SpellID = 32
-	Tsunami     SpellID = 33
-	Helen       SpellID = 34
+	Helen       SpellID = 33
+	Tsunami     SpellID = 34
 )
 
 type Aim uint8

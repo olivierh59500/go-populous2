@@ -8,7 +8,7 @@ import (
 
 // StateHashVersion changes whenever the canonical state representation
 // changes. Multiplayer peers must agree on this value during their handshake.
-const StateHashVersion uint16 = 3
+const StateHashVersion uint16 = 4
 
 // StateHash returns a platform-independent SHA-256 digest of every value that
 // can affect future shared simulation. Presentation-only queued sound events
@@ -25,6 +25,19 @@ func (w *World) StateHash() [sha256.Size]byte {
 
 	hashLevel(digest, w.Level)
 	hashTerrainRules(digest, w.Rules)
+	hashBool(digest, w.OlympianTowns != nil)
+	if r := w.OlympianTowns; r != nil {
+		for _, table := range [5][19]int{r.ManaAdd, r.PopulationAdd, r.PopulationLimit, r.EmigrationDivisor, r.WorkTicks} {
+			for _, value := range table {
+				hashInt(digest, value)
+			}
+		}
+		digest.Write(r.Stages[:])
+		for _, offset := range r.Footprint {
+			hashInt(digest, offset[0])
+			hashInt(digest, offset[1])
+		}
+	}
 	hashInt(digest, w.Terrain)
 	hashInt(digest, w.GameTurn)
 	for _, value := range w.Alt {
@@ -55,6 +68,11 @@ func (w *World) StateHash() [sha256.Size]byte {
 		hashInt(digest, peep.Status)
 		hashBool(digest, peep.LandComplete)
 		hashInt(digest, peep.MagnetLastMove)
+		hashInt(digest, peep.TownStage)
+		hashInt(digest, peep.TownWork)
+		hashBool(digest, peep.Plague)
+		hashBool(digest, peep.ForceEmigration)
+		digest.Write([]byte{peep.MovementSpeed})
 	}
 
 	for _, magnet := range w.Magnets {
