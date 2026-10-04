@@ -589,13 +589,14 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		}
 		cell := g.World.TerrainCell(actor.X, actor.Y)
 		px, py := project(x, y, cell.BaseAltitude)
+		ox, oy := cell.ActorOffset(128, 128)
 		frames := g.Bundle.Scenery.Frames[actor.Animation]
 		if len(frames) == 0 {
 			continue
 		}
 		frame := frames[actor.Frame%len(frames)]
 		for _, layer := range frame.Layers {
-			g.drawSprite(view, layer.Sprite, px+32+layer.X*2, py+32+layer.Y*2)
+			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
 		}
 	}
 	for _, actor := range g.World.Walls.Actors {
@@ -608,8 +609,9 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		}
 		cell := g.World.TerrainCell(actor.X, actor.Y)
 		px, py := project(x, y, cell.BaseAltitude)
+		ox, oy := cell.ActorOffset(128, 128)
 		for _, layer := range g.World.WallRules.Layers(actor) {
-			g.drawSprite(view, layer.Sprite, px+32+layer.X*2, py+32+layer.Y*2)
+			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
 		}
 	}
 	for i, peep := range world.Peeps {
@@ -621,8 +623,10 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		if x < 0 || y < 0 || x >= 8 || y >= 8 {
 			continue
 		}
-		px, py := project(x, y, int(world.MapAlt[peep.AtPos]))
-		cx, cy := px+32, py+32
+		cell := g.World.TerrainCell(peep.AtPos%64, peep.AtPos/64)
+		px, py := project(x, y, cell.BaseAltitude)
+		ox, oy := cell.ActorOffset(128, 128)
+		cx, cy := px+32+ox*2, py+16+oy*2
 		if peep.Plague && len(g.Bundle.PlagueAnimation) > 0 {
 			frame := g.Bundle.PlagueAnimation[world.GameTurn%len(g.Bundle.PlagueAnimation)]
 			for _, layer := range frame.Layers {

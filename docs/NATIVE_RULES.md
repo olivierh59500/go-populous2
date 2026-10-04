@@ -252,3 +252,12 @@ The editor imports these codes and applies experience to gameplay. Version 6
 saves preserve the profile. Native scalar award and world-step thresholds are
 verified independently, but full campaign scoring/statistic collection and
 win/loss progression remain separate work.
+
+## Actor projection on slopes
+
+`$e392-$e422` selects one of sixteen piecewise height formulas from the tile's
+corner mask. Fractional coordinates use unsigned bytes; X projection uses their
+difference, while the Y formulas split the original triangular tile surfaces.
+The Go formulas match 576 original instruction executions. Scenery, walls and
+walking sprites now use this point of support instead of a fixed center height.
+Native fractional movement and full linked actor drawing order remain pending.
