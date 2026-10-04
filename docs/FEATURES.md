@@ -13,7 +13,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester and opponent experience | Scripted events and opponent personalities |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
-| Followers | 399 usable records, native ordinary 8.8 motion, persistent mixed-pool map links and generation-safe reuse | Native search/contacts, remaining inherited graph notifications, waiting/water/hero states, combat and inventions |
+| Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion, persistent map links and generation-safe reuse | Native contacts/settlement entry, magnet/hero decisions, remaining waiting/water states, combat and inventions |
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |

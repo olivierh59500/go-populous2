@@ -34,6 +34,7 @@ type World struct {
 	FungusHazards            FungusHazardRules
 	FungusState              FungusState
 	FollowerMotion           FollowerMotionRules
+	FollowerDecision         FollowerDecisionRules
 	NativeFollowers          [legacy.MaxPeeps]NativeFollower
 	NativeEffects            [NativeEffectCapacity]NativeEffectActor
 	Occupancy                NativeWorldOccupancy
@@ -122,6 +123,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.FungusRules = bundle.FungusRules
 	w.FungusHazards = bundle.FungusHazards
 	w.FollowerMotion = bundle.FollowerMotion
+	w.FollowerDecision = bundle.FollowerDecision
 	for player, p := range level.Players {
 		w.Rules[player] = p.ScenarioRules()
 	}

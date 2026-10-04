@@ -131,6 +131,14 @@ func (w *World) planNativeWalker(index int, actor *FollowerMotionActor) bool {
 	if w.Core.Peeps[index].Population <= 0 {
 		return false
 	}
+	if !magnet {
+		decision, err := w.FollowerDecision.Select(actor, uint8(p.IQ), w.nativeFollowerMode(int(p.Player)), &w.Occupancy.Grid, FollowerDecisionCallbacks{Record: w.followerDecisionRecord, Random: w.random})
+		if err != nil {
+			panic(err)
+		}
+		p.MovementSpeed = actor.Speed
+		return decision.Fallthrough
+	}
 	delta, moving := w.Core.PlanWalkerStep(index)
 	if !moving {
 		return false
@@ -150,6 +158,42 @@ func (w *World) planNativeWalker(index int, actor *FollowerMotionActor) bool {
 		actor.ReturnState = 18
 	}
 	return !magnet
+}
+
+func (w *World) nativeFollowerMode(player int) NativeFollowerMode {
+	switch w.Core.Magnets[player].Flags {
+	case legacy.MagnetMode:
+		return NativeFollowerMagnet
+	case legacy.JoinMode:
+		return NativeFollowerJoin
+	case legacy.FightMode:
+		return NativeFollowerFight
+	default:
+		return NativeFollowerSettle
+	}
+}
+
+func (w *World) followerDecisionRecord(ref NativeRecordReference) (FollowerDecisionRecord, bool) {
+	v, ok := w.lightningRecord(ref)
+	location, located := LocateNativeRecord(ref)
+	if located {
+		switch location.Pool {
+		case NativeFollowerPool:
+			index := location.Index - 1
+			if index >= len(w.Core.Peeps) || w.Core.Peeps[index].Population <= 0 && !w.flameDeathIndex[index] && !w.LightningVictims[index].Active {
+				v.Owner = 0
+			}
+		case NativeEffectPool:
+			if !w.NativeEffects[location.Index].Active {
+				v.Owner = 0
+			}
+		case NativeWallPool:
+			if !w.Walls.Actors[location.Index].Active {
+				v.Owner = 0
+			}
+		}
+	}
+	return FollowerDecisionRecord{Kind: v.Kind, Owner: v.Owner, Next: v.Next}, ok
 }
 
 func (w *World) nativeFollowerSnapshot() [legacy.MaxPeeps]NativeFollower {

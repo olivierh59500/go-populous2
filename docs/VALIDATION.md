@@ -22,6 +22,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Fire column oracle | Twelve full traces: actor, RNG and every terrain tile per update |
 | Whirlwind oracle | Twelve parent traces, 3,550 matching updates and 713 child requests; actor, RNG and terrain compared |
 | Followers | 399 usable records; references above 255 survive save/load |
+| Ordinary target selection | 51 original selector cases; World replays 49 nondelegated cases with native target, leg, road-speed restore and RNG |
 | Starting/emigrant attributes | Ten original allocation cases and all nineteen emigration stages distinguish search byte from weapon strength |
 | Follower motion oracle | 72 traces / 528 updates, direction-image banks, cell heads and two full-dispatch/prepass references |
 | Follower motion integration | Fixed-leg Core replays, precise crossing contacts, same-slot generations and save 12 continuation |
@@ -100,6 +101,13 @@ fallthrough separately. Waiting, water and hero motion are not covered by these
 ordinary walking traces. Version 12 also migrates earlier swapped basalt and
 whirlpool IDs, and rejects invalid motion coordinates, velocities, phases,
 image banks and pool-relative references.
+
+Ordinary decisions now consume the mixed native map directly: preferred
+search, linked boulder exclusion, road priority and pressure tie-breaking.
+They do not create a settlement by returning a zero inherited tile delta.
+Native settlement/contact begins at the separate entry handler. World tests
+also preserve accelerated/saturated road legs through saves; magnet and hero
+decision routines remain outside this ordinary selector's replay scope.
 
 Version 13 world tests compare the complete mixed graph/pressure through native
 Basalt propagation and combined Whirlwind/Whirlpool lifetimes. Later-slot child

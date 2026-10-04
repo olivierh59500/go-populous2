@@ -545,3 +545,24 @@ height; it does not use marker fractions or marker-cell height. The endpoint
 is clipped at the top. Version 14 saves retain chains, random words and victim
 states; old generic radius effects migrate to markers rather than replaying
 invented damage.
+
+## Ordinary search and road decisions
+
+State 2 selects targets at `$1134e`–`$1156c` after caller-owned attrition.
+The preferred scan uses the native search-index byte and ordered mixed records;
+nonpreferred search consumes exactly one random draw and chooses among valid
+neighbors using the raw header pressure bits. Boulders remain visible to the
+metadata resolver even when their owner byte is zero. Join/fight modes request
+the corresponding native owner; magnet and hero routines are delegated.
+
+Road priority is evaluated before the later boulder scan. A road leg adds the
+native twenty-byte speed bonus, initializes velocity/timer, then subtracts that
+full bonus from the speed byte. Saturation can therefore leave speed 235 with
+velocity 255; normalizing velocity back to the stored byte would change the
+original leg. The save validator accepts those proven native velocities.
+
+The World adapter replays 49 nondelegated original cases. Target selection does
+not settle on the current tile: native settlement and delayed friendly/enemy
+contacts begin in `$1275a` and its subsequent state handlers. Their full World
+integration, native magnet/hero decisions and the remaining inherited contact
+path remain required work.

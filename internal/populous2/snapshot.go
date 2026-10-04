@@ -145,7 +145,13 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			if _, _, ok := bundle.FollowerMotion.Frame(a); !ok {
 				return nil, fmt.Errorf("invalid saved native follower image bank")
 			}
-			velocity := func(value int16) bool { return value == 0 || value == int16(a.Speed) || value == -int16(a.Speed) }
+			roadSpeed := min(255, int(a.Speed)+int(bundle.FollowerDecision.RoadBonus))
+			if a.Speed == 235 {
+				roadSpeed = 255 // Saturated native addition then full bonus subtraction.
+			}
+			velocity := func(value int16) bool {
+				return value == 0 || value == int16(a.Speed) || value == -int16(a.Speed) || value == int16(roadSpeed) || value == -int16(roadSpeed)
+			}
 			if !velocity(a.VX) || !velocity(a.VY) || !validNativeFollowerLink(a.Next) || !validNativeFollowerLink(a.Previous) {
 				return nil, fmt.Errorf("invalid saved native follower velocity/link")
 			}
