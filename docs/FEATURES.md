@@ -39,7 +39,7 @@ the remaining simulation routines.
 | Renew land | 7 | 80 | Native sampled placement and tile 245; later greenery spread and popularity pending |
 | Swamp | 8 | 54 | Native sampled placement and animated tiles 168–171; entry kills either side; native death animation/options/immunities pending |
 | Fungus | 9 | 26 | Provisional propagation and damage; native controller/automaton pending |
-| Adonis | 10 | 58 | Native conversion/art; genuine post-combat splitting pending |
+| Adonis | 10 | 58 | Native conversion/art and post-victory hero splitting; native movement/combat and pool-full edge state pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
 | City walls | 13 | 34 | Provisional line obstacles; original connected-wall rules and breaking/climbing pending |
 | Earthquake | 14 | 40 | Inherited earthquake with native cost/sound; directed native fault pending |

@@ -99,6 +99,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	townRules := w.Core.OlympianTowns
 	w.Core = legacy.WorldFromSnapshot(snapshot.Core, w.Core.Rules)
 	w.Core.OlympianTowns = townRules
+	w.bindHeroCombat()
 	w.Effects = append([]Effect(nil), snapshot.Effects...)
 	w.Experience = snapshot.Experience
 	w.Marks, w.Heroes, w.Random = snapshot.Marks, snapshot.Heroes, snapshot.Random

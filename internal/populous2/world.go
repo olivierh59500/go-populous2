@@ -91,6 +91,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	core.PlaceOlympianPeople(followers)
 	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
+	w.bindHeroCombat()
 	return w, nil
 }
 
@@ -319,9 +320,6 @@ func (w *World) Tick() {
 					w.Core.ConvertPeep(n, hero.Player)
 				}
 			}
-		}
-		if hero.Spell == Adonis && p.Population > hero.Population {
-			p.Population += max(1, (p.Population-hero.Population)/2)
 		}
 		w.Heroes[i].Population = p.Population
 	}

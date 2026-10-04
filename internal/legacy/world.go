@@ -192,6 +192,7 @@ type World struct {
 	Level              Level
 	Rules              TerrainRules
 	OlympianTowns      *OlympianTownRules
+	OnBattleWon        func(winner, loser int)
 	Terrain            int
 	GameTurn           int
 	Alt                [EndWidth * EndWidth]int
@@ -2278,6 +2279,9 @@ func (w *World) battleOver(winnerIndex, loserIndex int) {
 		if w.Magnets[loserPlayer].Mana < ManaFloor {
 			w.Magnets[loserPlayer].Mana = ManaFloor
 		}
+	}
+	if w.OnBattleWon != nil {
+		w.OnBattleWon(winnerIndex, loserIndex)
 	}
 }
 

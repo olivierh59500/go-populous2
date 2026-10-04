@@ -160,3 +160,12 @@ preserved. A five-placement reference matches every tile code produced by the
 original routine. Removal at `$16744` restores the underlying ground without
 charging mana. The interface paints by dragging instead of selecting two ends.
 Movement speed and fungus-barrier interactions remain separate work.
+
+## Adonis after combat
+
+The winner path at `$129fa` invokes `$146d8` for Adonis. With population above
+twenty and an available follower record, the parent and clone each receive
+`floor(population / 2)`. The clone clears combat targets and begins ordinary
+hero movement. Recruitment alone does not cause splitting. The Go battle hook
+retains the hero type and recreates its binding after save/load. The native
+pool-full flag and stale-flag allocation failure remain edge-case comparisons.
