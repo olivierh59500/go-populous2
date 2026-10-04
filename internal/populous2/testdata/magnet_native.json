@@ -1,0 +1,161 @@
+{
+  "cases": [
+    {
+      "AfterSHA256": "b0e293cf57c9f12b677db199cf40982ac21b0e5044084a82479c6e4517e1ee85",
+      "GridSHA256": "2d71cc94680d3cb7e43c3069f059e596bd62bee5d25d239cd0f9f44775c14eca",
+      "Input": {
+        "Owner": 0,
+        "X": 0,
+        "Y": 0,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "fcc144df1ece7b16b2c2bb82a14cd9846a5bcd64cfb6d64db1ffadd5ab90ffdf",
+      "GridSHA256": "b4f0c2c9bcfc1ec8c1d82c95e29e72c855900f141bb22985ee511868d86c6b35",
+      "Input": {
+        "Owner": 0,
+        "X": 32,
+        "Y": 32,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "106b4e03a3e7ad18456978dfc833c1fbfaae5ae3a55517744b5bd4867ec8fa59",
+      "GridSHA256": "1978c3f90a48f4eb52223a2ba15ddbc708971eda6cb44c821aae97427ca754d7",
+      "Input": {
+        "Owner": 0,
+        "X": 63,
+        "Y": 63,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "720fcf4bd4f0fc5232baa7f3c04c987a86c5eccb6de6cdf3da5259f7b8b86a3c",
+      "GridSHA256": "5aa652efb610e188cf57ea1eebca45deb80f75afde03471947a25b3e6c1a9ed0",
+      "Input": {
+        "Owner": 0,
+        "X": 127,
+        "Y": 255,
+        "Mode": "relocate"
+      }
+    },
+    {
+      "AfterSHA256": "1568eb6dc59b0beac26838261840c9724b90c3915eca1a2624b64a7bb12fd0b9",
+      "GridSHA256": "3777604ad23c94ad06924215c2ed46192a3e0e00719ca1ff731b5cbe6102da4f",
+      "Input": {
+        "Owner": 0,
+        "X": 128,
+        "Y": 64,
+        "Mode": "relocate"
+      }
+    },
+    {
+      "AfterSHA256": "a795a7d59ffe8c90a6240a291a5545758400b642d1237cf41a94ec82b4cb25f7",
+      "GridSHA256": "e680778df3b29d4c9439245b24163cc6e437d87ff3a067c49e7dc5c8cde34fe3",
+      "Input": {
+        "Owner": 1,
+        "X": 0,
+        "Y": 0,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "f245c51ca24cd9130f5f736c910c99a145b3d5de8496d6bfe033269ff3101225",
+      "GridSHA256": "4168303dbefa0b9d0884ee37fb30181a8815400dadeb70e6469eb02d808c9842",
+      "Input": {
+        "Owner": 1,
+        "X": 32,
+        "Y": 32,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "f36dc7696b6918cc6d74984e9bce75f4e5d44b3e8b995dd2676d907cbc7198d0",
+      "GridSHA256": "cb6ac122d2e4d67b8507f1195fcf3b92a8ce8095d62fd6b682af93e74bb971c1",
+      "Input": {
+        "Owner": 1,
+        "X": 63,
+        "Y": 63,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "a78f50fdedde792a6e18290f3b528c342a7fa2e3ca5e018f6c65d733a0a6dee0",
+      "GridSHA256": "96b4b04b2e2f631417b5a1e1913c8ed6e771af0a5c50ac4ce39012c01a4d4cba",
+      "Input": {
+        "Owner": 1,
+        "X": 127,
+        "Y": 255,
+        "Mode": "relocate"
+      }
+    },
+    {
+      "AfterSHA256": "549253fd7015f4389c51fd8d39c2e5e80135afb352d5f0063fa90a90ec462da9",
+      "GridSHA256": "b210b12adc637d58faf606dfca19f07430422f62e83298196148e65f9d5f42a2",
+      "Input": {
+        "Owner": 1,
+        "X": 128,
+        "Y": 64,
+        "Mode": "relocate"
+      }
+    },
+    {
+      "AfterSHA256": "21862bf703f8874eb66c89a773cf9c459115f1b0c5624c0e75a748d1e7d67400",
+      "GridSHA256": "2c173fdb4cd22fb38baf87af67f2fde35667574dade12effedf508739a006465",
+      "Input": {
+        "Owner": 2,
+        "X": 0,
+        "Y": 0,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "b3df3b573dfeb66a5efe4ab777ed52b8341c32d033bc6ca4dc75b08a8076f6f5",
+      "GridSHA256": "24656fc0aba8bcb2b9e53bb0252b228c6809857b798fb949647e5ee9da5abf49",
+      "Input": {
+        "Owner": 2,
+        "X": 32,
+        "Y": 32,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "741662d05925427b527c6de252413f5b70652f3b6a99b3e4113e30d3a3a95cca",
+      "GridSHA256": "f5d7238370ab42d163e24be64b9f61a22233ded2ea99677ba41e6375e991db5a",
+      "Input": {
+        "Owner": 2,
+        "X": 63,
+        "Y": 63,
+        "Mode": "create"
+      }
+    },
+    {
+      "AfterSHA256": "025139dcf1a044fc79f4fb4af9e80441ec877507d314b6a79a44722d7e85aff8",
+      "GridSHA256": "57dd83953eddfc743860008214e51ba8517df3ac4c6847957eb205a3ed09e341",
+      "Input": {
+        "Owner": 2,
+        "X": 127,
+        "Y": 255,
+        "Mode": "relocate"
+      }
+    },
+    {
+      "AfterSHA256": "6fc3d08cc1bf59d68d321e64eb3ebe7caa828ccf284c9e12e1d1537866ac1199",
+      "GridSHA256": "42a4364e78bf6e1dde89b9c3935771410563c05322e53e6a5231c70b814aa500",
+      "Input": {
+        "Owner": 2,
+        "X": 128,
+        "Y": 64,
+        "Mode": "relocate"
+      }
+    }
+  ],
+  "source": {
+    "entry": "$14048/$13fe4",
+    "grid": "BSS $0f44",
+    "image": "BSS $5f50..$eb18",
+    "cases": 15,
+    "initial": "Byte i modulo256 retained image; marker links0, position32.5, deity marker pointer; headersa8/tile15, relocate source head set."
+  }
+}
