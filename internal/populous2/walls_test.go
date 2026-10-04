@@ -183,3 +183,171 @@ func TestWallValidationAllowsNativeReferenceQuirks(t *testing.T) {
 		})
 	}
 }
+
+// Every fixture below records the original relocated $141a2 result and its
+// actual wall/hero state changes, including strict threshold boundaries.
+func TestWallCrossingAgainstNative68000(t *testing.T) {
+	fixtures := []struct {
+		player        int
+		xp            uint8
+		population    int
+		hero          bool
+		movement      int
+		wallKind      uint8
+		wallAnimation int
+		heroState     uint8
+		heroAnimation int
+	}{
+		{0, 0, 1, false, -2, 26, 1468, 0, 0},
+		{0, 0, 1, true, -2, 26, 1468, 0, 0},
+		{0, 0, 1000, false, -2, 26, 1468, 0, 0},
+		{0, 0, 1000, true, -2, 26, 1468, 0, 0},
+		{0, 0, 2999, false, -2, 26, 1468, 0, 0},
+		{0, 0, 2999, true, -2, 26, 1468, 0, 0},
+		{0, 0, 3000, false, -2, 26, 1468, 0, 0},
+		{0, 0, 3000, true, -2, 26, 1468, 0, 0},
+		{0, 0, 35767, false, -2, 26, 1468, 0, 0},
+		{0, 0, 35767, true, -2, 26, 1468, 0, 0},
+		{0, 0, 35768, false, -2, 26, 1468, 0, 0},
+		{0, 0, 35768, true, -2, 26, 1468, 0, 0},
+		{0, 0, 35769, false, 0, 26, 1468, 0, 0},
+		{0, 0, 35769, true, 0, 26, 1468, 0, 0},
+		{0, 0, 52767, false, 0, 26, 1468, 0, 0},
+		{0, 0, 52767, true, 0, 26, 1468, 0, 0},
+		{0, 0, 52768, false, 0, 26, 1468, 0, 0},
+		{0, 0, 52768, true, 0, 26, 1468, 0, 0},
+		{0, 0, 52769, false, 0, 28, 1960, 0, 0},
+		{0, 0, 52769, true, 0, 28, 1960, 42, 1996},
+		{0, 32, 1, false, -2, 26, 1468, 0, 0},
+		{0, 32, 1, true, -2, 26, 1468, 0, 0},
+		{0, 32, 1000, false, -2, 26, 1468, 0, 0},
+		{0, 32, 1000, true, -2, 26, 1468, 0, 0},
+		{0, 32, 2999, false, -2, 26, 1468, 0, 0},
+		{0, 32, 2999, true, -2, 26, 1468, 0, 0},
+		{0, 32, 3000, false, -2, 26, 1468, 0, 0},
+		{0, 32, 3000, true, -2, 26, 1468, 0, 0},
+		{0, 32, 39863, false, -2, 26, 1468, 0, 0},
+		{0, 32, 39863, true, -2, 26, 1468, 0, 0},
+		{0, 32, 39864, false, -2, 26, 1468, 0, 0},
+		{0, 32, 39864, true, -2, 26, 1468, 0, 0},
+		{0, 32, 39865, false, 0, 26, 1468, 0, 0},
+		{0, 32, 39865, true, 0, 26, 1468, 0, 0},
+		{0, 32, 56863, false, 0, 26, 1468, 0, 0},
+		{0, 32, 56863, true, 0, 26, 1468, 0, 0},
+		{0, 32, 56864, false, 0, 26, 1468, 0, 0},
+		{0, 32, 56864, true, 0, 26, 1468, 0, 0},
+		{0, 32, 56865, false, 0, 28, 1960, 0, 0},
+		{0, 32, 56865, true, 0, 28, 1960, 42, 1996},
+		{0, 255, 1, false, -2, 26, 1468, 0, 0},
+		{0, 255, 1, true, -2, 26, 1468, 0, 0},
+		{0, 255, 1000, false, -2, 26, 1468, 0, 0},
+		{0, 255, 1000, true, -2, 26, 1468, 0, 0},
+		{0, 255, 2999, false, -2, 26, 1468, 0, 0},
+		{0, 255, 2999, true, -2, 26, 1468, 0, 0},
+		{0, 255, 3000, false, -2, 26, 1468, 0, 0},
+		{0, 255, 3000, true, -2, 26, 1468, 0, 0},
+		{0, 255, 68407, false, -2, 26, 1468, 0, 0},
+		{0, 255, 68407, true, -2, 26, 1468, 0, 0},
+		{0, 255, 68408, false, -2, 26, 1468, 0, 0},
+		{0, 255, 68408, true, -2, 26, 1468, 0, 0},
+		{0, 255, 68409, false, 0, 26, 1468, 0, 0},
+		{0, 255, 68409, true, 0, 26, 1468, 0, 0},
+		{0, 255, 85407, false, 0, 26, 1468, 0, 0},
+		{0, 255, 85407, true, 0, 26, 1468, 0, 0},
+		{0, 255, 85408, false, 0, 26, 1468, 0, 0},
+		{0, 255, 85408, true, 0, 26, 1468, 0, 0},
+		{0, 255, 85409, false, 0, 28, 1960, 0, 0},
+		{0, 255, 85409, true, 0, 28, 1960, 42, 1996},
+		{1, 0, 1, false, -2, 26, 1468, 0, 0},
+		{1, 0, 1, true, -2, 26, 1468, 0, 0},
+		{1, 0, 1000, false, -2, 26, 1468, 0, 0},
+		{1, 0, 1000, true, -2, 26, 1468, 0, 0},
+		{1, 0, 2999, false, -2, 26, 1468, 0, 0},
+		{1, 0, 2999, true, -2, 26, 1468, 0, 0},
+		{1, 0, 3000, false, -2, 26, 1468, 0, 0},
+		{1, 0, 3000, true, -2, 26, 1468, 0, 0},
+		{1, 0, 68535, false, -2, 26, 1468, 0, 0},
+		{1, 0, 68535, true, -2, 26, 1468, 0, 0},
+		{1, 0, 68536, false, -2, 26, 1468, 0, 0},
+		{1, 0, 68536, true, -2, 26, 1468, 0, 0},
+		{1, 0, 68537, false, 0, 26, 1468, 0, 0},
+		{1, 0, 68537, true, 0, 26, 1468, 0, 0},
+		{1, 0, 85535, false, 0, 26, 1468, 0, 0},
+		{1, 0, 85535, true, 0, 26, 1468, 0, 0},
+		{1, 0, 85536, false, 0, 26, 1468, 0, 0},
+		{1, 0, 85536, true, 0, 26, 1468, 0, 0},
+		{1, 0, 85537, false, 0, 28, 1960, 0, 0},
+		{1, 0, 85537, true, 0, 28, 1960, 42, 2004},
+		{1, 32, 1, false, -2, 26, 1468, 0, 0},
+		{1, 32, 1, true, -2, 26, 1468, 0, 0},
+		{1, 32, 1000, false, -2, 26, 1468, 0, 0},
+		{1, 32, 1000, true, -2, 26, 1468, 0, 0},
+		{1, 32, 2999, false, -2, 26, 1468, 0, 0},
+		{1, 32, 2999, true, -2, 26, 1468, 0, 0},
+		{1, 32, 3000, false, -2, 26, 1468, 0, 0},
+		{1, 32, 3000, true, -2, 26, 1468, 0, 0},
+		{1, 32, 72631, false, -2, 26, 1468, 0, 0},
+		{1, 32, 72631, true, -2, 26, 1468, 0, 0},
+		{1, 32, 72632, false, -2, 26, 1468, 0, 0},
+		{1, 32, 72632, true, -2, 26, 1468, 0, 0},
+		{1, 32, 72633, false, 0, 26, 1468, 0, 0},
+		{1, 32, 72633, true, 0, 26, 1468, 0, 0},
+		{1, 32, 89631, false, 0, 26, 1468, 0, 0},
+		{1, 32, 89631, true, 0, 26, 1468, 0, 0},
+		{1, 32, 89632, false, 0, 26, 1468, 0, 0},
+		{1, 32, 89632, true, 0, 26, 1468, 0, 0},
+		{1, 32, 89633, false, 0, 28, 1960, 0, 0},
+		{1, 32, 89633, true, 0, 28, 1960, 42, 2004},
+		{1, 255, 1, false, -2, 26, 1468, 0, 0},
+		{1, 255, 1, true, -2, 26, 1468, 0, 0},
+		{1, 255, 1000, false, -2, 26, 1468, 0, 0},
+		{1, 255, 1000, true, -2, 26, 1468, 0, 0},
+		{1, 255, 2999, false, -2, 26, 1468, 0, 0},
+		{1, 255, 2999, true, -2, 26, 1468, 0, 0},
+		{1, 255, 3000, false, -2, 26, 1468, 0, 0},
+		{1, 255, 3000, true, -2, 26, 1468, 0, 0},
+		{1, 255, 101175, false, -2, 26, 1468, 0, 0},
+		{1, 255, 101175, true, -2, 26, 1468, 0, 0},
+		{1, 255, 101176, false, -2, 26, 1468, 0, 0},
+		{1, 255, 101176, true, -2, 26, 1468, 0, 0},
+		{1, 255, 101177, false, 0, 26, 1468, 0, 0},
+		{1, 255, 101177, true, 0, 26, 1468, 0, 0},
+		{1, 255, 118175, false, 0, 26, 1468, 0, 0},
+		{1, 255, 118175, true, 0, 26, 1468, 0, 0},
+		{1, 255, 118176, false, 0, 26, 1468, 0, 0},
+		{1, 255, 118176, true, 0, 26, 1468, 0, 0},
+		{1, 255, 118177, false, 0, 28, 1960, 0, 0},
+		{1, 255, 118177, true, 0, 28, 1960, 42, 2004},
+	}
+	rules := wallRulesForTest(t)
+	for index, fixture := range fixtures {
+		decision := rules.DecideCrossing(fixture.player, fixture.player^1, fixture.xp, fixture.population, fixture.hero)
+		movement, kind := 0, uint8(26)
+		if decision.Crossing == WallBlocked {
+			movement = -2
+		}
+		if decision.Crossing == WallBreak {
+			kind = 28
+		}
+		if movement != fixture.movement || kind != fixture.wallKind || decision.HeroState != fixture.heroState || decision.HeroAnimation != fixture.heroAnimation {
+			t.Fatalf("native wall movement fixture %d differs: %+v", index, decision)
+		}
+		var state WallState
+		state.Actors[0] = WallActor{Active: true, Player: uint8(fixture.player ^ 1), X: 33, Y: 32, Animation: 0x5bc}
+		if decision.Crossing == WallBreak && !state.Break(&rules, 0) {
+			t.Fatal("native wall break failed")
+		}
+		if state.Actors[0].Animation != fixture.wallAnimation {
+			t.Fatalf("fixture %d wall animation differs", index)
+		}
+		if !state.Actors[0].Active || len(rules.Layers(state.Actors[0])) == 0 {
+			t.Fatal("broken wall actor or native art disappeared")
+		}
+		if decision.Crossing == WallBreak && state.At(33, 32) != -1 {
+			t.Fatal("native broken actor still blocks as an intact wall")
+		}
+	}
+	if got := rules.DecideCrossing(0, 0, 0, 1, false); got.Crossing != WallPass {
+		t.Fatal("own wall did not bypass strength comparison")
+	}
+}

@@ -22,6 +22,9 @@ type WallRules struct {
 	Properties      [256]uint16
 	RoadConnections [20]uint8
 	Frames          map[int]AnimationFrame
+	BreakBase       int32
+	ClimbBase       int32
+	BreakAnimations [5]int
 }
 
 func DecodeWallRules(exe *amiga.Executable) (WallRules, error) {
@@ -57,6 +60,14 @@ func DecodeWallRules(exe *amiga.Executable) (WallRules, error) {
 		rules.Properties[index] = binary.BigEndian.Uint16(code[0x33312+index*2:])
 	}
 	copy(rules.RoadConnections[:], code[0x1691c:0x16930])
+	rules.BreakBase = int32(binary.BigEndian.Uint32(code[0x20d60:]))
+	rules.ClimbBase = int32(binary.BigEndian.Uint32(code[0x20d5c:]))
+	for index := range rules.BreakAnimations {
+		rules.BreakAnimations[index] = int(binary.BigEndian.Uint16(code[0x20f1e+index*2:]))
+		if err := rules.addAnimation(exe, rules.BreakAnimations[index]); err != nil {
+			return WallRules{}, err
+		}
+	}
 	for _, animation := range []int{0xb44, 0xb54} {
 		if err := rules.addAnimation(exe, animation); err != nil {
 			return WallRules{}, err
@@ -83,6 +94,7 @@ func (rules *WallRules) addAnimation(exe *amiga.Executable, offset int) error {
 // Next and Heads use slot+1 references; zero means no record.
 type WallActor struct {
 	Active    bool
+	Broken    bool
 	Player    uint8
 	X, Y      int
 	Variant   uint8
@@ -127,7 +139,7 @@ func (state *WallState) Validate(rules *WallRules) error {
 // At returns an active wall's slot, or -1 when the cell contains no wall.
 func (state *WallState) At(x, y int) int {
 	for index, actor := range state.Actors {
-		if actor.Active && actor.X == x && actor.Y == y {
+		if actor.Active && !actor.Broken && actor.X == x && actor.Y == y {
 			return index
 		}
 	}
@@ -241,4 +253,67 @@ func (rules *WallRules) Layers(actor WallActor) []SpriteLayer {
 		return nil
 	}
 	return rules.Frames[actor.Animation].Layers
+}
+
+type WallCrossing uint8
+
+const (
+	WallBlocked WallCrossing = iota
+	WallPass
+	WallClimb
+	WallBreak
+)
+
+type WallDecision struct {
+	Crossing      WallCrossing
+	HeroState     uint8
+	HeroAnimation int
+}
+
+// DecideCrossing follows $141a2/$14226 without mutating candidate state.
+// Experience belongs to the walker, not the wall's deity. MOVE.B preserves
+// the upper bytes left by the native deity-index MULU #314; retaining this
+// original register behavior produces side-dependent strength thresholds.
+// Neither gate variants nor hero status bypass the enemy-wall comparison.
+func (rules *WallRules) DecideCrossing(walkerPlayer, wallPlayer int, walkerEarthXP uint8, population int, hero bool) WallDecision {
+	decision := WallDecision{Crossing: WallBlocked}
+	if rules == nil || walkerPlayer < 0 || walkerPlayer > 1 || wallPlayer < 0 || wallPlayer > 1 || population <= 0 {
+		return decision
+	}
+	if walkerPlayer == wallPlayer {
+		decision.Crossing = WallPass
+		return decision
+	}
+	register := (uint32((walkerPlayer+1)*314) & 0xffffff00) | uint32(walkerEarthXP)
+	bonus := register << 7
+	strength := int32(population)
+	if strength > int32(bonus+uint32(rules.BreakBase)) {
+		decision.Crossing = WallBreak
+		if hero {
+			decision.HeroState = 0x2a
+			decision.HeroAnimation = 0x7cc
+			if walkerPlayer == 1 {
+				decision.HeroAnimation = 0x7d4
+			}
+		}
+	} else if strength > int32(bonus+uint32(rules.ClimbBase)) {
+		decision.Crossing = WallClimb
+	}
+	return decision
+}
+
+// Break starts the original variant-specific destruction art and removes only
+// the intact-wall collision state. Native kind $1c retains its actor and head
+// references; candidate movement checks must call DecideCrossing instead.
+func (state *WallState) Break(rules *WallRules, index int) bool {
+	if rules == nil || index < 0 || index >= len(state.Actors) {
+		return false
+	}
+	actor := &state.Actors[index]
+	if !actor.Active || actor.Broken || actor.Variant > 8 || actor.Variant%2 != 0 {
+		return false
+	}
+	actor.Broken = true
+	actor.Animation = rules.BreakAnimations[actor.Variant/2]
+	return true
 }
