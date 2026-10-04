@@ -33,6 +33,10 @@ type Game struct {
 	Playing                   bool
 	Profile                   populous2.Deity
 	DeityScreen               bool
+	ScenarioScreen            bool
+	scenarioSide              int
+	customScenarioOptions     [2]uint16
+	hasCustomScenarioOptions  bool
 	deityPortrait             *ebiten.Image
 	deityPassword             string
 	deityEditing              bool
@@ -113,7 +117,9 @@ func (g *Game) Update() error {
 		g.lineStart = nil
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		if g.DeityScreen {
+		if g.ScenarioScreen {
+			g.ScenarioScreen = false
+		} else if g.DeityScreen {
 			g.DeityScreen = false
 			g.deityEditing = false
 			g.applyDeityProfile()
@@ -132,6 +138,13 @@ func (g *Game) Update() error {
 	}
 	if g.DeityScreen {
 		return g.updateDeity()
+	}
+	if g.ScenarioScreen {
+		return g.updateScenarioRules()
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyO) {
+		g.OpenScenarioRules()
+		return nil
 	}
 	if g.audioPlayer == nil {
 		if err := g.initializeAudio(); err != nil {
@@ -285,6 +298,11 @@ func (g *Game) start(level int, custom, demo bool) error {
 	}
 	world.Demo = demo
 	g.World = world
+	if custom && g.hasCustomScenarioOptions {
+		for player, raw := range g.customScenarioOptions {
+			g.World.Rules[player] = populous2.DecodeScenarioRules(raw)
+		}
+	}
 	g.applyDeityProfile()
 	g.LevelIndex = level
 	g.Playing = true
@@ -503,7 +521,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Scale(2, 2)
 	op.GeoM.Translate(0, 40)
 	screen.DrawImage(g.background, op)
-	if g.DeityScreen {
+	if g.ScenarioScreen {
+		g.drawScenarioRules(screen)
+	} else if g.DeityScreen {
 		g.drawDeity(screen)
 	} else if !g.Playing {
 		g.drawMenu(screen)
@@ -542,6 +562,7 @@ func (g *Game) drawMenu(screen *ebiten.Image) {
 	button(screen, 110, 352, 200, 32, "< MONDE PRECEDENT", true, false)
 	button(screen, 330, 352, 200, 32, "MONDE SUIVANT >", true, false)
 	label(screen, "ENTREE: jouer   D: demo   H: aide   F: plein ecran", 118, 391, muted)
+	label(screen, "O : regles du monde", 118, 410, muted)
 	if g.Message != "" {
 		label(screen, g.Message, 12, 450, ink)
 	}
@@ -889,6 +910,12 @@ func (g *Game) load() {
 	g.World = world
 	g.LevelIndex = world.Level.Number
 	g.Profile = world.Deity
+	if world.Custom {
+		g.hasCustomScenarioOptions = true
+		for player, rules := range world.Rules {
+			g.customScenarioOptions[player] = rules.Raw
+		}
+	}
 	g.Playing = true
 	g.Paused = false
 	g.lineStart = nil

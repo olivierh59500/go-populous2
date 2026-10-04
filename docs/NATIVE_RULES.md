@@ -321,3 +321,8 @@ victim's tile when that side's rule is set. Version 8 saves preserve both raw
 option words, including unidentified bits, and restore their runtime bindings.
 Special editor/battle admission modes and scripted world commands remain
 separate verification targets.
+
+The rules requester displays both sides independently. Conquest parameters are
+read-only; custom-game flags can be toggled without discarding unidentified raw
+bits. Custom choices survive restarting and loading. Menu previews use the
+selected campaign world rather than the last played world's rules.

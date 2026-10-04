@@ -34,6 +34,7 @@ go run ./cmd/populous2 -demo -world 0
 go run ./cmd/populous2 -play -code DOEGAC
 go run ./cmd/populous2 -deity
 go run ./cmd/populous2 -fire-columns
+go run ./cmd/populous2 -custom -rules
 go build -o bin/populous2 ./cmd/populous2
 ```
 
@@ -65,6 +66,7 @@ apply the original conquest-based custom-game unlocking policy.
 | Menu / fullscreen | Escape / F |
 | Continue after a result | Enter |
 | Create/edit the deity from the menu | G or the deity button |
+| View/edit scenario rules | O (editable separately for each side in custom games) |
 
 Prices shown are the actual mana balance costs, including the original
 per-element experience reductions. The native score and sample bank play

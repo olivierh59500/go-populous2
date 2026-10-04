@@ -19,6 +19,7 @@ func main() {
 	custom := flag.Bool("custom", false, "start a free game with every power available")
 	play := flag.Bool("play", false, "start gameplay immediately")
 	deity := flag.Bool("deity", false, "open the original deity profile editor")
+	scenarioRules := flag.Bool("rules", false, "open the per-side scenario rules")
 	fireColumns := flag.Bool("fire-columns", false, "present three native fire columns near the current camera")
 	simulationRate := flag.Int("simulation-rate", populous2.SimulationRate, "simulation updates per second (nominal PAL: 50)")
 	frames := flag.Int("frames", 0, "close after this number of updates (0: unlimited)")
@@ -51,6 +52,9 @@ func main() {
 	}
 	if *deity {
 		g.OpenDeity()
+	}
+	if *scenarioRules {
+		g.OpenScenarioRules()
 	}
 	if *fireColumns {
 		g.Playing = true
