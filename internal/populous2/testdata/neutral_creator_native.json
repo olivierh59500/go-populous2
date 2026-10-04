@@ -1,0 +1,1474 @@
+{
+  "cases": [
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "a1e0cb34978ffd8487b6ae453a861d24ad690da9804fc6f65d99c512f9a43437",
+      "Input": {
+        "Name": "selector0-y0-free[1 2]",
+        "D0": 2596012032,
+        "D1": 305397760,
+        "D2": 1450704896,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "327f12f6580dd528861f9528bc40256f442a7cbcd673e7293fbc31bbf168963c",
+      "Input": {
+        "Name": "selector0-y0-free[399]",
+        "D0": 2596012032,
+        "D1": 305397760,
+        "D2": 1450704896,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector0-y0-free[]",
+        "D0": 2596012032,
+        "D1": 305397760,
+        "D2": 1450704896,
+        "Free": []
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "ab76c4467482019e312953bab976700e8c2072856df37df3f63090d662bf0204",
+      "Input": {
+        "Name": "selector0-y0-free[250 251]",
+        "D0": 2596012032,
+        "D1": 305397760,
+        "D2": 1450704896,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "c747ef6f629d90f00299ded211bf3a81de2009c28e9a318cfe9920e318cb7e80",
+      "Input": {
+        "Name": "selector0-y0-free[1]",
+        "D0": 2596012032,
+        "D1": 305397760,
+        "D2": 1450704896,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "be1e617f21bc665a0f4427e773c253fb92fa806021c241c0b4963a70eefef774",
+      "Input": {
+        "Name": "selector0-y32-free[1 2]",
+        "D0": 2596012032,
+        "D1": 305397792,
+        "D2": 1450704896,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "872c81c557215e672569454a559a9b5e612202f239760d1cf4929863abf628a3",
+      "Input": {
+        "Name": "selector0-y32-free[399]",
+        "D0": 2596012032,
+        "D1": 305397792,
+        "D2": 1450704896,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector0-y32-free[]",
+        "D0": 2596012032,
+        "D1": 305397792,
+        "D2": 1450704896,
+        "Free": []
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "8ce29a16e3f5295d565c5fdcbee26f56d60f8d8dfb2f989c08df28e67f10bcd4",
+      "Input": {
+        "Name": "selector0-y32-free[250 251]",
+        "D0": 2596012032,
+        "D1": 305397792,
+        "D2": 1450704896,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "657269b4e62d527fa280b63886baaefb4e65f33008b2a39b6ebf5b864310bcf3",
+      "Input": {
+        "Name": "selector0-y32-free[1]",
+        "D0": 2596012032,
+        "D1": 305397792,
+        "D2": 1450704896,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "b288393c26dc6fc08d15873e6264586f3741756df6053812e6d4c522a8426e5b",
+      "Input": {
+        "Name": "selector0-y63-free[1 2]",
+        "D0": 2596012032,
+        "D1": 305397823,
+        "D2": 1450704896,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "f172e1e1310d756b2b551cc059ac2f8c15499bbf0b45af0a087bee2ad84e7283",
+      "Input": {
+        "Name": "selector0-y63-free[399]",
+        "D0": 2596012032,
+        "D1": 305397823,
+        "D2": 1450704896,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector0-y63-free[]",
+        "D0": 2596012032,
+        "D1": 305397823,
+        "D2": 1450704896,
+        "Free": []
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "5078eaa120848032e16980c9ff1ee3de6dff02c498e9d2828c15b5203dfecc8e",
+      "Input": {
+        "Name": "selector0-y63-free[250 251]",
+        "D0": 2596012032,
+        "D1": 305397823,
+        "D2": 1450704896,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "f9ec0f88863b27b224dc4c80cadc59591dd5aebc51eff564f881519944fd77d2",
+      "Input": {
+        "Name": "selector0-y63-free[1]",
+        "D0": 2596012032,
+        "D1": 305397823,
+        "D2": 1450704896,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "95e418c8cdca9064a17a782aede99440e2f8e739caf1e0d3d649e28a01cea053",
+      "ImageSHA256": "af5b2a865285421fc619d9461277dbe718cfc0fe832a3b26738e1103073c8288",
+      "Input": {
+        "Name": "selector2-y0-free[1 2]",
+        "D0": 2596012034,
+        "D1": 305397760,
+        "D2": 1450704898,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "833ecfdb9fbf9380fdd22384622766bc682fa963dacd6c3610d1a86b11e45ecc",
+      "ImageSHA256": "3ba97fc84db869b4262cfadba1d2e7b426bd14b079ee5c6b28c277639407b6af",
+      "Input": {
+        "Name": "selector2-y0-free[399]",
+        "D0": 2596012034,
+        "D1": 305397760,
+        "D2": 1450704898,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector2-y0-free[]",
+        "D0": 2596012034,
+        "D1": 305397760,
+        "D2": 1450704898,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "d41c6904bf2f8c865f868fe7f18202d02e625f0580d5eb42daf9de2deae535b0",
+      "ImageSHA256": "4082dfbee0f10d8a2c42874d89e3921168d370f264f4144e7fa6bd2c87ae7b2c",
+      "Input": {
+        "Name": "selector2-y0-free[250 251]",
+        "D0": 2596012034,
+        "D1": 305397760,
+        "D2": 1450704898,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "95e418c8cdca9064a17a782aede99440e2f8e739caf1e0d3d649e28a01cea053",
+      "ImageSHA256": "647f97ad8364b48b5156281bbffb17f470683e6867e767540cce91a9632ac97d",
+      "Input": {
+        "Name": "selector2-y0-free[1]",
+        "D0": 2596012034,
+        "D1": 305397760,
+        "D2": 1450704898,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "ec511ee34fd62872469863d7c08246d0c12977774025eda07aa1e0a84c3edfbf",
+      "ImageSHA256": "6fa7abb7c6ac35e092f23e7eff47b7ca5bca1e7e402d5e111a9fae528012655c",
+      "Input": {
+        "Name": "selector2-y32-free[1 2]",
+        "D0": 2596012034,
+        "D1": 305397792,
+        "D2": 1450704898,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "a08ca2cd519c17f25338f7966252995c57f39e4e24293ce79822e561a0221d4e",
+      "ImageSHA256": "198562bfaf7582780f2dcddab1040263b0c79c28143c216c374d181e0c55c651",
+      "Input": {
+        "Name": "selector2-y32-free[399]",
+        "D0": 2596012034,
+        "D1": 305397792,
+        "D2": 1450704898,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector2-y32-free[]",
+        "D0": 2596012034,
+        "D1": 305397792,
+        "D2": 1450704898,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "54d64f45e165be99b6e044796a9407c8aaa533e0891eb4600dfa0357428f7cff",
+      "ImageSHA256": "624979ad4a38edc524ddccb89a59c98ee18400506f7ab5e54dac97cd29fa724e",
+      "Input": {
+        "Name": "selector2-y32-free[250 251]",
+        "D0": 2596012034,
+        "D1": 305397792,
+        "D2": 1450704898,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "ec511ee34fd62872469863d7c08246d0c12977774025eda07aa1e0a84c3edfbf",
+      "ImageSHA256": "a177b7299688d358b41f571e1cae9565df7f161ffa4c5b3c8dbffbc81524ed67",
+      "Input": {
+        "Name": "selector2-y32-free[1]",
+        "D0": 2596012034,
+        "D1": 305397792,
+        "D2": 1450704898,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "e389a13701d7da02250f0b63af28adc9d108b7d94a677f9ad70e4828aae46ab6",
+      "ImageSHA256": "70f2aa445b06dd8ce303f8908f2bc06463ff1f50a72b83973f2104822bf3a4bb",
+      "Input": {
+        "Name": "selector2-y63-free[1 2]",
+        "D0": 2596012034,
+        "D1": 305397823,
+        "D2": 1450704898,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "ac5172fe6fe9fa12ac4e6ac91828bd9a5b8ade1aac79595ae8aa2427cb566f25",
+      "ImageSHA256": "7c2ced5bb7ed0ea245f2154d1859a0aa8c649d517e629281c9c5a524ab40b3eb",
+      "Input": {
+        "Name": "selector2-y63-free[399]",
+        "D0": 2596012034,
+        "D1": 305397823,
+        "D2": 1450704898,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector2-y63-free[]",
+        "D0": 2596012034,
+        "D1": 305397823,
+        "D2": 1450704898,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "c7cc783016f9ce66583922cdcb0796ae100e900cdd91831d701b3f446b905751",
+      "ImageSHA256": "60ea04d0a641f265fa13b0da91125ffb20e65619b8a172a2f6a1d83339850b9d",
+      "Input": {
+        "Name": "selector2-y63-free[250 251]",
+        "D0": 2596012034,
+        "D1": 305397823,
+        "D2": 1450704898,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "e389a13701d7da02250f0b63af28adc9d108b7d94a677f9ad70e4828aae46ab6",
+      "ImageSHA256": "44d0a217ea86ab1f06792e7edcb106f600215925c983c04cdc9bc0d60a0fe588",
+      "Input": {
+        "Name": "selector2-y63-free[1]",
+        "D0": 2596012034,
+        "D1": 305397823,
+        "D2": 1450704898,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "8979b392a9a90228032f2ca7f97f7822cd153de484d1d75ef5c66b2ae0f5d56f",
+      "ImageSHA256": "2174f01cb0a085a0aa982172e78cb18edfabb14d0f193d35934440344b7de925",
+      "Input": {
+        "Name": "selector4-y0-free[1 2]",
+        "D0": 2596012036,
+        "D1": 305397760,
+        "D2": 1450704900,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "d35b7691dbac0808c8e60c837ae4f6f3bf29edcb5d3b9fb1d2d775108e304c42",
+      "ImageSHA256": "ea54ec8c1ce5bd18be054564859be052a2cf02956bd61b0b9088e8faf9d31da7",
+      "Input": {
+        "Name": "selector4-y0-free[399]",
+        "D0": 2596012036,
+        "D1": 305397760,
+        "D2": 1450704900,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector4-y0-free[]",
+        "D0": 2596012036,
+        "D1": 305397760,
+        "D2": 1450704900,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "1a24ae390cacc400d4704c8d7a923ff5963c0847efe52d39993e003f3bd954a5",
+      "ImageSHA256": "a978a398f38a354bde448f662b315c156328f7db12bacffd5d3381f1b7f7e333",
+      "Input": {
+        "Name": "selector4-y0-free[250 251]",
+        "D0": 2596012036,
+        "D1": 305397760,
+        "D2": 1450704900,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "7271169f8ab94414146d1be5eb9300e58a70a2b5f9faa99c215fdd16c7d1d611",
+      "ImageSHA256": "1f45a4a42cf5419985756b879b46c4b3c847e4219437aae04bdbae56de299056",
+      "Input": {
+        "Name": "selector4-y0-free[1]",
+        "D0": 2596012036,
+        "D1": 305397760,
+        "D2": 1450704900,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "a1b75a664c80059bc441486be086a8bc172d428f4855a3bad5c29db8e8e85f14",
+      "ImageSHA256": "f6b8f097757afbb889009ce253fd5d5fe2ceb6309c5bffad85fb619aee7ef8de",
+      "Input": {
+        "Name": "selector4-y32-free[1 2]",
+        "D0": 2596012036,
+        "D1": 305397792,
+        "D2": 1450704900,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "2e31e5abad9c28891df4103f12372e1ee7dcff8a7b60d05d50b275798384e166",
+      "ImageSHA256": "5e3de57aa046e4dbb69862b6f53008386082f6f6685149f0b2afa9e523b0c1bf",
+      "Input": {
+        "Name": "selector4-y32-free[399]",
+        "D0": 2596012036,
+        "D1": 305397792,
+        "D2": 1450704900,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector4-y32-free[]",
+        "D0": 2596012036,
+        "D1": 305397792,
+        "D2": 1450704900,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "1a07007b54094f6dc70ff018aadb78a8430f3273d178fbd2cd7f4e3167312135",
+      "ImageSHA256": "a6600b75bf2e2908e14756b9cff77aa2e033470cfd5d672e1f811d0a982639c0",
+      "Input": {
+        "Name": "selector4-y32-free[250 251]",
+        "D0": 2596012036,
+        "D1": 305397792,
+        "D2": 1450704900,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "c3f6d2995da69547e5f74f6ccf02ae47c25cc693c3169c24f603f8739fc5937e",
+      "ImageSHA256": "53f44208c6e34213c246bdba9e57fa811d6af184ca1bfc06db3de6e45242366a",
+      "Input": {
+        "Name": "selector4-y32-free[1]",
+        "D0": 2596012036,
+        "D1": 305397792,
+        "D2": 1450704900,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "c338b0abd38c224f5fb80e594c830e8d5e1844c2bbc3e26a9f7b1b4642b61f41",
+      "ImageSHA256": "8ab8c9fe952bc83edeae24584a9ccd7c30d83a570b1979c4424d65d44f687344",
+      "Input": {
+        "Name": "selector4-y63-free[1 2]",
+        "D0": 2596012036,
+        "D1": 305397823,
+        "D2": 1450704900,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "fc935fb5575406c0c897ce1736445e970cc64c74f7e06ff5289461e60ce88662",
+      "ImageSHA256": "72349efc88b0c6bc50006e8436438986001fb9a4fb23db53f081682895528e40",
+      "Input": {
+        "Name": "selector4-y63-free[399]",
+        "D0": 2596012036,
+        "D1": 305397823,
+        "D2": 1450704900,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector4-y63-free[]",
+        "D0": 2596012036,
+        "D1": 305397823,
+        "D2": 1450704900,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "934e6f99b2859ea3da8bab531cdead3ca2725ae4b0af892bb6f98d9c2973cb2b",
+      "ImageSHA256": "29e2b991be6d411f76b0b7e17415fc7e76a8ad3b9e6fecf4a5468a2d6f423560",
+      "Input": {
+        "Name": "selector4-y63-free[250 251]",
+        "D0": 2596012036,
+        "D1": 305397823,
+        "D2": 1450704900,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "c338b0abd38c224f5fb80e594c830e8d5e1844c2bbc3e26a9f7b1b4642b61f41",
+      "ImageSHA256": "33c93ca60a6266e6867ee82346cace089e627f4f3ebbb7a1fc40a050b8eb54f8",
+      "Input": {
+        "Name": "selector4-y63-free[1]",
+        "D0": 2596012036,
+        "D1": 305397823,
+        "D2": 1450704900,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "b20a19ada87d589ea5e8a5f16d8b2f4a38068d83c1c1073f516a41ce9898ea27",
+      "ImageSHA256": "0cbb2472ebebb2d7ff75391f8379a6b2ed1cbe4ef4c023beab624401bd71533c",
+      "Input": {
+        "Name": "selector6-y0-free[1 2]",
+        "D0": 2596012038,
+        "D1": 305397760,
+        "D2": 1450704902,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "1c238851e0335b71bb7b5361aa2de3b1ff53caacb5ff890ad8745e2e32f934b3",
+      "ImageSHA256": "68b48fd29d693d4970f2df4e8acdcd30ac81e9d145bfac2badddcf55ba2ce83d",
+      "Input": {
+        "Name": "selector6-y0-free[399]",
+        "D0": 2596012038,
+        "D1": 305397760,
+        "D2": 1450704902,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector6-y0-free[]",
+        "D0": 2596012038,
+        "D1": 305397760,
+        "D2": 1450704902,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "8eafc7ae784156d456ef7a900ed0f542c8d5d58e3fdbc80935384a0548382596",
+      "ImageSHA256": "236dbc0408602f3108559af8c5b018bdbfb789aba2a12b6fd059abcb38e64226",
+      "Input": {
+        "Name": "selector6-y0-free[250 251]",
+        "D0": 2596012038,
+        "D1": 305397760,
+        "D2": 1450704902,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "b20a19ada87d589ea5e8a5f16d8b2f4a38068d83c1c1073f516a41ce9898ea27",
+      "ImageSHA256": "9807bf541b83c8ea2a71f7355d6d00dc653bc2f146d624c90ec2ae8a03e861fc",
+      "Input": {
+        "Name": "selector6-y0-free[1]",
+        "D0": 2596012038,
+        "D1": 305397760,
+        "D2": 1450704902,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "ff698534f927357e63d965e6c80eba1e157731fa731764e25fdd63c9146406f7",
+      "ImageSHA256": "b7fdef186f1659d0f6227dbb855a5322604c27bf1186f985fe30222cf75f27ae",
+      "Input": {
+        "Name": "selector6-y32-free[1 2]",
+        "D0": 2596012038,
+        "D1": 305397792,
+        "D2": 1450704902,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "bbca48cbb876a71252a58f55b0bf2c61f872a753a8c6d3ecfdcf11505a96e3d5",
+      "ImageSHA256": "cc11eb02a411ca258e564ebc7bf1e1aa17c227683875f41c4d6ef67c47faa6f8",
+      "Input": {
+        "Name": "selector6-y32-free[399]",
+        "D0": 2596012038,
+        "D1": 305397792,
+        "D2": 1450704902,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector6-y32-free[]",
+        "D0": 2596012038,
+        "D1": 305397792,
+        "D2": 1450704902,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "4e1d423557281591961f6db96333c0749303d7edce4a5f87962ae2ff1430fa32",
+      "ImageSHA256": "aedc9c4d409a22c0a4228b53b6ed743bfb73b5a25c715fd32fcb41265894c245",
+      "Input": {
+        "Name": "selector6-y32-free[250 251]",
+        "D0": 2596012038,
+        "D1": 305397792,
+        "D2": 1450704902,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "ff698534f927357e63d965e6c80eba1e157731fa731764e25fdd63c9146406f7",
+      "ImageSHA256": "ce26ad8f90c4dd1d33b2541b08af30b67646d876f7594b427bc3536ebe4e92a3",
+      "Input": {
+        "Name": "selector6-y32-free[1]",
+        "D0": 2596012038,
+        "D1": 305397792,
+        "D2": 1450704902,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "5381c21df978dd17e54e95c54f4b4ce1d1ef363f9c9ca4a45cb3956f0e1fbfcb",
+      "ImageSHA256": "8387dbb4164e32ef6bd8e9bf6ce978e1d9d2204d4beae6af7a9f64ba850b12ca",
+      "Input": {
+        "Name": "selector6-y63-free[1 2]",
+        "D0": 2596012038,
+        "D1": 305397823,
+        "D2": 1450704902,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "fab5e1e0d50c2d5d6c0157e835bef6bf966e907a1cf55d758dc873ebfaf21564",
+      "ImageSHA256": "d7f2076a4238e2304b9700db3c4662fa9f1ec3ee86de48b700a74c884f4bd9c9",
+      "Input": {
+        "Name": "selector6-y63-free[399]",
+        "D0": 2596012038,
+        "D1": 305397823,
+        "D2": 1450704902,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector6-y63-free[]",
+        "D0": 2596012038,
+        "D1": 305397823,
+        "D2": 1450704902,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "3dd99ea343cdfc108870b6d87079b779254eee44d58838de2ce97150c58ab2c9",
+      "ImageSHA256": "f29f8455a879eb0f149a42512e496e327740161bdefb3aa2678287fcb346a6d1",
+      "Input": {
+        "Name": "selector6-y63-free[250 251]",
+        "D0": 2596012038,
+        "D1": 305397823,
+        "D2": 1450704902,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "5381c21df978dd17e54e95c54f4b4ce1d1ef363f9c9ca4a45cb3956f0e1fbfcb",
+      "ImageSHA256": "7cefc60b1cbdb464bcd1ccb2d9e8e8e8736e0c310a4e1f6637481b112ca76df6",
+      "Input": {
+        "Name": "selector6-y63-free[1]",
+        "D0": 2596012038,
+        "D1": 305397823,
+        "D2": 1450704902,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "710470dfe07193aa02ba0a565ece1675c8b5931a72261c8975dc91ffaaf5c87f",
+      "ImageSHA256": "347d9bfe7b411d1897dd02a633f163a1915dedfc5f1314073fc6427661092075",
+      "Input": {
+        "Name": "selector8-y0-free[1 2]",
+        "D0": 2596012040,
+        "D1": 305397760,
+        "D2": 1450704904,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "05d2886062c0965d477baa851f2acb64f483d72f74b87fa83ee427e3b94ebff5",
+      "ImageSHA256": "f774ac8e91e5e7a64b7814f3b0d0ee14a52a36d9bf4e04e1ef93e8d5563560dd",
+      "Input": {
+        "Name": "selector8-y0-free[399]",
+        "D0": 2596012040,
+        "D1": 305397760,
+        "D2": 1450704904,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector8-y0-free[]",
+        "D0": 2596012040,
+        "D1": 305397760,
+        "D2": 1450704904,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "dc896c8b1ee0de38be2ff95910d0f92aa4b1082d8da8144f0cbc1f603bbff16e",
+      "ImageSHA256": "f3001a19234a153995ac95c4ac0d4d9b62ffec9e0fff49f9e56f69ebdaf92997",
+      "Input": {
+        "Name": "selector8-y0-free[250 251]",
+        "D0": 2596012040,
+        "D1": 305397760,
+        "D2": 1450704904,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "710470dfe07193aa02ba0a565ece1675c8b5931a72261c8975dc91ffaaf5c87f",
+      "ImageSHA256": "2076db7207d35f476dcbe3100161883a10f6e9f0ea988f166c3bd71ce2430279",
+      "Input": {
+        "Name": "selector8-y0-free[1]",
+        "D0": 2596012040,
+        "D1": 305397760,
+        "D2": 1450704904,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "a392b915f294d0795b503f7db21da52edbfe52fdc53213af404eb37d9b9c9ce1",
+      "ImageSHA256": "42b1cc959a22e1895167f283a6f3cd7717109e4bc6840288d687c2e9c109c232",
+      "Input": {
+        "Name": "selector8-y32-free[1 2]",
+        "D0": 2596012040,
+        "D1": 305397792,
+        "D2": 1450704904,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "a6a315ed4f6ad22627ee03e7513dca04d2c1f7eba8742cd2ccd386b647f34211",
+      "ImageSHA256": "4a875a44f050aab3e6345970b0d39f632180f1c15d622641fcb0eb3075e97969",
+      "Input": {
+        "Name": "selector8-y32-free[399]",
+        "D0": 2596012040,
+        "D1": 305397792,
+        "D2": 1450704904,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector8-y32-free[]",
+        "D0": 2596012040,
+        "D1": 305397792,
+        "D2": 1450704904,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "0e589846d8abb8e3e1e11562dab3d68b0c69e9530c947168ff8be38242f2ce7a",
+      "ImageSHA256": "521e00aefaf3378bba1a8d73de8b8b371375e015788a24406b1451cbb932967d",
+      "Input": {
+        "Name": "selector8-y32-free[250 251]",
+        "D0": 2596012040,
+        "D1": 305397792,
+        "D2": 1450704904,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "a392b915f294d0795b503f7db21da52edbfe52fdc53213af404eb37d9b9c9ce1",
+      "ImageSHA256": "d598057955965ee086bb3d600e3aa7b36e30ee2c619ea0aa21a61c12bfd36978",
+      "Input": {
+        "Name": "selector8-y32-free[1]",
+        "D0": 2596012040,
+        "D1": 305397792,
+        "D2": 1450704904,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "4a87276e2e6d8017999fdf4304c1ca136574afa060e44adecee2b405e9b45bf7",
+      "ImageSHA256": "f84ce00ae346d8616fe58d82ee93a804c3763613be480666d39594175510e21b",
+      "Input": {
+        "Name": "selector8-y63-free[1 2]",
+        "D0": 2596012040,
+        "D1": 305397823,
+        "D2": 1450704904,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "8d5e51e6fa3cfc8e80c7896a4ca130e8ab106ee40c8ade73034b24bf1147a292",
+      "ImageSHA256": "51fdddbdf3a65daf16df84800471d4b3c9fb732872a1887f17e7b1a53b769258",
+      "Input": {
+        "Name": "selector8-y63-free[399]",
+        "D0": 2596012040,
+        "D1": 305397823,
+        "D2": 1450704904,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector8-y63-free[]",
+        "D0": 2596012040,
+        "D1": 305397823,
+        "D2": 1450704904,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "0c500079371c5c3e57c04e343e9111c6cf50c5d9ee7d6a803310f4620a5d3a31",
+      "ImageSHA256": "c0cab195e1f6dae491903297acfbbb6e0a01d43a9996f954f0b94a28be4ecc78",
+      "Input": {
+        "Name": "selector8-y63-free[250 251]",
+        "D0": 2596012040,
+        "D1": 305397823,
+        "D2": 1450704904,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "4a87276e2e6d8017999fdf4304c1ca136574afa060e44adecee2b405e9b45bf7",
+      "ImageSHA256": "2a04fb14a792501e9a1b28a47daccf4b3be37f3a8f051e6d2769f38d8feaa647",
+      "Input": {
+        "Name": "selector8-y63-free[1]",
+        "D0": 2596012040,
+        "D1": 305397823,
+        "D2": 1450704904,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "6a2e1d668fd2c753b937db28166ae4ec196fd77612f140349ce4710b529db693",
+      "ImageSHA256": "496761ec5467f5bb30710d0bd6608bd090a16a939608bdae7259954688de1dee",
+      "Input": {
+        "Name": "selector10-y0-free[1 2]",
+        "D0": 2596012042,
+        "D1": 305397760,
+        "D2": 1450704906,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "5bfa098e84f5ba26e27bb1dacef99b3a79e269aa7637a8cb8e051bcb1ca2c9cf",
+      "ImageSHA256": "0235cb1006d5b391defdf9277cb1c95319e8f3a1537afd6a11a6f026a822bc52",
+      "Input": {
+        "Name": "selector10-y0-free[399]",
+        "D0": 2596012042,
+        "D1": 305397760,
+        "D2": 1450704906,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector10-y0-free[]",
+        "D0": 2596012042,
+        "D1": 305397760,
+        "D2": 1450704906,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "4cea4233522f82542585d86ed799aae6d97189c4b826b5ef5999fe60861b3acd",
+      "ImageSHA256": "5f7b1b7f6689f730ee1c4374ed1e7dc0103f4f129e6e81971fb3957d8b140667",
+      "Input": {
+        "Name": "selector10-y0-free[250 251]",
+        "D0": 2596012042,
+        "D1": 305397760,
+        "D2": 1450704906,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "6a2e1d668fd2c753b937db28166ae4ec196fd77612f140349ce4710b529db693",
+      "ImageSHA256": "ccbf145ea624987cd554aad6f2d2702cd7937f19212a6e9d06376b1328e6535e",
+      "Input": {
+        "Name": "selector10-y0-free[1]",
+        "D0": 2596012042,
+        "D1": 305397760,
+        "D2": 1450704906,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "187121ee6f9ff2dc017232928187f588d9c404073f8d22b2b2ce490e61ad3e69",
+      "ImageSHA256": "57cbf3ffbac4b5509bf5ee500132748f0713fcb87213a9281531362e3a6a138f",
+      "Input": {
+        "Name": "selector10-y32-free[1 2]",
+        "D0": 2596012042,
+        "D1": 305397792,
+        "D2": 1450704906,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "b8731660839b1ceee882aa434536bd9957ad63f049eaaadf57b30d4724c2131d",
+      "ImageSHA256": "37d7d019aaac1325e50541d1803d7c406c13b1b235d4ea9f4f74513e0568002b",
+      "Input": {
+        "Name": "selector10-y32-free[399]",
+        "D0": 2596012042,
+        "D1": 305397792,
+        "D2": 1450704906,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector10-y32-free[]",
+        "D0": 2596012042,
+        "D1": 305397792,
+        "D2": 1450704906,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "58f5e10e9cc4aad76f5affae4adb2f7ad97c31f585354cf92dd7b02770e6b068",
+      "ImageSHA256": "60661073c0d546f9722eb11d35eb5f4e1c1288b7ad4a3ec209eedc381ecbeab0",
+      "Input": {
+        "Name": "selector10-y32-free[250 251]",
+        "D0": 2596012042,
+        "D1": 305397792,
+        "D2": 1450704906,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "187121ee6f9ff2dc017232928187f588d9c404073f8d22b2b2ce490e61ad3e69",
+      "ImageSHA256": "245e2793ea0a510ee6073d9c1d39306ad20df31dedf3ef2f65dcdff9905c93d9",
+      "Input": {
+        "Name": "selector10-y32-free[1]",
+        "D0": 2596012042,
+        "D1": 305397792,
+        "D2": 1450704906,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "a25682d38dbc8fc300c805c13c8e1ba3cc373f1eb5d69d64dc9a9d5034970357",
+      "ImageSHA256": "c492ba9bce6ff2f8c934af3ea5132b177a21398085d42846433fc232df1e3157",
+      "Input": {
+        "Name": "selector10-y63-free[1 2]",
+        "D0": 2596012042,
+        "D1": 305397823,
+        "D2": 1450704906,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "a84d3b01cee930afd28c2c74766f4afae6e53285d92713c5fa8235d42db541cf",
+      "ImageSHA256": "f16e4c18a4a611d5d0ca3106c17344f0d06ef72f80363cfb4c29c2a6a9c61e3d",
+      "Input": {
+        "Name": "selector10-y63-free[399]",
+        "D0": 2596012042,
+        "D1": 305397823,
+        "D2": 1450704906,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector10-y63-free[]",
+        "D0": 2596012042,
+        "D1": 305397823,
+        "D2": 1450704906,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "c4f207a71e0b0a1db7693e9327af3e59d2383384825c9d332e0f165ef709b3ef",
+      "ImageSHA256": "8d931ec8993a546f4e7bc65c568792b721ecbb1d55360109fc0b4e9fa9ccd82c",
+      "Input": {
+        "Name": "selector10-y63-free[250 251]",
+        "D0": 2596012042,
+        "D1": 305397823,
+        "D2": 1450704906,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "a25682d38dbc8fc300c805c13c8e1ba3cc373f1eb5d69d64dc9a9d5034970357",
+      "ImageSHA256": "2dca8c59d541594502db36cc8d54a995364146558df621682c88696793c6d64b",
+      "Input": {
+        "Name": "selector10-y63-free[1]",
+        "D0": 2596012042,
+        "D1": 305397823,
+        "D2": 1450704906,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "41a8e31f1790f1d218ef59c95c5c78b761bbe7015efaaf1fa1460004fa89bd92",
+      "ImageSHA256": "5169b99fda162c1859136e0acf8520e4ee8bea9682e7672d53df1030de9b8d41",
+      "Input": {
+        "Name": "selector12-y0-free[1 2]",
+        "D0": 2596012044,
+        "D1": 305397760,
+        "D2": 1450704908,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "b1e7e3059dbbe47d7ce693a86ed3b9b9105855713c9516dfff3213b896b80a91",
+      "ImageSHA256": "b7aee59e2f3aeecb73ff8cc9928118361ecf8ec6c79e8e8ab152c2852979ccb4",
+      "Input": {
+        "Name": "selector12-y0-free[399]",
+        "D0": 2596012044,
+        "D1": 305397760,
+        "D2": 1450704908,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector12-y0-free[]",
+        "D0": 2596012044,
+        "D1": 305397760,
+        "D2": 1450704908,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "cf1e3dd1116d2f363721175de0f7cce580762c09ca2c61f2f830462346b3cdbc",
+      "ImageSHA256": "dc228929f4500ea81858851607ee1f19a2e3d60a42a304a7ffe9b51136e7e9b5",
+      "Input": {
+        "Name": "selector12-y0-free[250 251]",
+        "D0": 2596012044,
+        "D1": 305397760,
+        "D2": 1450704908,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "41a8e31f1790f1d218ef59c95c5c78b761bbe7015efaaf1fa1460004fa89bd92",
+      "ImageSHA256": "dc065d6a6e5aa59c4ba341d1e2ebfed0ea358eff461d7789d3caca4b87a72098",
+      "Input": {
+        "Name": "selector12-y0-free[1]",
+        "D0": 2596012044,
+        "D1": 305397760,
+        "D2": 1450704908,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "dafe2f52f493a0a7e63b8fd02f614ea16bd1887ae5ec9e15862d05694e603c5c",
+      "ImageSHA256": "919d0c3fcff0c549053d5d78722fac804ce2a4c60de4bc9b73af12c8ab51d962",
+      "Input": {
+        "Name": "selector12-y32-free[1 2]",
+        "D0": 2596012044,
+        "D1": 305397792,
+        "D2": 1450704908,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "f767133584e653a216be5f721d08fb173ff0069c1ded068cb1cea86bece9bce8",
+      "ImageSHA256": "11fd6949210feea0384c3bfc025f9d760447d0c99856003d9a75685366c2d1a1",
+      "Input": {
+        "Name": "selector12-y32-free[399]",
+        "D0": 2596012044,
+        "D1": 305397792,
+        "D2": 1450704908,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector12-y32-free[]",
+        "D0": 2596012044,
+        "D1": 305397792,
+        "D2": 1450704908,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "940b06cadc6f1806fc2ba4c6e4660d82c2b5dfb7c3f2e4aa2ba3a8a8be6b9d56",
+      "ImageSHA256": "f920f003e3bdcc419ae68312379c96d4b7739e70c8393807ac11dd78c2679c8c",
+      "Input": {
+        "Name": "selector12-y32-free[250 251]",
+        "D0": 2596012044,
+        "D1": 305397792,
+        "D2": 1450704908,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "dafe2f52f493a0a7e63b8fd02f614ea16bd1887ae5ec9e15862d05694e603c5c",
+      "ImageSHA256": "2ab4cb324651b89b7d8498f2a4d71dd43c2fec980460b8ccdd658c541d656ba3",
+      "Input": {
+        "Name": "selector12-y32-free[1]",
+        "D0": 2596012044,
+        "D1": 305397792,
+        "D2": 1450704908,
+        "Free": [
+          1
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "99e4d4889c5dc3e31b5b7c617bf47565d7fc1ffabd19e84b53c6643d46c9a243",
+      "ImageSHA256": "717fa682475320ada0be31c694075c94fa7604a8cde1e09e8d8f9b66ef69057a",
+      "Input": {
+        "Name": "selector12-y63-free[1 2]",
+        "D0": 2596012044,
+        "D1": 305397823,
+        "D2": 1450704908,
+        "Free": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "e94c3db3ae3f351c414f244dd5c3da5e2620e2c1fab5ea359e63f09daee398c2",
+      "ImageSHA256": "d4df2f2e4fc012f85d14ea1d9cbc3dccf9420f93835ec66b93f743fca9fbab60",
+      "Input": {
+        "Name": "selector12-y63-free[399]",
+        "D0": 2596012044,
+        "D1": 305397823,
+        "D2": 1450704908,
+        "Free": [
+          399
+        ]
+      }
+    },
+    {
+      "D0": 0,
+      "GridSHA256": "ced76f022b3a93bd7121f3ae18bec99be6fa95cec7bcc77cb6a9cdaaecdfe500",
+      "ImageSHA256": "e996b16c89dbb6e5a373e0524a5f68e1cb11beed6e0cb4ab9d91dd0bb26d0c47",
+      "Input": {
+        "Name": "selector12-y63-free[]",
+        "D0": 2596012044,
+        "D1": 305397823,
+        "D2": 1450704908,
+        "Free": []
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "43c3e185102beb7ca9956f91f88eb68983daa4c620b49b114f030a9234c3c74d",
+      "ImageSHA256": "b117557401d802d58b1d3d76c4902a0f43b72defb039bce43fa83762d65bd697",
+      "Input": {
+        "Name": "selector12-y63-free[250 251]",
+        "D0": 2596012044,
+        "D1": 305397823,
+        "D2": 1450704908,
+        "Free": [
+          250,
+          251
+        ]
+      }
+    },
+    {
+      "D0": 1,
+      "GridSHA256": "99e4d4889c5dc3e31b5b7c617bf47565d7fc1ffabd19e84b53c6643d46c9a243",
+      "ImageSHA256": "3c0a132a4afccb815620088cf62e3bba7092d0a81733a00cbaf0f2149a71ac01",
+      "Input": {
+        "Name": "selector12-y63-free[1]",
+        "D0": 2596012044,
+        "D1": 305397823,
+        "D2": 1450704908,
+        "Free": [
+          1
+        ]
+      }
+    }
+  ]
+}
