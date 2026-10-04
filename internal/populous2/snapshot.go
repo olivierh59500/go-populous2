@@ -25,6 +25,7 @@ type Snapshot struct {
 	LastPlayer  int
 	SpellSerial int
 	Scenery     [SceneryCapacity]SceneryActor
+	Walls       WallState
 }
 
 func (w *World) Snapshot() Snapshot {
@@ -32,7 +33,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -122,6 +123,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := snapshot.Walls.Validate(&bundle.WallRules); err != nil {
+		return nil, fmt.Errorf("invalid saved walls: %w", err)
+	}
 	townRules := w.Core.OlympianTowns
 	w.Core = legacy.WorldFromSnapshot(snapshot.Core, w.Core.Rules)
 	w.Core.OlympianTowns = townRules
@@ -136,6 +140,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	}
 	w.rebuildCaptiveIndex()
 	w.Scenery = snapshot.Scenery
+	w.Walls = snapshot.Walls
 	w.rebuildSceneryIndex()
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	return w, nil

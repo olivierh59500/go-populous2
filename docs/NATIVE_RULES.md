@@ -211,3 +211,17 @@ boulder creation uses the shared scenery pool and preserves the rare-variant
 draw. Four native references match the full height grid, boulder variant and
 final random state, covering both branches. Holding the button issues repeated
 casts; the interface cadence still awaits original-input timing comparison.
+
+## City walls
+
+Placement `$1626c` uses a separate 200-record, sixteen-byte pool, leaving the
+ground tile unchanged. After the first wall, a placement must connect to a
+neighboring wall. Connections use `$332c8`; roads choose native gate artwork.
+Construction advances through original frames and then holds the final frame.
+Nine original actor/head reference states cover joins, gates, ownership, edges,
+failed placements and construction ticks. Save validation retains native
+inactive-head quirks while rejecting invalid references.
+
+Sculpting rejects every propagated edit that touches a wall, preserving terrain
+and mana. Original movement, climbing and strength-based wall destruction are
+separate remaining work; walls are no longer substituted with RockBlock.

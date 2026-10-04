@@ -86,7 +86,7 @@ var spellDefinitions = []Spell{
 	{ID: Fungus, Name: "CHAMPIGNON", Aim: AimPoint, Help: "Seme un champignon qui se propage sur le terrain."},
 	{ID: Adonis, Name: "ADONIS", Aim: AimLeader, Help: "Un heros dont les victoires multiplient la destruction."},
 	{ID: Road, Name: "ROUTES", Aim: AimPoint, Help: "Maintiens le clic gauche pour poser une route. Clic droit: enlever."},
-	{ID: Wall, Name: "MURS", Aim: AimLine, Help: "Choisis deux extremites pour proteger les habitations."},
+	{ID: Wall, Name: "MURS", Aim: AimPoint, Help: "Pose chaque mur a cote d'un mur existant pour prolonger l'enceinte."},
 	{ID: Earthquake, Name: "SEISME", Aim: AimDirection, Help: "Secoue le sol dans la direction choisie."},
 	{ID: Batholith, Name: "BATHOLITE", Aim: AimPoint, Help: "Fait surgir une masse de roche sur les terres."},
 	{ID: Heracles, Name: "HERACLES", Aim: AimLeader, Help: "Convertit le chef en heros d'une force exceptionnelle."},

@@ -20,6 +20,8 @@ type World struct {
 	RoadRules      RoadRules
 	SceneryBank    *SceneryBank
 	BatholithRange int
+	WallRules      WallRules
+	Walls          WallState
 	Scenery        [SceneryCapacity]SceneryActor
 	sceneryIndex   [4096]uint16
 	Experience     [2][6]uint8
@@ -90,7 +92,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		return nil, err
 	}
 	core.OlympianTowns = townRules
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, Custom: custom, Random: level.Seed}
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	w.initializeScenery()
 	core.TileBlocked = func(pos int) bool { return w.sceneryAt(pos) >= 0 }
@@ -127,6 +129,18 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	// Adapt that debit without scaling the entire balance or losing odd mana.
 	before := w.Core.Magnets[player].Mana
 	altitudes := w.Core.Alt
+	hasWalls := false
+	for _, wall := range w.Walls.Actors {
+		if wall.Active {
+			hasWalls = true
+			break
+		}
+	}
+	var mapAlt, mapBlk, mapBk2 [4096]byte
+	var mapSteps [4096]uint16
+	if hasWalls {
+		mapAlt, mapBlk, mapBk2, mapSteps = w.Core.MapAlt, w.Core.MapBlk, w.Core.MapBk2, w.Core.MapSteps
+	}
 	w.Core.Magnets[player].Mana = before - cost + legacy.ManaPointCost
 	var applied bool
 	if raise {
@@ -136,6 +150,25 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	}
 	w.Core.Magnets[player].Mana = before
 	if applied {
+		// $d32a validates all propagated vertices against wall actor chains
+		// before $cdca applies them. Roll back the inherited height adapter if
+		// any touched tile contains a wall, leaving mana and overlays intact.
+		blocked := false
+		for _, wall := range w.Walls.Actors {
+			if !wall.Active {
+				continue
+			}
+			a := wall.X + wall.Y*65
+			if altitudes[a] != w.Core.Alt[a] || altitudes[a+1] != w.Core.Alt[a+1] || altitudes[a+65] != w.Core.Alt[a+65] || altitudes[a+66] != w.Core.Alt[a+66] {
+				blocked = true
+				break
+			}
+		}
+		if blocked {
+			w.Core.Alt = altitudes
+			w.Core.MapAlt, w.Core.MapBlk, w.Core.MapBk2, w.Core.MapSteps = mapAlt, mapBlk, mapBk2, mapSteps
+			return false
+		}
 		changed := 0
 		minX, minY, maxX, maxY := 65, 65, 0, 0
 		for i, altitude := range w.Core.Alt {
@@ -242,16 +275,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	case Road:
 		applied = w.castRoad(player, target.X, target.Y)
 	case Wall:
-		for _, p := range line(target.X, target.Y, target.X2, target.Y2) {
-			if w.isWaterAt(p) {
-				continue
-			}
-			w.Marks[p] = Mark{Spell: id, Player: player, Life: 2000}
-			if id == Wall && w.Core.MapWho[p] == 0 {
-				w.Core.MapBk2[p] = legacy.RockBlock
-			}
-			applied = true
-		}
+		applied = w.Walls.Place(&w.WallRules, player, target.X, target.Y, w.nativeTileAt)
 	case Batholith:
 		applied = w.castBatholith(target.X, target.Y)
 	case Basalt:
@@ -323,6 +347,7 @@ func (w *World) Tick() {
 	w.spreadPlague()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
 	w.tickScenery()
+	w.Walls.Tick(&w.WallRules, w.nativeTileAt)
 	w.followHelenCaptives()
 	w.applyGroundEffects()
 	w.spreadPlague()

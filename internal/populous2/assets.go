@@ -31,6 +31,8 @@ type Bundle struct {
 	RoadRules       RoadRules
 	Scenery         *SceneryBank
 	BatholithRange  int
+	DeityArt        *DeityArt
+	WallRules       WallRules
 }
 
 func Load() (*Bundle, error) {
@@ -151,6 +153,14 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.BatholithRange, err = DecodeBatholithRange(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.WallRules, err = DecodeWallRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.DeityArt, err = DecodeDeityArt(exe, b.Raw["faces.pak"], b.Landscapes[0].Palettes[0])
 	if err != nil {
 		return nil, err
 	}

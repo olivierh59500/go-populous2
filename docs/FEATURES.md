@@ -41,7 +41,7 @@ the remaining simulation routines.
 | Fungus | 9 | 26 | Provisional propagation and damage; native controller/automaton pending |
 | Adonis | 10 | 58 | Native conversion/art and post-victory hero splitting; native movement/combat and pool-full edge state pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
-| City walls | 13 | 34 | Provisional line obstacles; original connected-wall rules and breaking/climbing pending |
+| City walls | 13 | 34 | Native connected placement, construction art, road gates, saves and sculpt protection; breaking/climbing/movement thresholds pending |
 | Earthquake | 14 | 40 | Inherited earthquake with native cost/sound; directed native fault pending |
 | Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
 | Heracles | 16 | 60 | Native double population and speed bonus; native combat/routing pending |

@@ -571,7 +571,22 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 			g.drawSprite(view, layer.Sprite, px+32+layer.X*2, py+32+layer.Y*2)
 		}
 	}
+	for _, actor := range g.World.Walls.Actors {
+		if !actor.Active {
+			continue
+		}
+		x, y := actor.X-g.CameraX, actor.Y-g.CameraY
+		if x < 0 || y < 0 || x >= 8 || y >= 8 {
+			continue
+		}
+		cell := g.World.TerrainCell(actor.X, actor.Y)
+		px, py := project(x, y, cell.BaseAltitude)
+		for _, layer := range g.World.WallRules.Layers(actor) {
+			g.drawSprite(view, layer.Sprite, px+32+layer.X*2, py+32+layer.Y*2)
+		}
+	}
 	for i, peep := range world.Peeps {
+		// Followers are drawn after scenery and wall actor layers.
 		if peep.Population <= 0 || peep.Flags&legacy.InRuin != 0 {
 			continue
 		}

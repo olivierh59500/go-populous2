@@ -47,7 +47,7 @@ apply the original conquest-based custom-game unlocking policy.
 | Move the camera | WASD, arrows, or the world map |
 | Select a power | Element, power, then target |
 | Paint/remove roads | Hold left/right mouse button and move |
-| Provisional wall line | Two endpoint clicks |
+| Extend city walls | Place each cell beside an existing wall |
 | Effect direction | Q / E |
 | Papal magnet / find the leader | M / C |
 | Settle, gather, fight, follow | 1 / 2 / 3 / 4 |
