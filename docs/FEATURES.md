@@ -33,7 +33,7 @@ the remaining simulation routines.
 | Raise/lower land | 0 | 2 / 4 | Native graphics and cost accounting; inherited height propagation; construction options incomplete |
 | Papal magnet | 1 | 8 | Leader destination and native sound cues; inherited follower routing |
 | Perseus | 2 | 36 | Native conversion/art; inherited knight movement and combat |
-| Plague | 3 | 78 | Actor infection, contact, suppressed town mana and Armageddon removal; vulture and detailed disease states pending |
+| Plague | 3 | 78 | Actor infection, contact, suppressed town mana, Armageddon removal and native vulture art/caw; detailed disease states pending |
 | Armageddon | 4 | 72 | Global battle and plague removal; inherited combat/central gathering |
 | Forest | 6 | 46 | Provisional tree markers; native tree actor allocation/animation and popularity pending |
 | Renew land | 7 | 80 | Native sampled placement and tile 245; later greenery spread and popularity pending |

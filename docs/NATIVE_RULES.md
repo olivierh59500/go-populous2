@@ -149,4 +149,5 @@ rules are still verification targets.
 Plague selection at `$1730e` infects opposing actors on the target tile.
 Infection follows the actor, passes through contact, suppresses town mana and
 removes its victims during Armageddon. It is not an expiring ground-radius
-effect. Vulture artwork and the full native disease animation remain pending.
+effect. The vulture sequence at animation offset `$ddc` is decoded, including
+its original caw cue. Full native disease timing and immunity remain pending.

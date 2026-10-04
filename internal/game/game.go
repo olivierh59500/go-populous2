@@ -27,36 +27,37 @@ const Width, Height = 640, 480
 const spellButtonsY, spellButtonStep = 252, 34
 
 type Game struct {
-	Bundle           *populous2.Bundle
-	World            *populous2.World
-	LevelIndex       int
-	Playing          bool
-	Paused           bool
-	Help             bool
-	Category         populous2.Element
-	Selected         populous2.SpellID
-	CameraX, CameraY int
-	Direction        int
-	lineStart        *image.Point
-	scheduler        *fixedstep.Scheduler
-	background       *ebiten.Image
-	tiles            [4][]*ebiten.Image
-	sprites          [4][]*ebiten.Image
-	minimap          *ebiten.Image
-	miniPixels       []byte
-	Message          string
-	messageTicks     int
-	Updates          int
-	Limit            int
-	Capture          string
-	CaptureAfter     int
-	captured         bool
-	failure          error
-	SavePath         string
-	audioReplay      *populous2.AudioReplay
-	audioPlayer      *audio.Player
-	muted            bool
-	lastSoundSerial  int
+	Bundle              *populous2.Bundle
+	World               *populous2.World
+	LevelIndex          int
+	Playing             bool
+	Paused              bool
+	Help                bool
+	Category            populous2.Element
+	Selected            populous2.SpellID
+	CameraX, CameraY    int
+	Direction           int
+	lineStart           *image.Point
+	scheduler           *fixedstep.Scheduler
+	background          *ebiten.Image
+	tiles               [4][]*ebiten.Image
+	sprites             [4][]*ebiten.Image
+	minimap             *ebiten.Image
+	miniPixels          []byte
+	Message             string
+	messageTicks        int
+	Updates             int
+	Limit               int
+	Capture             string
+	CaptureAfter        int
+	captured            bool
+	failure             error
+	SavePath            string
+	audioReplay         *populous2.AudioReplay
+	audioPlayer         *audio.Player
+	muted               bool
+	lastSoundSerial     int
+	lastPlagueSoundTurn int
 }
 
 func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) {
@@ -185,6 +186,15 @@ func (g *Game) Update() error {
 	if g.lastSoundSerial != g.World.SpellSerial {
 		g.lastSoundSerial = g.World.SpellSerial
 		g.playPowerSound(g.World.LastSpell, g.World.LastPlayer)
+	}
+	if g.audioReplay != nil && len(g.Bundle.PlagueAnimation) > 0 && g.World.Core.GameTurn%len(g.Bundle.PlagueAnimation) == 0 && g.lastPlagueSoundTurn != g.World.Core.GameTurn {
+		g.lastPlagueSoundTurn = g.World.Core.GameTurn
+		for _, p := range g.World.Core.Peeps {
+			if p.Population > 0 && p.Plague {
+				g.audioReplay.PlayCue(1)
+				break
+			}
+		}
 	}
 	return nil
 }
@@ -524,6 +534,12 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		}
 		px, py := project(x, y, int(world.MapAlt[peep.AtPos]))
 		cx, cy := px+32, py+32
+		if peep.Plague && len(g.Bundle.PlagueAnimation) > 0 {
+			frame := g.Bundle.PlagueAnimation[world.GameTurn%len(g.Bundle.PlagueAnimation)]
+			for _, layer := range frame.Layers {
+				g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
+			}
+		}
 		if peep.Flags&legacy.InTown != 0 {
 			stage := clamp(peep.TownStage, 0, populous2.TownStages-1)
 			sprite := 681 + stage

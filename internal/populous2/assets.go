@@ -12,21 +12,22 @@ import (
 )
 
 type Bundle struct {
-	Executable     *amiga.Executable
-	Resources      []Resource
-	Raw            map[string][]byte
-	Landscapes     [4]Landscape
-	Tiles          [4][]*image.RGBA
-	Sprites        [4][]Sprite
-	Background     *image.RGBA
-	Levels         []Level
-	Spells         []Spell
-	ManaRules      ManaRules
-	HeroRules      HeroRules
-	Audio          *AudioBank
-	Actions        []NativeAction
-	GroundRules    GroundEffectRules
-	HillParameters [4][4]int
+	Executable      *amiga.Executable
+	Resources       []Resource
+	Raw             map[string][]byte
+	Landscapes      [4]Landscape
+	Tiles           [4][]*image.RGBA
+	Sprites         [4][]Sprite
+	Background      *image.RGBA
+	Levels          []Level
+	Spells          []Spell
+	ManaRules       ManaRules
+	HeroRules       HeroRules
+	Audio           *AudioBank
+	Actions         []NativeAction
+	GroundRules     GroundEffectRules
+	HillParameters  [4][4]int
+	PlagueAnimation []AnimationFrame
 }
 
 func Load() (*Bundle, error) {
@@ -131,6 +132,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.HillParameters, err = DecodeHillParameters(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.PlagueAnimation, err = DecodeAnimation(exe, 0xddc)
 	if err != nil {
 		return nil, err
 	}
