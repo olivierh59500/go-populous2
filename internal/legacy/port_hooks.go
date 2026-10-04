@@ -1,5 +1,7 @@
 package populous
 
+func (w *World) NextRandom() int { return w.rng.next() }
+
 // The small hooks in this file are additions for the Populous II prototype.
 // The underlying engine remains the supplied Populous 1 conversion.
 

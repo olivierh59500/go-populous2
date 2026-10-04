@@ -503,7 +503,7 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 				g.drawSprite(view, sprite, px+32, py+48)
 			}
 			mark := g.World.Marks[pos]
-			if mark.Life > 0 {
+			if mark.Life > 0 && mark.NativeTile == 0 {
 				g.drawMark(view, mark, px, py)
 			}
 			if world.Magnets[0].GoTo == pos {

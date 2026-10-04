@@ -19,7 +19,7 @@ type WorldSnapshot struct {
 	Scores             [2]int
 	Score              int
 	ScorePlayer        int
-	RNG                uint16
+	RNG                uint32
 }
 
 func (w *World) Snapshot() WorldSnapshot {
@@ -45,7 +45,7 @@ func (w *World) Snapshot() WorldSnapshot {
 		Scores:             w.Scores,
 		Score:              w.Score,
 		ScorePlayer:        w.ScorePlayer,
-		RNG:                uint16(w.rng),
+		RNG:                uint32(w.rng),
 	}
 	snapshot.Peeps = append([]Peep(nil), w.Peeps...)
 	return snapshot

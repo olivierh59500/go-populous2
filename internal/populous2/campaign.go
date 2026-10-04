@@ -30,6 +30,7 @@ type Level struct {
 	Code               string
 	Terrain            int
 	Seed               uint16
+	RandomSeed         uint32
 	Players            [2]PlayerOptions
 	WorldParameters    [60]byte
 	OpponentText       string
@@ -79,6 +80,7 @@ func DecodeCampaign(data []byte) ([]Level, error) {
 	for i := range result {
 		record := data[(i/5)*CampaignRecordSize : (i/5+1)*CampaignRecordSize]
 		level := Level{Number: i, Code: CodeForLevel(i), Terrain: int(binary.BigEndian.Uint16(record[182:184])), Seed: uint16(uint32(binary.BigEndian.Uint16(record[184:186])) + uint32(i%5)*0x2d7)}
+		level.RandomSeed = binary.BigEndian.Uint32(record[182:186]) + uint32(i%5)*0x2d7
 		if level.Terrain < 0 || level.Terrain > 3 {
 			return nil, fmt.Errorf("world %d has unsupported landscape %d", i, level.Terrain)
 		}

@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 3
+const SaveVersion = 4
 
 type Snapshot struct {
 	Version     int

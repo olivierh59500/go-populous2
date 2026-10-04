@@ -16,6 +16,7 @@ type World struct {
 	Landscape   Landscape
 	Spells      []Spell
 	ManaRules   ManaRules
+	GroundRules GroundEffectRules
 	Experience  [2][6]uint8
 	Custom      bool
 	Demo        bool
@@ -40,9 +41,11 @@ type Effect struct {
 }
 
 type Mark struct {
-	Spell  SpellID
-	Player int
-	Life   int
+	Spell      SpellID
+	Player     int
+	Life       int
+	Persistent bool
+	NativeTile uint8
 }
 
 type Hero struct {
@@ -74,6 +77,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		PlayerPopulation: byte(level.Players[0].InitialGroups()), EnemyPopulation: byte(level.Players[1].InitialGroups()),
 		EnemyRating: 10, EnemyReactionSpeed: 5, GameMode: legacy.GameWaterFatal}
 	core := legacy.GenerateWorldWithRules(baseline, rules)
+	core.GenerateOlympianTerrain(level.RandomSeed, bundle.HillParameters)
 	townRules, err := DecodeTownRules(bundle.Executable, land)
 	if err != nil {
 		return nil, err
@@ -84,7 +88,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), Intelligence: p.SearchIntelligence(), Speed: p.MovementSpeed()}
 	}
 	core.PlaceOlympianPeople(followers)
-	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, Custom: custom, Random: level.Seed}
+	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	return w, nil
 }
@@ -182,13 +186,18 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		applied = w.legacyPower(player, spell.Cost, legacy.ManaMagnetCost, func() bool { return w.Core.SetMagnetToTile(player, target.X, target.Y) })
 	case Earthquake:
 		applied = w.legacyPower(player, spell.Cost, legacy.ManaQuakeCost, func() bool { return w.Core.QuakeAtTile(player, target.X, target.Y) })
-	case Swamp:
-		applied = w.legacyPower(player, spell.Cost, legacy.ManaSwampCost, func() bool { return w.Core.SwampAtTile(player, target.X, target.Y) })
 	case Volcano:
 		applied = w.legacyPower(player, spell.Cost, legacy.ManaVolcanoCost, func() bool { return w.Core.VolcanoAtTile(player, target.X, target.Y) })
 	case Armageddon:
 		applied = w.legacyPower(player, spell.Cost, legacy.ManaWarCost, func() bool { return w.Core.WarPower(player) })
-	case Trees, Flowers, Fungus, Plague:
+		if applied {
+			w.removePlagueVictims()
+		}
+	case Plague:
+		applied = w.castPlague(player, target.X+target.Y*64)
+	case Swamp, Flowers, Baptism:
+		applied = w.castGroundEffect(player, id, target.X, target.Y)
+	case Trees, Fungus:
 		for _, p := range diskArea(target.X, target.Y, 2) {
 			if w.Core.MapAlt[p] == 0 {
 				continue
@@ -209,13 +218,6 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 				w.Core.MapBk2[p] = legacy.RockBlock
 			}
 			applied = true
-		}
-	case Baptism:
-		for i := range w.Core.Peeps {
-			p := w.Core.Peeps[i]
-			if p.Population > 0 && int(p.Player) != player && distance(p.AtPos, target.X+target.Y*64) <= 2 && p.Status != legacy.KnightStatus {
-				applied = w.Core.ConvertPeep(i, player) || applied
-			}
 		}
 	case Batholith:
 		for _, p := range diskArea(target.X, target.Y, 2) {
@@ -260,7 +262,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	if !applied {
 		return false
 	}
-	if id != PapalMagnet && id != Earthquake && id != Swamp && id != Volcano && id != Armageddon {
+	if id != PapalMagnet && id != Earthquake && id != Volcano && id != Armageddon {
 		w.Core.Magnets[player].Mana -= spell.Cost
 	}
 	w.recordCast(player, id)
@@ -289,7 +291,11 @@ func (w *World) recordCast(player int, id SpellID) {
 
 func (w *World) Tick() {
 	w.tickEffects()
+	w.applyGroundEffects()
+	w.spreadPlague()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
+	w.applyGroundEffects()
+	w.spreadPlague()
 	for i, hero := range w.Heroes {
 		if !hero.Active {
 			continue
@@ -327,6 +333,9 @@ func (w *World) Tick() {
 func (w *World) tickEffects() {
 	for p, mark := range w.Marks {
 		if mark.Life <= 0 {
+			continue
+		}
+		if mark.Persistent {
 			continue
 		}
 		mark.Life--
@@ -461,7 +470,7 @@ func (w *World) damageArea(player, x, y, radius, amount int, both bool) bool {
 	return applied
 }
 func (w *World) random() int {
-	w.Random = uint16(uint32(w.Random)*0x24a1+0x24df) & 0x7fff
+	w.Random = uint16(w.Core.NextRandom())
 	return int(w.Random)
 }
 func inside(x, y int) bool    { return x >= 0 && y >= 0 && x < 64 && y < 64 }

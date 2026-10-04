@@ -241,6 +241,8 @@ type Peep struct {
 	Plague           bool
 	ForceEmigration  bool
 	MovementSpeed    uint8
+	InFont           bool
+	LastFontTile     int
 }
 
 type Magnet struct {
@@ -2054,6 +2056,10 @@ func (w *World) resolveContact(moverIndex, foundIndex int) bool {
 }
 
 func (w *World) setBattle(attackerIndex, defenderIndex int) {
+	if w.validPeep(attackerIndex) && w.validPeep(defenderIndex) && (w.Peeps[attackerIndex].Plague || w.Peeps[defenderIndex].Plague) {
+		w.Peeps[attackerIndex].Plague = true
+		w.Peeps[defenderIndex].Plague = true
+	}
 	if attackerIndex < 0 || attackerIndex >= len(w.Peeps) || defenderIndex < 0 || defenderIndex >= len(w.Peeps) || attackerIndex == defenderIndex {
 		return
 	}
@@ -2145,6 +2151,7 @@ func (w *World) mergePeepPopulation(sourceIndex, targetIndex int) bool {
 	if target.Weapons < source.Weapons {
 		target.Weapons = source.Weapons
 	}
+	target.Plague = target.Plague || source.Plague
 	if source.HeadFor != 0 {
 		target.HeadFor = source.HeadFor
 	}
@@ -2901,10 +2908,12 @@ func inMap(pos int) bool {
 	return pos >= 0 && pos < MapWidth*MapHeight
 }
 
-type lcg uint16
+type lcg uint32
 
 func (r *lcg) next() int {
-	next := nextRandom(uint16(*r))
-	*r = lcg(next)
-	return int(next)
+	if *r == 0 {
+		*r = 0x00bc614e
+	}
+	*r *= 0xbb40e62d
+	return int((*r >> 8) & 0x7fff)
 }

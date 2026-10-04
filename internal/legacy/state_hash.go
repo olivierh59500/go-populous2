@@ -8,7 +8,7 @@ import (
 
 // StateHashVersion changes whenever the canonical state representation
 // changes. Multiplayer peers must agree on this value during their handshake.
-const StateHashVersion uint16 = 4
+const StateHashVersion uint16 = 5
 
 // StateHash returns a platform-independent SHA-256 digest of every value that
 // can affect future shared simulation. Presentation-only queued sound events
@@ -73,6 +73,8 @@ func (w *World) StateHash() [sha256.Size]byte {
 		hashBool(digest, peep.Plague)
 		hashBool(digest, peep.ForceEmigration)
 		digest.Write([]byte{peep.MovementSpeed})
+		hashBool(digest, peep.InFont)
+		hashInt(digest, peep.LastFontTile)
 	}
 
 	for _, magnet := range w.Magnets {
@@ -112,7 +114,7 @@ func (w *World) StateHash() [sha256.Size]byte {
 		}
 		hashInt(digest, score)
 	}
-	hashUint16(digest, uint16(w.rng))
+	hashUint32(digest, uint32(w.rng))
 
 	var result [sha256.Size]byte
 	copy(result[:], digest.Sum(nil))

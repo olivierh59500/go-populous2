@@ -18,7 +18,7 @@ func (w *World) TerrainCell(x, y int) TerrainCell {
 		return TerrainCell{}
 	}
 	a := x + y*legacy.EndWidth
-	h := w.Core.Alt
+	h := &w.Core.Alt
 	cell := TerrainCell{Corners: [4]int{h[a], h[a+1], h[a+legacy.EndWidth+1], h[a+legacy.EndWidth]}}
 	cell.BaseAltitude = min(cell.Corners[0], cell.Corners[1], cell.Corners[2], cell.Corners[3])
 	for i, height := range cell.Corners {
@@ -37,6 +37,9 @@ func (w *World) TerrainCell(x, y int) TerrainCell {
 	case legacy.FarmBlock + 1:
 		cell.Code = 63
 	}
+	if mark := w.Marks[x+y*legacy.MapWidth]; mark.Life > 0 && mark.NativeTile != 0 {
+		cell.Code = mark.NativeTile
+	}
 	return cell
 }
 
@@ -44,6 +47,12 @@ func (w *World) TerrainCell(x, y int) TerrainCell {
 // reserved for raised land, while water animation skips it and uses +32..128.
 func (cell TerrainCell) Tile(tick, viewX, viewY int) int {
 	code := int(cell.Code)
+	if code == 143 {
+		return code + ((tick + viewX + viewY) & 1)
+	}
+	if code == 168 {
+		return code + ((tick + viewX + viewY) & 3)
+	}
 	if code <= 15 && cell.BaseAltitude > 0 {
 		code += 16
 	}
