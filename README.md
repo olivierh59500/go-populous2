@@ -37,6 +37,7 @@ go run ./cmd/populous2 -play -code DOEGAC
 go run ./cmd/populous2 -deity
 go run ./cmd/populous2 -fire-columns
 go run ./cmd/populous2 -whirlwinds
+go run ./cmd/populous2 -fungus
 go run ./cmd/populous2 -custom -rules
 go build -o bin/populous2 ./cmd/populous2
 ```
@@ -50,9 +51,10 @@ targets; the viewport-size value eight is not a simulation-rate setting.
 `-custom` currently exposes all 29 Amiga powers for testing. It does not yet
 apply the original conquest-based custom-game unlocking policy.
 
-`-fire-columns` and `-whirlwinds` place three effects near the camera for
-inspecting original composite art and controllers. The whirlwind presentation
-also disables follower attrition and fatal water as diagnostic overrides.
+`-fire-columns`, `-whirlwinds` and `-fungus` place effects near the camera for
+inspecting original composite art and controllers. The whirlwind and fungus
+presentations also disable follower attrition and fatal water as
+diagnostic overrides.
 For a bounded application-buffer capture:
 
 ```sh
@@ -91,11 +93,14 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 9 preserves both scenario option words, native fire-column and whirlwind actors/death animations, the deity profile,
+Version 10 preserves fungus controller bounds and pending references, both
+scenario option words, native fire-column and whirlwind actors/death animations, the deity profile,
 scenery, the 32-bit random state, follower references and town work,
 infection and persistent ground effects. Earlier Go saves remain readable;
 versions 1–2 also receive the corrected Helen/tsunami ID mapping. Earlier
-generic whirlwinds migrate into the shared native effect pool. Original
+generic whirlwinds migrate into the shared native effect pool. Earlier fungus
+damage marks migrate to native seeds and collecting controllers; their
+provisional damage/lifetime rules are replaced. Original
 Amiga GAM saves are not yet supported.
 
 The deity screen uses the original three-part face artwork, eight variants per

@@ -329,6 +329,37 @@ generic whirlwinds migrate into native records while retaining their remaining
 life and direction. Original pickup/immunity, town collapse, captured-follower
 release and water-only child creation remain separate controller work.
 
+## Fungus and Renew Land
+
+Fungus creation at `$15fda` writes tile 145 when its terrain properties match
+`$27`, before trying the shared 250-record effect pool. The command handler
+does not make its mana debit conditional on successful planting/allocation.
+One collecting controller per deity waits 100 effect updates. Recasts extend
+its inclusive rectangle without resetting the wait or period. After that
+pending reference clears, additional controllers can coexist and evolve in
+shared-pool order.
+
+The period is `10 - (Plants experience >> 5)`, and a generation takes period
+plus one updates. The transition out of collection falls through into aging
+in the same update. Tiles progress through 145–149 and 150–151 back to 15.
+Generation at `$14eea` counts neighbors whose properties equal `$10` exactly:
+living cells survive with two or three; eligible dead cells are born with
+three. Transitional birth/death properties preserve synchronous counts
+during the original in-place scan. The controller consumes no random numbers
+and applies no area-damage substitute. Native follower hazard entry and its
+death animation remain separate work.
+
+Renew Land at `$16a62` scatters tile 245 and never creates this controller.
+Its properties are `$01`, so it is eligible ground rather than a living
+fungus neighbor. Version 10 saves retain pending references, packed working
+coordinates, timers and inclusive bounds.
+
+The original bottom-edge clamp at `$150b0` subtracts the X minimum where a
+Y minimum would be expected. The controller preserves those bytes and linear
+row aliases. Access beyond the tile map is bounded: reads return zero and
+writes are ignored. This differs from accessing adjacent original BSS and
+remains an explicit fidelity gap rather than an unreported correction.
+
 ## Main-loop cadence
 
 The main loop runs the clock, people, strategy, effects, walls and scenery in

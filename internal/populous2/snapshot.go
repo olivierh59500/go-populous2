@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 9
+const SaveVersion = 10
 
 type Snapshot struct {
 	Version         int
@@ -29,6 +29,7 @@ type Snapshot struct {
 	Scenery         [SceneryCapacity]SceneryActor
 	Walls           WallState
 	NativeEffects   [NativeEffectCapacity]NativeEffectActor
+	FungusState     FungusState
 	FlameDeaths     []FlameDeath
 }
 
@@ -37,7 +38,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -135,12 +136,21 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		if !a.Active {
 			continue
 		}
+		if a.Kind == FungusActorKind {
+			if snapshot.Version < 10 {
+				return nil, fmt.Errorf("fungus controller requires save version 10")
+			}
+			continue
+		}
 		if a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 || !bundle.validNativeEffectPhase(a) {
 			return nil, fmt.Errorf("invalid native effect actor")
 		}
 		if _, ok := bundle.NativeEffectFrame(a); !ok {
 			return nil, fmt.Errorf("invalid native effect animation")
 		}
+	}
+	if !validSavedFungus(&snapshot.NativeEffects, &snapshot.FungusState) {
+		return nil, fmt.Errorf("invalid saved fungus controller/reference")
 	}
 	if len(snapshot.FlameDeaths) > legacy.MaxFollowers {
 		return nil, fmt.Errorf("too many saved flame deaths")
@@ -189,6 +199,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.Scenery = snapshot.Scenery
 	w.Walls = snapshot.Walls
 	w.NativeEffects = snapshot.NativeEffects
+	w.FungusState = snapshot.FungusState
 	if snapshot.Version < 7 {
 		live := w.Effects[:0]
 		for _, effect := range w.Effects {
@@ -228,6 +239,22 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			actor.VX, actor.VY = int16(effect.DX)*int16(actor.Speed), int16(effect.DY)*int16(actor.Speed)
 		}
 		w.Effects = live
+	}
+	if snapshot.Version < 10 {
+		for pos, mark := range w.Marks {
+			if mark.Spell != Fungus || mark.Life == 0 || mark.NativeTile != 0 {
+				continue
+			}
+			// Old prototypes stored expiring radius damage. Retain each marked
+			// cell as an original seed and collect a controller per owner.
+			placement := w.castFungus(mark.Player, pos%64, pos/64)
+			if placement.Planted && placement.Slot < 0 {
+				return nil, fmt.Errorf("saved fungus exceeds native effect capacity")
+			}
+			if !placement.Planted {
+				w.Marks[pos] = Mark{}
+			}
+		}
 	}
 	w.FlameDeaths = append([]FlameDeath(nil), snapshot.FlameDeaths...)
 	w.bindFlameDeaths()

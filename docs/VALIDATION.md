@@ -12,6 +12,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Campaign data | 1,000 worlds with native codes and starting templates |
 | Terrain oracle | Eight native executions, 4,225 matching heights per seed |
 | Ground-effect oracle | Nine matching tile maps and final 32-bit random states |
+| Fungus oracle | Six original controller traces, complete tile maps, packed record fields, collection and generation timing |
 | Scenery oracle | Original object pools/RNG, including register-continuing seed 777 |
 | Batholith oracle | Four height/object/RNG references covering raising and boulders |
 | Wall oracle | Nine actor/head states, gates, joins and construction ticks |
@@ -25,6 +26,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Ground rules | Persistent fonts/swamps/greenery, two-way faith reversal and plague contact |
 | Audio | 31 samples, 133 patterns, signed PCM and read-size-independent playback |
 | Save continuation | Mixed native flame/whirlwind records, town work, experience, random state and earlier controller/ID migrations |
+| Fungus continuation | Version 10 preserves pending controllers, working bounds and tile stages; prototype marks migrate to seeds |
 | Scenery continuation | Original variants, pool recycling, burial counters and save/load |
 | Flame deaths | Retained death frames/slot reservations, current-cell damage and four-neighbor tree spread |
 | Scenario runtime | Independent side rules, height admission, atomic prohibited edits, water, sprog, map visibility and save bindings |
@@ -49,6 +51,14 @@ attrition survivors/death decisions, observer visibility and victim-side swamp
 removal. Death traces stop before native animation helpers, and land movement
 still uses the adapted dispatch. These fixtures do not establish full native
 follower timing, death transitions or propagated-edit rollback parity.
+
+Fungus fixtures include inland oscillation, stable growth, row-edge aliasing,
+collecting/recast/successive-controller phases, high experience and the first
+bottom-edge generation. Later access beyond the map remains bounded rather
+than emulating adjacent original BSS. Tests check complete map states and
+controller bytes at recorded native boundaries. The world adapter has separate
+seed/debit/pool-failure and save-continuation regressions; native follower
+mortality on mature fungus still requires its retained death state.
 
 Scenario attrition references compare population arithmetic and native death
 decisions, rather than complete original death animation or fractional movement.

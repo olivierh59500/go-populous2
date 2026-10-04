@@ -843,7 +843,7 @@ func (g *Game) drawMinimap(screen *ebiten.Image) {
 	}
 	if g.World.EffectVisibleOnMap(0) {
 		for _, a := range g.World.NativeEffects {
-			if a.Active {
+			if a.Active && a.Kind != populous2.FungusActorKind {
 				g.minimapDot(int(a.X)>>8, int(a.Y)>>8, gold)
 			}
 		}

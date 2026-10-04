@@ -24,6 +24,8 @@ type World struct {
 	WallRules       WallRules
 	FireColumns     FireColumnRules
 	Whirlwinds      WhirlwindRules
+	FungusRules     FungusRules
+	FungusState     FungusState
 	NativeEffects   [NativeEffectCapacity]NativeEffectActor
 	FlameDeaths     []FlameDeath
 	flameDeathIndex [legacy.MaxPeeps]bool
@@ -101,6 +103,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	core.OlympianTowns = townRules
 	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Whirlwinds: bundle.Whirlwinds, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
+	w.FungusRules = bundle.FungusRules
 	for player, p := range level.Players {
 		w.Rules[player] = p.ScenarioRules()
 	}
@@ -330,16 +333,10 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	case Trees:
 		applied = w.plantScenery(SceneryTree, player, target.X, target.Y) > 0
 	case Fungus:
-		for _, p := range diskArea(target.X, target.Y, 2) {
-			if w.isWaterAt(p) {
-				continue
-			}
-			if id == Plague && !w.enemyAt(player, p) {
-				continue
-			}
-			w.Marks[p] = Mark{Spell: id, Player: player, Life: 240}
-			applied = true
-		}
+		w.castFungus(player, target.X, target.Y)
+		// The native command handler consumes the cast even when planting
+		// or shared-pool allocation has no effect.
+		applied = true
 	case Road:
 		applied = w.castRoad(player, target.X, target.Y)
 	case Wall:
@@ -480,14 +477,6 @@ func (w *World) tickEffects() {
 				peep := w.Core.Peeps[i]
 				if peep.Population > 0 && int(peep.Player) != mark.Player && peep.AtPos == p {
 					w.Core.DamagePeep(i, max(1, peep.Population/16))
-				}
-			}
-		case Fungus:
-			w.damageArea(mark.Player, p%64, p/64, 0, 30, false)
-			if w.Core.GameTurn%16 == 0 {
-				q := p + []int{-64, 1, 64, -1}[w.random()%4]
-				if q >= 0 && q < 4096 && distance(p, q) == 1 && !w.isWaterAt(q) && w.Marks[q].Life == 0 {
-					w.Marks[q] = Mark{Spell: Fungus, Player: mark.Player, Life: 80}
 				}
 			}
 		case FireColumn, FireRain:
