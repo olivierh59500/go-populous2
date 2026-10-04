@@ -203,6 +203,13 @@ follower to its linked tile list. Ordinary movement and settlement support
 reject boulders, while trees can remain under a settlement. Full linked actor
 occupancy and the remaining destruction/interaction states still need work.
 
+Register continuation is also retained during startup: `$cd22` leaves `D2=-99`,
+and `$d9d8` does not clear it before `$da0a`. Its signed deity check can alias
+the Y-fraction byte of scenery slot 45. Once that slot exists, the centered
+fraction `$80` adds eight attempts. Seed 777 exercises this original quirk;
+its full register-continuing reference produces 65 matching actors and RNG
+`$2fe72d25`. Resetting registers between routines would produce 66 actors.
+
 ## Batholith
 
 `$df68` samples a nearby point using two bytes of one random draw. A second

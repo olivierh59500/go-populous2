@@ -137,6 +137,12 @@ func (w *World) plantScenery(kind SceneryKind, player, x, y int) int {
 	if kind == SceneryTree && player >= 0 && player < 2 {
 		count += int(w.Experience[player][Plants] >> 4)
 	}
+	if kind == SceneryTree && player == -99 && w.Scenery[45].Active {
+		// $cd22 leaves signed D2=-99. $d9d8 preserves it, and $da0a's
+		// signed deity check aliases BSS:$6e4f: slot 45's Y fraction byte.
+		// Scenery is centered at fraction $80, adding eight attempts.
+		count += 8
+	}
 	planted := 0
 	for attempt := 0; attempt <= count; attempt++ {
 		d := r.Offsets[(w.random()%90)/2]
@@ -181,7 +187,7 @@ func (w *World) initializeScenery() {
 		clusters := w.random()%r.ClusterCount + r.ClusterCount/2
 		for i := 0; i <= clusters; i++ {
 			point := w.random() & 0x3f3f
-			w.plantScenery(kind, -1, point&63, (point>>8)&63)
+			w.plantScenery(kind, -99, point&63, (point>>8)&63)
 		}
 	}
 }

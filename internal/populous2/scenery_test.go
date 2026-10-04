@@ -18,6 +18,7 @@ func TestSceneryAgainstOriginalInitialization(t *testing.T) {
 		{4311, 0x47813c0f, 11, "7a4adb6dc34eca0293f67250a53cc9fcab7783f9719144f1424f1acf7ee53532"},
 		{5038, 0x9a2d8afe, 36, "0bd7b59d6ca8c75ef241b41e4aaed0f69efe196e422497ebadcb0446b5ad5d96"},
 		{65536, 0xe2e50000, 2, "40436317e86604a0dda81492b8a154d2cf73b29e56663d93787591f3cb3072ea"},
+		{777, 0x2fe72d25, 65, "0d63b96800ec7c9969df0edadd67a1e21b3b0182ecec9dd355679050dc58b74a"},
 	} {
 		w, err := NewWorld(b, 0, false)
 		if err != nil {
