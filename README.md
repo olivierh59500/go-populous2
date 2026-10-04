@@ -124,8 +124,10 @@ Version 16 adds the original marker records to their mixed map chains and
 retains unidentified deity fields. Earlier saves initialize those records from
 their existing player state. Version 17 also retains native direct-raising and
 allocation-inhibition latches. The World loop uses native contact, combat and
-retained aftermath controllers; complete hazard/captive dispatch, magnet
-decisions and all hero/ordinary motion boundaries remain under integration.
+retained aftermath controllers, complete terrain prepass, water/conversion/
+burning states, magnet/captive routes and native crossing admission. Hero
+creation/art boundaries, neutral effects, native economy and the complete
+campaign/environment still remain under integration.
 
 Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can

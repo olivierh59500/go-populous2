@@ -75,10 +75,20 @@ func (w *World) updateNativeFollower(index int) bool {
 	}
 	actor := &record.Actor
 	var entry FollowerEntryStep
+	hazardChanged := false
+	wallBroken := false
 	actor.Player, actor.Population, actor.Speed = p.Player, int32(p.Population), p.MovementSpeed
 	w.FollowerMotion.Tick(actor, FollowerMotionCallbacks{
 		Prepass: func(actor *FollowerMotionActor) bool {
-			if w.Core.BeforeFollower != nil && !w.Core.BeforeFollower(index) {
+			err := w.runNativeFollowerCall(func() error {
+				_, err := w.CommonPrepass.Tick(nativeActorReference(NativeFollowerPool, index), w.nativeCommonPrepassCallbacks())
+				return err
+			})
+			if err != nil {
+				panic(err)
+			}
+			if w.NativeEntries[index].Managed || w.Core.Peeps[index].Population <= 0 {
+				hazardChanged = w.NativeEntries[index].Managed
 				record.Active = false
 				actor.Population = int32(w.Core.Peeps[index].Population)
 				return false
@@ -88,14 +98,17 @@ func (w *World) updateNativeFollower(index int) bool {
 		},
 		Decide: func(actor *FollowerMotionActor) bool { return w.planNativeWalker(index, actor) },
 		Admit: func(actor *FollowerMotionActor, x, y int16) bool {
-			position := (int(x) >> 8) + (int(y)>>8)*64
-			if w.GroundRules.Properties[w.nativeTileAt(position%64, position/64)]&8 != 0 {
-				return false
+			var result FollowerCrossingStep
+			err := w.runNativeFollowerCall(func() error {
+				var err error
+				result, err = w.FollowerCrossing.Admit(nativeActorReference(NativeFollowerPool, index), uint16(x), uint16(y), FollowerCrossingCallbacks{Memory: w.nativeCleanupMemory()})
+				return err
+			})
+			if err != nil {
+				panic(err)
 			}
-			if scenery := w.sceneryAt(position); scenery >= 0 && w.Scenery[scenery].Kind == SceneryBoulder {
-				return false
-			}
-			return w.Core.MovementAllowed == nil || w.Core.MovementAllowed(index, position, true)
+			wallBroken = result.WallBroken
+			return result.Admitted
 		},
 		Move: func(actor *FollowerMotionActor, oldX, oldY int16) {
 			position := (int(actor.X) >> 8) + (int(actor.Y)>>8)*64
@@ -113,6 +126,21 @@ func (w *World) updateNativeFollower(index int) bool {
 			actor.Population = int32(w.Core.Peeps[index].Population)
 		},
 	})
+	if wallBroken {
+		err := w.runNativeFollowerCall(func() error {
+			_, err := w.FollowerAftermath.Tick(nativeActorReference(NativeFollowerPool, index), w.nativeAftermathCallbacks())
+			return err
+		})
+		if err != nil {
+			panic(err)
+		}
+		return true
+	}
+	if hazardChanged {
+		w.updateNativeManagedFollowerDispatch(index, true)
+		w.Core.NativePopulationHandled = true
+		return true
+	}
 	p = &w.Core.Peeps[index]
 	record.Active = w.ordinaryWalker(index)
 	if record.Active {
@@ -147,22 +175,7 @@ func (w *World) planNativeWalker(index int, actor *FollowerMotionActor) bool {
 	if p.Population <= 0 {
 		return false
 	}
-	if actor.State == 2 && magnet {
-		// The two native calls have distinct death boundaries. The second
-		// subtraction occurs only after the first call leaves a survivor.
-		if int32(uint32(actor.Population)-uint32(attrition)) <= 0 {
-			err := w.runNativeFollowerCall(func() error {
-				_, err := ApplyFollowerAttrition(nativeActorReference(NativeFollowerPool, index), uint32(attrition), FollowerAttritionCallbacks{Read: w.readEntryRecord, Write: w.writeEntryRecord, Cleanup: w.cleanupNativeFollower})
-				return err
-			})
-			if err != nil {
-				panic(err)
-			}
-			return false
-		}
-		p.Population = int(int32(uint32(actor.Population) - uint32(attrition)))
-		actor.Population = int32(p.Population)
-	}
+
 	if !magnet {
 		decision, err := w.FollowerDecision.Select(actor, uint8(p.IQ), w.nativeFollowerMode(int(p.Player)), &w.Occupancy.Grid, FollowerDecisionCallbacks{Record: w.followerDecisionRecord, Random: w.random})
 		if err != nil {
@@ -171,25 +184,21 @@ func (w *World) planNativeWalker(index int, actor *FollowerMotionActor) bool {
 		p.MovementSpeed = actor.Speed
 		return decision.Fallthrough
 	}
-	delta, moving := w.Core.PlanWalkerStep(index)
-	if !moving {
-		return false
+	var step FollowerMagnetStep
+	err := w.runNativeFollowerCall(func() error {
+		var err error
+		step, err = w.FollowerMagnet.Decide(nativeActorReference(NativeFollowerPool, index), w.nativeMagnetCallbacks())
+		return err
+	})
+	if err != nil {
+		panic(err)
 	}
-	p = &w.Core.Peeps[index]
-	position := p.AtPos + delta
-	if magnet {
-		// $14646 recenters; $140f0 ends before the first fractional step.
-		actor.X, actor.Y = int16((p.AtPos%64)*256+128), int16((p.AtPos/64)*256+128)
+	if step.Redispatch {
+		w.updateNativeManagedFollower(index)
+		w.Core.NativePopulationHandled = true
 	}
-	if err := w.FollowerMotion.BeginLeg(actor, int16((position%64)*256+128), int16((position/64)*256+128)); err != nil {
-		p.Flags |= legacy.IAmWaiting
-		return false
-	}
-	actor.State, actor.ReturnState = 4, 2
-	if magnet {
-		actor.ReturnState = 18
-	}
-	return !magnet
+	return false
+
 }
 
 func (w *World) nativeFollowerMode(player int) NativeFollowerMode {

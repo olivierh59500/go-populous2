@@ -33,7 +33,10 @@ func (w *World) ManagedFollowerFrame(index int) (AnimationFrame, bool) {
 		}
 		return AnimationFrame{Layers: w.HeroArt.Layers(heroIDs[a.Hero40/2], int(w.FollowerMotion.Angle(a.Motion.VX, a.Motion.VY)>>5), a.Motion.Animation/4)}, true
 	}
-	for _, frames := range []map[int]AnimationFrame{w.FollowerEntry.WaitingFrames, w.FollowerCombat.Frames, w.FollowerAftermath.Frames, w.FollowerWin.Frames} {
+	if a.Motion.State == 0x46 {
+		return w.FollowerRuin.Frame, true
+	}
+	for _, frames := range []map[int]AnimationFrame{w.FollowerEntry.WaitingFrames, w.FollowerCombat.Frames, w.FollowerAftermath.Frames, w.FollowerWin.Frames, w.FollowerTerrain.Frames, w.FollowerMagnet.Frames} {
 		if frame, ok := frames[a.Motion.Animation]; ok {
 			return frame, true
 		}
@@ -77,7 +80,8 @@ func (w *World) nativeSearchFollower(ref NativeRecordReference) (bool, error) {
 		return false, err
 	}
 	if mode == uint16(NativeFollowerMagnet) {
-		return false, fmt.Errorf("native magnet redispatch requires its decision handler")
+		step, err := w.FollowerMagnet.Decide(ref, w.nativeMagnetCallbacks())
+		return step.Redispatch, err
 	}
 	search, err := w.runtimeMemory().Read8(cleanupRecordAddress(ref) + 24)
 	if err != nil {
@@ -91,14 +95,20 @@ func (w *World) nativeSearchFollower(ref NativeRecordReference) (bool, error) {
 }
 
 func (w *World) updateNativeManagedFollower(index int) bool {
+	return w.updateNativeManagedFollowerDispatch(index, false)
+}
+
+func (w *World) updateNativeManagedFollowerDispatch(index int, prepassed bool) bool {
 	if index < 0 || index >= len(w.Core.Peeps) || !w.NativeEntries[index].Initialized || !w.NativeEntries[index].Managed {
 		return false
 	}
 	ref := nativeActorReference(NativeFollowerPool, index)
 	count := false
 	err := w.runNativeFollowerCall(func() error {
-		if _, err := w.CommonPrepass.Tick(ref, w.nativeCommonPrepassCallbacks()); err != nil {
-			return err
+		if !prepassed {
+			if _, err := w.CommonPrepass.Tick(ref, w.nativeCommonPrepassCallbacks()); err != nil {
+				return err
+			}
 		}
 		var entry FollowerEntryStep
 		for redispatch := 0; redispatch < 32; redispatch++ {
@@ -120,13 +130,23 @@ func (w *World) updateNativeManagedFollower(index int) bool {
 			case 4:
 				before := a
 				crossed := false
+				wallBroken := false
 				step := w.FollowerMotion.Tick(&a.Motion, FollowerMotionCallbacks{
 					Admit: func(actor *FollowerMotionActor, x, y int16) bool {
-						result, err := w.FollowerHero.Probe(ref, entryTile(a), int16(followerMotionSign(int(x>>8)-int(actor.X>>8))), int16(followerMotionSign(int(y>>8)-int(actor.Y>>8))), w.nativeCleanupMemory())
+						current, err := w.readEntryRecord(ref)
 						if err != nil {
 							panic(err)
 						}
-						return result == 0
+						current.Motion = *actor
+						if err := w.writeEntryRecord(ref, current); err != nil {
+							panic(err)
+						}
+						result, err := w.FollowerCrossing.Admit(ref, uint16(x), uint16(y), FollowerCrossingCallbacks{Memory: w.nativeCleanupMemory()})
+						if err != nil {
+							panic(err)
+						}
+						wallBroken = result.WallBroken
+						return result.Admitted
 					},
 					Move: func(actor *FollowerMotionActor, _, _ int16) {
 						crossed = true
@@ -145,6 +165,11 @@ func (w *World) updateNativeManagedFollower(index int) bool {
 						}
 					},
 				})
+				if wallBroken {
+					_, err := w.FollowerAftermath.Tick(ref, w.nativeAftermathCallbacks())
+					count = true
+					return err
+				}
 				if !crossed {
 					if _, err := w.RecordImage.PatchFollowerEntry(ref, before, a); err != nil {
 						return err
@@ -183,6 +208,59 @@ func (w *World) updateNativeManagedFollower(index int) bool {
 					return err
 				}
 				entry.RedispatchSearch, count = step.RedispatchSearch, step.CurrentTotal
+			case 0x12, 0x3a:
+				step, err := w.FollowerMagnet.Tick(ref, w.nativeMagnetCallbacks())
+				if err != nil {
+					return err
+				}
+				if step.Redispatch {
+					if _, err := w.CommonPrepass.Tick(ref, w.nativeCommonPrepassCallbacks()); err != nil {
+						return err
+					}
+					continue
+				}
+				if step.Search {
+					entry.RedispatchSearch = true
+				} else {
+					count = step.CountPopulation
+					return nil
+				}
+			case 0x34:
+				step, err := (FollowerCaptiveRules{Hero: w.FollowerHero}).Tick(ref, FollowerCaptiveCallbacks{Hero: w.nativeHeroCallbacks(), Attrition: FollowerAttritionCallbacks{Read: w.readEntryRecord, Write: w.writeEntryRecord, Cleanup: w.cleanupNativeFollower}})
+				if err != nil {
+					return err
+				}
+				if step.Redispatch {
+					if _, err := w.CommonPrepass.Tick(ref, w.nativeCommonPrepassCallbacks()); err != nil {
+						return err
+					}
+					continue
+				}
+				count = step.CountPopulation
+				return nil
+			case 0x46:
+				_, err := w.FollowerRuin.Tick(ref, FollowerRuinVictimCallbacks{Memory: w.nativeCleanupMemory(), Tile: w.nativePackedTile, ClearLeader: w.clearNativeLeader, Unlink: w.nativeRuntimeUnlink})
+				count = false
+				return err
+			case 0x16, 0x36, 0x3c:
+				var step FollowerTerrainStep
+				switch a.Motion.State {
+				case 0x16:
+					step, err = w.FollowerTerrain.TickWater(ref, w.nativeTerrainCallbacks())
+				case 0x36:
+					step, err = w.FollowerTerrain.TickConversion(ref, w.nativeTerrainCallbacks())
+				case 0x3c:
+					step, err = w.FollowerTerrain.TickBurning(ref, w.nativeTerrainCallbacks())
+				}
+				if err != nil {
+					return err
+				}
+				if step.Search {
+					entry.RedispatchSearch = true
+				} else {
+					count = step.CurrentTotal
+					return nil
+				}
 			case 8, 0x18, 0x1a, 0x20, 0x28, 0x2a, 0x2c, 0x2e, 0x30, 0x32, 0x38, 0x3e, 0x40, 0x42:
 				step, err := w.FollowerAftermath.Tick(ref, w.nativeAftermathCallbacks())
 				count = step.CurrentTotal

@@ -34,6 +34,10 @@ type Bundle struct {
 	FollowerAftermath FollowerAftermathRules
 	CommonPrepass     CommonPrepassRules
 	FollowerHero      FollowerHeroRules
+	FollowerTerrain   FollowerTerrainRules
+	FollowerMagnet    FollowerMagnetRules
+	FollowerRuin      FollowerRuinVictimRules
+	FollowerCrossing  FollowerCrossingRules
 	Audio             *AudioBank
 	Actions           []NativeAction
 	GroundRules       GroundEffectRules
@@ -183,6 +187,22 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.FollowerHero, err = DecodeFollowerHeroRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FollowerTerrain, err = DecodeFollowerTerrainRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FollowerMagnet, err = DecodeFollowerMagnetRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FollowerRuin, err = DecodeFollowerRuinVictimRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FollowerCrossing, err = DecodeFollowerCrossingRules(exe)
 	if err != nil {
 		return nil, err
 	}

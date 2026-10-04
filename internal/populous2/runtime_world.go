@@ -7,6 +7,7 @@ func (w *World) runtimeMemory() NativeRuntimeMemory {
 }
 
 func (w *World) initializeNativeRuntime() {
+	w.reconcileActorGraph()
 	for index, entry := range w.Occupancy.Magnets {
 		if entry.Linked {
 			w.unlinkActor(NativeMagnetPool, index)

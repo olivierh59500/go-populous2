@@ -214,6 +214,7 @@ type World struct {
 	NativeTownEvaluate         func(index int) int
 	NativeTownClear            func(index int)
 	NativeTownAllocationFailed func()
+	NativePopulationHandled    bool
 	Terrain                    int
 	GameTurn                   int
 	Alt                        [EndWidth * EndWidth]int
@@ -1364,8 +1365,11 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 			w.zeroPopulation(i)
 			continue
 		}
+		w.NativePopulationHandled = false
 		if w.NativeFollowerUpdate != nil && w.NativeFollowerUpdate(i) {
-			w.Magnets[player].Population += max(0, w.Peeps[i].Population)
+			if !w.NativePopulationHandled {
+				w.Magnets[player].Population += max(0, w.Peeps[i].Population)
+			}
 			continue
 		}
 		if w.BeforeFollower != nil && !w.BeforeFollower(i) {

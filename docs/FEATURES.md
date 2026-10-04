@@ -13,7 +13,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester and opponent experience | Scripted events and opponent personalities |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
-| Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion; World entry, delayed contact, combat, rewards and retained aftermath; raw actor/deity/marker bytes | Complete ordinary prepass, remaining hazard/captive handlers, native magnet decisions, hero creation/motion boundaries and inventions |
+| Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion; full terrain prepass, water/conversion/burning, magnet/captive routes, exact crossing admission and retained contact/combat outcomes in World | Hero creation/art boundaries, full linked effects, native economy/neutral runtime and inventions |
 | Towns | 19 stages, native mixed support/cache, 49-cell compositor and founding/contact; separately verified native economy | Full native economy/birth dispatcher, land AI and end-to-end town parity |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
@@ -31,13 +31,13 @@ the remaining simulation routines.
 | Power | Slot | Native command | Current behavior and remaining differences |
 |---|---:|---:|---|
 | Raise/lower land | 0 | 2 / 4 | Native height admission, prohibitions, propagated enemy-land protection and costs; inherited propagation; special editor/battle modes pending |
-| Papal magnet | 1 | 8 | Leader destination and native sound cues; inherited follower routing |
+| Papal magnet | 1 | 8 | Native marker/leader routing, destination waiting, mode changes, merging and original double attrition; remaining command/native-init fidelity |
 | Perseus | 2 | 36 | Native conversion/art; inherited knight movement and combat |
 | Plague | 3 | 78 | Actor infection, contact, suppressed town mana, Armageddon removal and native vulture art/caw; detailed disease states pending |
 | Armageddon | 4 | 72 | Global battle and plague removal; inherited combat/central gathering |
 | Forest | 6 | 46 | Native sampled allocation, original variants, signed aging/burial counters and rendering; popularity and remaining actor interactions pending |
 | Renew land | 7 | 80 | Native sampled placement and tile 245; separate from the fungus automaton; popularity interactions pending |
-| Swamp | 8 | 54 | Native placement/tiles, victim-side shallow rule and Heracles immunity; native death animation pending |
+| Swamp | 8 | 54 | Native placement/tiles, shallow restoration, hero immunity and retained death/terminal dispatch |
 | Fungus | 9 | 26 | Native seed/collection, staged B3/S23 automaton, cadence, mature-tile mortality/Adonis immunity and retained death art; full linked death state and adjacent-BSS edge behavior pending |
 | Adonis | 10 | 58 | Native conversion/art and post-victory hero splitting; native movement/combat and pool-full edge state pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |

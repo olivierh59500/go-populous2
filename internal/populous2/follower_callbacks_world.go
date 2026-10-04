@@ -157,7 +157,12 @@ func (w *World) nativeCommonPrepassCallbacks() CommonPrepassCallbacks {
 			}
 			return w.Rules[owner-1].Raw, nil
 		},
-		ClearFarms: w.clearNativeFarms, Cleanup: w.cleanupNativeFollower, ClearLeader: w.clearNativeLeader, Unlink: w.nativeRuntimeUnlink, Sound: w.nativeEntryCallbacks().Sound,
+		ClearFarms: w.clearNativeFarms, Cleanup: w.cleanupNativeFollower, ClearLeader: w.clearNativeLeader, Unlink: w.nativeRuntimeUnlink,
+		Sound: func(raw uint16) error {
+			w.HazardSerial++
+			w.LastHazardCue = int(raw / 10)
+			return w.nativeEntryCallbacks().Sound(raw)
+		},
 	}
 }
 
@@ -185,4 +190,39 @@ func (w *World) nativeHeroCallbacks() FollowerHeroCallbacks {
 			return err
 		},
 	}
+}
+
+func (w *World) nativeTerrainCallbacks() FollowerTerrainCallbacks {
+	return FollowerTerrainCallbacks{Read: w.readEntryRecord, Write: w.writeEntryRecord, Tile: w.nativePackedTile, Scenario: w.nativeCommonPrepassCallbacks().Scenario,
+		Attrition: func(owner uint8) (uint32, error) {
+			deity, ok := NativeDeityAddress(owner)
+			if !ok {
+				return 0, fmt.Errorf("native water attrition owner outside deities")
+			}
+			return w.runtimeMemory().Read32(deity + 20)
+		},
+		SetWaterReference: func(owner uint8, ref NativeRecordReference) error {
+			deity, ok := NativeDeityAddress(owner)
+			if !ok {
+				return fmt.Errorf("native water reference owner outside deities")
+			}
+			_, err := w.runtimeMemory().Write16(deity+0x36, uint16(ref))
+			return err
+		},
+		Cleanup: w.cleanupNativeFollower, ClearLeader: w.clearNativeLeader,
+		Move: func(ref NativeRecordReference, x, y uint16) error {
+			_, err := w.Occupancy.Grid.Move(ref, x, y, w.runtimeMemory().RecordAccess())
+			if err == nil {
+				w.hydrateNativeRuntimeGraph()
+			}
+			return err
+		},
+	}
+}
+
+func (w *World) nativeMagnetCallbacks() FollowerMagnetCallbacks {
+	return FollowerMagnetCallbacks{Hero: w.nativeHeroCallbacks(), Attrition: FollowerAttritionCallbacks{Read: w.readEntryRecord, Write: w.writeEntryRecord, Cleanup: w.cleanupNativeFollower},
+		Merge: func(source, target NativeRecordReference) error {
+			return w.FollowerEntry.merge(source, target, w.nativeEntryCallbacks())
+		}}
 }

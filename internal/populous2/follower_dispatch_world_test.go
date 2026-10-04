@@ -169,3 +169,145 @@ func TestOrdinaryAttritionRetainsNativeDeathRecord(t *testing.T) {
 		t.Fatal("native attrition death failed to reach complete terminal cleanup")
 	}
 }
+
+func TestNativeWorldWaterControllerRetainsDeathAndWritesDeityReference(t *testing.T) {
+	w := oceanWorld(t, 4311)
+	w.bindFollowerMotion()
+	w.bindFlameDeaths()
+	w.bindActorGraphHooks()
+	w.Core.Magnets[0].Carried, w.Core.Magnets[1].Carried = 0, 0
+	w.Core.FollowerAttrition = func(int, bool) int { return 1 }
+	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 32 + 32*64, Flags: legacy.OnMove, MovementSpeed: 20}}
+	w.initializeNativeFollower(0)
+	w.refreshNativeRecordImage()
+	a, err := w.RecordImage.ReadFollowerEntry(52)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.Motion.Kind, a.Motion.State, a.Motion.Animation = 10, 0x16, 0xbd8
+	if _, err := w.RecordImage.PatchFollowerEntry(52, w.NativeEntries[0].Actor, a); err != nil {
+		t.Fatal(err)
+	}
+	w.hydrateNativeRuntimeRecords()
+	w.Rules[0] = DecodeScenarioRules(w.Rules[0].Raw &^ 0x20)
+	w.updateNativeManagedFollower(0)
+	a, err = w.RecordImage.ReadFollowerEntry(52)
+	if err != nil {
+		t.Fatal(err)
+	}
+	deity, _ := NativeDeityAddress(1)
+	ref, err := w.runtimeMemory().Read16(deity + 0x36)
+	if err != nil || a.Motion.Population != 99 || a.Motion.State != 0x16 || ref != 52 {
+		t.Fatal("native swimmer survival/reference differs")
+	}
+	w.Rules[0] = DecodeScenarioRules(w.Rules[0].Raw | 0x20)
+	w.updateNativeManagedFollower(0)
+	a, err = w.RecordImage.ReadFollowerEntry(52)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a.Motion.State != 0x2e || a.Motion.Animation != 0x1970 || a.Owner != 1 || a.Motion.Population != 0 || !w.Core.FollowerReserved(0) {
+		t.Fatalf("native fatal-water first death step differs: %+v", a)
+	}
+	for range 64 {
+		if !w.NativeEntries[0].Managed {
+			break
+		}
+		w.updateNativeManagedFollower(0)
+	}
+	if w.Core.FollowerReserved(0) || w.Occupancy.Followers[0].Linked {
+		t.Fatal("native water terminal did not release record/map")
+	}
+}
+
+func TestOrdinaryWaterEntryUsesNativeControllerDuringSameUpdate(t *testing.T) {
+	w := oceanWorld(t, 4311)
+	w.bindFollowerMotion()
+	w.bindFlameDeaths()
+	w.bindActorGraphHooks()
+	w.bindLightningVictims()
+	w.Core.FollowerAttrition = func(int, bool) int { return 1 }
+	w.Rules[0] = DecodeScenarioRules(w.Rules[0].Raw &^ 0x20)
+	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 32 + 32*64, Flags: legacy.OnMove, MovementSpeed: 20, IQ: 2}}
+	w.initializeNativeFollower(0)
+	w.Core.TickWithComputer([2]bool{})
+	a, err := w.RecordImage.ReadFollowerEntry(52)
+	if err != nil || a.Motion.Kind != 10 || a.Motion.State != 0x16 || a.Motion.Population != 99 {
+		t.Fatalf("ordinary water entry failed native immediate dispatch: %+v, %v", a, err)
+	}
+	if w.Core.Magnets[0].Population != 99 {
+		t.Fatalf("water population was counted more than once: %d", w.Core.Magnets[0].Population)
+	}
+}
+
+func TestNativeMagnetClaimsLeaderAndWaitsAtMarker(t *testing.T) {
+	w := lightningWorld(t, 4311)
+	w.Core.Magnets[0].Flags, w.Core.Magnets[0].Carried, w.Core.Magnets[0].GoTo = legacy.MagnetMode, 0, 32+32*64
+	w.Core.Magnets[1].Carried = 0
+	w.Core.FollowerAttrition = func(int, bool) int { return 1 }
+	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 32 + 32*64, Flags: legacy.OnMove, MovementSpeed: 20, IQ: 2}}
+	w.initializeNativeFollower(0)
+	w.initializeNativeRuntime()
+	w.Core.TickWithComputer([2]bool{})
+	a, err := w.RecordImage.ReadFollowerEntry(52)
+	if err != nil || a.Motion.State != 0x3a || a.Motion.Flags&1 == 0 || a.Motion.Population != 98 || w.Core.Magnets[0].Carried != 1 {
+		t.Fatalf("native marker arrival/leader/double-attrition differs: %+v, %v", a, err)
+	}
+	for range 6 {
+		w.Core.TickWithComputer([2]bool{})
+	}
+	a, err = w.RecordImage.ReadFollowerEntry(52)
+	if err != nil || a.Motion.State != 0x3a || a.Motion.Population != 97 {
+		t.Fatalf("native marker wait cadence differs: %+v, %v", a, err)
+	}
+}
+
+func TestNativeCrossingBreaksWallWithoutMovingOntoItsCell(t *testing.T) {
+	w := lightningWorld(t, 4311)
+	w.Core.Magnets[0].Carried, w.Core.Magnets[1].Carried = 0, 0
+	w.Core.FollowerAttrition = func(int, bool) int { return 0 }
+	pos := 32 + 32*64
+	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 25000, AtPos: pos, Flags: legacy.OnMove, MovementSpeed: 20, IQ: 2}}
+	w.initializeNativeFollower(0)
+	w.Walls.Actors[0] = WallActor{Active: true, Player: 1, X: 33, Y: 32, Variant: 0}
+	w.placeActor(NativeWallPool, 0, 33*256+128, 32*256+128)
+	a := &w.NativeFollowers[0].Actor
+	if err := w.FollowerMotion.BeginLeg(a, a.X+256, a.Y); err != nil {
+		t.Fatal(err)
+	}
+	a.State = 4
+	for range 7 {
+		w.updateNativeFollower(0)
+	}
+	raw, err := w.RecordImage.ReadFollowerEntry(52)
+	if err != nil || raw.Motion.State != 2 || raw.Motion.Animation != 0 || !w.Walls.Actors[0].Broken || w.Core.Peeps[0].AtPos != pos {
+		t.Fatalf("native wall attack/crossing boundary differs: %+v, %v", raw, err)
+	}
+	if err := w.Occupancy.Validate(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestNativeCaptiveMissingCaptorReleasesIntoSearch(t *testing.T) {
+	w := lightningWorld(t, 4311)
+	w.Core.Magnets[0].Carried, w.Core.Magnets[1].Carried = 0, 0
+	w.Core.FollowerAttrition = func(int, bool) int { return 1 }
+	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 32 + 32*64, Flags: legacy.OnMove, MovementSpeed: 20, IQ: 2}}
+	w.initializeNativeFollower(0)
+	w.refreshNativeRecordImage()
+	a, err := w.RecordImage.ReadFollowerEntry(52)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := a
+	a.Motion.Flags, a.Motion.State, a.Captive42, a.CaptiveBack44 = 8, 0x34, 104, 156
+	if _, err := w.RecordImage.PatchFollowerEntry(52, before, a); err != nil {
+		t.Fatal(err)
+	}
+	w.hydrateNativeRuntimeRecords()
+	w.updateNativeManagedFollower(0)
+	a, err = w.RecordImage.ReadFollowerEntry(52)
+	if err != nil || a.Motion.Flags&8 != 0 || a.Motion.State != 4 || a.Motion.Population != 98 {
+		t.Fatalf("native captive release/search/attrition differs: %+v, %v", a, err)
+	}
+}

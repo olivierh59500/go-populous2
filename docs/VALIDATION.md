@@ -54,6 +54,14 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Hero decisions | 1,571 complete native BSS cases across all six hero types, target ties, wall thresholds, raw aliases and homing branches |
 | Native direct raising | 666 cases/948 operations compare all 4,225 heights, Basalt preservation and direct operation admission |
 | Raw follower contact | 292 original CPU cases covering all hero types, 19 town stages, self/overlapping references, Helen captive chains and exact sound/write boundaries |
+| Terrain follower handlers | 554 original complete water/conversion/burning cases; World tests verify immediate water dispatch, population counted once, deity reference and fatal-water terminal/save reservation |
+| Native magnet routing | 663 original route/wait/arrival cases including initial double attrition; World tests cover real marker arrival, leader claim, wait cadence and save continuation |
+| Aftermath aliases | 84 original cases/496 updates across dispatch aliases and hero recovery images, without normalizing stored states |
+| Neutral creation | 105 complete image/grid comparisons, first-free owner-byte scan, full pool and two-record creation |
+| Neutral runtime | 252 original movement/effect-boundary cases compare complete image/grid/RNG and primitive arguments; external effect bodies and nonempty victim neighborhoods remain separate requirements |
+| Captive routes | 446 complete native cases including retained original A1 after backlink repair, signed owner tests, raw `$35c` aliases and zero-timer motion |
+| Native retained victim | State `$46`: 101 original cases/540 updates, complete countdown/removal, static art and leader relocation |
+| Crossing admission | 2,528 original cases cover all raw tiles/heights and rock/wall thresholds, exact hint writes and signed stage indexing; World wall-break case verifies no position jump |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |

@@ -93,6 +93,7 @@ func TestFollowerWorldSavedFractionalContinuation(t *testing.T) {
 	w.Core.Magnets[0].GoTo, w.Core.Magnets[1].GoTo = 40+32*64, 36+44*64
 	w.initializeNativeFollower(0)
 	w.initializeNativeFollower(1)
+	w.initializeNativeRuntime()
 	for range 5 {
 		w.Core.TickWithComputer([2]bool{})
 	}
@@ -132,6 +133,7 @@ func TestFollowerWorldMagnetDefersFirstStep(t *testing.T) {
 	w.Core.MapWho[2000] = 1
 	w.Core.Magnets[0].Flags, w.Core.Magnets[0].Carried, w.Core.Magnets[0].GoTo = legacy.MagnetMode, 0, 2005
 	w.initializeNativeFollower(0)
+	w.initializeNativeRuntime()
 	before := w.NativeFollowers[0].Actor.X
 	w.Core.TickWithComputer([2]bool{})
 	a := w.NativeFollowers[0].Actor

@@ -600,7 +600,9 @@ byte offsets, so an unaligned reference can affect a neighboring physical slot.
 Eleven original alias cases verify complete image hashes, and every one of the
 1,050 physical slots has coverage. This is evidence for byte storage and its
 typed adapters, not proof that all original actor handlers have been integrated.
-Full entry/combat dispatch and all affected-slot hydration remain required.
+World entry/combat dispatch and full affected-pool hydration are now integrated;
+remaining hero creation, environmental controllers and complete campaign state
+still require their own native comparisons.
 Save version 15 retains the record image, follower entry state and town overlays.
 Regression checks also cover an explicit tile-zero write on raised terrain,
 retired effect fields, reused follower generations, and the record projection
@@ -670,9 +672,65 @@ CPU harness stubs. Separate World tests cover actual entry, delayed merging,
 reciprocal battle, passive-defense RNG, same-update waiting redispatch and saved
 death continuation. Bounded 900- and 1,800-update desktop runs completed and their application
 capture was inspected. These checks do not establish every hazard/hero path:
-remaining water/conversion/captive states, native magnet decisions, complete
-ordinary prepass and all hero movement boundaries remain required.
+hero creation/art boundaries and complete environmental/campaign behavior remain
+required. Later integration replaces the ordinary fungus-only prepass with the
+complete native prepass and dispatches water/conversion/burning immediately
+without a second prepass. A frame-local adapter flag prevents a second
+population-total addition.
 
 The hero planner reads the original `$f12` latch, set by Armageddon and cleared
 at new-world initialization. It is not inferred from an inherited game option.
 Version 17 saves retain this latch and the native allocation-inhibition flag.
+
+## Water, conversion, burning and magnet routes
+
+The `$11d1a/$11e3a/$11caa` handlers have 554 complete original comparisons.
+Water uses SUB.L's branch flags, unlike `$130e4`'s later MOVE.L stored-result
+test. It writes deity word `$36` for a surviving swimmer and returns to search
+immediately on land. Fatal water starts `$196c` and advances its first retained
+death frame in that update. Conversion retains fractional coordinates and
+original map pressure; burning preserves the low-word carry behavior of ADD.W.
+
+World managed and ordinary dispatch compose these rules with the common prepass.
+Tests cover the first water update, exactly one population-total addition, the
+deity reference, retained death and terminal release. The former fungus sidecar
+test now follows the actual native record through the Core loop and save/load.
+
+Magnet states `$12/$3a` use the genuine hero terrain planner, marker/leader
+references, six-tick waiting timer and source flag transfers. Search switching
+to magnet mode pays attrition in `$1131c` and again in `$11bb4`; the two calls
+retain distinct death boundaries. The default World path uses this controller
+instead of inherited target planning. The 663 original comparisons and World
+arrival/wait/save cases do not prove all command initialization or campaign AI.
+
+## Neutral actors from rare births
+
+The creator `$131cc` scans owner-zero follower slots and assigns only its
+documented fields. Neutral owner 3, kind `$3c`, state `$44` records retain stale
+unassigned bytes. Selector 4 can allocate a second copied record; failure to
+find its second slot preserves the first actor. The 105 full image/grid cases
+include pool exhaustion and the allocated selector-zero failure path.
+
+State `$44` moves with its native velocity, loops its animation and dispatches
+the selector's original tile/lowering/whirlwind/tree/fire-column/victim operations.
+Its 252 comparisons retain complete raw actor/grid/RNG state with external
+primitive bodies recorded at their original boundaries. Full neutral runtime
+effects and nonempty victim neighborhoods still require their own integration
+and comparisons before the rare economic callback can be considered complete.
+
+## Captive and crossing integration
+
+Captured state `$34` preserves the original A1 target even after backlink repair
+changes word `$2a`. Its 446 original comparisons include the `$35c` alias emitted
+by Helen's contact routine. World dispatch composes its native attrition, planner
+and return-state `$34` rather than teleporting captives to the captor.
+
+Crossing at `$115c6` reads the destination header and native raster/property
+tables, records deity terrain requests, scans mixed boulders/walls and applies
+the original signed break versus unsigned passage thresholds. Its XP calculation
+clears the upper register bytes, unlike the hero planner's separate wall probe.
+The 2,528 complete comparisons retain raw hint/wall writes and exact branch
+outcomes. Invalid odd stage words report the native address-error condition.
+Both ordinary and managed motion use this admission routine; wall destruction
+executes its recovery branch before any position change. The existing native
+motion comparisons still own bounce timing and velocity proof.

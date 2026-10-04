@@ -43,6 +43,10 @@ type World struct {
 	FollowerAftermath        FollowerAftermathRules
 	CommonPrepass            CommonPrepassRules
 	FollowerHero             FollowerHeroRules
+	FollowerTerrain          FollowerTerrainRules
+	FollowerMagnet           FollowerMagnetRules
+	FollowerRuin             FollowerRuinVictimRules
+	FollowerCrossing         FollowerCrossingRules
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
@@ -149,6 +153,10 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.FollowerEntry, w.FollowerCombat, w.TownCombat, w.FollowerAftermath = bundle.FollowerEntry, bundle.FollowerCombat, bundle.TownCombat, bundle.FollowerAftermath
 	w.CommonPrepass = bundle.CommonPrepass
 	w.FollowerHero = bundle.FollowerHero
+	w.FollowerTerrain = bundle.FollowerTerrain
+	w.FollowerMagnet = bundle.FollowerMagnet
+	w.FollowerRuin = bundle.FollowerRuin
+	w.FollowerCrossing = bundle.FollowerCrossing
 	w.HeroArt = bundle.HeroRules
 	w.FollowerWin, err = DecodeFollowerWinRules(bundle.Executable, land)
 	if err != nil {

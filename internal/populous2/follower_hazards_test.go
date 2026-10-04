@@ -64,23 +64,26 @@ func TestMatureFungusRetainsNativeFollowerDeathAndCue(t *testing.T) {
 	w.Marks[pos] = Mark{Spell: Fungus, Life: 1, Persistent: true, NativeTile: 146}
 	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: pos, Flags: legacy.OnMove}}
 	w.Core.TickWithComputer([2]bool{})
-	if w.Core.Peeps[0].Population != 0 || len(w.FlameDeaths) != 1 || !w.Core.FollowerReserved(0) || w.Core.MapWho[pos] != 1 {
+	if w.Core.Peeps[0].Population != 0 || !w.NativeEntries[0].Managed || !w.Core.FollowerReserved(0) || w.Core.MapWho[pos] != 1 {
 		t.Fatal("fungus skipped its retained death record/occupancy")
 	}
-	death := w.FlameDeaths[0]
-	if death.Animation != 0x7dc || death.Kind != 0x10 || death.State != 0x38 || w.LastHazardCue != 26 || w.HazardSerial != 1 {
+	death, err := w.RecordImage.ReadFollowerEntry(52)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if death.Motion.Animation != 0x7e0 || death.Motion.Kind != 0x10 || death.Motion.State != 0x38 || w.LastHazardCue != 26 || w.HazardSerial != 1 {
 		t.Fatalf("native fungus death state or cue differs: %+v", death)
 	}
-	if _, ok := testBundle(t).FollowerDeathFrame(death.Animation); !ok {
+	if _, ok := w.ManagedFollowerFrame(0); !ok {
 		t.Fatal("native fungus death frame unavailable to rendering/audio")
 	}
 	restored, err := ReadSave(testBundle(t), bytes.NewReader(encodeSnapshot(t, w)))
 	if err != nil {
 		t.Fatal(err)
 	}
-	for len(w.FlameDeaths) > 0 {
-		w.tickFlameDeaths()
-		restored.tickFlameDeaths()
+	for steps := 0; w.NativeEntries[0].Managed && steps < 128; steps++ {
+		w.Core.TickWithComputer([2]bool{})
+		restored.Core.TickWithComputer([2]bool{})
 		if !bytes.Equal(encodeSnapshot(t, w), encodeSnapshot(t, restored)) {
 			t.Fatal("fungus death load changed animation, cue or release")
 		}
@@ -116,9 +119,10 @@ func TestFungusPrepassRunsBeforeOrdinaryFollowerDispatch(t *testing.T) {
 	pos := 2000
 	w.Marks[pos] = Mark{Spell: Fungus, Life: 1, Persistent: true, NativeTile: 145}
 	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: pos, Flags: legacy.OnMove, Frame: 6}}
-	// Keep this group on its current tile while it completes the inherited
-	// animation decision; the native movement adapter will replace that path.
-	w.Core.SkipFollower = func(int) bool { return true }
+	// Keep a fixed native leg on the same parcel during both terrain checks.
+	w.initializeNativeFollower(0)
+	w.NativeFollowers[0].Actor.State, w.NativeFollowers[0].Actor.Timer = 4, 10
+	w.NativeFollowers[0].Actor.VX, w.NativeFollowers[0].Actor.VY = 0, 0
 	w.Core.TickWithComputer([2]bool{})
 	if w.Core.Peeps[0].Population == 0 || w.HazardSerial != 0 {
 		t.Fatal("fresh fungus was immediately fatal")

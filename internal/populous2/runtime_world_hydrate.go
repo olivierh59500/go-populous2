@@ -110,6 +110,12 @@ func (w *World) hydrateNativeRuntimeRecords() {
 		}
 		p.IQ = int(search)
 		p.AtPos = int(uint16(actor.Motion.X)>>8) + int(uint16(actor.Motion.Y)>>8)*64
+		if actor.Owner != 0 && w.Occupancy.Followers[index].Linked && p.AtPos >= 0 && p.AtPos < 4096 && w.Core.MapWho[p.AtPos] == 0 {
+			w.Core.MapWho[p.AtPos] = uint16(index + 1)
+		}
+		if actor.Owner == 0 {
+			w.Core.ReleaseDeathOccupancy(index)
+		}
 		if actor.Owner >= 1 && actor.Owner <= 2 {
 			p.Player = actor.Owner - 1
 		}
