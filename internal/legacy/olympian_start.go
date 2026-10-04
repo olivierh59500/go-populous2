@@ -2,8 +2,8 @@ package populous
 
 // InitialFollowers contains the template fields copied by CODE:$10cbe.
 type InitialFollowers struct {
-	Groups, Population, Intelligence int
-	Speed                            uint8
+	Groups, Population, SearchIndex, Weapons int
+	Speed                                    uint8
 }
 
 // PlaceOlympianPeople translates the two directional scans at $10b38.
@@ -20,7 +20,7 @@ func (w *World) PlaceOlympianPeople(sides [2]InitialFollowers) {
 			if count >= side.Groups || len(w.Peeps) >= MaxFollowers {
 				return
 			}
-			w.Peeps = append(w.Peeps, Peep{Flags: OnMove, Player: byte(player), Population: side.Population, IQ: side.Intelligence, Weapons: 1, MovementSpeed: side.Speed, AtPos: pos})
+			w.Peeps = append(w.Peeps, Peep{Flags: OnMove, Player: byte(player), Population: side.Population, IQ: side.SearchIndex, Weapons: side.Weapons, MovementSpeed: side.Speed, AtPos: pos})
 			w.notifyFollowerAllocated(len(w.Peeps) - 1)
 			w.MapWho[pos] = uint16(len(w.Peeps))
 			if count == 0 {

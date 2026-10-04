@@ -65,10 +65,14 @@ func TestNativeTownGrowthAndEmigration(t *testing.T) {
 		t.Fatalf("native town mana %d", w.Magnets[0].Mana)
 	}
 	w = townFixture(t, 1000)
+	w.Peeps[0].Weapons, w.Peeps[0].IQ = 99, 99
 	w.Peeps[0].TownWork = 7
 	w.TickWithComputer([2]bool{})
 	if len(w.Peeps) != 2 || w.Peeps[0].Population != 665 || w.Peeps[1].Population > 335 {
 		t.Fatalf("native one-third emigration failed: %+v", w.Peeps)
+	}
+	if w.Peeps[1].Weapons != 9 || w.Peeps[1].IQ != 18 {
+		t.Fatal("ordinary town emigrant inherited parent strength/search instead of stage")
 	}
 	full := townFixture(t, 1000)
 	for len(full.Peeps) < legacy.MaxFollowers {

@@ -56,7 +56,10 @@ routing and other state transitions remain separate work.
 
 `$10b38` and `$10cbe` establish the starting groups from each deity's 58-byte
 template. The first four words hold group count, initial population, movement
-speed and search intelligence. Movement speed is not initial mana. Parameter 4
+speed and weapon strength. Allocation at `$10d36` initializes search byte
+`$18` to two; `$10d42` copies the fourth template word's low byte to weapon
+byte `$19`. That word does not initialize search intelligence. Movement speed
+is not initial mana. Parameter 4
 supplies initial mana at deity `$02` via `$10b70/$10c0e`; clearing the record
 leaves its upper word zero. Parameter 5 supplies the per-side attrition word
 at deity `$16` via `$10b6a/$10c08`. Both land `$130e8` and water `$11d64`
@@ -78,6 +81,11 @@ growth, population limit and emigration divisor from LANDn.DAT. Emigration at
 population. A full follower pool leaves the town population unchanged. These
 tables and counters are now used directly. Terrain bookkeeping and land AI
 still use adapters around the supplied first-game engine.
+
+Emigration at `$118c8` assigns the town stage to the child's weapon byte and
+twice that stage to its search byte. It retains movement speed; it does not
+copy the parent town's current weapon/search values. Ten native allocation
+cases and all nineteen emigration stages establish these separate fields.
 
 ## Sound
 

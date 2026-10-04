@@ -1,0 +1,404 @@
+{
+  "source": "Independent original 68000 follower allocation/emigration execution; numeric fields only.",
+  "fixtures": [
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 0,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 0,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 0,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 1,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 1,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 4,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 2,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 2,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 6,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 3,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 3,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 8,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 4,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 4,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 10,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 5,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 5,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 12,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 6,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 6,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 14,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 7,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 7,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 16,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 8,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 8,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 18,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 9,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 9,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 20,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 10,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 10,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 22,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 11,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 11,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 24,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 12,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 12,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 26,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 13,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 13,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 28,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 14,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 14,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 30,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 15,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 15,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 32,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 16,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 16,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 34,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 17,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 17,
+      "TownWeapon": 99
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 777,
+        "ReturnState": 0,
+        "SearchIndex": 36,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 2,
+        "Weapon": 18,
+        "X": 8320,
+        "Y": 8320
+      },
+      "TownStage": 18,
+      "TownWeapon": 99
+    }
+  ]
+}

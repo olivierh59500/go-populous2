@@ -1,0 +1,225 @@
+{
+  "source": "Independent original 68000 follower allocation/emigration execution; numeric fields only.",
+  "fixtures": [
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 0,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 1,
+      "P3": 0
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 1,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 1,
+      "P3": 1
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 7,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 1,
+      "P3": 7
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 255,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 1,
+      "P3": 255
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 1,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 255,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 1,
+      "P3": 65535
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 2,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 0,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 2,
+      "P3": 0
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 2,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 1,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 2,
+      "P3": 1
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 2,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 7,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 2,
+      "P3": 7
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 2,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 255,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 2,
+      "P3": 255
+    },
+    {
+      "Actor": {
+        "Flags": 0,
+        "Kind": 2,
+        "Owner": 2,
+        "Population": 1000,
+        "ReturnState": 2,
+        "SearchIndex": 2,
+        "Speed": 40,
+        "State": 2,
+        "Timer": 0,
+        "VX": 0,
+        "VY": 0,
+        "Variant": 0,
+        "Weapon": 255,
+        "X": 8320,
+        "Y": 8320
+      },
+      "CellHead": 52,
+      "Owner": 2,
+      "P3": 65535
+    }
+  ]
+}

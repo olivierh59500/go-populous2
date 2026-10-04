@@ -121,7 +121,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.bindHabitatTerrain()
 	var followers [2]legacy.InitialFollowers
 	for player, p := range level.Players {
-		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), Intelligence: p.SearchIntelligence(), Speed: p.MovementSpeed()}
+		followers[player] = legacy.InitialFollowers{Groups: p.InitialGroups(), Population: p.InitialPopulation(), SearchIndex: p.InitialSearchIndex(), Weapons: p.InitialWeapons(), Speed: p.MovementSpeed()}
 	}
 	w.bindFollowerMotion()
 	core.PlaceOlympianPeople(followers)

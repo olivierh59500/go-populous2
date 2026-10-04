@@ -22,6 +22,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Fire column oracle | Twelve full traces: actor, RNG and every terrain tile per update |
 | Whirlwind oracle | Twelve parent traces, 3,550 matching updates and 713 child requests; actor, RNG and terrain compared |
 | Followers | 399 usable records; references above 255 survive save/load |
+| Starting/emigrant attributes | Ten original allocation cases and all nineteen emigration stages distinguish search byte from weapon strength |
 | Follower motion oracle | 72 traces / 528 updates, direction-image banks, cell heads and two full-dispatch/prepass references |
 | Follower motion integration | Fixed-leg Core replays, precise crossing contacts, same-slot generations and save 12 continuation |
 | Mana | Native divisor thresholds, quarter-mana units and propagated sculpt debits |

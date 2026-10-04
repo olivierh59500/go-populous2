@@ -21,9 +21,13 @@ type PlayerOptions struct {
 // native allocation at CODE:$10d3c. The template starts at deity+$5a.
 func (p PlayerOptions) MovementSpeed() uint8 { return uint8(p.Parameters[2]) }
 
-func (p PlayerOptions) InitialGroups() int      { return int(p.Parameters[0]) }
-func (p PlayerOptions) InitialPopulation() int  { return int(p.Parameters[1]) }
-func (p PlayerOptions) SearchIntelligence() int { return int(uint8(p.Parameters[3])) }
+func (p PlayerOptions) InitialGroups() int     { return int(p.Parameters[0]) }
+func (p PlayerOptions) InitialPopulation() int { return int(p.Parameters[1]) }
+
+// Native allocation initializes search byte $18 to two, independently of the
+// template. The fourth template word supplies the weapon byte at $19.
+func (p PlayerOptions) InitialSearchIndex() int { return 2 }
+func (p PlayerOptions) InitialWeapons() int     { return int(uint8(p.Parameters[3])) }
 
 // InitialMana and FollowerAttrition are the zero-extended template words
 // copied to deity+$02 and deity+$16 at CODE:$10b6a/$10b70 (and $10c08/$10c0e).

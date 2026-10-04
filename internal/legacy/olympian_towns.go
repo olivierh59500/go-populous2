@@ -136,10 +136,19 @@ func (w *World) processOlympianTown(index int, landAI bool) {
 	}
 	w.Peeps[index].Population -= population
 	w.Peeps[newIndex].Population = population
+	w.initializeOlympianChild(newIndex, stage)
 	w.Peeps[newIndex].TownStage = 0
 	w.Peeps[newIndex].TownWork = 0
 	w.Peeps[newIndex].ForceEmigration = false
 	if w.Magnets[player].Carried == index+1 {
 		w.Magnets[player].Carried = newIndex + 1
 	}
+}
+
+// initializeOlympianChild follows $118c8: the town stage supplies weapon
+// strength and twice that stage supplies search byte $18. The parent town's
+// current weapon/search bytes are not inherited by this ordinary emigrant.
+func (w *World) initializeOlympianChild(index, stage int) {
+	w.Peeps[index].Weapons = int(uint8(stage))
+	w.Peeps[index].IQ = int(uint8(stage * 2))
 }
