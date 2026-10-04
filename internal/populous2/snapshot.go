@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 10
+const SaveVersion = 11
 
 type Snapshot struct {
 	Version         int
@@ -26,6 +26,8 @@ type Snapshot struct {
 	LastSpell       SpellID
 	LastPlayer      int
 	SpellSerial     int
+	HazardSerial    int
+	LastHazardCue   int
 	Scenery         [SceneryCapacity]SceneryActor
 	Walls           WallState
 	NativeEffects   [NativeEffectCapacity]NativeEffectActor
@@ -38,7 +40,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -155,11 +157,22 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if len(snapshot.FlameDeaths) > legacy.MaxFollowers {
 		return nil, fmt.Errorf("too many saved flame deaths")
 	}
+	if snapshot.HazardSerial < 0 || snapshot.LastHazardCue < 0 || snapshot.LastHazardCue >= len(bundle.Audio.Patterns) {
+		return nil, fmt.Errorf("invalid saved hazard sound event")
+	}
+	var reservedDeaths [legacy.MaxPeeps]bool
 	for _, death := range snapshot.FlameDeaths {
 		if !inside(death.X, death.Y) || death.Animation >= death.End || death.Follower < 0 || death.Follower >= len(snapshot.Core.Peeps) {
 			return nil, fmt.Errorf("invalid saved flame death")
 		}
-		if _, ok := bundle.FireColumns.Frames[death.Animation]; !ok {
+		if reservedDeaths[death.Follower] || !bundle.validFollowerDeathSpan(death.Animation, death.End) {
+			return nil, fmt.Errorf("invalid saved follower death span/reservation")
+		}
+		reservedDeaths[death.Follower] = true
+		if death.Kind != 0 && (death.Kind != bundle.FungusHazards.DeathKind || death.State != bundle.FungusHazards.DeathState) {
+			return nil, fmt.Errorf("invalid saved follower hazard state")
+		}
+		if _, ok := bundle.FollowerDeathFrame(death.Animation); !ok {
 			return nil, fmt.Errorf("unknown saved flame death frame")
 		}
 	}
@@ -258,9 +271,11 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	}
 	w.FlameDeaths = append([]FlameDeath(nil), snapshot.FlameDeaths...)
 	w.bindFlameDeaths()
+	w.bindFollowerHazards()
 	w.bindWallMovement()
 	w.rebuildSceneryIndex()
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
+	w.HazardSerial, w.LastHazardCue = snapshot.HazardSerial, snapshot.LastHazardCue
 	return w, nil
 }
 

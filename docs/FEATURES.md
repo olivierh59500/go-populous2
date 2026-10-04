@@ -17,7 +17,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Validated version 10 saves, fungus bounds/pending controllers, per-side scenario words, native effect/death actors, deity profile and scenery | Original Amiga GAM interoperability |
+| Saving | Validated version 11 saves, follower hazard states, fungus bounds/pending controllers, per-side scenario words, native effect/death actors, deity profile and scenery | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
@@ -38,7 +38,7 @@ the remaining simulation routines.
 | Forest | 6 | 46 | Native sampled allocation, original variants, signed aging/burial counters and rendering; popularity and remaining actor interactions pending |
 | Renew land | 7 | 80 | Native sampled placement and tile 245; separate from the fungus automaton; popularity interactions pending |
 | Swamp | 8 | 54 | Native placement/tiles, victim-side shallow rule and Heracles immunity; native death animation pending |
-| Fungus | 9 | 26 | Native seed/collection, staged B3/S23 automaton, experience cadence and multiple shared-pool controllers; follower death entry and adjacent-BSS edge behavior pending |
+| Fungus | 9 | 26 | Native seed/collection, staged B3/S23 automaton, cadence, mature-tile mortality/Adonis immunity and retained death art; full linked death state and adjacent-BSS edge behavior pending |
 | Adonis | 10 | 58 | Native conversion/art and post-victory hero splitting; native movement/combat and pool-full edge state pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
 | City walls | 13 | 34 | Native placement/art/gates, saves, sculpt protection, crossing thresholds and terminal break art; fractional climb/hero attack states pending |

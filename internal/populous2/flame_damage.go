@@ -2,7 +2,10 @@ package populous2
 
 import legacy "go-populous2/internal/legacy"
 
-type FlameDeath struct{ Follower, X, Y, Animation, End int }
+type FlameDeath struct {
+	Follower, X, Y, Animation, End int
+	Kind, State                    uint8
+}
 
 func (w *World) bindFlameDeaths() {
 	w.rebuildFlameDeathIndex()

@@ -13,6 +13,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Terrain oracle | Eight native executions, 4,225 matching heights per seed |
 | Ground-effect oracle | Nine matching tile maps and final 32-bit random states |
 | Fungus oracle | Six original controller traces, complete tile maps, packed record fields, collection and generation timing |
+| Fungus mortality oracle | Seventeen native common-prepass cases: fresh/mature tiles, all heroes, both sides, sound arguments and retained occupancy |
 | Scenery oracle | Original object pools/RNG, including register-continuing seed 777 |
 | Batholith oracle | Four height/object/RNG references covering raising and boulders |
 | Wall oracle | Nine actor/head states, gates, joins and construction ticks |
@@ -58,7 +59,14 @@ bottom-edge generation. Later access beyond the map remains bounded rather
 than emulating adjacent original BSS. Tests check complete map states and
 controller bytes at recorded native boundaries. The world adapter has separate
 seed/debit/pool-failure and save-continuation regressions; native follower
-mortality on mature fungus still requires its retained death state.
+mortality uses the native mature/fresh distinction, Adonis immunity, decoded
+death artwork and cue. Save tests preserve frame completion/slot release and
+reject forged lifetimes or duplicate death reservations. Native full linked
+death records and redispatch timing remain outside those adapter checks.
+The world comparison covers the sixteen two-side mortality fixtures; the
+native neutral-owner bypass is established by the isolated rules fixture but
+is not yet representable in the inherited follower pool. A bounded desktop
+capture also verifies ordinary/hero death artwork and the surviving Adonis.
 
 Scenario attrition references compare population arithmetic and native death
 decisions, rather than complete original death animation or fractional movement.

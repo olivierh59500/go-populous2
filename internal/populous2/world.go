@@ -25,6 +25,7 @@ type World struct {
 	FireColumns     FireColumnRules
 	Whirlwinds      WhirlwindRules
 	FungusRules     FungusRules
+	FungusHazards   FungusHazardRules
 	FungusState     FungusState
 	NativeEffects   [NativeEffectCapacity]NativeEffectActor
 	FlameDeaths     []FlameDeath
@@ -43,6 +44,8 @@ type World struct {
 	LastSpell       SpellID
 	LastPlayer      int
 	SpellSerial     int
+	HazardSerial    int
+	LastHazardCue   int
 	captiveIndex    [legacy.MaxPeeps]bool
 }
 
@@ -104,6 +107,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Whirlwinds: bundle.Whirlwinds, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	w.FungusRules = bundle.FungusRules
+	w.FungusHazards = bundle.FungusHazards
 	for player, p := range level.Players {
 		w.Rules[player] = p.ScenarioRules()
 	}
@@ -121,6 +125,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.bindHeroCombat()
 	w.bindWallMovement()
 	w.bindFlameDeaths()
+	w.bindFollowerHazards()
 	return w, nil
 }
 

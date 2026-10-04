@@ -35,6 +35,7 @@ type Bundle struct {
 	FireColumns     FireColumnRules
 	Whirlwinds      WhirlwindRules
 	FungusRules     FungusRules
+	FungusHazards   FungusHazardRules
 	WallRules       WallRules
 }
 
@@ -176,6 +177,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.FungusRules, err = DecodeFungusRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.FungusHazards, err = DecodeFungusHazardRules(exe)
 	if err != nil {
 		return nil, err
 	}

@@ -67,6 +67,7 @@ type Game struct {
 	audioPlayer               *audio.Player
 	muted                     bool
 	lastSoundSerial           int
+	lastHazardSoundSerial     int
 	lastPlagueSoundTurn       int
 	lastNativeEffectSoundTurn int
 	roadLastTile              int
@@ -218,6 +219,12 @@ func (g *Game) Update() error {
 		g.lastSoundSerial = g.World.SpellSerial
 		g.playPowerSound(g.World.LastSpell, g.World.LastPlayer)
 	}
+	if g.lastHazardSoundSerial != g.World.HazardSerial {
+		g.lastHazardSoundSerial = g.World.HazardSerial
+		if g.audioReplay != nil {
+			g.audioReplay.PlayCue(g.World.LastHazardCue)
+		}
+	}
 	if g.audioReplay != nil && g.lastNativeEffectSoundTurn != g.World.Core.GameTurn {
 		g.lastNativeEffectSoundTurn = g.World.Core.GameTurn
 		var played [133]bool
@@ -302,6 +309,7 @@ func (g *Game) start(level int, custom, demo bool) error {
 	}
 	world.Demo = demo
 	g.World = world
+	g.lastHazardSoundSerial = world.HazardSerial
 	if custom && g.hasCustomScenarioOptions {
 		for player, raw := range g.customScenarioOptions {
 			g.World.Rules[player] = populous2.DecodeScenarioRules(raw)
@@ -734,7 +742,11 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		cell := g.World.TerrainCell(death.X, death.Y)
 		px, py := project(x, y, cell.BaseAltitude)
 		ox, oy := cell.ActorOffset(128, 128)
-		for _, layer := range g.Bundle.FireColumns.Frames[death.Animation].Layers {
+		frame, ok := g.Bundle.FollowerDeathFrame(death.Animation)
+		if !ok {
+			continue
+		}
+		for _, layer := range frame.Layers {
 			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
 		}
 	}
@@ -913,6 +925,7 @@ func (g *Game) load() {
 	}
 	g.World = world
 	g.LevelIndex = world.Level.Number
+	g.lastHazardSoundSerial = world.HazardSerial
 	g.Profile = world.Deity
 	if world.Custom {
 		g.hasCustomScenarioOptions = true

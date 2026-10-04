@@ -93,7 +93,8 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 10 preserves fungus controller bounds and pending references, both
+Version 11 preserves follower hazard states/sound events, fungus controller
+bounds and pending references, both
 scenario option words, native fire-column and whirlwind actors/death animations, the deity profile,
 scenery, the 32-bit random state, follower references and town work,
 infection and persistent ground effects. Earlier Go saves remain readable;

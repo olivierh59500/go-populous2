@@ -202,6 +202,7 @@ type World struct {
 	HabitatTerrainAllowed func(player, pos int) bool
 	MovementAllowed       func(index, target int, apply bool) bool
 	FollowerReserved      func(index int) bool
+	BeforeFollower        func(index int) bool
 	WaterFatalForPlayer   func(player int) bool
 	FollowerAttrition     func(player int, water bool) int
 	TerrainCommand        func(player, x, y int, raise bool) bool
@@ -1349,6 +1350,9 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 		player := int(w.Peeps[i].Player)
 		if player < 0 || player >= len(w.Magnets) || !inMap(w.Peeps[i].AtPos) {
 			w.zeroPopulation(i)
+			continue
+		}
+		if w.BeforeFollower != nil && !w.BeforeFollower(i) {
 			continue
 		}
 

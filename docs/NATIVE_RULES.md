@@ -346,8 +346,22 @@ Generation at `$14eea` counts neighbors whose properties equal `$10` exactly:
 living cells survive with two or three; eligible dead cells are born with
 three. Transitional birth/death properties preserve synchronous counts
 during the original in-place scan. The controller consumes no random numbers
-and applies no area-damage substitute. Native follower hazard entry and its
-death animation remain separate work.
+and applies no area-damage substitute.
+
+The common follower terrain prepass calls `$12ec2` before state dispatch.
+Fungus property bit 4 is fatal only when bit 0 is clear: fresh tile 145 is
+harmless, while mature tiles 146–150 are dangerous. Heroes use the death
+table at `$20a48`; its zero Adonis entry grants immunity. Ordinary death uses
+animation `$7dc`, kind `$10`, state `$38`, centered fractions and sound offset
+`$104` (descriptor 26). The adapter removes the group from live population
+while retaining its decoded death frames and slot/occupancy reservation.
+Version 11 saves preserve those states and sound serials, reject invalid
+animation spans/duplicate reservations, and resume frame completion.
+
+The inherited follower dispatcher still supplies the surrounding scheduling,
+population bookkeeping and occupancy adapter. Native redispatch timing,
+full linked death records and remaining terrain-prepass branches remain
+verification targets; visible retained artwork alone does not establish them.
 
 Renew Land at `$16a62` scatters tile 245 and never creates this controller.
 Its properties are `$01`, so it is eligible ground rather than a living

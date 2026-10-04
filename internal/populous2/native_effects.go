@@ -41,3 +41,33 @@ func (b *Bundle) validNativeEffectPhase(actor NativeEffectActor) bool {
 	}
 	return start >= 0 && actor.Animation >= start && actor.Animation < start+length*4 && (actor.Animation-start)%4 == 0
 }
+
+// FollowerDeathFrame is shared by the renderer, sound events and saved death
+// actors. Their images remain visible after removal from live population.
+func (b *Bundle) FollowerDeathFrame(animation int) (AnimationFrame, bool) {
+	if b == nil {
+		return AnimationFrame{}, false
+	}
+	if frame, ok := b.FireColumns.Frames[animation]; ok {
+		return frame, true
+	}
+	frame, ok := b.FungusHazards.Frames[animation]
+	return frame, ok
+}
+
+func (b *Bundle) validFollowerDeathSpan(animation, end int) bool {
+	span := func(start, length int) bool {
+		return length > 0 && end == start+length*4 && animation >= start && animation < end && (animation-start)%4 == 0
+	}
+	for _, start := range append([]int{0x178, 0x2bd4}, b.FireColumns.TownDeath[:]...) {
+		if span(start, b.FireColumns.SequenceLengths[start]) {
+			return true
+		}
+	}
+	for start, length := range b.FungusHazards.SequenceLengths {
+		if span(start, length) {
+			return true
+		}
+	}
+	return false
+}
