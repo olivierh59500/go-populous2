@@ -176,10 +176,18 @@ func (g *Game) Update() error {
 		g.centerPlayer(0)
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
-		g.Direction = (g.Direction + 7) % 8
+		step := 1
+		if g.Selected == populous2.Basalt {
+			step = 2
+		}
+		g.Direction = (g.Direction + 8 - step) % 8
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyE) {
-		g.Direction = (g.Direction + 1) % 8
+		step := 1
+		if g.Selected == populous2.Basalt {
+			step = 2
+		}
+		g.Direction = (g.Direction + step) % 8
 	}
 	for i, key := range []ebiten.Key{ebiten.KeyF1, ebiten.KeyF2, ebiten.KeyF3, ebiten.KeyF4, ebiten.KeyF6, ebiten.KeyF7} {
 		if inpututil.IsKeyJustPressed(key) {
@@ -209,10 +217,16 @@ func (g *Game) Update() error {
 	g.handleClick()
 	if !g.Paused {
 		for range g.scheduler.Advance() {
+			g.World.SetEffectView(g.CameraX, g.CameraY)
 			g.World.Tick()
 			if g.messageTicks > 0 {
 				g.messageTicks--
 			}
+		}
+	}
+	for _, cue := range g.World.TakeEffectSoundCues() {
+		if g.audioReplay != nil {
+			g.audioReplay.PlayCue(cue)
 		}
 	}
 	if g.lastSoundSerial != g.World.SpellSerial {
@@ -493,6 +507,9 @@ func (g *Game) selectSpell(id populous2.SpellID) {
 		return
 	}
 	g.Selected = id
+	if id == populous2.Basalt {
+		g.Direction &^= 1
+	}
 	g.notify(spell.Help)
 }
 

@@ -2,6 +2,21 @@ package populous
 
 func (w *World) NextRandom() int { return w.rng.next() }
 
+// DirectLowerTerrain is the unpriced native effect operation. It bypasses
+// player admission and Armageddon's ordinary input gate without changing War.
+func (w *World) DirectLowerTerrain(x, y int) bool {
+	if x < 0 || y < 0 || x > MapWidth || y > MapHeight {
+		return false
+	}
+	bounds := newAltBounds(x, y)
+	w.lowerPointTracked(x, y, bounds)
+	if bounds.changed == 0 {
+		return false
+	}
+	w.rebuildAltitudeBounds(bounds)
+	return true
+}
+
 // DetachFollower removes a group from town/combat bookkeeping without changing
 // its allegiance or population, for native abduction and actor state changes.
 func (w *World) DetachFollower(index int) bool {
@@ -26,6 +41,9 @@ func (w *World) MoveFollowerDirect(index, pos int) bool {
 	}
 	w.clearPeepMapRefs(index)
 	w.Peeps[index].AtPos = pos
+	if w.OnFollowerMoved != nil {
+		w.OnFollowerMoved(index)
+	}
 	if w.MapWho[pos] == 0 {
 		w.MapWho[pos] = uint16(index + 1)
 	}

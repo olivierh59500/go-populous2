@@ -27,6 +27,7 @@ func TestSceneryAgainstOriginalInitialization(t *testing.T) {
 		w.Core.GenerateOlympianTerrain(ref.seed, b.HillParameters)
 		w.Scenery = [SceneryCapacity]SceneryActor{}
 		w.rebuildSceneryIndex()
+		w.initializeActorGraph()
 		w.initializeScenery()
 		var packed bytes.Buffer
 		count := 0

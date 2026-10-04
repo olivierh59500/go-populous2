@@ -112,6 +112,7 @@ func (w *World) castFireColumn(player, x, y int) bool {
 		vx, vy := a.VX, a.VY
 		*a = NativeEffectActor{Active: true, Kind: 0x22, Player: uint8(player), X: int16(x*256 + 128), Y: int16(y*256 + 128), VX: vx, VY: vy, State: 2, Animation: 0x1a0, Timer: 1, Speed: w.FireColumns.Speed, Life: int16(w.FireColumns.BaseLife + int(w.Experience[player][Fire]))}
 		w.random()
+		w.linkEffect(i)
 		return true
 	}
 	return false
@@ -123,6 +124,7 @@ func (w *World) tickNativeEffects() {
 		if !a.Active {
 			continue
 		}
+		wasLinked, _ := w.Occupancy.Linked(nativeActorReference(NativeEffectPool, i))
 		switch a.Kind {
 		case 0x22:
 			w.tickFireColumn(a)
@@ -130,6 +132,17 @@ func (w *World) tickNativeEffects() {
 			w.tickWhirlwind(a)
 		case FungusActorKind:
 			w.tickFungus(i)
+		case WhirlpoolActorKind:
+			w.tickWhirlpool(a)
+		case BasaltActorKind:
+			w.tickBasalt(i)
+		}
+		if wasLinked && (a.Kind == 0x20 || a.Kind == 0x22) {
+			if !a.Active {
+				w.unlinkActor(NativeEffectPool, i)
+			} else {
+				w.moveActor(NativeEffectPool, i, uint16(a.X), uint16(a.Y))
+			}
 		}
 	}
 }
@@ -174,6 +187,12 @@ func (w *World) tickFireColumn(a *NativeEffectActor) {
 					return
 				}
 				a.X, a.Y = nextX, nextY
+				for index := range w.NativeEffects {
+					if a == &w.NativeEffects[index] {
+						w.moveActor(NativeEffectPool, index, uint16(a.X), uint16(a.Y))
+						break
+					}
+				}
 				w.burnFireCell(int(a.X)>>8, int(a.Y)>>8)
 				return
 			}

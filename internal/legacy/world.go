@@ -205,6 +205,8 @@ type World struct {
 	BeforeFollower        func(index int) bool
 	NativeFollowerUpdate  func(index int) bool
 	OnFollowerAllocated   func(index int)
+	OnFollowerMoved       func(index int)
+	OnFollowerRemoved     func(index int)
 	WaterFatalForPlayer   func(player int) bool
 	FollowerAttrition     func(player int, water bool) int
 	TerrainCommand        func(player, x, y int, raise bool) bool
@@ -2058,6 +2060,9 @@ func (w *World) moveExplorer(index int) {
 	}
 	peep.AtPos += goTo
 	peep.Direction = goTo
+	if w.OnFollowerMoved != nil {
+		w.OnFollowerMoved(index)
+	}
 }
 
 func (w *World) resolveContact(moverIndex, foundIndex int) bool {
@@ -2118,10 +2123,16 @@ func (w *World) setBattle(attackerIndex, defenderIndex int) {
 		attacker.AtPos = defender.AtPos
 		attacker.Direction = 0
 		w.MapWho[defender.AtPos] = uint16(attackerIndex + 1)
+		if w.OnFollowerMoved != nil {
+			w.OnFollowerMoved(attackerIndex)
+		}
 		return
 	}
 	defender.AtPos = attacker.AtPos
 	defender.Direction = 0
+	if w.OnFollowerMoved != nil {
+		w.OnFollowerMoved(defenderIndex)
+	}
 	if inMap(attacker.AtPos) {
 		w.MapWho[attacker.AtPos] = uint16(attackerIndex + 1)
 	}
@@ -2210,6 +2221,9 @@ func (w *World) mergePeepPopulation(sourceIndex, targetIndex int) bool {
 	source.BattlePopulation = 0
 	source.HeadFor = 0
 	source.Status = 0
+	if w.OnFollowerRemoved != nil {
+		w.OnFollowerRemoved(sourceIndex)
+	}
 	return true
 }
 
@@ -2953,6 +2967,9 @@ func (w *World) zeroPopulation(index int) {
 	w.Peeps[index].Direction = 0
 	w.Peeps[index].HeadFor = 0
 	w.Peeps[index].Status = 0
+	if w.OnFollowerRemoved != nil {
+		w.OnFollowerRemoved(index)
+	}
 }
 
 func (w *World) walkDeath() int {

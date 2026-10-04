@@ -35,6 +35,8 @@ type Bundle struct {
 	DeityArt        *DeityArt
 	FireColumns     FireColumnRules
 	Whirlwinds      WhirlwindRules
+	Whirlpools      WhirlpoolRules
+	BasaltRules     BasaltRules
 	FungusRules     FungusRules
 	FungusHazards   FungusHazardRules
 	WallRules       WallRules
@@ -178,6 +180,14 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.Whirlwinds, err = DecodeWhirlwindRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.Whirlpools, err = DecodeWhirlpoolRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.BasaltRules, err = DecodeBasaltRules(exe)
 	if err != nil {
 		return nil, err
 	}

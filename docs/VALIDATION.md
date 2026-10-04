@@ -34,6 +34,10 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Scenery continuation | Original variants, pool recycling, burial counters and save/load |
 | Flame deaths | Retained death frames/slot reservations, current-cell damage and four-neighbor tree spread |
 | Scenario runtime | Independent side rules, height admission, atomic prohibited edits, water, sprog, map visibility and save bindings |
+| Water controllers | 166 Whirlpool cases/3,599 ticks and 358 Basalt cases; world replays 40 ordered Basalt traces/7,228 passes |
+| Whirlwind water children | Eight combined world replays, 5,090 full pool passes, 644 native checkpoints and 74 births; complete pool/grid/RNG agree |
+| Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
+| Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |
 | Scenario native oracle | 248 cases: 112 height admissions, eight initializations and 128 per-owner attrition updates |
 | Deity interface | Native face parts, name, experience, password import and version 6 profile saves |
@@ -73,8 +77,10 @@ capture also verifies ordinary/hero death artwork and the surviving Adonis.
 
 Scenario attrition references compare population arithmetic and native death
 decisions, rather than complete original death animation or fractional movement.
-A bounded world-zero simulation can finish unusually early under the current
-movement/opponent adapters. These checks do not establish native campaign pacing.
+A traced world-zero simulation ends early because the provisional Lightning
+area damage removes the remaining enemy groups at turns 24 and 48. Native
+Lightning is a separate marker/activation system and remains to be integrated.
+This observed prototype result is not a measurement of native campaign pacing.
 
 Graphics-bank tests cover the shore/raised-land distinction and every water
 animation phase. Repeated raises/lowers verify shared-corner continuity and
@@ -92,3 +98,11 @@ fallthrough separately. Waiting, water and hero motion are not covered by these
 ordinary walking traces. Version 12 also migrates earlier swapped basalt and
 whirlpool IDs, and rejects invalid motion coordinates, velocities, phases,
 image banks and pool-relative references.
+
+Version 13 world tests compare the complete mixed graph/pressure through native
+Basalt propagation and combined Whirlwind/Whirlpool lifetimes. Later-slot child
+controllers run during their birth pass. Mixed-actor saves preserve links and
+accumulated pressure; malformed graph/actor membership is rejected. Whirlpool
+audio depends on the current view but does not change the saved state.
+The controlled combined-water references contain no followers or scenery and
+therefore do not prove Whirlwind pickup/release or all environment interactions.

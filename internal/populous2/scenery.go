@@ -110,7 +110,7 @@ func (w *World) rebuildSceneryIndex() {
 
 func (w *World) allocateScenery(kind SceneryKind, x, y, animation, age int) bool {
 	pos := x + y*64
-	if !inside(x, y) || w.Core.MapWho[pos] != 0 || w.sceneryAt(pos) >= 0 {
+	if !inside(x, y) || w.Occupancy.Grid.Cells[pos].Head != 0 || w.Core.MapWho[pos] != 0 || w.sceneryAt(pos) >= 0 {
 		return false
 	}
 	for i := range w.Scenery {
@@ -119,6 +119,7 @@ func (w *World) allocateScenery(kind SceneryKind, x, y, animation, age int) bool
 		}
 		w.Scenery[i] = SceneryActor{Kind: kind, Active: true, X: x, Y: y, Age: int8(age), Animation: animation}
 		w.sceneryIndex[pos] = uint16(i + 1)
+		w.placeActor(NativeSceneryPool, i, uint16(x*256+128), uint16(y*256+128))
 		return true
 	}
 	return false
@@ -152,7 +153,7 @@ func (w *World) plantScenery(kind SceneryKind, player, x, y int) int {
 		}
 		pos := xx + yy*64
 		cell := w.TerrainCell(xx, yy)
-		if cell.Code == 0 || w.GroundRules.Properties[cell.Code]&0x40 != 0 || w.Core.MapWho[pos] != 0 || w.sceneryAt(pos) >= 0 {
+		if cell.Code == 0 || w.GroundRules.Properties[cell.Code]&0x40 != 0 || w.Occupancy.Grid.Cells[pos].Head != 0 || w.Core.MapWho[pos] != 0 || w.sceneryAt(pos) >= 0 {
 			continue
 		}
 		free := false
@@ -254,6 +255,7 @@ func (w *World) tickScenery() {
 
 func (w *World) removeScenery(index int) {
 	a := &w.Scenery[index]
+	w.unlinkActor(NativeSceneryPool, index)
 	w.sceneryIndex[a.X+a.Y*64] = 0
 	a.Active = false
 }

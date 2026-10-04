@@ -13,11 +13,11 @@ power is not sufficient evidence that its original behavior has been ported.
 | Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester and opponent experience | Scripted events and opponent personalities |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
-| Followers | 399 usable records, native ordinary 8.8 walking/speed/animation, generation-safe reuse and saves | Native search/contacts, linked occupancy, waiting/water/hero states, combat and invention rules |
+| Followers | 399 usable records, native ordinary 8.8 motion, persistent mixed-pool map links and generation-safe reuse | Native search/contacts, remaining inherited graph notifications, waiting/water/hero states, combat and inventions |
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Validated version 12 saves, follower hazard states, fungus bounds/pending controllers, per-side scenario words, native effect/death actors, deity profile and scenery | Original Amiga GAM interoperability |
+| Saving | Validated version 13 saves, mixed actor graph/pressure, native water controllers, followers, deity profile and per-side rules | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
@@ -54,8 +54,8 @@ the remaining simulation routines.
 | Fire rain | 25 | 38 | Provisional timed damage; native drops and burn propagation pending |
 | Volcano | 26 | 62 | Inherited volcano with native cost/sound; native lava, basalt and damage recovery pending |
 | Achilles | 27 | 68 | Native conversion/art; provisional burning; native movement/combat pending |
-| Whirlpool | 31 | 24 | Provisional stationary water effect; native coastline erosion and multiplication pending |
-| Basalt | 30 | 74 | Provisional straight raised path; native bridge construction/animation pending |
+| Whirlpool | 31 | 24 | Native four-water admission, terrain animation, motion, direct coast lowering, lifetime and ordered shared-pool execution; broader terrain/actor interactions pending |
+| Basalt | 30 | 74 | Native linked propagation actors, four cardinal directions, persistent terrain prefix and original sculpture shapes; remaining environmental interactions pending |
 | Baptismal fonts | 32 | 52 | Native sampled placement and tiles 143–144; faith reversal on entry; original entry animation/immunities pending |
 | Helen | 33 | 70 | Capture without faith conversion, follower chain, release on death and water immunity; exact subpixel routing/collateral death animation pending |
 | Tidal wave | 34 | 56 | Provisional directed wave; native world-wide water simulation pending |

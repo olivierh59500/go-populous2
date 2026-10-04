@@ -21,6 +21,8 @@ distinguishes native translations from provisional behavior.
 
 ![Native fire columns climbing and burning the landscape](screenshots/fire-columns.png)
 
+![Native Whirlpool terrain and Basalt propagation](screenshots/water-effects.png)
+
 ![Three native whirlwinds in the diagnostic presentation](screenshots/whirlwinds.png)
 
 ![Original follower animation banks with native fractional walking](screenshots/ordinary-motion.png)
@@ -96,7 +98,8 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 12 preserves ordinary walkers' fractional positions, animation clocks
+Version 13 preserves the mixed actor graph and movement-pressure bytes, native
+Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
 and timers, along with follower hazard states and sound events, fungus bounds
 and pending references, both scenario option words, native effects and death
 animations, the deity profile, scenery, the 32-bit random state, follower
@@ -107,6 +110,11 @@ Helen/tsunami ID mapping; version 12 also corrects earlier basalt/whirlpool IDs
 30/31. Generic whirlwinds migrate into native effect records. Earlier fungus
 damage marks migrate to native seeds and collecting controllers. Original
 Amiga GAM saves are not yet supported.
+
+Earlier generic whirlpools migrate to native controller records. Earlier
+basalt marks retain their existing terrain and become persistent native-family
+tiles. Old saves did not record mixed actor order/pressure; their graph is
+initialized from the retained actor pools during migration.
 
 The deity screen uses the original three-part face artwork, eight variants per
 part, five starting bolts and one experience unit per allocated bolt. Click the

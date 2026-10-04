@@ -30,6 +30,7 @@ func (w *World) tickFlameDeaths() {
 		if death.Animation < death.End {
 			live = append(live, death)
 		} else {
+			w.unlinkActor(NativeFollowerPool, death.Follower)
 			w.Core.ReleaseDeathOccupancy(death.Follower)
 		}
 	}
@@ -103,6 +104,9 @@ func (w *World) burnActorsAt(x, y int, treeSpread, scorch bool) {
 			animation = w.FireColumns.HeroDeath[heroIndex(w.Heroes[i].Spell)]
 		}
 		if animation != 0 && len(w.FlameDeaths) < legacy.MaxFollowers {
+			if w.Core.OnFollowerMoved != nil {
+				w.Core.OnFollowerMoved(i)
+			}
 			w.FlameDeaths = append(w.FlameDeaths, FlameDeath{Follower: i, X: x, Y: y, Animation: animation, End: animation + w.FireColumns.SequenceLengths[animation]*4})
 			w.flameDeathIndex[i] = true
 		}

@@ -24,6 +24,11 @@ func TestWhirlwindWorldUsesOriginalController(t *testing.T) {
 		t.Run(fmt.Sprintf("%s-xp%d", fixture.Name, fixture.Experience), func(t *testing.T) {
 			w := flatGroundWorld(t)
 			w.NativeEffects = [NativeEffectCapacity]NativeEffectActor{}
+			// The original parent traces occupy all other slots and stop
+			// before advancing the next record. Keep child allocation blocked.
+			for index := 1; index < len(w.NativeEffects); index++ {
+				w.NativeEffects[index] = NativeEffectActor{Active: true}
+			}
 			w.Scenery = [SceneryCapacity]SceneryActor{}
 			w.rebuildSceneryIndex()
 			w.Marks = [4096]Mark{}

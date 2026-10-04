@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 12
+const SaveVersion = 13
 
 type Snapshot struct {
 	Version         int
@@ -32,21 +32,34 @@ type Snapshot struct {
 	Walls           WallState
 	NativeEffects   [NativeEffectCapacity]NativeEffectActor
 	NativeFollowers [legacy.MaxPeeps]NativeFollower
+	Occupancy       NativeWorldOccupancy
+	BasaltState     BasaltState
 	FungusState     FungusState
 	FlameDeaths     []FlameDeath
 }
 
 func (w *World) Snapshot() Snapshot {
+	canonical := *w
+	canonical.reconcileActorGraph()
+	w = &canonical
 	heroes := w.Heroes
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...)}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if snapshot.Version < 1 || snapshot.Version > SaveVersion {
 		return nil, fmt.Errorf("unsupported save version %d", snapshot.Version)
+	}
+	if snapshot.Version >= 13 {
+		if err := snapshot.Occupancy.Validate(); err != nil {
+			return nil, fmt.Errorf("invalid saved native actor graph: %w", err)
+		}
+		if err := validateSavedActorGraph(snapshot); err != nil {
+			return nil, err
+		}
 	}
 	if snapshot.Version < 3 {
 		// Earlier prototypes inverted the two final water powers. Their
@@ -161,6 +174,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		if snapshot.Version >= 9 && effect.Spell == Whirlwind {
 			return nil, fmt.Errorf("saved whirlwind requires a native effect record")
 		}
+		if snapshot.Version >= 13 && effect.Spell == Whirlpool {
+			return nil, fmt.Errorf("saved whirlpool requires a native effect record")
+		}
 	}
 	var sceneryTiles [4096]bool
 	for _, actor := range snapshot.Scenery {
@@ -188,11 +204,22 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			}
 			continue
 		}
-		if a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 || !bundle.validNativeEffectPhase(a) {
+		if a.Kind == WhirlpoolActorKind {
+			if snapshot.Version < 13 || a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.State != 0x0e || a.Speed == 0 || a.Animation < 0x97 || a.Animation > 0xa3 || (a.Animation-0x97)%4 != 0 {
+				return nil, fmt.Errorf("invalid saved native whirlpool")
+			}
+			continue
+		}
+		if a.Player > 1 || a.X < 0 || a.Y < 0 || a.X >= 0x4000 || a.Y >= 0x4000 || a.Speed == 0 && a.Kind != BasaltActorKind || !bundle.validNativeEffectPhase(a) {
 			return nil, fmt.Errorf("invalid native effect actor")
 		}
 		if _, ok := bundle.NativeEffectFrame(a); !ok {
 			return nil, fmt.Errorf("invalid native effect animation")
+		}
+	}
+	for index, actor := range snapshot.NativeEffects {
+		if actor.Active && actor.Kind == BasaltActorKind && (snapshot.Version < 13 || snapshot.BasaltState.Directions[index] > 6 || snapshot.BasaltState.Directions[index]&1 != 0) {
+			return nil, fmt.Errorf("invalid saved basalt direction")
 		}
 	}
 	if !validSavedFungus(&snapshot.NativeEffects, &snapshot.FungusState) {
@@ -256,6 +283,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.Scenery = snapshot.Scenery
 	w.Walls = snapshot.Walls
 	w.NativeEffects = snapshot.NativeEffects
+	w.BasaltState = snapshot.BasaltState
 	w.FungusState = snapshot.FungusState
 	if snapshot.Version < 7 {
 		live := w.Effects[:0]
@@ -313,6 +341,35 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			}
 		}
 	}
+	if snapshot.Version < 13 {
+		live := w.Effects[:0]
+		for _, effect := range w.Effects {
+			if effect.Spell != Whirlpool {
+				live = append(live, effect)
+				continue
+			}
+			slot := -1
+			for index := range w.NativeEffects {
+				if !w.NativeEffects[index].Active {
+					slot = index
+					break
+				}
+			}
+			if slot < 0 {
+				return nil, fmt.Errorf("saved whirlpool exceeds native effect capacity")
+			}
+			// Retain the old effect's remaining life and location even if its
+			// former target would now fail exact four-water cast admission.
+			w.NativeEffects[slot] = NativeEffectActor{Active: true, Kind: WhirlpoolActorKind, Player: uint8(effect.Player), X: int16(effect.X * 256), Y: int16(effect.Y * 256), Speed: w.Whirlpools.Speed, Timer: int16(w.Whirlpools.Speed), Life: int16(max(1, effect.Life)), State: 0x0e, Animation: 0x97}
+		}
+		w.Effects = live
+		for pos, mark := range w.Marks {
+			if mark.Spell == Basalt && mark.Life > 0 && mark.NativeTile == 0 {
+				w.Marks[pos] = Mark{Spell: Basalt, Player: mark.Player, Life: 1, Persistent: true, NativeTile: 0xe0}
+				w.setBasaltLegacyLand(pos%64, pos/64)
+			}
+		}
+	}
 	w.FlameDeaths = append([]FlameDeath(nil), snapshot.FlameDeaths...)
 	w.NativeFollowers = snapshot.NativeFollowers
 	if snapshot.Version < 12 {
@@ -326,6 +383,13 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.bindFollowerHazards()
 	w.bindWallMovement()
 	w.rebuildSceneryIndex()
+	if snapshot.Version >= 13 {
+		w.Occupancy = snapshot.Occupancy
+	} else {
+		w.initializeActorGraph()
+		w.reconcileActorGraph()
+	}
+	w.bindActorGraphHooks()
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	w.HazardSerial, w.LastHazardCue = snapshot.HazardSerial, snapshot.LastHazardCue
 	return w, nil

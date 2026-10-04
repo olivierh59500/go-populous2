@@ -13,6 +13,9 @@ func (b *Bundle) NativeEffectFrame(actor NativeEffectActor) (AnimationFrame, boo
 	case 0x20:
 		frame, ok := b.Whirlwinds.Frames[actor.Animation]
 		return frame, ok
+	case BasaltActorKind:
+		frame, ok := b.BasaltRules.Frames[actor.Animation]
+		return frame, ok
 	}
 	return AnimationFrame{}, false
 }
@@ -38,6 +41,10 @@ func (b *Bundle) validNativeEffectPhase(actor NativeEffectActor) bool {
 			start = 0x6cc
 		}
 		length = b.Whirlwinds.SequenceLengths[start]
+	case BasaltActorKind:
+		if actor.State == 0x38 || actor.State == 0x3a {
+			start, length = 0x5ec, b.BasaltRules.SequenceLength
+		}
 	}
 	return start >= 0 && actor.Animation >= start && actor.Animation < start+length*4 && (actor.Animation-start)%4 == 0
 }

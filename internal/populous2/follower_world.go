@@ -32,6 +32,18 @@ func (w *World) initializeNativeFollower(index int) {
 		generation = 1
 	}
 	w.NativeFollowers[index] = NativeFollower{Active: w.ordinaryWalker(index), Generation: generation, Actor: FollowerMotionActor{Kind: 2, Player: p.Player, X: int16((p.AtPos%64)*256 + 128), Y: int16((p.AtPos/64)*256 + 128), Speed: p.MovementSpeed, State: 2, ReturnState: 2, Population: int32(p.Population), Variant: uint16(index+1) & 14}}
+	ref := nativeActorReference(NativeFollowerPool, index)
+	if linked, _ := w.Occupancy.Linked(ref); linked {
+		record, _ := w.Occupancy.Record(ref)
+		if int(record.X>>8)+int(record.Y>>8)*64 == p.AtPos {
+			w.NativeFollowers[index].Actor.X, w.NativeFollowers[index].Actor.Y = int16(record.X), int16(record.Y)
+			w.NativeFollowers[index].Actor.Next, w.NativeFollowers[index].Actor.Previous = uint16(record.Next), uint16(record.Previous)
+		} else {
+			w.moveActor(NativeFollowerPool, index, uint16((p.AtPos%64)*256+128), uint16((p.AtPos/64)*256+128))
+		}
+	} else {
+		w.placeActor(NativeFollowerPool, index, uint16((p.AtPos%64)*256+128), uint16((p.AtPos/64)*256+128))
+	}
 }
 
 func (w *World) bindFollowerMotion() {
@@ -39,6 +51,7 @@ func (w *World) bindFollowerMotion() {
 		// Same faith and position can belong to a new record generation.
 		w.Heroes[index] = Hero{}
 		w.captiveIndex[index] = false
+		w.unlinkActor(NativeFollowerPool, index)
 		w.initializeNativeFollower(index)
 	}
 	w.Core.NativeFollowerUpdate = w.updateNativeFollower
@@ -82,6 +95,8 @@ func (w *World) updateNativeFollower(index int) bool {
 		},
 		Move: func(actor *FollowerMotionActor, oldX, oldY int16) {
 			position := (int(actor.X) >> 8) + (int(actor.Y)>>8)*64
+			w.moveActor(NativeFollowerPool, index, uint16(actor.X), uint16(actor.Y))
+			w.Core.MapWho[position] = w.legacyFollowerHead(position, index)
 			w.Core.CommitWalkerEntry(index, position)
 			w.Core.MapSteps[position] = (w.Core.MapSteps[position] + 1) & 31
 			actor.Population = int32(w.Core.Peeps[index].Population)
@@ -91,6 +106,7 @@ func (w *World) updateNativeFollower(index int) bool {
 	record.Active = w.ordinaryWalker(index)
 	if record.Active {
 		p.Frame = actor.Animation / 4
+		w.moveActor(NativeFollowerPool, index, uint16(actor.X), uint16(actor.Y))
 	}
 	return true
 }

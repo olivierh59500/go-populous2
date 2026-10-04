@@ -472,3 +472,43 @@ The rules requester displays both sides independently. Conquest parameters are
 read-only; custom-game flags can be toggled without discarding unidentified raw
 bits. Custom choices survive restarting and loading. Menu previews use the
 selected campaign world rather than the last played world's rules.
+
+## Mixed actor map and water controllers
+
+The four-byte cells at BSS `$f44` retain a header, terrain code and signed
+reference to the mixed actor chain. References are byte offsets from `$76c0`:
+200 sixteen-byte walls, 200 fourteen-byte scenery records, 399 usable
+fifty-two-byte followers and 250 thirty-two-byte effects. Next/previous links
+are shared fields; the wall's deity-chain word remains separate metadata.
+
+Insertion `$125a0` prepends without changing movement pressure. Removal
+`$125da` clears links without decrementing pressure. Movement `$12518` writes
+full coordinates and, on a changed tile, adds eight to the destination header.
+This wraps; pressure cannot be reconstructed from occupant counts. Real terrain
+edits clear the header's upper bits, whereas overlay writes preserve them.
+Version 13 retains these cells and links. Remaining inherited handlers use
+notifications and a contact adapter; full native contact/death/drawing order
+still requires separate translations.
+
+Whirlpool creator `$15cc8` requires four exact zero-code water cells and stamps
+terrain codes `$98`–`$9b`. Its unmapped shared-pool controller at `$14cae`
+cycles four quad frames, moves every sixteen updates and lowers native vertices
+at the coast. Life is 300 plus Water experience. Raw-grid barrier reads and
+corner-table retries retain their native addressing quirks. A view-dependent
+sound request uses descriptor 125 and does not enter the shared save/hash.
+Whirlwind water-child requests use this same creator and ordered pool; later
+child slots run during their birth pass.
+
+Basalt creator `$171ea` uses slot 30, writes `$e0`, and links a propagation
+actor. Its lifetime starts at 100 plus Water experience. At a random delay
+expiry it attempts one child with its remaining lifetime before removing the
+parent, even if creation fails. Directions 0/2/4/6 are north/east/south/west.
+The terrain persists without raising vertices into an invented straight path.
+Subsequent sculpture preserves the `$e0` prefix and updates its shape nibble.
+The entire `$e0`–`$ef` family has zero hazard/water properties.
+
+The unpriced direct lowering hook matches 66 native height-grid cases,
+including corners and the native operation's lack of an Armageddon input gate.
+Basalt world comparisons retain the complete pool, raw grid and RNG through
+40 ordered traces. These empty/controlled actor cases do not establish all
+wave, volcano, fire and inherited-handler interactions.

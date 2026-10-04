@@ -2,6 +2,7 @@ package populous2
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
 
 	legacy "go-populous2/internal/legacy"
@@ -22,6 +23,18 @@ func TestFollowerDeathSaveRetainsAnimationAndReleasesReservation(t *testing.T) {
 		w.tickFlameDeaths()
 		restored.tickFlameDeaths()
 		if !bytes.Equal(encodeSnapshot(t, w), encodeSnapshot(t, restored)) {
+			left, right := reflect.ValueOf(w.Snapshot()), reflect.ValueOf(restored.Snapshot())
+			for field := 0; field < left.NumField(); field++ {
+				if !reflect.DeepEqual(left.Field(field).Interface(), right.Field(field).Interface()) {
+					t.Logf("saved death continuation differs in %s", left.Type().Field(field).Name)
+				}
+			}
+			for index := range w.NativeFollowers {
+				if w.NativeFollowers[index] != restored.NativeFollowers[index] {
+					t.Logf("follower %d: live=%+v restored=%+v", index, w.NativeFollowers[index], restored.NativeFollowers[index])
+					break
+				}
+			}
 			t.Fatal("saved death animation changed slot release or occupancy")
 		}
 	}

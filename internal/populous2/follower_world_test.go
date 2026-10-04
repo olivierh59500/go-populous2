@@ -150,6 +150,7 @@ func TestFollowerWorldContactOccursOnceAtNativeCrossing(t *testing.T) {
 	w.Core.MapWho = [4096]uint16{}
 	w.Core.MapWho[2000], w.Core.MapWho[2001] = 1, 2
 	w.initializeNativeFollower(0)
+	w.reconcileActorGraph()
 	a := &w.NativeFollowers[0].Actor
 	if err := w.FollowerMotion.BeginLeg(a, a.X+256, a.Y); err != nil {
 		t.Fatal(err)
