@@ -47,7 +47,8 @@ func (w *World) bindActorGraphHooks() {
 // from scalar MapWho. Native allocation/motion paths use direct notifications.
 func (w *World) reconcileActorGraph() {
 	for index, entry := range w.Occupancy.Followers {
-		alive := index < len(w.Core.Peeps) && (w.Core.Peeps[index].Population > 0 || w.flameDeathIndex[index] || w.LightningVictims[index].Active)
+		retained := w.NativeEntries[index].Initialized && w.NativeEntries[index].Managed && w.nativeRuntimeFollowerReserved(index)
+		alive := index < len(w.Core.Peeps) && (w.Core.Peeps[index].Population > 0 || w.flameDeathIndex[index] || w.LightningVictims[index].Active || retained)
 		if !alive {
 			if entry.Linked {
 				w.unlinkActor(NativeFollowerPool, index)
@@ -55,7 +56,7 @@ func (w *World) reconcileActorGraph() {
 			continue
 		}
 		p := w.Core.Peeps[index]
-		if (w.flameDeathIndex[index] || w.LightningVictims[index].Active) && entry.Linked {
+		if (w.flameDeathIndex[index] || w.LightningVictims[index].Active || retained) && entry.Linked {
 			continue // Fire retains native fractions; Fungus centers at entry.
 		}
 		x, y := uint16((p.AtPos%64)*256+128), uint16((p.AtPos/64)*256+128)
@@ -168,7 +169,13 @@ func (w *World) patchGraphImage(ref NativeRecordReference, before, after NativeO
 			off   int
 			value uint16
 		}{{2, uint16(record.Next)}, {4, uint16(record.Previous)}, {6, record.X}, {8, record.Y}} {
-			w.patchNativeWord(reference, field.off, field.value)
+			if _, marker := LocateNativeMagnet(reference); marker {
+				if _, err := w.runtimeMemory().Write16(0x76c0+int(int16(reference))+field.off, field.value); err != nil {
+					panic(err)
+				}
+			} else {
+				w.patchNativeWord(reference, field.off, field.value)
+			}
 		}
 	}
 }
@@ -245,7 +252,8 @@ func (w *World) legacyFollowerHead(pos, excluding int) uint16 {
 	}
 	for ref := w.Occupancy.Grid.Cells[pos].Head; ref != 0; {
 		location, ok := LocateNativeRecord(ref)
-		if !ok {
+		_, marker := LocateNativeMagnet(ref)
+		if !ok && !marker {
 			panic("invalid native actor reference in contact adapter")
 		}
 		if location.Pool == NativeFollowerPool {
@@ -268,7 +276,9 @@ func validateSavedActorGraph(snapshot Snapshot) error {
 		}
 	}
 	for index, entry := range snapshot.Occupancy.Followers {
-		live := index < len(snapshot.Core.Peeps) && (snapshot.Core.Peeps[index].Population > 0 || deaths[index] || snapshot.LightningVictims[index].Active)
+		owner, _ := snapshot.RecordImage.Read8(nativeActorReference(NativeFollowerPool, index), 12)
+		retained := snapshot.NativeEntries[index].Initialized && snapshot.NativeEntries[index].Managed && owner != 0
+		live := index < len(snapshot.Core.Peeps) && (snapshot.Core.Peeps[index].Population > 0 || deaths[index] || snapshot.LightningVictims[index].Active || retained)
 		if entry.Linked != live {
 			return fmt.Errorf("saved follower graph membership differs at slot %d", index)
 		}
@@ -296,6 +306,24 @@ func validateSavedActorGraph(snapshot Snapshot) error {
 		mapped := actor.Active && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a)
 		if entry.Linked != mapped || mapped && (entry.Record.X != uint16(actor.X) || entry.Record.Y != uint16(actor.Y)) {
 			return fmt.Errorf("saved effect graph differs at slot %d", index)
+		}
+	}
+	if snapshot.Version >= 16 {
+		memory := NativeRuntimeMemory{Records: &snapshot.RecordImage, Globals: &snapshot.NativeGlobals}
+		for owner, entry := range snapshot.Occupancy.Magnets {
+			ref, _ := NativeMagnetReference(uint8(owner))
+			address := 0x76c0 + int(int16(ref))
+			kind, _ := memory.Read8(address)
+			storedOwner, _ := memory.Read8(address + 12)
+			if entry.Linked != (storedOwner != 0) || entry.Linked && (storedOwner != uint8(owner) || kind != 0x14) {
+				return fmt.Errorf("saved marker membership/owner differs at slot %d", owner)
+			}
+			if entry.Linked {
+				record, ok := memory.RecordAccess().Record(ref)
+				if !ok || record != entry.Record {
+					return fmt.Errorf("saved marker bytes and graph differ at slot %d", owner)
+				}
+			}
 		}
 	}
 	return nil

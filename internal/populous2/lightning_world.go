@@ -75,6 +75,15 @@ func (w *World) lightningCallbacks() LightningCallbacks {
 }
 
 func (w *World) lightningRecord(ref NativeRecordReference) (LightningVictim, bool) {
+	if w.nativeCallDepth > 0 {
+		a, err := w.runtimeMemory().ReadFollowerEntry(ref)
+		return LightningVictim{Kind: a.Motion.Kind, Owner: a.Owner, Next: NativeRecordReference(a.Motion.Next), State: a.Motion.State, Animation: a.Motion.Animation, Population: a.Motion.Population}, err == nil
+	}
+	if location, ok := LocateNativeMagnet(ref); ok {
+		graph, _ := w.Occupancy.Record(ref)
+		owner, err := w.runtimeMemory().Read8(location.BSSOffset + 12)
+		return LightningVictim{Kind: 0x14, Owner: owner, Next: graph.Next}, err == nil
+	}
 	location, ok := LocateNativeRecord(ref)
 	if !ok {
 		return LightningVictim{}, false

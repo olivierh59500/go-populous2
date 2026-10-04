@@ -49,7 +49,8 @@ func (w *World) refreshNativeRecordImage() {
 			case NativeSceneryPool:
 				active = w.Scenery[index].Active
 			case NativeFollowerPool:
-				active = w.Core.Peeps[index].Population > 0 || w.flameDeathIndex[index] || w.LightningVictims[index].Active
+				entry := w.NativeEntries[index]
+				active = w.Core.Peeps[index].Population > 0 || w.flameDeathIndex[index] || w.LightningVictims[index].Active || entry.Initialized && entry.Managed && w.nativeRuntimeFollowerReserved(index)
 			case NativeEffectPool:
 				active = w.NativeEffects[index].Active
 			}
@@ -99,6 +100,9 @@ func (w *World) refreshNativeRecordImage() {
 				}
 				w.patchNativeByte(ref, 12, owner)
 			case NativeFollowerPool:
+				if w.NativeEntries[index].Managed && !w.LightningVictims[index].Active && !w.flameDeathIndex[index] {
+					continue // Native handlers own every state-specific byte.
+				}
 				a, err := w.readEntryRecord(ref)
 				if err != nil {
 					panic(err)

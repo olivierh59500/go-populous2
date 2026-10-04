@@ -101,7 +101,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 15 preserves retained native record bytes, town structure overlays,
+Version 16 preserves retained native actor, deity and marker bytes, town structure overlays,
 lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
@@ -120,6 +120,11 @@ Earlier generic whirlpools migrate to native controller records. Earlier
 basalt marks retain their existing terrain and become persistent native-family
 tiles. Old saves did not record mixed actor order/pressure; their graph is
 initialized from the retained actor pools during migration.
+Version 16 adds the original marker records to their mixed map chains and
+retains unidentified deity fields. Earlier saves initialize those records from
+their existing player state. Native combat and contact controllers have separate
+original-machine comparisons; their complete World dispatcher is still being
+integrated.
 
 Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can

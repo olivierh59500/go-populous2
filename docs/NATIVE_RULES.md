@@ -605,3 +605,51 @@ Save version 15 retains the record image, follower entry state and town overlays
 Regression checks also cover an explicit tile-zero write on raised terrain,
 retired effect fields, reused follower generations, and the record projection
 of lightning victims and demoted towns.
+
+## Deity records, markers and actor cleanup
+
+The retained runtime window extends the actor image with three 14-byte marker
+records at `$e740` and three 314-byte deity records at `$e76a`, ending at `$eb18`.
+Owner-zero records and unknown bytes survive. Primitive graph operations accept
+the markers' references `$7080`, `$708e` and `$709c` as well as ordinary actors.
+
+Creation at `$14048` assigns centered coordinates, kind `$14`, owner and the
+owner's animation pointer. Relocation at `$13fe4` clamps signed coordinate bytes,
+removes the old links and prepends the marker without adding pressure. Fifteen
+original image/grid comparisons cover these operations. The game initializes
+these records from its current player state; complete native game initialization
+remains a separate fidelity requirement. Version 16 saves retain the raw globals,
+validate marker links/coordinates, and preserve unidentified deity fields.
+
+Cleanup at `$124a2` subtracts two from metric `$44`; loss of a leader also
+increments `$46`, subtracts ten more, clears its flag/reference and relocates
+the marker. All arithmetic retains original word/byte behavior. The cleared
+source byte is `$13` (decimal 19), while hero flags reside at `$0d` (decimal 13).
+Hero cleanup can use the owner's deity record as its A0 context; reconstructing
+A0 as the source would alter the native writes. Mode zero clears owner and links;
+all modes clear population. Positive-owner death/ruin records remain reserved.
+
+Forty-nine full original BSS images, ordered writes and output registers verify
+the routine. Raw helpers run without intermediate typed projections; hydration
+then updates their affected records, markers and player data. This storage and
+cleanup integration does not establish complete native hero or campaign behavior.
+
+## Combat and its retained outcomes
+
+States 14/16 at `$11a86`/`$11b6a` preserve delayed reciprocal contacts. Only the
+aggressor applies damage and consumes one random draw. The routine subsequently
+overwrites its randomized calculation, so both damage amounts use the aggressor
+population's divisor-100 quotient. DIVU overflow retains the dividend's low word.
+
+Winner resolution at `$1298c` uses current LAND reward tables, conditional
+leader/hero bonuses, signed loser-mana clamping and the original town/cleanup
+order. Adonis halves its population before searching for a free owner-zero slot;
+allocation failure retains that halving. Positive-owner zero-population records
+cannot be reused. The separate inhibition flag is checked before halving.
+
+Post-combat handlers retain death sprites and map membership until their native
+terminals. A recovering winner returns to search on the next update. A destroyed
+town becomes a ruin with a 400-word countdown, tested against the native raster
+table. These components have complete isolated routine comparisons; their
+combined normal World dispatcher, common prepass and hero decisions remain
+required integration work.

@@ -10,7 +10,7 @@ type FlameDeath struct {
 func (w *World) bindFlameDeaths() {
 	w.rebuildFlameDeathIndex()
 	w.Core.FollowerReserved = func(index int) bool {
-		return index >= 0 && index < len(w.flameDeathIndex) && (w.flameDeathIndex[index] || w.LightningVictims[index].Active)
+		return index >= 0 && index < len(w.flameDeathIndex) && (w.flameDeathIndex[index] || w.LightningVictims[index].Active || w.NativeEntries[index].Initialized && w.NativeEntries[index].Managed && w.nativeRuntimeFollowerReserved(index))
 	}
 }
 

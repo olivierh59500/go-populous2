@@ -4,9 +4,18 @@ package populous2
 // contact handlers. Raw aliases are deliberately not restricted to aligned
 // follower references; the bounded image owns that memory-safety policy.
 func (image *NativeRecordImage) ReadFollowerEntry(ref NativeRecordReference) (FollowerEntryActor, error) {
+	return readFollowerEntryFields(func(offset int) (uint8, error) { return image.Read8(ref, offset) }, func(offset int) (uint16, error) { return image.Read16(ref, offset) }, func(offset int) (uint32, error) { return image.Read32(ref, offset) })
+}
+
+func (memory NativeRuntimeMemory) ReadFollowerEntry(ref NativeRecordReference) (FollowerEntryActor, error) {
+	address := 0x76c0 + int(int16(ref))
+	return readFollowerEntryFields(func(offset int) (uint8, error) { return memory.Read8(address + offset) }, func(offset int) (uint16, error) { return memory.Read16(address + offset) }, func(offset int) (uint32, error) { return memory.Read32(address + offset) })
+}
+
+func readFollowerEntryFields(byteAt func(int) (uint8, error), wordAt func(int) (uint16, error), longAt func(int) (uint32, error)) (FollowerEntryActor, error) {
 	var actor FollowerEntryActor
 	read8 := func(offset int, target *uint8) error {
-		value, err := image.Read8(ref, offset)
+		value, err := byteAt(offset)
 		*target = value
 		return err
 	}
@@ -21,7 +30,7 @@ func (image *NativeRecordImage) ReadFollowerEntry(ref NativeRecordReference) (Fo
 			return actor, err
 		}
 	}
-	read16 := func(offset int) (uint16, error) { return image.Read16(ref, offset) }
+	read16 := wordAt
 	for _, entry := range []struct {
 		offset int
 		target *uint16
@@ -53,7 +62,7 @@ func (image *NativeRecordImage) ReadFollowerEntry(ref NativeRecordReference) (Fo
 		return actor, err
 	}
 	actor.Motion.Animation = int(animation)
-	population, err := image.Read32(ref, 26)
+	population, err := longAt(26)
 	if err != nil {
 		return actor, err
 	}

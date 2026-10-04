@@ -5,6 +5,11 @@ import legacy "go-populous2/internal/legacy"
 func (w *World) nativeTownCallbacks() NativeTownCallbacks {
 	return NativeTownCallbacks{
 		Record: func(ref NativeRecordReference) (NativeTownRecord, bool) {
+			if location, ok := LocateNativeMagnet(ref); ok {
+				graph, _ := w.Occupancy.Record(ref)
+				owner, err := w.runtimeMemory().Read8(location.BSSOffset + 12)
+				return NativeTownRecord{Kind: 0x14, Owner: owner, Next: graph.Next, X: graph.X, Y: graph.Y}, err == nil
+			}
 			location, ok := LocateNativeRecord(ref)
 			if !ok {
 				return NativeTownRecord{}, false

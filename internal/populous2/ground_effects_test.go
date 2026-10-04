@@ -51,6 +51,14 @@ func flatGroundWorld(t *testing.T) *World {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Controlled effect fixtures contain no gods' marker actors. Remove the
+	// normal game markers along with the followers replaced below.
+	for owner := 1; owner < NativeMagnetCount; owner++ {
+		w.unlinkActor(NativeMagnetPool, owner)
+	}
+	w.NativeGlobals = NativeGlobalImage{}
+	w.RecordImage = NativeRecordImage{}
+	w.NativeEntries = [legacy.MaxPeeps]NativeFollowerEntry{}
 	for i := range w.Core.Alt {
 		w.Core.Alt[i] = 1
 	}

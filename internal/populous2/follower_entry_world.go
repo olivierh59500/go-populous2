@@ -44,6 +44,9 @@ func (w *World) initializeEntryRecord(index int) {
 }
 
 func (w *World) readEntryRecord(ref NativeRecordReference) (FollowerEntryActor, error) {
+	if w.nativeCallDepth > 0 {
+		return w.runtimeMemory().ReadFollowerEntry(ref)
+	}
 	location, ok := LocateNativeRecord(ref)
 	if !ok || location.Pool != NativeFollowerPool {
 		return FollowerEntryActor{}, fmt.Errorf("native entry record is not a follower")
@@ -54,6 +57,9 @@ func (w *World) readEntryRecord(ref NativeRecordReference) (FollowerEntryActor, 
 	}
 	if !w.NativeEntries[index].Initialized {
 		w.initializeEntryRecord(index)
+	}
+	if w.NativeEntries[index].Managed && !w.LightningVictims[index].Active && !w.flameDeathIndex[index] {
+		return w.RecordImage.ReadFollowerEntry(ref)
 	}
 	a := w.NativeEntries[index].Actor
 	p := w.Core.Peeps[index]
@@ -92,7 +98,7 @@ func (w *World) readEntryRecord(ref NativeRecordReference) (FollowerEntryActor, 
 		a.Motion.Kind, a.Motion.State, a.Motion.Animation = v.Kind, v.State, v.Animation
 		a.Motion.Flags, a.Contact30 = v.Flags, uint16(v.EffectReference)
 	}
-	if p.Population <= 0 && !w.flameDeathIndex[index] && !w.LightningVictims[index].Active {
+	if p.Population <= 0 && !w.flameDeathIndex[index] && !w.LightningVictims[index].Active && !(w.NativeEntries[index].Managed && a.Owner != 0) {
 		a.Owner = 0
 	}
 	a.Motion.Player = a.Owner - 1
@@ -100,6 +106,17 @@ func (w *World) readEntryRecord(ref NativeRecordReference) (FollowerEntryActor, 
 }
 
 func (w *World) writeEntryRecord(ref NativeRecordReference, a FollowerEntryActor) error {
+	if w.nativeCallDepth > 0 {
+		previous, err := w.runtimeMemory().ReadFollowerEntry(ref)
+		if err != nil {
+			return err
+		}
+		if _, err := w.RecordImage.PatchFollowerEntry(ref, previous, a); err != nil {
+			return err
+		}
+		w.hydrateNativeRuntimeGraph()
+		return nil
+	}
 	location, ok := LocateNativeRecord(ref)
 	if !ok || location.Pool != NativeFollowerPool {
 		return fmt.Errorf("native entry write is not a follower")

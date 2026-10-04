@@ -15,7 +15,7 @@ func (w *World) ordinaryWalker(index int) bool {
 		return false
 	}
 	p := w.Core.Peeps[index]
-	return p.Population > 0 && p.Flags == legacy.OnMove && p.Status != legacy.KnightStatus && !w.Heroes[index].Active && !w.isCaptive(index) && !w.LightningVictims[index].Active
+	return p.Population > 0 && p.Flags == legacy.OnMove && p.Status != legacy.KnightStatus && !w.Heroes[index].Active && !w.isCaptive(index) && !w.LightningVictims[index].Active && !w.NativeEntries[index].Managed
 }
 
 func (w *World) initializeNativeFollower(index int) {
@@ -234,6 +234,9 @@ func (w *World) FollowerFrame(index int) (AnimationFrame, bool) {
 }
 
 func validNativeFollowerLink(reference uint16) bool {
+	if _, ok := LocateNativeMagnet(NativeRecordReference(reference)); ok {
+		return true
+	}
 	r := int(int16(reference))
 	switch {
 	case r < -6000:

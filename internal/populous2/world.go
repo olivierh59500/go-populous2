@@ -36,6 +36,10 @@ type World struct {
 	FollowerMotion           FollowerMotionRules
 	FollowerDecision         FollowerDecisionRules
 	TownEvaluator            NativeTownEvaluator
+	MagnetRules              NativeMagnetRules
+	NativeGlobals            NativeGlobalImage
+	NativeSelected           NativeRecordReference
+	nativeCallDepth          int
 	NativeOverlays           [4096]uint8
 	NativeFollowers          [legacy.MaxPeeps]NativeFollower
 	NativeEffects            [NativeEffectCapacity]NativeEffectActor
@@ -130,6 +134,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.FollowerMotion = bundle.FollowerMotion
 	w.FollowerDecision = bundle.FollowerDecision
 	w.TownEvaluator = bundle.TownEvaluator
+	w.MagnetRules = bundle.MagnetRules
 	for player, p := range level.Players {
 		w.Rules[player] = p.ScenarioRules()
 	}
@@ -153,6 +158,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.bindLightningVictims()
 	w.bindActorGraphHooks()
 	w.bindNativeTownEvaluator()
+	w.initializeNativeRuntime()
 	return w, nil
 }
 
@@ -452,6 +458,7 @@ func (w *World) recordCast(player int, id SpellID) {
 
 func (w *World) Tick() {
 	w.reconcileActorGraph()
+	w.syncNativeRuntimeBridge()
 	w.refreshNativeRecordImage()
 	w.rebuildCaptiveIndex()
 	w.tickEffects()
@@ -459,6 +466,7 @@ func (w *World) Tick() {
 	w.spreadPlague()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
 	w.reconcileActorGraph()
+	w.syncNativeRuntimeBridge()
 	w.tickFlameDeaths()
 	w.tickNativeEffects()
 	w.Walls.Tick(&w.WallRules, w.nativeTileAt)

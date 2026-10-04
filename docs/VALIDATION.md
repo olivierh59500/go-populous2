@@ -41,6 +41,13 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Native town compositor | 530 complete native map/overlay/record comparisons; World replays 523 noncompeting cases and tests mixed tree/boulder support and 49-cell cleanup |
 | Native town center artwork | 233 original renderer comparisons covering all 19 stages, both owners, tick phases, population height and signed-word/division overflow; desktop castle capture inspected |
 | Native actor byte image | Eleven original instruction aliases, 1,050 physical slots and retained-byte codec checks; version 15 continuation, final effect writes, reused followers and struck/demoted towns |
+| Retained runtime memory | Actor/global seam, bounded aliases, 984 retained marker/deity bytes and replay of 14 original mixed graph operations |
+| Native marker rules | 15 complete original image/grid comparisons for creation and signed-byte relocation, plus mixed-chain and version 16 save checks |
+| Follower cleanup | 49 full native BSS comparisons, ordered writes and register outputs; raw/typed hydration preserves retained bytes |
+| Follower combat | 79 original states 14/16 comparisons, reciprocal contacts, RNG and DIVU overflow |
+| Combat winner | 87 complete native routine comparisons with real town/cleanup/graph callbacks and exact Adonis clone failure behavior |
+| Town combat | 70 native destruction/reform cases, complete maps/overlays/records/deity data and original A0 alias behavior |
+| Combat aftermath | 90 native cases and 1,214 updates across retained deaths, winner recovery, town destruction/ruins and linked cardinal-neighbor effects |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |
