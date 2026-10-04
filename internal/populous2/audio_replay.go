@@ -40,6 +40,9 @@ func (e *audioEnvelope) advance(base int) int {
 	e.steps = 0
 	e.repeats++
 	if e.repeats != e.data[1+int(e.segment)*3] {
+		// $19602 requests another signed delta after every completed step
+		// interval, including repetitions within the same envelope stage.
+		e.newSegment = true
 		return value
 	}
 	e.repeats = 0

@@ -78,3 +78,13 @@ func TestSignedPCMAndInitialLoopTransition(t *testing.T) {
 		t.Fatalf("loop sample %d", got)
 	}
 }
+
+func TestEnvelopeRepeatsApplyEveryDelta(t *testing.T) {
+	var e audioEnvelope
+	e.reset([13]byte{0, 3, 2, 1, 1, 255, 1, 1, 0, 1, 1, 0, 1}, false)
+	for tick, want := range []int{2, 4, 6, 5} {
+		if got := e.advance(0); got != want {
+			t.Fatalf("native envelope tick %d: %d want %d", tick, got, want)
+		}
+	}
+}
