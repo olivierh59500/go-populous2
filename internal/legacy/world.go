@@ -193,6 +193,10 @@ type World struct {
 	Rules              TerrainRules
 	OlympianTowns      *OlympianTownRules
 	OnBattleWon        func(winner, loser int)
+	BeforeBattle       func(attacker, defender int) bool
+	SkipFollower       func(index int) bool
+	CanHeroCrossWater  func(index int) bool
+	HeroTargetAllowed  func(hero, target int) bool
 	Terrain            int
 	GameTurn           int
 	Alt                [EndWidth * EndWidth]int
@@ -1338,7 +1342,16 @@ func (w *World) tickWithComputerStrategy(computerControlled [2]bool, advancedPla
 		}
 
 		w.Magnets[player].Population += w.Peeps[i].Population
+		if w.SkipFollower != nil && w.SkipFollower(i) {
+			continue
+		}
 		block := int(w.MapBlk[w.Peeps[i].AtPos])
+		if w.CanHeroCrossWater != nil && w.CanHeroCrossWater(i) {
+			w.Peeps[i].Flags &^= InWater
+			if block == WaterBlock {
+				block = FlatBlock
+			}
+		}
 		if w.Peeps[i].Flags&InWater != 0 {
 			if w.Level.GameMode&GameWaterFatal != 0 {
 				w.zeroPopulation(i)
@@ -2013,7 +2026,7 @@ func (w *World) moveExplorer(index int) {
 		return
 	}
 
-	if move := w.validMove(peep.AtPos, goTo); move != 0 && !(w.War && move == 2) {
+	if move := w.validMove(peep.AtPos, goTo); move != 0 && !(w.War && move == 2) && !(w.CanHeroCrossWater != nil && w.CanHeroCrossWater(index) && inMap(peep.AtPos+goTo) && w.MapBlk[peep.AtPos+goTo] == WaterBlock) {
 		peep.Flags |= IAmWaiting
 		peep.BattlePopulation = 7
 		return
@@ -2067,6 +2080,9 @@ func (w *World) setBattle(attackerIndex, defenderIndex int) {
 	attacker := &w.Peeps[attackerIndex]
 	defender := &w.Peeps[defenderIndex]
 	if attacker.Population <= 0 || defender.Population <= 0 {
+		return
+	}
+	if w.BeforeBattle != nil && w.BeforeBattle(attackerIndex, defenderIndex) {
 		return
 	}
 
@@ -2449,6 +2465,9 @@ func (w *World) validKnightTarget(index, target int) bool {
 	}
 	peep := w.Peeps[index]
 	candidate := w.Peeps[target]
+	if w.HeroTargetAllowed != nil && !w.HeroTargetAllowed(index, target) {
+		return false
+	}
 	return candidate.Population > 0 && candidate.Player != peep.Player && candidate.Flags&InRuin == 0 && inMap(candidate.AtPos)
 }
 
@@ -2492,6 +2511,12 @@ func (w *World) moveToward(index, target int, avoidSwamp bool) int {
 		return noMove
 	}
 	peep := &w.Peeps[index]
+	if w.CanHeroCrossWater != nil && w.CanHeroCrossWater(index) {
+		move := sign(target%MapWidth-peep.AtPos%MapWidth) + sign(target/MapWidth-peep.AtPos/MapWidth)*MapWidth
+		if inMap(peep.AtPos+move) && w.MapBlk[peep.AtPos+move] == WaterBlock {
+			return move
+		}
+	}
 	dx := sign((target & (MapWidth - 1)) - (peep.AtPos & (MapWidth - 1)))
 	dy := sign((target / MapWidth) - (peep.AtPos / MapWidth))
 	if dx == 0 && dy == 0 {

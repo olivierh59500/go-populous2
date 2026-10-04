@@ -11,23 +11,24 @@ import (
 // are independent of this baseline. Its new effect rules are provisional until
 // checked against the original routines; see docs/PORTAGE.md.
 type World struct {
-	Level       Level
-	Core        *legacy.World
-	Landscape   Landscape
-	Spells      []Spell
-	ManaRules   ManaRules
-	GroundRules GroundEffectRules
-	RoadRules   RoadRules
-	Experience  [2][6]uint8
-	Custom      bool
-	Demo        bool
-	Effects     []Effect
-	Marks       [legacy.MapWidth * legacy.MapHeight]Mark
-	Heroes      [legacy.MaxPeeps]Hero
-	Random      uint16
-	LastSpell   SpellID
-	LastPlayer  int
-	SpellSerial int
+	Level        Level
+	Core         *legacy.World
+	Landscape    Landscape
+	Spells       []Spell
+	ManaRules    ManaRules
+	GroundRules  GroundEffectRules
+	RoadRules    RoadRules
+	Experience   [2][6]uint8
+	Custom       bool
+	Demo         bool
+	Effects      []Effect
+	Marks        [legacy.MapWidth * legacy.MapHeight]Mark
+	Heroes       [legacy.MaxPeeps]Hero
+	Random       uint16
+	LastSpell    SpellID
+	LastPlayer   int
+	SpellSerial  int
+	captiveIndex [legacy.MaxPeeps]bool
 }
 
 type Effect struct {
@@ -55,6 +56,7 @@ type Hero struct {
 	Player     int
 	Population int
 	Speed      uint8
+	Captives   []int
 }
 
 type Target struct{ X, Y, X2, Y2, Direction int }
@@ -294,10 +296,12 @@ func (w *World) recordCast(player int, id SpellID) {
 }
 
 func (w *World) Tick() {
+	w.rebuildCaptiveIndex()
 	w.tickEffects()
 	w.applyGroundEffects()
 	w.spreadPlague()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
+	w.followHelenCaptives()
 	w.applyGroundEffects()
 	w.spreadPlague()
 	for i, hero := range w.Heroes {
@@ -312,14 +316,6 @@ func (w *World) Tick() {
 		if hero.Spell == Achilles {
 			w.Marks[p.AtPos] = Mark{Spell: FireColumn, Player: hero.Player, Life: 80}
 			w.damageArea(hero.Player, p.AtPos%64, p.AtPos/64, 1, 50, true)
-		}
-		if hero.Spell == Helen && w.Core.GameTurn%8 == 0 {
-			for n := range w.Core.Peeps {
-				other := w.Core.Peeps[n]
-				if other.Population > 0 && int(other.Player) != hero.Player && distance(other.AtPos, p.AtPos) <= 2 && other.Status != legacy.KnightStatus {
-					w.Core.ConvertPeep(n, hero.Player)
-				}
-			}
 		}
 		w.Heroes[i].Population = p.Population
 	}

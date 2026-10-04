@@ -2,6 +2,36 @@ package populous
 
 func (w *World) NextRandom() int { return w.rng.next() }
 
+// DetachFollower removes a group from town/combat bookkeeping without changing
+// its allegiance or population, for native abduction and actor state changes.
+func (w *World) DetachFollower(index int) bool {
+	if !w.validPeep(index) {
+		return false
+	}
+	if w.Peeps[index].Flags&InTown != 0 {
+		w.setTown(index, true)
+	}
+	p := &w.Peeps[index]
+	p.Flags = OnMove
+	p.Frame = 0
+	p.Direction = 0
+	p.HeadFor = 0
+	p.BattlePopulation = 0
+	return true
+}
+
+func (w *World) MoveFollowerDirect(index, pos int) bool {
+	if !w.validPeep(index) || !inMap(pos) {
+		return false
+	}
+	w.clearPeepMapRefs(index)
+	w.Peeps[index].AtPos = pos
+	if w.MapWho[pos] == 0 {
+		w.MapWho[pos] = uint16(index + 1)
+	}
+	return true
+}
+
 // The small hooks in this file are additions for the Populous II prototype.
 // The underlying engine remains the supplied Populous 1 conversion.
 

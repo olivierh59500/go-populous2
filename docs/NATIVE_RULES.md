@@ -169,3 +169,18 @@ twenty and an available follower record, the parent and clone each receive
 hero movement. Recruitment alone does not cause splitting. The Go battle hook
 retains the hero type and recreates its binding after save/load. The native
 pool-full flag and stale-flag allocation failure remain edge-case comparisons.
+
+## Helen and hazard immunity
+
+Contact at `$12ade` replaces ordinary combat with captive links for Helen.
+The victim's owner remains unchanged. State `$34` follows the preceding living
+captive or hero, repairs links to Helen, and releases the victim if she dies.
+The Go adapter preserves those ownership and lifecycle rules, including saves.
+Its tile-based following still awaits the original fractional movement timing.
+
+Helen uses ordinary enemy targeting at `$14414`, excluding already charmed
+victims. No separate nearest-sea destination was found. The water-animation
+table at `$20a60` gives Helen a zero entry: she can cross water while captives
+can drown. The swamp-animation table at `$20a54` similarly gives Heracles a
+zero entry. Both immunities are applied. Death animations and Helen's native
+southeastern collateral footprint remain independent state-machine work.

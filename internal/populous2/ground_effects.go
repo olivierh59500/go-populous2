@@ -105,6 +105,9 @@ func (w *World) applyGroundEffects() {
 		}
 		switch mark.Spell {
 		case Swamp:
+			if w.Heroes[i].Active && w.Heroes[i].Spell == Heracles {
+				continue
+			}
 			if p.Flags&legacy.InTown == 0 {
 				w.Core.DamagePeep(i, p.Population)
 			}

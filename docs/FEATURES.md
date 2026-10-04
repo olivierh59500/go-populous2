@@ -15,7 +15,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Terrain editing | Propagation, per-change mana debit, original graphics-bank selection and slope-aware picking | Every original construction restriction and effect interaction |
 | Followers | 399 usable records, 16-bit occupancy references and persistent state | Native linked tile occupancy, subpixel movement, combat and invention rules |
 | Towns | 19 stages, original work/growth/mana/capacity/emigration tables | Exact farm repainting, city composition and native land AI |
-| Hero creation | Correct population/speed arithmetic and composite walking artwork | Specific targeting, combat, cloning, abduction and immunities |
+| Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
 | Saving | Validated version 4 Go saves, wide RNG state and earlier water-ID migration | Original Amiga GAM interoperability and deity profiles |
 | Interface | Playable menu, camera, minimap, power selection, pause, demo and saving | Original menus, god creation, experience allocation, statistics and end sequence |
@@ -37,7 +37,7 @@ the remaining simulation routines.
 | Armageddon | 4 | 72 | Global battle and plague removal; inherited combat/central gathering |
 | Forest | 6 | 46 | Provisional tree markers; native tree actor allocation/animation and popularity pending |
 | Renew land | 7 | 80 | Native sampled placement and tile 245; later greenery spread and popularity pending |
-| Swamp | 8 | 54 | Native sampled placement and animated tiles 168–171; entry kills either side; native death animation/options/immunities pending |
+| Swamp | 8 | 54 | Native placement/tiles and either-side entry deaths; Heracles immunity; native death animation/options pending |
 | Fungus | 9 | 26 | Provisional propagation and damage; native controller/automaton pending |
 | Adonis | 10 | 58 | Native conversion/art and post-victory hero splitting; native movement/combat and pool-full edge state pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
@@ -57,7 +57,7 @@ the remaining simulation routines.
 | Whirlpool | 30 | 74 | Provisional stationary water effect; native coastline erosion and multiplication pending |
 | Basalt | 31 | 24 | Provisional straight raised path; native bridge construction/animation pending |
 | Baptismal fonts | 32 | 52 | Native sampled placement and tiles 143–144; faith reversal on entry; original entry animation/immunities pending |
-| Helen | 33 | 70 | Native conversion/art; inherited behavior still differs from native abduction/drowning |
+| Helen | 33 | 70 | Capture without faith conversion, follower chain, release on death and water immunity; exact subpixel routing/collateral death animation pending |
 | Tidal wave | 34 | 56 | Provisional directed wave; native world-wide water simulation pending |
 
 The independent Challenge executable and its scenario extension are separate

@@ -27,7 +27,11 @@ type Snapshot struct {
 }
 
 func (w *World) Snapshot() Snapshot {
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: w.Heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial}
+	heroes := w.Heroes
+	for i := range heroes {
+		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
+	}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -86,6 +90,11 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		if hero.Active && (!hero.Spell.IsHero() || hero.Player < 0 || hero.Player > 1) {
 			return nil, fmt.Errorf("invalid saved hero")
 		}
+		for _, captive := range hero.Captives {
+			if captive < 0 || captive >= len(snapshot.Core.Peeps) || hero.Spell != Helen || !hero.Active {
+				return nil, fmt.Errorf("invalid saved captive")
+			}
+		}
 	}
 	for _, effect := range snapshot.Effects {
 		if !inside(effect.X, effect.Y) || effect.Player < 0 || effect.Player > 1 || effect.Life < 0 || effect.Life > 2000 {
@@ -103,6 +112,10 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.Effects = append([]Effect(nil), snapshot.Effects...)
 	w.Experience = snapshot.Experience
 	w.Marks, w.Heroes, w.Random = snapshot.Marks, snapshot.Heroes, snapshot.Random
+	for i := range w.Heroes {
+		w.Heroes[i].Captives = append([]int(nil), w.Heroes[i].Captives...)
+	}
+	w.rebuildCaptiveIndex()
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	return w, nil
 }
