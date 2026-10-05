@@ -18,9 +18,9 @@ power is not sufficient evidence that its original behavior has been ported.
 | Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
 | Saving | Native Amiga GAM import/export and F5/F9/CLI file access, complete saved graph/templates/profile/geometry/camera/RNG and atomic replacement; Go JSON snapshots remain available | Original file requester and broader two-player/cross-effect interoperability |
-| Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving; final Zeus animation is wired to campaign completion with native PAL waits | Original menu/result composition and interactive desktop validation of the final sequence |
+| Interface | Original startup bitmap/five actions, native result requester after 101 PAL blanks, native deity widgets/profile codes, file controls and final Zeus animation | Original in-game/deity/file/serial menu composition and interactive desktop validation |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
-| Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, saved one-time application and final Zeus animation before world-zero restart | Original result-screen composition, visual transition validation and full conquest pacing/script/AI parity |
+| Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, original result text/layout/wait, saved one-time application and final Zeus animation | Visual transition validation and full conquest pacing/script/AI parity |
 
 ## Power inventory
 

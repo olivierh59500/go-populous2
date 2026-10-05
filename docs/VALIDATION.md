@@ -203,3 +203,18 @@ origin and failure preservation of an existing file. Camera origin uses the
 same retained view words as native aliases. GUI mana, power/terrain commands,
 magnet modes and visibility use the selected profile side, including owner 2.
 The original native file requester and interactive desktop checks remain open.
+
+## Startup and result application binding
+
+Game now displays the independently verified original startup image, maps its
+five native marker actions, and composes the original result requester over the
+retained game background. Overlay checks preserve untouched pixels and match
+all 124 CPU-verified result compositions, including opaque index-zero glyph cells.
+The result uses a separate 50-PAL/60-update scheduler for its 101-blank delay;
+mouse continuation uses the native requester action and keyboard Enter remains
+a convenience. Startup tests cover all five visible rows and both hidden rows.
+The current in-game backdrop/control drawing remains the conversion baseline;
+full native in-game menus and interactive desktop validation are still open.
+Out-of-map camera aliases are retained in view memory and the Go draw bridge
+bounds its terrain-array accesses; original raw out-of-world framebuffer output
+has not been reproduced by that guard.

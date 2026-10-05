@@ -3,7 +3,8 @@
 An ongoing Go/Ebitengine recreation of **Populous II: Trials of the Olympian
 Gods**, using its original Amiga graphics, campaign and audio resources.
 
-The playable version includes an isometric world, followers, settlements,
+The startup screen uses the original bitmap, palette, font and five visible
+mouse actions. The playable version includes an isometric world, followers, settlements,
 power selection, computer opposition, a demonstration mode, native Amiga .GAM interoperability and Go saves.
 Native translations now replace several parts of the supplied Populous I
 foundation: terrain generation, random streams, starting populations, town
@@ -24,7 +25,8 @@ bolt rewards and world skipping. Pending and applied results survive saves;
 the result screen applies its reward once and offers the native deity allocation
 step after a campaign victory. Winning the final world plays the supplied Zeus
 animation and original scrolltext at its native PAL cadence. Original result
-and menu composition remain under conversion.
+requester is displayed after 101 PAL VBlanks; in-game/deity/file/serial menu
+composition remains under conversion.
 Whirlwinds now lift, transport and release native followers, collapse town farms
 and create original water children. Their complete retained controllers replace
 the former motion-only World handler.

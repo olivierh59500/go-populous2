@@ -77,6 +77,13 @@ type Game struct {
 	endingProgress            populous2.CampaignProgress
 	endingCustom              bool
 	resultCuePlayed           bool
+	nativePresentation        *populous2.NativePresentation
+	startupImage              *ebiten.Image
+	resultPlayback            *populous2.NativeResultPlayback
+	resultScheduler           *fixedstep.Scheduler
+	resultRequester           *populous2.NativeRequester
+	resultImage               *ebiten.Image
+	resultBackground          *ebiten.Image
 }
 
 func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) {
@@ -104,6 +111,9 @@ func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) 
 	g.minimap = ebiten.NewImage(128, 64)
 	g.miniPixels = make([]byte, 128*64*4)
 	g.centerPlayer(g.localPlayer())
+	if err := g.initializeNativePresentation(); err != nil {
+		return nil, err
+	}
 	return g, nil
 }
 
@@ -217,11 +227,7 @@ func (g *Game) Update() error {
 		g.selectSpell(populous2.PapalMagnet)
 	}
 	if g.World.ResultForLocalProfile() != legacy.ResultOngoing {
-		g.playNativeResultCue()
-		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-			return g.advanceNativeCampaign()
-		}
-		return nil
+		return g.updateNativeResult()
 	}
 	g.updateCamera()
 	g.handleClick()
@@ -286,52 +292,7 @@ func (g *Game) Update() error {
 	return nil
 }
 
-func (g *Game) updateMenu() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyG) {
-		g.OpenDeity()
-		return nil
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
-		g.LevelIndex = max(0, g.LevelIndex-1)
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
-		g.LevelIndex = min(len(g.Bundle.Levels)-1, g.LevelIndex+1)
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		return g.start(g.LevelIndex, false, false)
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
-		return g.start(g.LevelIndex, false, true)
-	}
-	if !inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		return nil
-	}
-	x, y := ebiten.CursorPosition()
-	if hit(x, y, 470, 76, 105, 27) {
-		g.OpenDeity()
-		return nil
-	}
-	if hit(x, y, 110, 168, 420, 38) {
-		return g.start(g.LevelIndex, false, false)
-	}
-	if hit(x, y, 110, 214, 420, 38) {
-		return g.start(g.LevelIndex, true, false)
-	}
-	if hit(x, y, 110, 260, 420, 38) {
-		return g.start(g.LevelIndex, false, true)
-	}
-	if hit(x, y, 110, 306, 420, 38) {
-		g.load()
-		return nil
-	}
-	if hit(x, y, 110, 352, 200, 32) {
-		g.LevelIndex = max(0, g.LevelIndex-1)
-	}
-	if hit(x, y, 330, 352, 200, 32) {
-		g.LevelIndex = min(len(g.Bundle.Levels)-1, g.LevelIndex+1)
-	}
-	return nil
-}
+func (g *Game) updateMenu() error { return g.updateNativeStartup() }
 
 func (g *Game) start(level int, custom, demo bool) error {
 	world, err := populous2.NewWorld(g.Bundle, level, custom)
@@ -340,7 +301,7 @@ func (g *Game) start(level int, custom, demo bool) error {
 	}
 	world.Demo = demo
 	g.World = world
-	g.resultCuePlayed = false
+	g.resetNativeResultPresentation()
 	g.lastHazardSoundSerial = world.HazardSerial
 	if custom && g.hasCustomScenarioOptions {
 		for player, raw := range g.customScenarioOptions {
@@ -588,7 +549,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	} else if !g.Playing {
 		g.drawMenu(screen)
 	} else {
-		g.drawGame(screen)
+		if g.World.NativeResult.Detected && g.resultBackground != nil {
+			screen.DrawImage(g.resultBackground, nil)
+			g.drawNativeResultOverlay(screen)
+		} else {
+			g.drawGame(screen)
+			if g.World.NativeResult.Detected {
+				g.resultBackground = ebiten.NewImage(Width, Height)
+				g.resultBackground.DrawImage(screen, nil)
+			}
+		}
 	}
 	if g.Help {
 		g.drawHelp(screen)
@@ -610,20 +580,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) drawMenu(screen *ebiten.Image) {
-	panel(screen, 90, 70, 460, 340)
-	label(screen, "POPULOUS II", 238, 87, ink)
-	button(screen, 470, 76, 105, 27, "DIEU  (G)", true, false)
-	label(screen, "TRIALS OF THE OLYMPIAN GODS", 163, 111, muted)
-	level := g.Bundle.Levels[g.LevelIndex]
-	label(screen, fmt.Sprintf("MONDE %d  %s  /  DECOR %d", g.LevelIndex+1, level.Code, level.Terrain+1), 146, 139, ink)
-	for i, text := range []string{"CONQUETE", "PARTIE LIBRE - TOUS LES POUVOIRS", "DEMONSTRATION", "CHARGER LA SAUVEGARDE"} {
-		button(screen, 110, 168+i*46, 420, 38, text, true, false)
-	}
-	button(screen, 110, 352, 200, 32, "< MONDE PRECEDENT", true, false)
-	button(screen, 330, 352, 200, 32, "MONDE SUIVANT >", true, false)
-	label(screen, "ENTREE: jouer   D: demo   H: aide   F: plein ecran", 118, 391, muted)
-	label(screen, "O : regles du monde", 118, 410, muted)
-	if g.Message != "" {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(2, 2)
+	op.GeoM.Translate(0, 40)
+	screen.DrawImage(g.startupImage, op)
+	if g.messageTicks > 0 {
 		label(screen, g.Message, 12, 450, ink)
 	}
 }
@@ -651,8 +612,12 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 	terrain := g.World.Level.Terrain
 	for y := 0; y < 8; y++ {
 		for x := 0; x < 8; x++ {
-			pos := g.CameraX + x + (g.CameraY+y)*64
-			cell := g.World.TerrainCell(g.CameraX+x, g.CameraY+y)
+			mx, my := g.CameraX+x, g.CameraY+y
+			if mx < 0 || mx >= 64 || my < 0 || my >= 64 {
+				continue
+			}
+			pos := mx + my*64
+			cell := g.World.TerrainCell(mx, my)
 			block := cell.Tile(world.GameTurn, x, y)
 			px, py := project(x, y, cell.BaseAltitude)
 			drawImage(view, g.tiles[terrain][block], px, py, 2)
@@ -881,23 +846,7 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		vector.DrawFilledRect(screen, 128, 424, 512, 20, color.RGBA{10, 13, 18, 238}, false)
 		label(screen, truncate(g.Message, 82), 132, 427, ink)
 	}
-	if result := g.World.ResultForLocalProfile(); result != legacy.ResultOngoing {
-		panel(screen, 146, 220, 462, 154)
-		text := "VICTOIRE"
-		if result == legacy.ResultLost {
-			text = "DEFAITE"
-		}
-		label(screen, text, 317, 235, ink)
-		r := g.World.NativeResult
-		label(screen, fmt.Sprintf("SCORE %d  DUREE %d s", r.Score.Value, g.World.NativeClock/50), 182, 260, ink)
-		label(screen, fmt.Sprintf("COMBATS %d  CHEFS PERDUS %d", r.Local.BattleWins, r.Local.LeaderLosses), 182, 280, muted)
-		if r.ScoreError != "" {
-			label(screen, truncate(r.ScoreError, 58), 182, 300, muted)
-		} else {
-			label(screen, "ENTREE: poursuivre", 248, 315, muted)
-		}
-		label(screen, "ECHAP: menu", 280, 346, muted)
-	}
+	g.drawNativeResultOverlay(screen)
 }
 
 func (g *Game) drawSprite(screen *ebiten.Image, index, x, y int) {
@@ -1017,7 +966,7 @@ func (g *Game) LoadFile(path string) error {
 		return err
 	}
 	g.World = world
-	g.resultCuePlayed = false
+	g.resetNativeResultPresentation()
 	g.LevelIndex = world.Level.Number
 	g.lastHazardSoundSerial = world.HazardSerial
 	g.Profile = world.Deity
