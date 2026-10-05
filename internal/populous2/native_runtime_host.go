@@ -24,6 +24,7 @@ type NativeRuntimeHost struct {
 	Host               *NativeHostMemory
 	Memory             *NativeSessionMemory
 	Code               *NativeSharedCode
+	PresentationCode   *NativePresentationCodeAlias
 	World              *World
 	Session            *NativeFrameSession
 	Allocator          *NativeHostAllocator
@@ -83,11 +84,16 @@ func NewNativeRuntimeHost(bundle *Bundle, files fs.FS, config NativeRuntimeHostC
 	if err := memory.ImportBSS(); err != nil {
 		return fail(err)
 	}
+	presentationCode, err := NewNativePresentationCodeAlias(session.Presentation, memory.RAM, config.HunkBases[0])
+	if err != nil {
+		return fail(err)
+	}
+	memory.RAM, memory.Code = presentationCode.RAM, presentationCode.Code
 	rules, err := DecodeNativeResourceFrameRules(bundle.Executable)
 	if err != nil {
 		return fail(err)
 	}
-	return &NativeRuntimeHost{Bundle: bundle, Host: host, Memory: memory, Code: code, World: world, Session: session, Allocator: allocator, Files: disk, ResourceRules: rules}, nil
+	return &NativeRuntimeHost{Bundle: bundle, Host: host, Memory: memory, Code: code, PresentationCode: presentationCode, World: world, Session: session, Allocator: allocator, Files: disk, ResourceRules: rules}, nil
 }
 
 func (h *NativeRuntimeHost) Close() error {

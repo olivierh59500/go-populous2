@@ -901,3 +901,16 @@ and unchanged owner addresses, and protect the immutable Bundle. A complete
 session minimap command with a relocated procedure pointer matches the
 previously CPU-verified drawing body in all D registers and every screen byte.
 The physical procedure operand remains relocated after drawing.
+
+## Runtime presentation CODE aliases
+
+The runtime now composes NativePresentationCodeAlias above its physical BSS
+and mouse owners. Source Copper selector/pointer, clock deadline and complete
+interrupt-chain WORD stay visible through the same RAM/CODE callbacks used
+by loading and menus. Hardware COP1LC remains separate presentation state.
+
+An integration test exercises actual initialization and swap, then mutates
+deadline/interrupt/mouse/World fields through both directions of the composed
+memory views. It protects the underlying owners and noncanonical nonzero
+interrupt WORDs. Image/audio CODE sharing and remaining startup UI bodies are
+still separate prerequisites for live frame activation.
