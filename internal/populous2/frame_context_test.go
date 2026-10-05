@@ -15,6 +15,7 @@ type frameContextInput struct {
 	Actor         uint16
 	StopPC        uint32
 	CaptureAudio  bool
+	MainPhysics   bool
 	D             [8]uint32
 	Stages        []uint32
 	Initial, Code []commandNativePatch
