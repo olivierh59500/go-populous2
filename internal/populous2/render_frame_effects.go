@@ -8,6 +8,7 @@ import (
 type NativeActorEffectsCallbacks struct {
 	NativeRenderFrameCallbacks
 	Cropped           func(NativeCroppedSpriteRequest, []byte) error
+	Reinterpreted     func(NativeReinterpretedSpriteRequest, []byte) error
 	GridCursorAddress int // Original A4 at the actor call, not reconstructed from a scalar occupant.
 }
 
@@ -124,6 +125,61 @@ func (r *NativeActorRenderRules) Actor(at int, cb NativeActorEffectsCallbacks, s
 	}
 	image := func() error { return r.image(cb.NativeRenderFrameCallbacks, &p.NativeRenderFramePlan) }
 	switch target {
+	case 0xebfc:
+		err = r.beam(at, cb, &p)
+	case 0xecde:
+		err = r.column(at, cb, &p)
+	case 0xeda2:
+		if m.word(at+40) == 2 {
+			c.Word(2, m.word(at+8))
+			c.Byte(2, m.byte(at+6)*4)
+			c.Byte(2, m.byte(0xf44+int(int16(c.D[2]))+1))
+			c.Word(2, uint16(c.D[2])&255)
+			c.Word(2, uint16(c.D[2])*2)
+			property, e := r.word(0x33312 + int(int16(c.D[2])))
+			if e != nil {
+				return p, e
+			}
+			if property&8 != 0 {
+				c.Word(2, m.word(at+10))
+				v, e := r.word(0x23d1a + int(int16(c.D[2])))
+				if e != nil {
+					return p, e
+				}
+				c.Word(2, v*2)
+				c.D[2] &= 0xffff
+				layer := 0x26956 + int(c.D[2])
+				next, e := r.word(layer + 4)
+				if e != nil {
+					return p, e
+				}
+				c.Word(2, next)
+				if next != 0 {
+					c.Word(2, next*2)
+					c.D[2] &= 0xffff
+					v, e := r.word(0x26956 + int(c.D[2]) + 2)
+					if e != nil {
+						return p, e
+					}
+					descriptor := 0x21626 + int(int16(v))
+					half, e := r.word(descriptor + 4)
+					if e != nil {
+						return p, e
+					}
+					height, e := r.word(descriptor + 6)
+					if e != nil {
+						return p, e
+					}
+					c.Word(0, uint16(c.D[0])-half)
+					c.Word(2, height)
+					c.Word(1, uint16(c.D[1])-height)
+					err = r.Frames.descriptor(descriptor, cb.NativeRenderFrameCallbacks, &p.NativeRenderFramePlan)
+				}
+				break
+			}
+		}
+		c.Word(2, m.word(at+10))
+		err = image()
 	case 0xeac0:
 		c.Word(1, uint16(c.D[1])+8)
 		c.Word(2, m.word(at+10))

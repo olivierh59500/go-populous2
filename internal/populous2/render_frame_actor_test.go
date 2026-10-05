@@ -15,6 +15,7 @@ type renderActorFixture struct {
 		Initial    []nativeHeroPatch
 		D          [8]uint32
 		Pattern    bool
+		GridCursor int
 	}
 	D                    [8]uint32
 	Changes, BankChanges []nativeHeroPatch

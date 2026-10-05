@@ -166,6 +166,15 @@ func (r *NativeRenderFrameRules) descriptor(a int, cb NativeRenderFrameCallbacks
 	}
 	c.Word(2, height)
 	sprite := NativePresentationSprite{Sprite: (a - 0x21626) / 12, X: int16(c.D[0]), Y: int16(c.D[1]), HalfWidth: int16(binary.BigEndian.Uint16(r.code[a+4:])), Height: int16(height), Routine: routine}
+	if err := r.primitiveRegisters(routine, c); err != nil {
+		return err
+	}
+	return renderFrameSprites(cb, p, []NativePresentationSprite{sprite})
+}
+
+// primitiveRegisters retains the complete direct hardware primitive ABI.
+func (r *NativeRenderFrameRules) primitiveRegisters(routine uint32, c *NativeFrameRegisterContext) error {
+	height := uint16(c.D[2])
 	d0, d1, table := c.D[0], c.D[1], 0
 	x, y, visible := int16(d0), int16(d1), true
 	wide := routine == 0xf3a0
@@ -230,7 +239,7 @@ func (r *NativeRenderFrameRules) descriptor(a int, cb NativeRenderFrameCallbacks
 	// EE32 normally restores these two longs. A direct descriptor call
 	// leaves the actual BLTCON/mask table words visible to its parent.
 	c.D[0], c.D[1] = d0, d1
-	return renderFrameSprites(cb, p, []NativePresentationSprite{sprite})
+	return nil
 }
 
 // MapCursor translates $f12..$1062, including real command-record bytes,
