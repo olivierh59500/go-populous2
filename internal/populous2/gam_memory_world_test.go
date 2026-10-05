@@ -47,7 +47,7 @@ func TestNativeGAMWorldMemoryRetainsAllRegionSeams(t *testing.T) {
 			t.Fatalf("retained long seam%x: %v", address, err)
 		}
 	}
-	if _, err := m.Read8(0xdc3); err == nil {
+	if _, err := m.Read8(0xdc1); err == nil {
 		t.Fatal("unretained prefix was replaced with invented zero bytes")
 	}
 }

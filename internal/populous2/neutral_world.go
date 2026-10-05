@@ -1,7 +1,7 @@
 package populous2
 
 func (w *World) beginNativeFollowerPass() {
-	w.NativeBirthBlocked = false
+	w.setNativeBirthBlockWord(0)
 	w.syncNativeRuntimeBridge()
 	m := w.runtimeMemory()
 	for owner := uint8(1); owner <= 2; owner++ {
@@ -68,16 +68,14 @@ func (w *World) nativeNeutralCallbacks() NativeNeutralActorCallbacks {
 }
 
 func (w *World) nativeTownEconomyTick(ref NativeRecordReference) (NativeTownEconomyStep, error) {
-	blocked := uint16(0)
-	if w.NativeBirthBlocked {
-		blocked = 1
-	}
+	blocked := w.nativeBirthBlockWord()
 	state := NativeTownEconomyState{PoolBlocked: blocked, Selected: w.NativeSelected, Clock: uint32(w.Core.GameTurn), Deadline: w.NativeCreatureDeadline}
 	step, err := w.TownEconomy.Tick(ref, &state, NativeTownEconomyCallbacks{Memory: w.nativeCleanupMemory(), EvaluateTown: w.evaluateNativeTown, ClearFarms: w.clearNativeFarms, Insert: w.nativeRuntimeInsert, Random: w.random,
 		LandAI: func(request NativeTownLandRequest) error {
 			_, err := CreateNativeNeutral(request.Registers, NativeNeutralCallbacks{Memory: w.nativeCleanupMemory(), Insert: w.nativeRuntimeInsert})
 			return err
 		}})
-	w.NativeBirthBlocked, w.NativeSelected, w.NativeCreatureDeadline = state.PoolBlocked != 0, state.Selected, state.Deadline
+	w.setNativeBirthBlockWord(state.PoolBlocked)
+	w.NativeSelected, w.NativeCreatureDeadline = state.Selected, state.Deadline
 	return step, err
 }

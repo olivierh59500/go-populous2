@@ -82,6 +82,7 @@ type World struct {
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
+	NativeBirthBlockWord     uint16 // BSS $dc2: retain byte aliases as well as the public bool.
 	NativeRaiseEnabled       uint16
 	NativeGlobals            NativeGlobalImage
 	NativeSelected           NativeRecordReference
@@ -552,7 +553,7 @@ func (w *World) Tick() {
 		return
 	}
 	w.NativeClock++
-	w.NativeBirthBlocked = false
+	w.setNativeBirthBlockWord(0)
 	w.reconcileActorGraph()
 	w.syncNativeRuntimeBridge()
 	w.refreshNativeRecordImage()

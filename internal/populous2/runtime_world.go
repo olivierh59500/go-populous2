@@ -133,6 +133,10 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 	}
 	read8 := func(address int) (uint8, error) {
 		switch {
+		case address == 0xdc2:
+			return uint8(w.nativeBirthBlockWord() >> 8), nil
+		case address == 0xdc3:
+			return uint8(w.nativeBirthBlockWord()), nil
 		case address >= 0xf40 && address < 0xf44:
 			return uint8(w.NativeClock >> uint(24-(address-0xf40)*8)), nil
 		case address == 0xf12:
@@ -158,6 +162,10 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 	}
 	write8 := func(address int, value uint8) error {
 		switch {
+		case address == 0xdc2:
+			w.setNativeBirthBlockWord(uint16(value)<<8 | w.nativeBirthBlockWord()&255)
+		case address == 0xdc3:
+			w.setNativeBirthBlockWord(w.nativeBirthBlockWord()&0xff00 | uint16(value))
 		case address >= 0xf40 && address < 0xf44:
 			shift := uint(24 - (address-0xf40)*8)
 			w.NativeClock = w.NativeClock&^(uint32(255)<<shift) | uint32(value)<<shift
