@@ -509,3 +509,22 @@ cleanup or town reform. All 1,796 independent native controller executions and
 The complete passes also run genuine downstream search/movement and aftermath.
 These source-family checks advance the raw simulation; captive/neutral/ruin
 dispatch and live frame/presentation remain required integration.
+
+## Complete follower rule-set assembly
+
+NativeFollowerFrameRules collects every active even state $02..$46 into one
+raw $11252 dispatcher, including captive $34, neutral $44 and ruin $46. Its
+LAND selection is checked against World, and NewState retains a distinct
+original property cache/parcel scratch for each session. The parent still
+owns clock, minimap/result presentation and audio; no missing child is replaced
+with an empty successful body. Nested Tick calls borrow the authoritative raw
+frame; standalone calls reconcile once and hydrate after the whole actor pass.
+
+All 452 independently executed complete passes from the motion, search/hero,
+combat, town, terrain, captive/ruin, neutral and siege corpora now match through
+this collected configuration: eight data registers and 70,272 retained bytes
+agree across original outcomes and all four LAND banks. Separate dispatcher
+tests match the 32 captive/ruin and 28 neutral passes through production World
+callbacks. This establishes assembly of the active source-state families;
+filled-pool physics composition, original rendering/input/audio integration
+and replacement of the live inherited Game scheduler remain required work.

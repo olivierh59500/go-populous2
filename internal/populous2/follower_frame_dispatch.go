@@ -17,6 +17,9 @@ type NativeFollowerFrameBindings struct {
 	Terrain     *NativeFollowerTerrainFrameRules
 	WaitContact *NativeFollowerWaitContactFrameRules
 	Siege       *NativeFollowerSiegeFrameRules
+	Retained    *NativeFollowerRetainedFrameRules
+	Neutral     *NativeFollowerNeutralFrameRules
+	Commands    NativeCommandWorldBindings
 	// Continue executes direct search/town/hero tails reached from a child,
 	// without inventing another prepass or starting a new actor update.
 	Continue func(NativeRecordReference, uint32, *NativeFrameRegisterContext, *NativeFollowerPassState) (NativeFollowerPassFlow, error)
@@ -56,6 +59,26 @@ func (w *World) nativeFollowerFrameCallbacks(frame *NativeFrameRegisterContext, 
 			}
 			if actorState == 2 {
 				return w.nativeFollowerFrameContinuation(ref, 0x1131c, frame, state, bindings)
+			}
+			if actorState == 0x44 {
+				if bindings.Neutral == nil {
+					return NativeFollowerNext, fmt.Errorf("native neutral follower frame rules missing")
+				}
+				boundary, err := bindings.Neutral.Tick(ref, w.nativeNeutralFrameCallbacks(frame, bindings.Commands))
+				if err != nil {
+					return NativeFollowerNext, err
+				}
+				return w.nativeFollowerFrameContinuation(ref, boundary, frame, state, bindings)
+			}
+			if actorState == 0x34 || actorState == 0x46 {
+				if bindings.Retained == nil || bindings.Hero == nil {
+					return NativeFollowerNext, fmt.Errorf("native captive/ruin frame rules missing")
+				}
+				boundary, err := bindings.Retained.Tick(ref, w.nativeRetainedFrameCallbacks(frame, bindings.Hero))
+				if err != nil {
+					return NativeFollowerNext, err
+				}
+				return w.nativeFollowerFrameContinuation(ref, boundary, frame, state, bindings)
 			}
 			if actorState == 0x1c || actorState == 0x1e || actorState == 0x22 {
 				if bindings.Siege == nil {
