@@ -342,7 +342,7 @@ func (r *NativeInGameRequesterRules) WorldIcon(slot int, palette [16]color.RGBA)
 		return nil, fmt.Errorf("native world icon outside descriptor table")
 	}
 	icon := r.icons[slot]
-	return DecodeInterleaved(icon.planes, int(icon.HalfWidth)*2, int(icon.Height), palette)
+	return DecodeNativeMaskedPlanes(icon.planes, int(icon.HalfWidth)*2, int(icon.Height), palette)
 }
 
 // WorldSpellHit preserves the signed-word isometric hit geometry at $3df2.

@@ -30,23 +30,9 @@ func DecodeDeityArt(exe *amiga.Executable, faces []byte, palette [16]color.RGBA)
 			if width != 32 || height < 1 || height > 64 || offset < 0 || offset+length > len(faces) {
 				return nil, fmt.Errorf("invalid deity part %d variant %d", part, variant)
 			}
-			// $f3a0 advances between complete height*4-byte planes. Unlike
-			// moving sprites, FACES.PAK stores five contiguous plane blocks.
-			img := image.NewRGBA(image.Rect(0, 0, width, height))
-			planeSize := width / 8 * height
-			data := faces[offset : offset+length]
-			for y := range height {
-				for x := range width {
-					at, shift := y*(width/8)+x/8, uint(7-x%8)
-					if data[at]>>shift&1 == 0 {
-						continue
-					}
-					index := byte(0)
-					for plane := range 4 {
-						index |= (data[(plane+1)*planeSize+at] >> shift & 1) << uint(plane)
-					}
-					img.SetRGBA(x, y, palette[index])
-				}
+			img, err := DecodeNativeMaskedPlanes(faces[offset:offset+length], width, height, palette)
+			if err != nil {
+				return nil, err
 			}
 			art.Parts[part][variant] = img
 		}

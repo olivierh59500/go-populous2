@@ -259,3 +259,14 @@ compatible view. Follower-pass clearing and allocation failure write the origina
 zero/one values. Save version 29 retains raw words; older bool-only snapshots
 migrate to zero/one. Seam, snapshot, reset and GAM-extent regressions pass; this
 state lies outside the original GAM transfer block and does not change it.
+
+## Native world icon planes
+
+The world-selection icons also call $f3a0 and use five contiguous planes with
+an opaque-mask bit. They now share that decoder with deity face parts rather
+than the moving-sprite decoder. A private original-CPU harness executes all
+36 relocated HUNK3 descriptors over both blank and patterned backgrounds at
+three positions, including top/left and bottom/right clipping. All 216 complete
+RGBA framebuffer hashes match Go compositing. The 512 original deity-screen
+comparisons guard the shared decoder. This establishes icon pixels; the World
+requester application routing remains a separate binding step.
