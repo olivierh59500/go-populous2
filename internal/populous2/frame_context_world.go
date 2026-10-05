@@ -1,8 +1,14 @@
 package populous2
 
-import "fmt"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 type NativeFrameWorldBindings struct {
+	// Audio owns the original mutable software descriptors. A visible
+	// Whirlpool must increment its flag before the later audio pass.
+	Audio *NativeFrameAudioState
 	// FXBody is required for effect families whose full source-register
 	// controller has not yet been installed in this adapter.
 	FXBody   func(NativeRecordReference, *NativeFrameRegisterContext) (NativeFrameFXStep, error)
@@ -30,6 +36,23 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 			cb.SourceD2 = uint16(c.D[2])
 			step, e := w.NativeWhirlwind.Tick(ref, cb)
 			return NativeFrameFXStep{Draw: !(step.Expired && step.Removed), Color: 5}, e
+		case 0x0e, 0x10:
+			return w.Whirlpools.TickFrameWhirlpool(ref, c, NativeFrameWhirlpoolCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Lower: func(context *NativeFrameRegisterContext) error {
+				command := context.CommandContext()
+				_, e := w.commandDirectTerrain(NativeCommandCall{Routine: 0xd7f0, Context: &command}, false)
+				context.SetCommandContext(command)
+				return e
+			}, Sound: func() error {
+				if bindings.Audio == nil {
+					return fmt.Errorf("native Whirlpool frame audio descriptors missing")
+				}
+				at := 125 * 10
+				binary.BigEndian.PutUint16(bindings.Audio.Entries[at:], binary.BigEndian.Uint16(bindings.Audio.Entries[at:])+1)
+				if len(w.effectSoundCues) < NativeEffectCapacity {
+					w.effectSoundCues = append(w.effectSoundCues, 125)
+				}
+				return nil
+			}})
 		case 0x2c, 0x2e:
 			cb := w.stormCallbacks()
 			cb.Frame = c
