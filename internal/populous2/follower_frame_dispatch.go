@@ -4,6 +4,11 @@ import "fmt"
 
 type NativeFollowerFrameBindings struct {
 	Aftermath *NativeFollowerAftermathFrameRules
+	Motion    *FollowerMotionFrameRules
+	Entry     *NativeFollowerEntryFrameRules
+	// Continue executes direct search/town/hero tails reached from a child,
+	// without inventing another prepass or starting a new actor update.
+	Continue func(NativeRecordReference, uint32, *NativeFrameRegisterContext, *NativeFollowerPassState) (NativeFollowerPassFlow, error)
 	// Other owns state families whose complete register-bearing controller
 	// has not yet been attached. Missing active bodies are explicit errors.
 	Other    func(NativeRecordReference, uint16, *NativeFrameRegisterContext, *NativeFollowerPassState) (NativeFollowerPassFlow, error)
@@ -35,12 +40,63 @@ func (w *World) nativeFollowerFrameCallbacks(frame *NativeFrameRegisterContext, 
 				_, err := w.NativeWhirlwind.TickFollower(ref, cb)
 				return NativeFollowerCount, err
 			}
+			if actorState == 4 {
+				return w.nativeMotionFrameBody(ref, frame, state, bindings)
+			}
 			if bindings.Other != nil {
 				return bindings.Other(ref, target, frame, state)
 			}
 			return NativeFollowerNext, fmt.Errorf("native follower state%02x full frame controller missing", actorState)
 		},
 		MapPoint: bindings.MapPoint, Result: bindings.Result,
+	}
+}
+
+func (w *World) nativeMotionFrameBody(ref NativeRecordReference, frame *NativeFrameRegisterContext, state *NativeFollowerPassState, bindings NativeFollowerFrameBindings) (NativeFollowerPassFlow, error) {
+	if bindings.Motion == nil {
+		return NativeFollowerNext, fmt.Errorf("native follower motion frame rules missing")
+	}
+	cb := FollowerMotionFrameCallbacks{Memory: w.nativeCleanupMemory(), Frame: frame,
+		Move: func(ref NativeRecordReference, _, _ uint16, frame *NativeFrameRegisterContext) error {
+			context := frame.CommandContext()
+			err := w.commandMove(cleanupRecordAddress(ref), &context)
+			frame.SetCommandContext(context)
+			return err
+		},
+	}
+	step, err := bindings.Motion.Movement(ref, cb)
+	if err != nil {
+		return NativeFollowerNext, err
+	}
+	boundary := step.Boundary
+	if boundary == 0x1275a {
+		if bindings.Entry == nil {
+			return NativeFollowerNext, fmt.Errorf("native movement entry frame rules missing")
+		}
+		entryState := NativeFollowerEntryFrameState{}
+		boundary, err = bindings.Entry.Enter(ref, w.nativeEntryFrameCallbacks(frame, &entryState))
+		if err != nil {
+			return NativeFollowerNext, err
+		}
+	}
+	if boundary == 0x11ce8 {
+		if bindings.Aftermath == nil {
+			return NativeFollowerNext, fmt.Errorf("native broken-wall aftermath rules missing")
+		}
+		return bindings.Aftermath.Tick(ref, w.nativeAftermathFrameCallbacks(frame))
+	}
+	switch boundary {
+	case 0x123b4:
+		return NativeFollowerCount, nil
+	case 0x12462:
+		return NativeFollowerNext, nil
+	case 0x112b8:
+		return NativeFollowerRedispatch, nil
+	default:
+		if bindings.Continue != nil {
+			return bindings.Continue(ref, boundary, frame, state)
+		}
+		return NativeFollowerNext, fmt.Errorf("native movement tail%x continuation missing", boundary)
 	}
 }
 

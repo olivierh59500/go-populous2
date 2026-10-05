@@ -408,3 +408,27 @@ $12a98 cleanup, whose real D0-D2 outputs survive into the combat caller. The
 World adapter borrows raw bytes and does not flush typed records mid-call.
 This establishes the winner body; the full combat caller/physics/frame/UI
 composition still requires its separate integration and comparison.
+
+## Raw entry, contact and movement composition
+
+NativeFollowerEntryFrameRules reproduces $1275a's signed raw owner/population
+admission, linked-order priorities, wall observation, homing movement, merge,
+battle/capture and complete town-reform continuation. All 150 original-CPU
+cases compare the complete 64KiB BSS image and all eight data registers for
+both isolated Go and World, including source $13126 preserving the existing
+state/animation, and Helen's actual farm/reference register outputs. These
+comparisons execute real Go contact, merge, evaluator and farm bodies rather
+than replaying external callback deltas from reference fixtures.
+
+The raw World dispatcher now composes the proven movement controller, actual
+$12518 graph writes, entry and broken-wall aftermath. Thirty-two independently
+executed complete $11252 passes compare all data registers and retained BSS
+for two owners, four travel directions, same/crossed cells and two nonzero
+register contexts. The native magnet mode prevents founding in this bounded
+composition; town/search/hero tails remain explicit caller continuations.
+
+The minimap point producer $e196 now returns its exact byte/bit/color plan and
+register continuation, with a four-plane pixel writer. Its 768 native CPU
+references cover sixteen colors, eight bit positions, three rows and two
+background patterns; both bitmap hashes and all incoming/surviving register
+values match. Full presentation/native frame binding remains separate work.

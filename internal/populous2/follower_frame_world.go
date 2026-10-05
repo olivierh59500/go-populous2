@@ -56,3 +56,41 @@ func (w *World) nativeWinnerFrameCallbacks() NativeFollowerWinFrameCallbacks {
 		PoolBlocked: func() bool { return w.nativeBirthBlockWord() != 0 }, Insert: w.nativeRuntimeInsert,
 	}
 }
+
+func (w *World) nativeEntryFrameCallbacks(frame *NativeFrameRegisterContext, state *NativeFollowerEntryFrameState) NativeFollowerEntryFrameCallbacks {
+	memory := w.nativeCleanupMemory()
+	return NativeFollowerEntryFrameCallbacks{Memory: memory, Frame: frame, State: state,
+		Merge: func(source, target NativeRecordReference, context *NativeFrameRegisterContext) error {
+			cb := w.nativeEntryCallbacks()
+			cb.Selected = func() NativeRecordReference {
+				pointer, err := memory.Read32(0xf36)
+				if err != nil || pointer == 0 {
+					return 0
+				}
+				return NativeRecordReference(uint16(pointer - uint32(frame.AddressBase) - 0x76c0))
+			}
+			cb.Select = func(ref NativeRecordReference) error {
+				w.NativeSelected = ref
+				return memory.Write32(0xf36, frame.AddressBase+uint32(cleanupRecordAddress(ref)))
+			}
+			return w.FollowerEntry.MergeWithFrame(source, target, context, cb)
+		},
+		Battle: func(source, target NativeRecordReference, context *NativeFrameRegisterContext) error {
+			_, err := PrepareFollowerContactWithFrame(source, target, context, FollowerContactCallbacks{Memory: memory, ClearFarms: w.clearNativeFarms, Sound: w.nativeEntryCallbacks().Sound})
+			return err
+		},
+		ReformTown: func(ref NativeRecordReference) error {
+			clock, err := memory.Read16(0xf42)
+			if err != nil {
+				return err
+			}
+			cb := w.nativeTownCombatCallbacks()
+			cb.EvaluateTown = func(ref NativeRecordReference) (int, error) {
+				value, err := w.TownEvaluator.Evaluate(ref, clock, w.nativeTownCallbacks())
+				return int(value), err
+			}
+			_, err = w.TownCombat.Reform(ref, ref, clock, cb)
+			return err
+		},
+	}
+}
