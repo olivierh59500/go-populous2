@@ -74,6 +74,7 @@ func NewNativeRuntimeHost(bundle *Bundle, files fs.FS, config NativeRuntimeHostC
 	// World routines read scalar/table data directly. Linked procedure
 	// consumers must explicitly use Code.Logical(), never a copied array.
 	world.NativeAI.Code = code.RawData()
+	world.nativeSharedCode = code
 	memory, err := NewNativeSessionMemory(host, session, world, config.HunkBases[0], config.HunkBases[1])
 	if err != nil {
 		return fail(err)

@@ -68,7 +68,12 @@ func (s *NativeFrameSession) AdvanceBuiltInCommandChild(call NativeCommandFrameC
 			return NativeCommandFrameResult{}, err
 		}
 		frame := NativeFrameRegisterContext{D: call.Context.D, AddressBase: s.Frame.AddressBase}
-		err = DrawNativeMinimapFrame(s.world.NativeAI.Code, s.Presentation.Memory(s.world.nativeCleanupMemory()), &frame, bitmap)
+		memory := s.Presentation.Memory(s.world.nativeCleanupMemory())
+		if s.world.nativeSharedCode != nil {
+			err = DrawNativeSharedCodeMinimap(s.world.nativeSharedCode, memory, &frame, bitmap)
+		} else {
+			err = DrawNativeMinimapFrame(s.world.NativeAI.Code, memory, &frame, bitmap)
+		}
 		call.Context.D = frame.D
 		return NativeCommandFrameResult{Complete: err == nil}, err
 	}

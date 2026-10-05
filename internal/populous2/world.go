@@ -74,6 +74,7 @@ type World struct {
 	RenewNative              RenewNativeRules
 	CampaignResult           CampaignResultRules
 	NativeAI                 NativeAIRules
+	nativeSharedCode         *NativeSharedCode
 	NativeGameMode           uint16
 	NativeProfileSide        uint8
 	NativeClock              uint32

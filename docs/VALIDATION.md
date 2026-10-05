@@ -888,3 +888,16 @@ advancing again neither completes startup nor repeats the allocated prefix.
 Every callback requires the configured BSS base. Complete startup children,
 presentation CODE aliases and live Game-loop activation remain integration
 work; construction alone does not make the game ready to run.
+
+## LAND reloads and relocated minimap commands
+
+Native host Worlds now retain their configured shared CODE owner when a LAND
+bank changes; standalone Worlds continue to own isolated copies. Minimap
+commands select the relocation-aware procedure view for a shared host, while
+all scalar coordinates and colors remain in the same physical allocation.
+
+Regression tests load all four LAND banks repeatedly, verify physical bytes
+and unchanged owner addresses, and protect the immutable Bundle. A complete
+session minimap command with a relocated procedure pointer matches the
+previously CPU-verified drawing body in all D registers and every screen byte.
+The physical procedure operand remains relocated after drawing.
