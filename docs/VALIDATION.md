@@ -218,3 +218,22 @@ full native in-game menus and interactive desktop validation are still open.
 Out-of-map camera aliases are retained in view memory and the Go draw bridge
 bounds its terrain-array accesses; original raw out-of-world framebuffer output
 has not been reproduced by that guard.
+
+## Native deity and options screens
+
+The full deity screen now uses CODE760e requester fields, native bolt symbols,
+its own CODE33844 palette, twelve XP strips, face backing and all three masked
+parts at the original coordinates/order. FACES.PAK is stored in five contiguous
+plane blocks with an opaque-mask bit, unlike the ordinary interleaved sprites.
+A private CPU harness with register-driven block blits verifies all 512 face
+combinations: prepared text, display password and complete RGBA framebuffer agree,
+including bolt balances beyond the password import range. Hardware logic follows
+[AmigaOS's documented minterm truth table](https://wiki.amigaos.net/wiki/Graphics_Minterms);
+production remains the Go image decoder/compositor.
+
+Deity mouse actions use the original b882 table; name/code entry, XP allocation,
+face cycling and continuation retain the native geometry. The original Options
+requester replaces the modern checkbox list, including both sides, ten flags,
+reaction-speed arrows, conquest admission and the MUSI music toggle. Its prepared
+text/frame source remains covered by the 2,048 native option references. Game
+binding compiles; interactive GPU/presentation validation remains open.

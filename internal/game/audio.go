@@ -11,6 +11,7 @@ func (g *Game) initializeAudio() error {
 		context = audio.NewContext(populous2.AudioSampleRate)
 	}
 	g.audioReplay = populous2.NewAudioReplay(g.Bundle.Audio, context.SampleRate())
+	g.audioReplay.SetMusic(!g.specialMusicDisabled)
 	player, err := context.NewPlayer(g.audioReplay)
 	if err != nil {
 		return err

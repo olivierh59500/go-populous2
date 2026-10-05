@@ -74,6 +74,12 @@ func (d Deity) Password() (string, error) {
 	if d.Bolts > 7 {
 		return "", fmt.Errorf("deity bolt balance %d exceeds password range 0..7", d.Bolts)
 	}
+	return d.nativePassword(), nil
+}
+
+// nativePassword follows the display encoder even for bolt balances that the
+// native importer cannot represent. Import validation stays in SetPassword.
+func (d Deity) nativePassword() string {
 	payload := [8]byte{d.FaceParts[0]<<4 | d.FaceParts[1], d.FaceParts[2]<<4 | uint8(d.Bolts)}
 	copy(payload[2:], d.Experience[:])
 	payload = transposeDeityBits(payload)
@@ -88,7 +94,7 @@ func (d Deity) Password() (string, error) {
 		}
 	}
 	transposeDeityLetters(&letters)
-	return string(letters[:]), nil
+	return string(letters[:])
 }
 
 // DecodeDeityPassword reverses CODE:$10564 and validates the packed fields as

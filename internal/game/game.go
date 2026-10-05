@@ -33,9 +33,15 @@ type Game struct {
 	DeityScreen               bool
 	ScenarioScreen            bool
 	scenarioSide              int
+	scenarioPresentation      populous2.NativeOptionsPresentation
+	scenarioImage             *ebiten.Image
+	scenarioSpecialCode       string
+	scenarioCodeEditing       bool
+	specialMusicDisabled      bool
 	customScenarioOptions     [2]uint16
 	hasCustomScenarioOptions  bool
 	deityPortrait             *ebiten.Image
+	deityRequester            *populous2.NativeRequester
 	deityPassword             string
 	deityEditing              bool
 	deityNameEditing          bool

@@ -30,9 +30,23 @@ func DecodeDeityArt(exe *amiga.Executable, faces []byte, palette [16]color.RGBA)
 			if width != 32 || height < 1 || height > 64 || offset < 0 || offset+length > len(faces) {
 				return nil, fmt.Errorf("invalid deity part %d variant %d", part, variant)
 			}
-			img, err := DecodeInterleaved(faces[offset:offset+length], width, height, palette)
-			if err != nil {
-				return nil, err
+			// $f3a0 advances between complete height*4-byte planes. Unlike
+			// moving sprites, FACES.PAK stores five contiguous plane blocks.
+			img := image.NewRGBA(image.Rect(0, 0, width, height))
+			planeSize := width / 8 * height
+			data := faces[offset : offset+length]
+			for y := range height {
+				for x := range width {
+					at, shift := y*(width/8)+x/8, uint(7-x%8)
+					if data[at]>>shift&1 == 0 {
+						continue
+					}
+					index := byte(0)
+					for plane := range 4 {
+						index |= (data[(plane+1)*planeSize+at] >> shift & 1) << uint(plane)
+					}
+					img.SetRGBA(x, y, palette[index])
+				}
 			}
 			art.Parts[part][variant] = img
 		}
@@ -40,15 +54,16 @@ func DecodeDeityArt(exe *amiga.Executable, faces []byte, palette [16]color.RGBA)
 	return art, nil
 }
 
-// Portrait uses the creation-screen strip positions from CODE:$b72e. The
-// mouth is lowest; shorter strips are bottom-aligned to their sixteen-pixel
-// band as in $bb0e. It retains alpha for the original mask-first images.
+// Portrait uses the creation-screen strip positions from CODE:$b72e. Mouth,
+// eyes and headpiece are drawn in the original reverse bank order; shorter
+// strips are bottom-aligned to their sixteen-pixel band as in $bb0e.
+// Opaque mask bits from the contiguous FACES planes retain their alpha.
 func (art *DeityArt) Portrait(parts [3]uint8) (*image.RGBA, error) {
 	if art == nil {
 		return nil, fmt.Errorf("missing deity artwork")
 	}
 	portrait := image.NewRGBA(image.Rect(0, 0, 32, 96))
-	for part := range parts {
+	for part := len(parts) - 1; part >= 0; part-- {
 		if parts[part] > 7 {
 			return nil, fmt.Errorf("invalid deity face variant")
 		}

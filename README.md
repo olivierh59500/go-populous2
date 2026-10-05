@@ -25,8 +25,9 @@ bolt rewards and world skipping. Pending and applied results survive saves;
 the result screen applies its reward once and offers the native deity allocation
 step after a campaign victory. Winning the final world plays the supplied Zeus
 animation and original scrolltext at its native PAL cadence. Original result
-requester is displayed after 101 PAL VBlanks; in-game/deity/file/serial menu
-composition remains under conversion.
+requester is displayed after 101 PAL VBlanks. The deity screen and game options
+use their original layouts, masked artwork, experience strips and controls;
+in-game/file/world/serial menu binding remains under conversion.
 Whirlwinds now lift, transport and release native followers, collapse town farms
 and create original water children. Their complete retained controllers replace
 the former motion-only World handler.
