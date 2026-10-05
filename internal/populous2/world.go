@@ -6,10 +6,9 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-// World is the playable porting baseline. Terrain propagation, walkers, towns,
-// fights and land AI are reused from Populous 1. The exact Populous II formats
-// are independent of this baseline. Its new effect rules are provisional until
-// checked against the original routines; see docs/PORTAGE.md.
+// World composes native Populous II routines and retained records with the
+// supplied Go terrain/presentation baseline. Remaining inherited AI, menus,
+// scoring and incomplete power paths are tracked in docs/FEATURES.md.
 type World struct {
 	Level                    Level
 	Rules                    [2]ScenarioRules
@@ -51,6 +50,12 @@ type World struct {
 	NeutralRules             NativeNeutralRules
 	TownEconomy              NativeTownEconomyRules
 	NativeCreatureDeadline   uint32
+	EarthquakeRules          EarthquakeRules
+	VolcanoRules             VolcanoRules
+	LavaRules                NativeLavaRules
+	NativeEnvironment        [NativeEffectCapacity]NativeEnvironmentController
+	NativeEnvironmentDirty   uint16
+	NativeEnvironmentShake   uint16
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
@@ -162,6 +167,8 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.FollowerRuin = bundle.FollowerRuin
 	w.FollowerCrossing = bundle.FollowerCrossing
 	w.PrimitiveCreators, w.NeutralRules = bundle.PrimitiveCreators, bundle.NeutralRules
+	w.EarthquakeRules = bundle.EarthquakeRules
+	w.VolcanoRules, w.LavaRules = bundle.VolcanoRules, bundle.LavaRules
 	w.TownEconomy, err = DecodeNativeTownEconomyRules(land)
 	if err != nil {
 		return nil, err
@@ -338,7 +345,7 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 				a := xx + yy*65
 				if altitudes[a] != w.Core.Alt[a] || altitudes[a+1] != w.Core.Alt[a+1] || altitudes[a+65] != w.Core.Alt[a+65] || altitudes[a+66] != w.Core.Alt[a+66] {
 					mark := w.Marks[xx+yy*64]
-					if mark.Spell != Basalt || mark.NativeTile&0xf0 != 0xe0 {
+					if mark.NativeTile&0xf0 != 0xe0 {
 						w.Marks[xx+yy*64] = Mark{}
 					}
 				}
@@ -347,7 +354,7 @@ func (w *World) Sculpt(player, x, y int, raise bool) bool {
 	}
 	if applied && x < 64 && y < 64 {
 		mark := w.Marks[x+y*64]
-		if mark.Spell != Basalt || mark.NativeTile&0xf0 != 0xe0 {
+		if mark.NativeTile&0xf0 != 0xe0 {
 			w.Marks[x+y*64] = Mark{}
 		}
 	}
@@ -404,9 +411,11 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		}
 		applied = w.legacyPower(player, spell.Cost, legacy.ManaMagnetCost, func() bool { return w.Core.SetMagnetToTile(player, target.X, target.Y) })
 	case Earthquake:
-		applied = w.legacyPower(player, spell.Cost, legacy.ManaQuakeCost, func() bool { return w.Core.QuakeAtTile(player, target.X, target.Y) })
+		w.castNativeEarthquake(player, target.X, target.Y, uint8(target.Direction))
+		applied = true
 	case Volcano:
-		applied = w.legacyPower(player, spell.Cost, legacy.ManaVolcanoCost, func() bool { return w.Core.VolcanoAtTile(player, target.X, target.Y) })
+		w.castNativeVolcano(player, target.X, target.Y)
+		applied = true
 	case Armageddon:
 		applied = w.legacyPower(player, spell.Cost, legacy.ManaWarCost, func() bool { return w.Core.WarPower(player) })
 		if applied {
@@ -463,7 +472,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	if !applied {
 		return false
 	}
-	if id != PapalMagnet && id != Earthquake && id != Volcano && id != Armageddon {
+	if id != PapalMagnet && id != Armageddon {
 		w.Core.Magnets[player].Mana -= spell.Cost
 	}
 	w.recordCast(player, id)

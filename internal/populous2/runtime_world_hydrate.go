@@ -204,6 +204,9 @@ func (w *World) hydrateNativeRuntimeRecords() {
 		word26, _ := w.RecordImage.Read16(ref, 26)
 		word28, _ := w.RecordImage.Read16(ref, 28)
 		word30, _ := w.RecordImage.Read16(ref, 30)
+		if w.NativeEnvironment[index] != NativeEnvironmentNone {
+			continue
+		}
 		switch kind {
 		case BasaltActorKind:
 			w.BasaltState.Directions[index] = word26

@@ -41,6 +41,9 @@ func (w *World) refreshNativeRecordImage() {
 			count = NativeEffectCapacity
 		}
 		for index := 0; index < count; index++ {
+			if pool == NativeEffectPool && w.NativeEnvironment[index] != NativeEnvironmentNone {
+				continue
+			}
 			ref := nativeActorReference(pool, index)
 			active := false
 			switch pool {
@@ -125,6 +128,9 @@ func (w *World) refreshNativeRecordImage() {
 // projectNativeEffectRecord also records final controller writes before an
 // actor becomes inactive; later inactive refreshes preserve these bytes.
 func (w *World) projectNativeEffectRecord(index int) {
+	if w.NativeEnvironment[index] != NativeEnvironmentNone {
+		return
+	}
 	ref := nativeActorReference(NativeEffectPool, index)
 	a := w.NativeEffects[index]
 	if a.Kind == FungusActorKind || a.Kind == WhirlpoolActorKind {

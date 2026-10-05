@@ -762,3 +762,35 @@ runs provide regression evidence; native scenario AI, award/score and complete
 campaign progression remain separate requirements. A desktop launch for this
 slice failed before game startup because Ebitengine could not obtain a macOS
 monitor; it supplies no visual fidelity evidence for this particular slice.
+
+## Environmental controller ownership
+
+The shared effect loop dispatches quake, volcano and lava through retained
+controller ownership. Their creator can leave byte 0 unchanged: selecting the
+controller from that stale kind would incorrectly run a recycled fire, fungus
+or basalt record. Quake/volcano controllers are unlinked; lava retains native
+mixed-map membership and its original sprite bank. Version 19 saves preserve
+controller ownership and validate each native phase, owner and position.
+
+Quake uses the direction table `[0,5,1,4]`, native strength and crack/fade tiles.
+It charges its command price even on full-pool failure. Failed edge child
+creation can return the parent; full-pool return `$e740` can alias marker bytes
+during the subsequent compensation write. The World adapter replays 31 original
+scenarios and 3,061 updates, comparing the complete pool, map, height grid and RNG
+with actual terrain reconstruction. The standalone catalog also covers the
+three synthetic full/parent-alias scenarios.
+
+Volcano growth follows the exact linear-index lowering arguments and cumulative
+center operations. Final eruption calls raw fire creation with owner words
+`$ff01/$ff02`, retaining the native XP-memory alias. Lava and basalt creators
+run at their original boundaries and read links after pushes. Twenty-four
+complete unoccupied-pool World eruptions compare raw pool, map, all heights,
+source bytes and RNG. Standalone eruption/Lava catalogs cover additional pool
+limits and actor/hero interactions.
+
+These comparisons exposed and fixed tile-prefix preservation: `$e0..$ef`
+terrain survives height edits according to the native tile family, regardless
+of which spell first wrote it. The renderer uses native lava composites and
+terrain cracks, while unlinked controllers do not inherit stale sprite kinds.
+The missing macOS monitor prevents a new desktop visual check of this slice;
+headless simulation and saved continuation remain valid regression evidence.

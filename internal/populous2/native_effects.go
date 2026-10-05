@@ -19,6 +19,9 @@ func (b *Bundle) NativeEffectFrame(actor NativeEffectActor) (AnimationFrame, boo
 	case 0x28:
 		frame, ok := b.LightningRules.Frames[actor.Animation]
 		return frame, ok
+	case NativeLavaKind:
+		frame, ok := b.LavaRules.Frames[actor.Animation]
+		return frame, ok
 	}
 	return AnimationFrame{}, false
 }

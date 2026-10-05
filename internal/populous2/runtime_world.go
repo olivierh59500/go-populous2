@@ -94,6 +94,9 @@ func (w *World) nativeRuntimeUnlink(ref NativeRecordReference) error {
 }
 
 func (w *World) nativeRuntimeInsert(ref NativeRecordReference) error {
+	if location, ok := LocateNativeRecord(ref); ok && location.Pool == NativeEffectPool {
+		w.NativeEnvironment[location.Index] = NativeEnvironmentNone
+	}
 	entry, ok := w.Occupancy.entry(ref)
 	if !ok {
 		return fmt.Errorf("native runtime insert requires an actor or marker entity")

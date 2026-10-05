@@ -91,7 +91,7 @@ func (w *World) reconcileActorGraph() {
 	}
 	for index, entry := range w.Occupancy.Effects {
 		actor := w.NativeEffects[index]
-		mapped := actor.Active && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a)
+		mapped := actor.Active && (w.NativeEnvironment[index] == NativeEnvironmentLava || w.NativeEnvironment[index] == NativeEnvironmentNone && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a))
 		if !mapped {
 			if entry.Linked {
 				w.unlinkActor(NativeEffectPool, index)
@@ -193,6 +193,7 @@ func (w *World) syncFollowerGraphReferences(references ...NativeRecordReference)
 }
 
 func (w *World) linkEffect(index int) {
+	w.NativeEnvironment[index] = NativeEnvironmentNone
 	actor := w.NativeEffects[index]
 	w.placeActor(NativeEffectPool, index, uint16(actor.X), uint16(actor.Y))
 }
@@ -228,7 +229,7 @@ func (w *World) refreshChangedTerrain(before [legacy.EndWidth * legacy.EndWidth]
 
 func (w *World) setBasaltLegacyLand(x, y int) {
 	mark := w.Marks[x+y*64]
-	if mark.Spell == Basalt && mark.NativeTile&0xf0 == 0xe0 {
+	if mark.NativeTile&0xf0 == 0xe0 {
 		// The inherited route/water handlers use their own block IDs. Basalt
 		// is traversable nonwater even when its vertex heights are all zero.
 		w.Core.MapBlk[x+y*64] = legacy.FlatBlock
@@ -303,7 +304,7 @@ func validateSavedActorGraph(snapshot Snapshot) error {
 	}
 	for index, entry := range snapshot.Occupancy.Effects {
 		actor := snapshot.NativeEffects[index]
-		mapped := actor.Active && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a)
+		mapped := actor.Active && (snapshot.NativeEnvironment[index] == NativeEnvironmentLava || snapshot.NativeEnvironment[index] == NativeEnvironmentNone && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a))
 		if entry.Linked != mapped || mapped && (entry.Record.X != uint16(actor.X) || entry.Record.Y != uint16(actor.Y)) {
 			return fmt.Errorf("saved effect graph differs at slot %d", index)
 		}

@@ -121,6 +121,12 @@ func (w *World) castFireColumn(player, x, y int) bool {
 func (w *World) tickNativeEffects() {
 	for i := range w.NativeEffects {
 		a := &w.NativeEffects[i]
+		if w.NativeEnvironment[i] != NativeEnvironmentNone {
+			if err := w.tickNativeEnvironment(i); err != nil {
+				panic(err)
+			}
+			continue
+		}
 		if !a.Active {
 			continue
 		}

@@ -101,7 +101,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 18 preserves retained native actor, deity and marker bytes, town structure overlays,
+Version 19 preserves retained native actor, deity and marker bytes, town structure overlays,
 lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
@@ -129,8 +129,11 @@ burning states, magnet/captive routes and native crossing admission. Hero
 creation/art boundaries and the complete campaign/environment still remain
 under integration. Version 18 includes native town production/emigration,
 rare-birth neutral records, their separate owner and effect creator state,
-and the original rare-creation deadline. Full neutral environmental composition
-still has separate fidelity comparisons in progress.
+and the original rare-creation deadline. Version 19 retains environmental
+controller ownership independently of stale kind bytes, including directed
+earthquakes, volcano growth/eruption and lava. Neutral composition and owner-3
+water children now have complete original-machine comparisons. Remaining powers,
+campaign behavior, menus and multiplayer are tracked in the feature inventory.
 
 Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can

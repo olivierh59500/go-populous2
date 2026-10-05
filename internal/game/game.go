@@ -777,7 +777,10 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		sprite := 97 + world.GameTurn%8
 		g.drawSprite(view, sprite, px+32, py+32)
 	}
-	for _, a := range g.World.NativeEffects {
+	for index, a := range g.World.NativeEffects {
+		if g.World.NativeEnvironment[index] != populous2.NativeEnvironmentNone && g.World.NativeEnvironment[index] != populous2.NativeEnvironmentLava {
+			continue
+		}
 		if !a.Active {
 			continue
 		}

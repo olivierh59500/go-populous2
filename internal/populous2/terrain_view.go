@@ -49,7 +49,7 @@ func (w *World) TerrainCell(x, y int) TerrainCell {
 	}
 	if mark := w.Marks[x+y*legacy.MapWidth]; mark.Life > 0 && (mark.NativeTile != 0 || mark.NativeCodeValid) {
 		cell.Code = mark.NativeTile
-		if mark.Spell == Basalt && mark.NativeTile&0xf0 == 0xe0 {
+		if mark.NativeTile&0xf0 == 0xe0 {
 			// Native terrain edits retain the basalt prefix and change only
 			// the low corner-shape nibble, including raised flat geometry.
 			cell.Code = 0xe0 | cell.Shape
@@ -122,7 +122,7 @@ func (w *World) clearChangedGround(before [legacy.EndWidth * legacy.EndWidth]int
 			a := x + y*65
 			if before[a] != w.Core.Alt[a] || before[a+1] != w.Core.Alt[a+1] || before[a+65] != w.Core.Alt[a+65] || before[a+66] != w.Core.Alt[a+66] {
 				mark := w.Marks[x+y*64]
-				if mark.Spell != Basalt || mark.NativeTile&0xf0 != 0xe0 {
+				if mark.NativeTile&0xf0 != 0xe0 {
 					w.Marks[x+y*64] = Mark{}
 				}
 			}

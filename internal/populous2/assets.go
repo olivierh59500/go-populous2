@@ -40,6 +40,9 @@ type Bundle struct {
 	FollowerCrossing  FollowerCrossingRules
 	PrimitiveCreators NativePrimitiveCreatorRules
 	NeutralRules      NativeNeutralRules
+	EarthquakeRules   EarthquakeRules
+	VolcanoRules      VolcanoRules
+	LavaRules         NativeLavaRules
 	Audio             *AudioBank
 	Actions           []NativeAction
 	GroundRules       GroundEffectRules
@@ -213,6 +216,18 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.NeutralRules, err = DecodeNativeNeutralRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.EarthquakeRules, err = DecodeEarthquakeRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.VolcanoRules, err = DecodeVolcanoRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.LavaRules, err = DecodeNativeLavaRules(exe)
 	if err != nil {
 		return nil, err
 	}

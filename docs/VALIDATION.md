@@ -65,6 +65,9 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Native town economy | 253 complete routines across four LAND tables and two full-pass birth fixtures; World tests cover mana/growth, same-pass emigration, rare slot-250 neutral creation and saved continuation |
 | Native primitive creators | 383 original raw whirlwind/fire-column/single-tree cases retain owner-word aliases, recycled bytes, complete graph/RNG state and XP bypass |
 | Economy simulation regression | 600+30 updates/save per original landscape; headless worlds 0/100 reach 12,000 updates and world 40 reaches the current prototype victory path; no original campaign pacing claim |
+| Native Earthquake | 34 original scenarios/3,067 updates; World replays 31 scenarios/3,061 updates with complete raw pool, map, height and RNG comparisons |
+| Native Volcano/Lava | 30 crater/eruption sequences and 356 Lava cases; World replays 24 complete unoccupied-pool eruptions, including raw owner-word aliases, real child creators and terrain reconstruction |
+| Environmental saves | Version 19 preserves controller tags independently of kind; tests cover full-pool debit, water rejection, recycled Basalt/Fungus kinds, directed quake and eruption continuation |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |
