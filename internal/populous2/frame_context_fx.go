@@ -10,7 +10,10 @@ type NativeFrameFXStep struct {
 }
 type NativeFrameFXCallbacks struct {
 	Memory FollowerCleanupMemory
-	Tick   func(NativeRecordReference, *NativeFrameRegisterContext) (NativeFrameFXStep, error)
+	// MapPoint executes actual $e196 pixels and register writes when present.
+	// Nil retains the established register-only standalone ABI.
+	MapPoint func(*NativeFrameRegisterContext) error
+	Tick     func(NativeRecordReference, *NativeFrameRegisterContext) (NativeFrameFXStep, error)
 }
 
 // TickFrameFX is original $1482e through its shared $15ad4/$15b6a suffix.
@@ -44,14 +47,14 @@ func (r *NativeCommandRules) TickFrameFX(c *NativeFrameRegisterContext, cb Nativ
 		if !step.Draw {
 			continue
 		}
-		if e := r.frameFXDraw(at, step.Color, c, cb.Memory); e != nil {
+		if e := r.frameFXDraw(at, step.Color, c, cb.Memory, cb.MapPoint); e != nil {
 			return e
 		}
 	}
 	return m.err
 }
 
-func (r *NativeCommandRules) frameFXDraw(at int, color uint16, c *NativeFrameRegisterContext, memory FollowerCleanupMemory) error {
+func (r *NativeCommandRules) frameFXDraw(at int, color uint16, c *NativeFrameRegisterContext, memory FollowerCleanupMemory, mapPoint func(*NativeFrameRegisterContext) error) error {
 	m := nativeWhirlwindMemory{m: memory}
 	c.Byte(2, m.byte(at+12))
 	c.ExtendWord(2)
@@ -85,6 +88,12 @@ func (r *NativeCommandRules) frameFXDraw(at int, color uint16, c *NativeFrameReg
 	if m.word(0xf0c) == 8 {
 		c.Word(0, uint16(c.D[0])+4)
 		c.Word(1, uint16(c.D[1])+4)
+		if mapPoint != nil {
+			if m.err != nil {
+				return m.err
+			}
+			return mapPoint(c)
+		}
 		pixelX := uint16(c.D[0])
 		c.Word(1, uint16(c.D[1])<<3)
 		c.Word(1, uint16(c.D[1])*4)

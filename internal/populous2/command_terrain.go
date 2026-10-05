@@ -432,6 +432,13 @@ type NativeCommandTerrainStep struct {
 // or an inherited sculpting action. Incoming D0-D3 survive the point helper;
 // the redraw suffix subsequently leaves its actual data-register outputs.
 func (r *NativeCommandRules) DirectTerrain(raise bool, c *NativeCommandRegisterContext, memory FollowerCleanupMemory) (NativeCommandTerrainStep, error) {
+	return r.DirectTerrainWithPoints(raise, c, memory, nil)
+}
+
+// DirectTerrainWithPoints exposes the real $d8b4/$e196 bitmap call. A caller
+// supplies its actual BSS$22 target; the callback owns D0-D2 pixel-helper
+// outputs before the source redraw loop advances D4/D5.
+func (r *NativeCommandRules) DirectTerrainWithPoints(raise bool, c *NativeCommandRegisterContext, memory FollowerCleanupMemory, point func(*NativeCommandRegisterContext) error) (NativeCommandTerrainStep, error) {
 	step := NativeCommandTerrainStep{MinX: 256, MinY: 256, MaxX: -1, MaxY: -1}
 	if c == nil || !winMemoryValid(memory) {
 		return step, fmt.Errorf("native terrain memory/context missing")
@@ -577,9 +584,18 @@ func (r *NativeCommandRules) DirectTerrain(raise bool, c *NativeCommandRegisterC
 			pixelX, pixelY := uint16(68+x-y), uint16((x+y)/2+4)
 			c.D[0] = uint32(pixelX)
 			commandWord(c, 1, pixelY)
-			commandWord(c, 0, (uint16(c.D[0])&7)^7)
-			commandWord(c, 1, pixelX>>3)
-			commandWord(c, 2, (uint16(c.D[2])&15)<<4)
+			if point != nil {
+				if m.err != nil {
+					return step, m.err
+				}
+				if e := point(c); e != nil {
+					return step, e
+				}
+			} else {
+				commandWord(c, 0, (uint16(c.D[0])&7)^7)
+				commandWord(c, 1, pixelX>>3)
+				commandWord(c, 2, (uint16(c.D[2])&15)<<4)
+			}
 			commandWord(c, 4, uint16(x+1))
 		}
 		commandWord(c, 5, uint16(y+1))
@@ -589,7 +605,7 @@ func (r *NativeCommandRules) DirectTerrain(raise bool, c *NativeCommandRegisterC
 
 func (w *World) commandDirectTerrain(call NativeCommandCall, raise bool) (bool, error) {
 	rules := NativeCommandRules{Code: w.NativeAI.Code}
-	_, e := rules.DirectTerrain(raise, call.Context, w.nativeCleanupMemory())
+	_, e := rules.DirectTerrainWithPoints(raise, call.Context, w.nativeCleanupMemory(), w.nativeTerrainPoint)
 	if e != nil {
 		return false, e
 	}

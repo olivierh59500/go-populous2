@@ -6,6 +6,8 @@ import (
 )
 
 type NativeFrameWorldBindings struct {
+	// MapPoint supplies the real overview bitmap writer at $15b62.
+	MapPoint func(*NativeFrameRegisterContext) error
 	// Audio owns the original mutable software descriptors. A visible
 	// Whirlpool must increment its flag before the later audio pass.
 	Audio *NativeFrameAudioState
@@ -16,7 +18,7 @@ type NativeFrameWorldBindings struct {
 }
 
 func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) NativeFrameFXCallbacks {
-	return NativeFrameFXCallbacks{Memory: w.nativeCleanupMemory(), Tick: func(ref NativeRecordReference, c *NativeFrameRegisterContext) (NativeFrameFXStep, error) {
+	return NativeFrameFXCallbacks{Memory: w.nativeCleanupMemory(), MapPoint: bindings.MapPoint, Tick: func(ref NativeRecordReference, c *NativeFrameRegisterContext) (NativeFrameFXStep, error) {
 		at := cleanupRecordAddress(ref)
 		state, e := w.nativeCleanupMemory().Read8(at + 22)
 		if e != nil {
