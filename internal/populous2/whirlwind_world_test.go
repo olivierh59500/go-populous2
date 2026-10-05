@@ -77,8 +77,13 @@ func TestWhirlwindDoesNotSubstituteAreaDamageOrFire(t *testing.T) {
 		w.tickEffects()
 		w.tickNativeEffects()
 	}
-	if !reflect.DeepEqual(people, w.Core.Peeps) || w.Core.Alt != altitudes || w.Core.MapBlk != blocks || w.Marks != marks || len(w.FlameDeaths) != 0 {
-		t.Fatal("unported pickup/town interactions were replaced with generic damage or burning")
+	for i, p := range people {
+		if w.Core.Peeps[i].Population != p.Population {
+			t.Fatal("whirlwind substituted direct population damage")
+		}
+	}
+	if w.Core.Alt != altitudes || w.Core.MapBlk != blocks || w.Marks != marks || len(w.FlameDeaths) != 0 {
+		t.Fatal("whirlwind substituted generic terrain damage or burning")
 	}
 	if len(w.Effects) != 0 || w.NativeEffects[0].Kind != 0x20 {
 		t.Fatal("whirlwind retained the provisional moving-effect controller")
@@ -96,6 +101,9 @@ func TestWhirlwindSharedPoolFailureIsAtomic(t *testing.T) {
 	}
 	w.NativeEffects[23].Active = false
 	w.NativeEffects[23].VX, w.NativeEffects[23].VY = -19, 71
+	ref := nativeActorReference(NativeEffectPool, 23)
+	_, _ = w.RecordImage.Write16(ref, 14, uint16(w.NativeEffects[23].VX))
+	_, _ = w.RecordImage.Write16(ref, 16, uint16(w.NativeEffects[23].VY))
 	if !w.Cast(0, Whirlwind, Target{X: 32, Y: 32}) || w.NativeEffects[23].Kind != 0x20 || w.NativeEffects[23].VX != -19 || w.NativeEffects[23].VY != 71 {
 		t.Fatal("first free slot did not preserve the original velocity words")
 	}

@@ -135,7 +135,10 @@ func (w *World) tickNativeEffects() {
 		case 0x22:
 			w.tickFireColumn(a)
 		case 0x20:
-			w.tickWhirlwind(a)
+			if err := w.tickRawWhirlwind(i); err != nil {
+				panic(err)
+			}
+			continue // The complete native call hydrated its record and children.
 		case FungusActorKind:
 			w.tickFungus(i)
 		case WhirlpoolActorKind:

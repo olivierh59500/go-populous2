@@ -176,23 +176,3 @@ func (rules *WhirlwindRules) route(actor *NativeEffectActor, random func() int, 
 	// $14b34 computes 255/speed, but $14b3c overwrites that result with RNG.
 	actor.Timer = int16(random() & 0x78)
 }
-
-func (w *World) tickWhirlwind(actor *NativeEffectActor) {
-	// Pickup, town collapse and follower release retain their separate native
-	// controllers. Water children share the same ordered effect pool.
-	step := w.Whirlwinds.Tick(actor, w.random, func(x, y int) (int, uint8) {
-		cell := w.TerrainCell(x, y)
-		return cell.BaseAltitude, cell.Code
-	})
-	if step.Moved {
-		for index := range w.NativeEffects {
-			if actor == &w.NativeEffects[index] {
-				w.moveActor(NativeEffectPool, index, uint16(actor.X), uint16(actor.Y))
-				break
-			}
-		}
-	}
-	if step.SpawnWhirlpool {
-		w.castWhirlpool(int(actor.Player), step.X, step.Y)
-	}
-}

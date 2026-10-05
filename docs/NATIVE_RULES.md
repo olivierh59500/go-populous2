@@ -957,3 +957,32 @@ one-world victory increment. 1,096 original references are repeated through the
 World statistics/progression adapter. Original result-screen assets, the Zeus
 ending presentation, profile swapping, native AI and command scheduling remain
 requirements before complete campaign parity can be claimed.
+
+## Complete raw Whirlwind composition
+
+World now dispatches raw `$14a24/$14a50/$14c02` instead of the former typed
+motion-only wrapper. Creation uses the verified `$15c3e` primitive. Pickup
+`$16132` writes kind 8/state `$14`, retains native flags/population, sets weapon
+1 and stores the actual source reference at decimal offset 32. Its signed hero
+selector reads the original adjacent animation table. Transport `$11c72` follows
+that raw source's coordinates on every call without a liveness/class filter;
+state `$1a` landing resumes the ordinary walker on the following update.
+
+Town pickup retains mutable A2: the first guard reads the map-prefix byte,
+subsequent guards can read the preceding town. Actual farm cleanup and lift run
+at their source boundaries. Release `$14c20` first unlinks the effect, then
+preserves the native offset-source and D1-coordinate clobbers across movement
+and complete cleanup. It does not replace failed destinations with safe tiles.
+
+Rerouting leaves DBF's D2 word `$ffff`. Water creation replaces only the owner
+byte, so routed `$ff01/$ff02/$ff03` words can read XP through raw follower-memory
+aliases. The complete `$15cc8` creator and neutral owners are retained. The
+inherited generator's actual long now updates the retained `$eb28` command/RNG
+window whenever the native World random helper advances it.
+
+789 original CPU cases and 19,296 frames match complete World memory/RNG,
+including 73 water births, 436 lifts, 1,068 deaths, 72 town cleanups, 916 transport
+calls and 845 landings. Gameplay tests verify source dispatch/art, real release,
+retained recycled velocities and lift/save continuation. These comparisons prove
+this composed controller; full command scheduling, AI and presentation parity
+remain separate requirements.

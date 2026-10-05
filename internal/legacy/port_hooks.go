@@ -8,6 +8,9 @@ func (w *World) DirectRaiseTerrain(x, y int) bool {
 
 func (w *World) NextRandom() int { return w.rng.next() }
 
+// RandomState exposes the native generator long without copying the world.
+func (w *World) RandomState() uint32 { return uint32(w.rng) }
+
 // DirectLowerTerrain is the unpriced native effect operation. It bypasses
 // player admission and Armageddon's ordinary input gate without changing War.
 func (w *World) DirectLowerTerrain(x, y int) bool {

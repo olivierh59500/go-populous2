@@ -199,16 +199,16 @@ func (w *World) linkEffect(index int) {
 }
 
 func (w *World) castWhirlwind(player, x, y int) bool {
-	for index := range w.NativeEffects {
-		if !w.NativeEffects[index].Active {
-			if !w.Whirlwinds.Create(&w.NativeEffects, player, x, y, w.Experience[player][Air]) {
-				return false
-			}
-			w.linkEffect(index)
-			return true
-		}
+	created := false
+	err := w.runNativeFollowerCall(func() error {
+		step, err := w.PrimitiveCreators.CreateWhirlwind(uint16(player+1), uint8(x), uint8(y), w.nativePrimitiveCallbacks())
+		created = step.Created
+		return err
+	})
+	if err != nil {
+		panic(err)
 	}
-	return false
+	return created
 }
 
 func (w *World) refreshChangedTerrain(before [legacy.EndWidth * legacy.EndWidth]int) {

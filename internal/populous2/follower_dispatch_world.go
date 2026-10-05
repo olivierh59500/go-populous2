@@ -40,6 +40,10 @@ func (w *World) ManagedFollowerFrame(index int) (AnimationFrame, bool) {
 	if a.Motion.State == 0x46 {
 		return w.FollowerRuin.Frame, true
 	}
+	if a.Motion.State == 0x14 {
+		frame, ok := w.WhirlwindFollower.Frames[a.Motion.Animation]
+		return frame, ok
+	}
 	if a.Motion.State == 0x44 {
 		frame, ok := w.NeutralRules.Frames[a.Motion.Animation]
 		return frame, ok
@@ -131,6 +135,10 @@ func (w *World) updateNativeManagedFollowerDispatch(index int, prepassed bool) b
 				return err
 			}
 			switch a.Motion.State {
+			case 0x14:
+				_, err := w.NativeWhirlwind.TickFollower(ref, w.nativeWhirlwindCallbacks())
+				count = true
+				return err
 			case 6:
 				step, err := w.nativeTownEconomyTick(ref)
 				if err != nil {

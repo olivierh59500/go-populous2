@@ -24,6 +24,9 @@ bolt rewards and world skipping. Pending and applied results survive saves;
 the result screen applies its reward once and offers the native deity allocation
 step after a campaign victory. Original result/ending artwork remains under
 conversion.
+Whirlwinds now lift, transport and release native followers, collapse town farms
+and create original water children. Their complete retained controllers replace
+the former motion-only World handler.
 
 **The complete original feature set is still being converted.** Several
 powers, hero movement, native combat, campaign progression and
