@@ -231,7 +231,18 @@ func (r *NativePresentationInputRules) compilePainting(s *NativePaintingState, c
 	for i := range params {
 		params[i] = paintingField(&s.Fields[i])
 	}
-	p, err := r.Requesters.Compile(r.Paint, params)
+	compiledParameters := append([][]byte(nil), params...)
+	for i, value := range compiledParameters {
+		// $37be always contains four live pointers. A pointed-to empty
+		// string enters the native field loop and pads with k; the generic
+		// requester API also models absent pointers, which this caller
+		// never supplies. A single k yields identical padded text while
+		// params below retains the actual zero-length register count.
+		if len(value) == 0 {
+			compiledParameters[i] = []byte{'k'}
+		}
+	}
+	p, err := r.Requesters.Compile(r.Paint, compiledParameters)
 	if err != nil {
 		return nil, err
 	}
