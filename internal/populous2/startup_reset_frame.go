@@ -12,14 +12,21 @@ type NativeStartupResetFrameCall struct {
 }
 type NativeStartupResetFrameCallbacks struct {
 	Code, Memory FollowerCleanupMemory
-	CodeBase     uint32
-	Frame        *NativeFrameRegisterContext
-	Call         func(NativeStartupResetFrameCall, *uint32) (NativeCommandFrameResult, error)
+	// RAM uses absolute source labels for the original plane preparation;
+	// the initial$10a10 prelude needs all referenced graphics banks.
+	RAM      FollowerCleanupMemory
+	CodeBase uint32
+	Frame    *NativeFrameRegisterContext
+	Hardware func(NativeFrameHardwareWrite) error
+	Call     func(NativeStartupResetFrameCall, *uint32) (NativeCommandFrameResult, error)
 }
 type NativeStartupResetFrameStep struct {
 	Complete, Waiting bool
-	PC                int
-	Calls             []int
+	// Terminal MOVEQ writes establish these flags before RTS. Transport
+	// callers may restore D0 afterward without changing this returned CCR.
+	FlagsKnown, Zero, Negative bool
+	PC                         int
+	Calls                      []int
 }
 
 // ResetNativeStartup10F1A is the destructive original reset, not the later
@@ -145,7 +152,7 @@ func (s *NativeStartupResetFrameState) Advance(cb NativeStartupResetFrameCallbac
 		return out, s.failed
 	}
 	if !s.Started {
-		if s.Entry != 0x10a8c && s.Entry != 0x10ad8 {
+		if s.Entry != 0x10a10 && s.Entry != 0x10a8c && s.Entry != 0x10ad8 {
 			return out, fmt.Errorf("native startup entry%x unsupported", s.Entry)
 		}
 		s.Started = true
@@ -162,6 +169,7 @@ func (s *NativeStartupResetFrameState) Advance(cb NativeStartupResetFrameCallbac
 	}()
 	if s.Finished {
 		out.Complete = true
+		out.FlagsKnown, out.Zero, out.Negative = true, cb.Frame.D[0] == 0, int32(cb.Frame.D[0]) < 0
 		return out, nil
 	}
 	m, c := cb.Memory, cb.Frame
@@ -195,6 +203,48 @@ func (s *NativeStartupResetFrameState) Advance(cb NativeStartupResetFrameCallbac
 	}
 	for transitions := 0; transitions < 128; transitions++ {
 		switch s.PC {
+		case 0x10a10:
+			if e := m.Write8(0xeb40, 0xff); e != nil {
+				return out, e
+			}
+			target, e := m.Read32(0xdbe)
+			if e != nil {
+				return out, e
+			}
+			if e = m.Write32(0x22, target); e != nil {
+				return out, e
+			}
+			s.A[0] = code(0x214b2)
+			s.PC = 0x10a28
+		case 0x10a28:
+			if !winMemoryValid(cb.RAM) {
+				return out, fmt.Errorf("native initial startup physical graphics backing missing")
+			}
+			var addresses [7]uint32
+			for i := range addresses {
+				addresses[i] = s.A[i].Address
+			}
+			if e := PrepareNativeResourceFramePlanesWithRegisters(cb.RAM, s.A[0].Address, c.AddressBase+0x3be, c, &addresses); e != nil {
+				return out, e
+			}
+			for i, address := range addresses {
+				s.A[i] = NativeRequesterAddress{Address: address, Absolute: true}
+			}
+			s.PC = 0x10a2e
+		case 0x10a2e:
+			if cb.Hardware == nil {
+				return out, fmt.Errorf("native initial startup DMACON writer missing")
+			}
+			if e := cb.Hardware(NativeFrameHardwareWrite{PC: 0x10a2e, Address: 0xdff096, Value: 0x8400, Width: 2}); e != nil {
+				return out, e
+			}
+			if e := RebaseNativeStartupAnimations(cb, &s.A); e != nil {
+				return out, e
+			}
+			if e := m.Write16(0xe8fc, 5); e != nil {
+				return out, e
+			}
+			s.PC = 0x10a8c
 		case 0x10a8c:
 			mode, e := m.Read16(0xeb44)
 			if e != nil {
@@ -328,6 +378,7 @@ func (s *NativeStartupResetFrameState) Advance(cb NativeStartupResetFrameCallbac
 		case 0:
 			s.Finished = true
 			out.Complete = true
+			out.FlagsKnown, out.Zero, out.Negative = true, c.D[0] == 0, int32(c.D[0]) < 0
 			return out, nil
 		default:
 			return out, fmt.Errorf("native startup PC%x unsupported", s.PC)

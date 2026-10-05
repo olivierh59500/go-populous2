@@ -26,6 +26,7 @@ type startupResetFrameFixture struct {
 		BSSHash, CodeHash string
 		Cursor            uint16
 	}
+	CCR               uint16
 	D                 [8]uint32
 	A                 [7]uint32
 	BSSHash, CodeHash string
@@ -123,6 +124,9 @@ func TestNativeStartupResetFramesAgainstOriginalCPU(t *testing.T) {
 							t.Fatal(e)
 						}
 						if step.Complete {
+							if !step.FlagsKnown || step.Zero != (f.CCR&4 != 0) || step.Negative != (f.CCR&8 != 0) {
+								t.Fatal("source startup terminal CCR differs")
+							}
 							break
 						}
 						if !step.Waiting {
