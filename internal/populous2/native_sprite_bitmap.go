@@ -64,13 +64,23 @@ func (b *NativeSpriteBitmapBank) Paint(request NativePresentationSprite, bitmap 
 // are already complemented/transposed by $1069c. The producer owns the
 // original register outputs; this sink only writes the actual32000-byte RAM.
 func (s NativePreparedSprite) Paint(request NativePresentationSprite, bitmap []byte) error {
+	if s.Height != int(request.Height) {
+		return fmt.Errorf("native sprite pixel height differs")
+	}
+	return s.paintRows(request, bitmap, s.Height)
+}
+
+// paintRows retains the prepared source plane stride while an original
+// cropped entry supplies a smaller visible height. No source buffer is packed
+// again or allocated per draw.
+func (s NativePreparedSprite) paintRows(request NativePresentationSprite, bitmap []byte, visibleHeight int) error {
 	width := 16
 	if request.Routine == 0xf3a0 {
 		width = 32
 	} else if request.Routine != 0xf0ee {
 		return fmt.Errorf("native sprite pixel routine%x unsupported", request.Routine)
 	}
-	if len(bitmap) != 32000 || s.Width != width || s.Height != int(request.Height) || s.Height <= 0 || len(s.Planes) != width/8*5*s.Height {
+	if len(bitmap) != 32000 || s.Width != width || visibleHeight <= 0 || visibleHeight > s.Height || s.Height <= 0 || len(s.Planes) != width/8*5*s.Height {
 		return fmt.Errorf("native sprite pixel geometry/backing differs")
 	}
 	x, y := int(request.X), int(request.Y)
@@ -79,7 +89,7 @@ func (s NativePreparedSprite) Paint(request NativePresentationSprite, bitmap []b
 	if y == -32768 {
 		return fmt.Errorf("native sprite vertical overflow needs adjacent source backing")
 	}
-	if x <= -width || x >= 320 || y >= 200 || y+s.Height <= 0 {
+	if x <= -width || x >= 320 || y >= 200 || y+visibleHeight <= 0 {
 		return nil
 	}
 	stride := width / 8
@@ -93,7 +103,7 @@ func (s NativePreparedSprite) Paint(request NativePresentationSprite, bitmap []b
 		}
 		return uint64(binary.BigEndian.Uint32(s.Planes[at:])) << 16 >> shift
 	}
-	first, last := 0, s.Height
+	first, last := 0, visibleHeight
 	if y < 0 {
 		first = -y
 	}
