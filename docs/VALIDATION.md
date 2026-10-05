@@ -655,3 +655,22 @@ match the same adjacent RAM; no exception or pixel clamp hides them.
 This establishes main world drawing and the bitmap sink. Alternate-view $c204,
 town challenge/editor inputs, complete main-render orchestration and live Game
 activation remain required work.
+
+## Main rendering composition
+
+NativeMainRenderState composes the actual $ea0..$10b6 rendering sequence:
+background copy, highlights, HUD, selected actor/editor, countdown, normal or
+alternate world, map cursor, camera marker and pointer. The mutable CODE $e8ce
+town hit height is shared across selected, normal and alternate actor drawing.
+Beginning another frame resets only the program position, preserving those
+shared fields. Modal callbacks must currently finish synchronously; this
+collector must not be retried after a partially executed child fails.
+
+All 727 original CPU/DMA references match eight registers, the complete
+70,272-byte BSS, the shared image/audio bank, town hit height, framebuffer and
+initialized adjacent bitmap RAM. The references include 340 normal and 387
+alternate views, all four BLOCK banks and 124 animated tile220 boundary cases.
+These captures use the actual base sprite bank; separate bank decoding tests
+cover the other three sprite resources. Actual editor/debug children and
+wait-safe modal composition remain distinct requirements before live Game
+activation. This proves source rendering order, not the completed game loop.
