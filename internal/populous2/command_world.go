@@ -608,6 +608,28 @@ func (w *World) nativeNormalCommandCallbacks(bindings NativeCommandWorldBindings
 		c, m := call.Context, w.nativeCleanupMemory()
 		owner, x, y := uint16(c.D[2]), uint8(c.D[0]), uint8(c.D[1])
 		switch call.Routine {
+		case 0x4f8e:
+			return w.commandMessage(call)
+		case 0x111ae:
+			return w.commandSwitchProfile(call)
+		case 0x10cbe:
+			return w.commandInitialFollower(call)
+		case 0xdb26, 0xdd1c:
+			return w.commandScenery(call)
+		case 0x131cc:
+			return w.commandNeutralCreation(call)
+		case 0xdff4:
+			return w.commandRemove(call, bindings.Trace)
+		case 0xdf68:
+			return w.commandBatholith(call)
+		case 0x165da:
+			return w.commandEarthquakeCreation(call)
+		case 0xd80c, 0x12f8a:
+			return w.commandSculpt(call)
+		case 0x16af4:
+			return w.commandTsunamiCreation(call)
+		case 0x13022:
+			return w.commandArmageddon(call, bindings.Trace)
 		case 0x171ea:
 			return w.commandBasaltCreation(call)
 		case 0x15de2, 0x15e8a, 0x15f80:

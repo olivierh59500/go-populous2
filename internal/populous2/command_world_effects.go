@@ -226,6 +226,16 @@ func (w *World) commandHeroCreation(call NativeCommandCall, trace func(NativeCom
 		c.D[0] = 0
 		return true, nil
 	}
+	return w.commandHeroConversion(NativeRecordReference(ref), call, trace)
+}
+
+func (w *World) commandHeroConversion(reference NativeRecordReference, call NativeCommandCall, trace func(NativeCommandCall)) (bool, error) {
+	c, m := call.Context, w.nativeCleanupMemory()
+	selector := uint16(c.D[0])
+	if selector > 10 || selector&1 != 0 {
+		return false, fmt.Errorf("native direct hero selector%d unavailable", selector)
+	}
+	ref := uint16(reference)
 	at := cleanupRecordAddress(NativeRecordReference(ref))
 	actorOwner, e := m.Read8(at + 12)
 	if e != nil {
@@ -292,6 +302,100 @@ func (w *World) commandHeroCreation(call NativeCommandCall, trace func(NativeCom
 	}
 	if kind == 4 {
 		commandWord(c, 2, 15)
+	}
+	c.D[0] = 1
+	return false, nil
+}
+
+func (w *World) commandTsunamiCreation(call NativeCommandCall) (bool, error) {
+	c, m := call.Context, w.nativeCleanupMemory()
+	owner, x, y := uint16(c.D[2]), uint8(c.D[0]), uint8(c.D[1])
+	origin := uint16(y)<<8 | uint16(x)
+	commandWord(c, 1, origin)
+	c.D[5] = 0xfffffffc
+	tiles := [4]uint8{}
+	for i, offset := range w.TsunamiRules.Origins {
+		parcel := origin + offset
+		if parcel&0xc0c0 == 0 {
+			v, e := m.Read8(tsunamiGrid(parcel) + 1)
+			if e != nil {
+				return false, e
+			}
+			tiles[i] = v
+		}
+	}
+	step, e := w.TsunamiRules.Create(owner, x, y, w.tsunamiCallbacks())
+	if e != nil {
+		return false, e
+	}
+	created := 0
+	for i, offset := range w.TsunamiRules.Origins {
+		commandWord(c, 5, uint16(c.D[5])+4)
+		parcel := origin + offset
+		commandWord(c, 3, parcel)
+		commandWord(c, 0, parcel&0xc0c0)
+		if parcel&0xc0c0 != 0 {
+			continue
+		}
+		commandWord(c, 4, parcel)
+		commandWord(c, 3, parcel&0xff00|uint16(uint8(parcel)*4))
+		commandByte(c, 0, tiles[i])
+		commandWord(c, 0, uint16(c.D[0])*2)
+		if w.TsunamiRules.Properties[tiles[i]]&8 == 0 {
+			continue
+		}
+		if created >= len(step.References) && step.PoolFull {
+			return false, nil
+		}
+		if created >= len(step.References) {
+			return false, fmt.Errorf("native tsunami source allocation sequence differs")
+		}
+		c.D[6] = uint32(w.TsunamiRules.Speed)
+		c.D[0] = uint32(uint16(step.References[created]))
+		created++
+	}
+	commandWord(c, 5, uint16(c.D[5])+4)
+	commandWord(c, 3, 0xff9d)
+	return false, nil
+}
+
+func (w *World) commandArmageddon(call NativeCommandCall, trace func(NativeCommandCall)) (bool, error) {
+	c, m := call.Context, w.nativeCleanupMemory()
+	enabled, e := m.Read16(0xf12)
+	if e != nil {
+		return false, e
+	}
+	if enabled != 0 {
+		return false, nil
+	}
+	cb := ArmageddonCallbacks{Memory: m}
+	cb.Random = func() uint16 {
+		v := uint16(w.random())
+		c.D[0] = uint32(v)
+		_ = commandDivide(c, 0, 4)
+		commandSwap(c, 0)
+		commandWord(c, 0, uint16(c.D[0])*2)
+		return v
+	}
+	cb.Convert = func(ref NativeRecordReference, selector uint16) error {
+		owner, e := m.Read8(cleanupRecordAddress(ref) + 12)
+		if e != nil {
+			return e
+		}
+		commandByte(c, 2, owner)
+		inner := NativeCommandCall{Routine: 0x142fe, Caller: call.Caller, Context: c}
+		if trace != nil {
+			trace(inner)
+		}
+		_, e = w.commandHeroConversion(ref, inner, trace)
+		return e
+	}
+	cb.Cleanup = func(ref NativeRecordReference, mode uint16) error {
+		return w.commandFollowerCleanup(ref, mode, call, trace)
+	}
+	_, e = w.ArmageddonRules.Cast(cb)
+	if e != nil {
+		return false, e
 	}
 	c.D[0] = 1
 	return false, nil
@@ -790,4 +894,55 @@ func (w *World) commandGroundCreation(call NativeCommandCall) (bool, error) {
 		return false, transferError
 	}
 	return false, nil // These normal handlers do not branch on returned Z.
+}
+
+func (w *World) commandFollowerCleanup(ref NativeRecordReference, mode uint16, call NativeCommandCall, trace func(NativeCommandCall)) error {
+	c, m := call.Context, w.nativeCleanupMemory()
+
+	c.D[0] = uint32(mode)
+	inner := NativeCommandCall{Routine: 0x124a2, Caller: call.Caller, Context: c}
+	if trace != nil {
+		trace(inner)
+	}
+	at := cleanupRecordAddress(ref)
+	owner, e := m.Read8(at + 12)
+	if e != nil {
+		return e
+	}
+	flags, e := m.Read8(at + 13)
+	if e != nil {
+		return e
+	}
+	marker, e := m.Read16(heroGodAddress(owner) + 10)
+	if e != nil {
+		return e
+	}
+	traced := false
+	cleanup := FollowerCleanupCallbacks{Memory: m, Insert: w.nativeRuntimeInsert, ClearFarms: w.clearNativeFarms}
+	cleanup.Unlink = func(target NativeRecordReference) error {
+		if !traced && flags&1 != 0 && uint16(target) == marker && trace != nil {
+			x, e := m.Read8(at + 6)
+			if e != nil {
+				return e
+			}
+			y, e := m.Read8(at + 8)
+			if e != nil {
+				return e
+			}
+			markerContext := *c
+			product := uint32(uint16(int16(int8(owner)))) * 314
+			markerContext.D[0], markerContext.D[1] = product, product
+			commandByte(&markerContext, 0, x)
+			commandByte(&markerContext, 1, y)
+			commandByte(&markerContext, 2, owner)
+			commandExtend(&markerContext, 2)
+			trace(NativeCommandCall{Routine: 0x13fe4, Caller: call.Caller, Context: &markerContext})
+			traced = true
+		}
+		return w.nativeRuntimeUnlink(target)
+	}
+	step, e := CleanupFollower(ref, FollowerCleanupRegisters{D0: c.D[0], D1: c.D[1], D2: c.D[2]}, cleanup)
+	c.D[0], c.D[1], c.D[2] = step.Registers.D0, step.Registers.D1, step.Registers.D2
+	return e
+
 }

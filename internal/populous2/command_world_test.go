@@ -11,17 +11,24 @@ import (
 )
 
 type commandNativeInput struct {
-	Name, Mode            string
-	Context               [8]uint32
-	Owner, Command, X, Y  uint8
-	Free, Pause, GameMode uint16
-	Mana                  uint32
-	XP                    uint8
-	Zero                  bool
-	Seed                  uint32
-	Header, Tile          uint8
-	Busy                  int
-	Sequence              []uint8
+	Name, Mode                string
+	Context                   [8]uint32
+	Owner, Command, X, Y      uint8
+	Free, Pause, GameMode     uint16
+	Mana                      uint32
+	XP                        uint8
+	Zero                      bool
+	Seed                      uint32
+	Header, Tile              uint8
+	Busy                      int
+	Sequence                  []uint8
+	FollowerState, FirstFlags uint8
+	Enabled                   uint16
+	Initial                   []commandNativePatch
+}
+type commandNativePatch struct {
+	Address, Width int
+	Value          uint32
 }
 type commandNativeCall struct {
 	Routine int
@@ -54,7 +61,8 @@ func commandNativeInitial(c commandNativeInput) []byte {
 		binary.BigEndian.PutUint16(b[v.at:], v.value)
 	}
 	b[0xeb56], b[0xeb57], b[0xeb58], b[0xeb59] = c.Owner, c.Command, c.X, c.Y
-	if c.Mode == "world" {
+	binary.BigEndian.PutUint16(b[0xf12:], c.Enabled)
+	if c.Mode == "world" || c.Mode == "lower" || c.Mode == "raise" {
 		binary.BigEndian.PutUint32(b[0xeb28:], c.Seed)
 		for i := 0; i < 4096; i++ {
 			b[0xf44+i*4] = c.Header
@@ -98,6 +106,10 @@ func commandNativeInitial(c commandNativeInput) []byte {
 				b[a] = 4
 			}
 			b[a+12] = uint8(i%2 + 1)
+			b[a+22] = c.FollowerState
+			if i == 0 {
+				b[a+13] = c.FirstFlags
+			}
 			if i == 1 {
 				b[a+13] = 2
 			}
@@ -105,6 +117,16 @@ func commandNativeInitial(c commandNativeInput) []byte {
 			binary.BigEndian.PutUint16(b[a+8:], uint16(c.Y)*256+128)
 			binary.BigEndian.PutUint32(b[a+26:], uint32(100+i*300))
 			insert(a, 0xf44+int(c.Y)*256+int(c.X)*4)
+		}
+	}
+	for _, p := range c.Initial {
+		switch p.Width {
+		case 1:
+			b[p.Address] = uint8(p.Value)
+		case 2:
+			binary.BigEndian.PutUint16(b[p.Address:], uint16(p.Value))
+		case 4:
+			binary.BigEndian.PutUint32(b[p.Address:], p.Value)
 		}
 	}
 	return b
@@ -166,7 +188,7 @@ func TestWorldNativeNormalCommandsAgainstOriginalBodies(t *testing.T) {
 	if err := json.Unmarshal(data, &catalog); err != nil {
 		t.Fatal(err)
 	}
-	if len(catalog.Cases) != 7470 {
+	if len(catalog.Cases) != 14061 {
 		t.Fatal("native World command body corpus incomplete")
 	}
 	bundle := testBundle(t)
