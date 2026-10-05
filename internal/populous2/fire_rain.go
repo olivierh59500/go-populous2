@@ -49,6 +49,7 @@ func DecodeFireRainRules(exe *amiga.Executable) (FireRainRules, error) {
 
 type FireRainCallbacks struct {
 	Memory       FollowerCleanupMemory
+	Frame        *NativeFrameRegisterContext
 	Random       func() uint16
 	Link, Unlink func(NativeRecordReference) error
 	// Scorch is $1735a, and Damage is the complete $16542 raw linked-record
@@ -188,6 +189,18 @@ func (r *FireRainRules) Tick(ref NativeRecordReference, cb FireRainCallbacks) (F
 		if err := m.Write8(at+22, 0x1e); err != nil {
 			return step, err
 		}
+		if cb.Frame != nil {
+			grid, e := stormCell(m, at)
+			if e != nil {
+				return step, e
+			}
+			head, e := m.Read16(grid + 2)
+			if e != nil {
+				return step, e
+			}
+			cb.Frame.D[0] = uint32(int32(at - 0x76c0))
+			cb.Frame.Word(1, head)
+		}
 		if err := cb.Link(ref); err != nil {
 			return step, err
 		}
@@ -202,6 +215,9 @@ func (r *FireRainRules) Tick(ref NativeRecordReference, cb FireRainCallbacks) (F
 		return step, err
 	}
 	next := animation + 4
+	if cb.Frame != nil {
+		cb.Frame.Word(0, next)
+	}
 	word, err := r.imageWord(next)
 	if err != nil {
 		return step, err
@@ -245,6 +261,11 @@ func (r *FireRainRules) Tick(ref NativeRecordReference, cb FireRainCallbacks) (F
 			return step, err
 		}
 		height := uint16(header&7) + uint16(r.Raster[tile]&1)
+		if cb.Frame != nil {
+			cb.Frame.Word(4, uint16(grid-0xf44))
+			cb.Frame.D[5] = uint32(height) * 3
+			cb.Frame.D[0] = uint32(tile)
+		}
 		impact = int16(height*3) >= int16(life)
 	}
 	if !impact {
@@ -258,6 +279,10 @@ func (r *FireRainRules) Tick(ref NativeRecordReference, cb FireRainCallbacks) (F
 		return step, err
 	}
 	step.Hits, err = cb.Damage(ref)
+	if cb.Frame != nil {
+		cb.Frame.Word(0, 0)
+		cb.Frame.D[1] = uint32(step.Hits)
+	}
 	if err != nil {
 		return step, err
 	}
@@ -278,6 +303,9 @@ func (r *FireRainRules) Tick(ref NativeRecordReference, cb FireRainCallbacks) (F
 	if err != nil {
 		return step, err
 	}
+	if cb.Frame != nil {
+		cb.Frame.Word(4, uint16(tile)*2)
+	}
 	animation = 0x49c
 	if r.Properties[tile]&8 != 0 {
 		animation = 0x5ec
@@ -286,6 +314,9 @@ func (r *FireRainRules) Tick(ref NativeRecordReference, cb FireRainCallbacks) (F
 		}
 	}
 	next = animation + 4
+	if cb.Frame != nil {
+		cb.Frame.Word(0, next)
+	}
 	word, err = r.imageWord(next)
 	if err != nil {
 		return step, err

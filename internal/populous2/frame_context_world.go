@@ -53,6 +53,11 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 				}
 				return nil
 			}})
+		case 0x1c, 0x1e, 0x20:
+			cb := w.fireRainCallbacks()
+			cb.Frame = c
+			step, e := w.FireRainRules.Tick(ref, cb)
+			return NativeFrameFXStep{Draw: !step.NextActor, Color: 5}, e
 		case 0x16, 0x18, 0x1a:
 			rules := NativeCommandRules{Code: w.NativeAI.Code}
 			return rules.TickFrameLightning(ref, c, NativeFrameLightningCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Unlink: w.nativeRuntimeUnlink, Dismiss: func(context *NativeFrameRegisterContext) error {
