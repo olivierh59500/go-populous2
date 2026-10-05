@@ -63,6 +63,8 @@ type World struct {
 	TsunamiRules             TsunamiRules
 	PlagueRules              PlagueRules
 	ArmageddonRules          ArmageddonRules
+	ForestNative             ForestNativeRules
+	RenewNative              RenewNativeRules
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
@@ -180,6 +182,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.FireRainRules = bundle.FireRainRules
 	w.HurricaneRules, w.TsunamiRules = bundle.HurricaneRules, bundle.TsunamiRules
 	w.PlagueRules, w.ArmageddonRules = bundle.PlagueRules, bundle.ArmageddonRules
+	w.ForestNative, w.RenewNative = bundle.ForestNative, bundle.RenewNative
 	w.TownEconomy, err = DecodeNativeTownEconomyRules(land)
 	if err != nil {
 		return nil, err
@@ -435,10 +438,13 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		applied = true
 	case Plague:
 		applied = w.castPlague(player, target.X+target.Y*64)
-	case Swamp, Flowers, Baptism:
+	case Swamp, Baptism:
 		applied = w.castGroundEffect(player, id, target.X, target.Y)
+	case Flowers:
+		w.castNativeRenew(player, target.X, target.Y)
+		applied = true
 	case Trees:
-		applied = w.plantScenery(SceneryTree, player, target.X, target.Y) > 0
+		applied = w.castNativeForest(player, target.X, target.Y)
 	case Fungus:
 		w.castFungus(player, target.X, target.Y)
 		// The native command handler consumes the cast even when planting

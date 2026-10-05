@@ -78,6 +78,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Native Armageddon | 720 complete native state-filter/conversion/cleanup/command-boundary cases match World BSS/RNG; admitted recasts, debit and 300-update saved continuation pass |
 | Waiting continuation | 32 additional original state10/animation0 references cover ordinary image-loop continuation and signed timer expiry after hero search found no target |
 | Disease/global saves | Version 22 preserves plague phases and native terrain permission; old disease/war state migrates without a replayed cast or mutated snapshot |
+| Forest/Renew/scenery | 4,522 complete original memory/RNG cases cover all terrain codes, signed owner/XP and DIVU aliases, sampled creation, metric/debit, every signed age and mixed fire/town chains; World repeats all cases including 4,020 raw aging/fire updates, pool reuse and saved continuation |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |

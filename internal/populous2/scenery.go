@@ -193,66 +193,6 @@ func (w *World) initializeScenery() {
 	}
 }
 
-// tickScenery follows $de36, including the signed byte burial counters.
-func (w *World) tickScenery() {
-	for i := range w.Scenery {
-		a := &w.Scenery[i]
-		if !a.Active {
-			continue
-		}
-		r := w.SceneryBank.Trees
-		if a.Kind == SceneryBoulder {
-			r = w.SceneryBank.Boulders
-		}
-		if a.Removing {
-			if a.Age > 0 {
-				a.Age--
-				a.Animation = w.SceneryBank.RemovalEnd
-				a.Frame = 0
-				continue
-			}
-			if a.Age < 0 {
-				age := -int(a.Age) + 1
-				if age == w.SceneryBank.Trees.InitialAge {
-					w.removeScenery(i)
-					continue
-				}
-				a.Age = int8(-age)
-				continue
-			}
-			a.Frame++
-			if a.Frame >= len(w.SceneryBank.Frames[a.Animation]) {
-				x, y := a.X, a.Y
-				a.Age = -1
-				a.Animation = w.SceneryBank.RemovalStart
-				a.Frame = 0
-				w.spreadTreeFire(x, y)
-			}
-			continue
-		}
-		code := w.TerrainCell(a.X, a.Y).Code
-		buried := w.GroundRules.Properties[code]&0x88 != 0
-		if a.Age < 0 {
-			age := -int(a.Age) + 1
-			if age == w.SceneryBank.Trees.InitialAge {
-				w.removeScenery(i)
-				continue
-			}
-			a.Age = int8(-age)
-			if !buried {
-				a.Age = -a.Age
-			}
-			continue
-		}
-		if a.Age > 0 && w.Core.GameTurn&r.AgeMask == 0 {
-			a.Age--
-		}
-		if buried {
-			a.Age = -(a.Age + 1)
-		}
-	}
-}
-
 func (w *World) removeScenery(index int) {
 	a := &w.Scenery[index]
 	w.unlinkActor(NativeSceneryPool, index)

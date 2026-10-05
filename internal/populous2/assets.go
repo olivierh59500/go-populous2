@@ -49,6 +49,8 @@ type Bundle struct {
 	TsunamiRules      TsunamiRules
 	PlagueRules       PlagueRules
 	ArmageddonRules   ArmageddonRules
+	ForestNative      ForestNativeRules
+	RenewNative       RenewNativeRules
 	Audio             *AudioBank
 	Actions           []NativeAction
 	GroundRules       GroundEffectRules
@@ -258,6 +260,14 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.ArmageddonRules, err = DecodeArmageddonRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.ForestNative, err = DecodeForestNativeRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.RenewNative, err = DecodeRenewNativeRules(exe)
 	if err != nil {
 		return nil, err
 	}

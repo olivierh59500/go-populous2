@@ -42,8 +42,7 @@ func DecodeGroundEffectRules(exe *amiga.Executable) (GroundEffectRules, error) {
 	return r, nil
 }
 
-// castGroundEffect follows $16938 (fonts), $169cc (swamps) and $16a62
-// (greenery). The sampled positions and number of attempts come from the
+// castGroundEffect follows $16938 (fonts) and $169cc (swamps). The sampled positions and number of attempts come from the
 // native tables, rather than a filled radius-two circle. Empty attempts still
 // consume the cast: these three native command handlers do not test success.
 func (w *World) castGroundEffect(player int, id SpellID, x, y int) bool {
@@ -58,10 +57,6 @@ func (w *World) castGroundEffect(player int, id SpellID, x, y int) bool {
 		base := r.SwampCount
 		count = w.random()%base + base/2
 		tile, mask = 168, 0x27
-	case Flowers:
-		base := r.GreeneryCount
-		count = w.random()%base + base/2 + int(w.Experience[player][Plants]>>5)
-		tile = 245
 	default:
 		return false
 	}
@@ -75,17 +70,10 @@ func (w *World) castGroundEffect(player int, id SpellID, x, y int) bool {
 		}
 		pos := xx + yy*64
 		cell := w.TerrainCell(xx, yy)
-		if id == Flowers {
-			if cell.Shape != 15 {
-				continue
-			}
-		} else if w.Core.MapWho[pos] != 0 || w.sceneryAt(pos) >= 0 || r.Properties[cell.Code]&mask == 0 {
+		if w.Core.MapWho[pos] != 0 || w.sceneryAt(pos) >= 0 || r.Properties[cell.Code]&mask == 0 {
 			continue
 		}
 		w.Marks[pos] = Mark{Spell: id, Player: player, Life: 1, Persistent: true, NativeTile: tile}
-		if id == Flowers && w.Core.MapBlk[pos] == legacy.BadLand {
-			w.Core.MapBlk[pos] = legacy.FlatBlock
-		}
 	}
 	return true
 }

@@ -17,6 +17,8 @@ Their native controllers and directions survive Go saves.
 Plague uses the original per-record clock and actual merge/birth inheritance.
 Armageddon converts eligible groups into heroes and enables their terrain
 raising; it retains the original state filters, plague cleanup and recast rules.
+Forest and Renew Land use complete native allocation/terrain routines, while
+the raw scenery pass preserves signed aging, burial and fire/town interactions.
 
 **The complete original feature set is still being converted.** Several
 powers, hero movement, native combat, campaign progression and

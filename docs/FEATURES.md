@@ -35,8 +35,8 @@ the remaining simulation routines.
 | Perseus | 2 | 36 | Complete native creation, original art, shared native hero decisions and combat; combined interaction coverage pending |
 | Plague | 3 | 78 | Complete native signed-kind/owner-byte cast, per-record vulture phase and original zero-damage prepass, actual merge/birth inheritance and retained death; World raw cast comparisons pass |
 | Armageddon | 4 | 72 | Complete native eligible-state scan: plague cleanup and random conversion into the first four heroes; enables direct hero terrain raising, with admitted no-op recasts; World full-memory/RNG and saved continuation comparisons pass |
-| Forest | 6 | 46 | Native sampled allocation, original variants, signed aging/burial counters and rendering; popularity and remaining actor interactions pending |
-| Renew land | 7 | 80 | Native sampled placement and tile 245; separate from the fungus automaton; popularity interactions pending |
+| Forest | 6 | 46 | Complete native sampled raw allocation, signed tile/owner aliases, created-tree deity metric, aging/burial and mixed fire/town interactions; full World memory/RNG comparisons pass; age-dependent sprite clipping remains under integration |
+| Renew land | 7 | 80 | Complete native raster-shape placement of tile 245, including occupied/hero cells and retained negative-owner DIVU aliases; full World memory/RNG comparisons pass; no separate popularity write exists in this body |
 | Swamp | 8 | 54 | Native placement/tiles, shallow restoration, hero immunity and retained death/terminal dispatch |
 | Fungus | 9 | 26 | Native seed/collection, staged B3/S23 automaton, cadence, mature-tile mortality/Adonis immunity and retained death art; full linked death state and adjacent-BSS edge behavior pending |
 | Adonis | 10 | 58 | Complete native creation, shared routing/combat and verified native post-victory split/full-pool behavior; combined interactions pending |

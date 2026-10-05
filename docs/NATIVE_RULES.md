@@ -257,11 +257,26 @@ Three initializations executed in the original 68000 code match the Go actor
 records and final random states exactly. Native forest casting at `$da0a`
 reuses this pool and adds the vegetation experience contribution to its sampled
 attempt count. Saved games retain these actors and reconstruct their tile index.
+The complete `$179be/$179ec` command also adds the actual created-tree count
+to deity word `$44`, and reaches its debit only when that count is nonzero.
+High terrain codes use the original sign-extended property-table indexing;
+owner/XP words can alias retained data instead of a normalized player profile.
 
 Initial placement can share scenery/occupied cells: the original prepends a
 follower to its linked tile list. Ordinary movement and settlement support
-reject boulders, while trees can remain under a settlement. Full linked actor
-occupancy and the remaining destruction/interaction states still need work.
+reject boulders, while trees can remain under a settlement. Native `$de36`
+now owns the complete raw scenery pass in World. Signed ages, recovery,
+wrapping removal counters and kind `$1e` burning preserve original writes.
+`$173b0` visits four neighboring mixed lists, kills nonhero kind 2 actors without
+immediate cleanup, burns adjacent trees and invokes complete town destruction.
+The pass can affect later scenery slots in that same update.
+
+4,522 complete original cases compare Forest/Renew commands, every terrain
+code, raw owner/XP and full-pool edges, all signed tree/boulder ages and mixed
+fire chains. World repeats the complete memory/RNG checks and 4,020 aging/fire
+updates with real graph/town callbacks. Saves continue those retained bytes.
+The native age-dependent renderer clips emerging/buried sprites; its separate
+presentation translation remains in progress.
 
 Register continuation is also retained during startup: `$cd22` leaves `D2=-99`,
 and `$d9d8` does not clear it before `$da0a`. Its signed deity check can alias
@@ -471,6 +486,11 @@ full linked death records and remaining terrain-prepass branches remain
 verification targets; visible retained artwork alone does not establish them.
 
 Renew Land at `$16a62` scatters tile 245 and never creates this controller.
+Its complete native body checks raster shape 15 without inspecting owner,
+occupancy or hero state. It performs no separate popularity/metric update,
+and the command consumes even an empty attempt set. Negative-owner aliases
+preserve the high register word and original DIVU overflow behavior. World
+uses this same raw routine and retains native tile writes in its map bridge.
 Its properties are `$01`, so it is eligible ground rather than a living
 fungus neighbor. Version 10 saves retain pending references, packed working
 coordinates, timers and inclusive bounds.
