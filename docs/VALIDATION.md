@@ -871,3 +871,20 @@ backing, complete startup-byte import and rejection during a borrowed frame.
 They also verify that BeginRaw preserves loaded records and releases its
 borrow. Relocated CODE sharing and complete startup/Game activation remain
 separate integration work.
+
+## Runtime resource ownership
+
+NativeRuntimeHost composes real HUNK allocations, relocation-aware CODE,
+callback-backed World BSS, input, chip screens, encoded filesystem handles and
+the configured allocator. The constructor imports actual zero-initialized
+HUNK1 bytes. It deliberately leaves the Copper builders, resource allocation
+and world startup as separate source operations rather than inheriting an
+already-generated prototype world.
+
+Integration tests verify identical CODE/screen owners, live logical/physical
+pointer updates, source Copper initialization and genuine1A43E/1A4BC loading
+and release of FX/QAZ. A missing FX file enters the actual retained requester;
+advancing again neither completes startup nor repeats the allocated prefix.
+Every callback requires the configured BSS base. Complete startup children,
+presentation CODE aliases and live Game-loop activation remain integration
+work; construction alone does not make the game ready to run.
