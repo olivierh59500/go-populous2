@@ -98,6 +98,14 @@ func TestNativeAudioPCMAgainstOriginalCPUHardwareTraces(t *testing.T) {
 }
 
 func TestNativeAudioPCMConcurrentReadAndCommands(t *testing.T) {
+	for _, dma := range []bool{false, true} {
+		t.Run(fmt.Sprintf("raster-dma%v", dma), func(t *testing.T) {
+			testNativeAudioPCMConcurrentReadAndCommands(t, dma)
+		})
+	}
+}
+
+func testNativeAudioPCMConcurrentReadAndCommands(t *testing.T, dma bool) {
 	bundle := testBundle(t)
 	d, err := NewNativeAudioDevice(bundle.Executable, bundle.Raw["fx.dat"], 0x100000, 0x800000, 0)
 	if err != nil {
@@ -113,7 +121,12 @@ func TestNativeAudioPCMConcurrentReadAndCommands(t *testing.T) {
 		}
 		return absolute[address], nil
 	}
-	p, err := NewNativeAudioPCM(d, NativePALAudioTiming(44100, 0))
+	var p *NativeAudioPCM
+	if dma {
+		p, err = NewNativeAudioPCMWithDMA(d, NativePALAudioTiming(44100, 0), NativePALPaulaDMAConfig(0))
+	} else {
+		p, err = NewNativeAudioPCM(d, NativePALAudioTiming(44100, 0))
+	}
 	if err != nil {
 		t.Fatal(err)
 	}

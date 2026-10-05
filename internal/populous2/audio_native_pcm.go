@@ -37,6 +37,7 @@ type nativePaulaPCMChannel struct {
 type NativeAudioPCM struct {
 	mu                                 sync.Mutex
 	device                             *NativeAudioDevice
+	dma                                *NativePaulaDMAState
 	timing                             NativeAudioTiming
 	channels                           [4]nativePaulaPCMChannel
 	frame                              NativeFrameRegisterContext
@@ -75,6 +76,48 @@ func NewNativeAudioPCM(device *NativeAudioDevice, timing NativeAudioTiming) (*Na
 	device.TimerLow = timing.TimerLow
 	period := (uint64(0x1900|uint16(timing.TimerLow)) + 1) * uint64(timing.PaulaHz/timing.CIAHz)
 	return &NativeAudioPCM{device: device, timing: timing, nextCIA: period, ciaPeriod: period}, nil
+}
+
+// NewNativeAudioPCMWithDMA selects the raster DMA transport. The existing
+// constructor remains the byte-stream reference for CPU register traces.
+// Beam/request phase is supplied explicitly; IRQ writes still arrive at the
+// configured CIA boundary, rather than claiming captured68000 bus timestamps.
+func NewNativeAudioPCMWithDMA(device *NativeAudioDevice, timing NativeAudioTiming, config NativePaulaDMAConfig) (*NativeAudioPCM, error) {
+	p, err := NewNativeAudioPCM(device, timing)
+	if err != nil {
+		return nil, err
+	}
+	p.dma, err = NewNativePaulaDMAState(config, func(address uint32) (uint16, error) {
+		base := device.long(0x18ec6) - 4
+		at := int(int64(address) - int64(base))
+		if at >= 0 && at <= len(device.FX)-2 {
+			return binary.BigEndian.Uint16(device.FX[at:]), nil
+		}
+		// Startup discards a real fetch from the previous pointer, often0.
+		// It must read configured backing; an invented zero word is not used.
+		if device.ReadAbsolute8 == nil {
+			return 0, fmt.Errorf("native DMA physical word %x backing missing", address)
+		}
+		h, err := device.ReadAbsolute8(address)
+		if err != nil {
+			return 0, err
+		}
+		l, err := device.ReadAbsolute8(address + 1)
+		return uint16(h)<<8 | uint16(l), err
+	})
+	return p, err
+}
+
+func (p *NativeAudioPCM) DMASnapshot() (NativePaulaDMASnapshot, bool) {
+	if p == nil {
+		return NativePaulaDMASnapshot{}, false
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.dma == nil {
+		return NativePaulaDMASnapshot{}, false
+	}
+	return p.dma.Snapshot(), true
 }
 
 func (p *NativeAudioPCM) sample(address uint32) (int8, error) {
@@ -119,6 +162,9 @@ func (p *NativeAudioPCM) reload(channel *nativePaulaPCMChannel) error {
 }
 
 func (p *NativeAudioPCM) apply(writes []NativeFrameHardwareWrite) error {
+	if p.dma != nil {
+		return p.dma.Apply(writes)
+	}
 	for _, w := range writes {
 		if w.Address == 0xdff096 {
 			for i := range p.channels {
@@ -167,6 +213,9 @@ func (p *NativeAudioPCM) apply(writes []NativeFrameHardwareWrite) error {
 }
 
 func (p *NativeAudioPCM) runUntil(timeNumerator uint64) error {
+	if p.dma != nil {
+		return p.runDMAUntil(timeNumerator)
+	}
 	rate := uint64(p.timing.SampleRate)
 	for {
 		next := p.nextCIA
@@ -183,31 +232,7 @@ func (p *NativeAudioPCM) runUntil(timeNumerator uint64) error {
 		// CIA writes are applied in original source order before same-time
 		// sample transitions. Raster DMA arbitration is a separate boundary.
 		if next == p.nextCIA {
-			p.device.Hardware = nil
-			update := p.nextCIA / p.ciaPeriod
-			for len(p.events) > 0 && p.events[0].CIAUpdate == update {
-				e := p.events[0]
-				p.events = p.events[1:]
-				var err error
-				switch e.Kind {
-				case "cue":
-					p.frame.Word(0, e.Data)
-					err = p.device.DirectCue(e.Data, &p.frame)
-				case "music":
-					p.frame.D[0], err = p.device.MusicCommand(e.Control, e.Data, p.frame.D[0])
-				case "command":
-					p.frame.D[0], err = p.device.Command(e.Control, e.Data, p.frame.D[0])
-				default:
-					return fmt.Errorf("native timed audio command kind %q unsupported", e.Kind)
-				}
-				if err != nil {
-					return err
-				}
-			}
-			if err := p.device.TickCIA(&p.frame); err != nil {
-				return err
-			}
-			if err := p.apply(p.device.Hardware); err != nil {
+			if err := p.tickCIA(); err != nil {
 				return err
 			}
 			p.nextCIA += p.ciaPeriod
@@ -235,16 +260,70 @@ func (p *NativeAudioPCM) runUntil(timeNumerator uint64) error {
 	}
 }
 
+func (p *NativeAudioPCM) tickCIA() error {
+	p.device.Hardware = nil
+	update := p.nextCIA / p.ciaPeriod
+	for len(p.events) > 0 && p.events[0].CIAUpdate == update {
+		e := p.events[0]
+		p.events = p.events[1:]
+		var err error
+		switch e.Kind {
+		case "cue":
+			p.frame.Word(0, e.Data)
+			err = p.device.DirectCue(e.Data, &p.frame)
+		case "music":
+			p.frame.D[0], err = p.device.MusicCommand(e.Control, e.Data, p.frame.D[0])
+		case "command":
+			p.frame.D[0], err = p.device.Command(e.Control, e.Data, p.frame.D[0])
+		default:
+			return fmt.Errorf("native timed audio command kind %q unsupported", e.Kind)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	if err := p.device.TickCIA(&p.frame); err != nil {
+		return err
+	}
+	return p.apply(p.device.Hardware)
+}
+
+func (p *NativeAudioPCM) runDMAUntil(timeNumerator uint64) error {
+	target := timeNumerator / uint64(p.timing.SampleRate)
+	for p.nextCIA <= target {
+		if err := p.dma.AdvanceTo(p.nextCIA); err != nil {
+			return err
+		}
+		p.clock = p.nextCIA
+		if err := p.tickCIA(); err != nil {
+			return err
+		}
+		p.nextCIA += p.ciaPeriod
+	}
+	if err := p.dma.AdvanceTo(target); err != nil {
+		return err
+	}
+	p.clock = target
+	return nil
+}
+
 func (p *NativeAudioPCM) nextFrame(dst []byte) error {
 	if err := p.runUntil(p.samples * uint64(p.timing.PaulaHz)); err != nil {
 		return err
 	}
 	var left, right int32
-	for i, c := range p.channels {
-		if !c.dma {
-			continue
+	for i := range p.channels {
+		value := int32(0)
+		if p.dma != nil {
+			c := p.dma.channels[i]
+			value = int32(c.Sample) * int32(c.OutputVolume) * 2
+		} else {
+			c := p.channels[i]
+			if !c.dma {
+				continue
+			}
+			value = int32(c.value) * nativePaulaVolume(c.volume) * 2
 		}
-		value := int32(c.value) * nativePaulaVolume(c.volume) * 2
 		if i == 0 || i == 3 {
 			left += value
 		} else {
