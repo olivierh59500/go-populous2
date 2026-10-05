@@ -167,3 +167,16 @@ saved continuation. Town reform uses the translated native evaluator and
 tick and cleanup boundaries. The full founding/contact dispatcher and native
 opponent/remaining town-work states are separate requirements; these map
 comparisons do not prove them.
+
+## Final campaign presentation
+
+The final-world Game branch now plays the supplied END.PAK animation and
+original CODE text before restarting world zero. NativeEndingPlayback adds the
+original one initial VBlank and four waits per loop, independently of gameplay
+speed. Both retained scroll phases reproduce all 1,220 existing original-CPU
+frame references when driven from the 60-update/50-PAL scheduler. Input is
+cleared after the initial wait and exits after the next text/delta/swap boundary.
+Result cues use original descriptors $168/$500 once per result; the ending adds
+no separate cue and closes audio on exit. Compile checks cover the Game binding;
+interactive desktop/GPU appearance and the remaining result/menu composition
+are still required validation.

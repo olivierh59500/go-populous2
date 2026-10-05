@@ -18,9 +18,9 @@ power is not sufficient evidence that its original behavior has been ported.
 | Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
 | Saving | Version 26 retains complete overlay/view seams and native Fungus pending references alongside script/control, profile/results and actors; old collecting slots migrate without casts/RNG | Original Amiga GAM World adapter; standalone codec is verified |
-| Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
+| Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving; final Zeus animation is wired to campaign completion with native PAL waits | Original menu/result composition and interactive desktop validation of the final sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
-| Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, final-world reset and saved one-time application | Original result-screen composition, final Zeus presentation and full conquest pacing/script/AI parity |
+| Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, saved one-time application and final Zeus animation before world-zero restart | Original result-screen composition, visual transition validation and full conquest pacing/script/AI parity |
 
 ## Power inventory
 

@@ -71,6 +71,14 @@ type Game struct {
 	lastNativeEffectSoundTurn int
 	roadLastTile              int
 	roadDragging              bool
+	ending                    *populous2.NativeEndingPlayback
+	endingScheduler           *fixedstep.Scheduler
+	endingImage               *ebiten.Image
+	endingPixels              *image.RGBA
+	endingScrollPhase         uint16
+	endingProgress            populous2.CampaignProgress
+	endingCustom              bool
+	resultCuePlayed           bool
 }
 
 func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) {
@@ -108,6 +116,9 @@ func (g *Game) Update() error {
 	g.Updates++
 	if g.Limit > 0 && g.Updates >= g.Limit {
 		return ebiten.Termination
+	}
+	if g.ending != nil {
+		return g.updateNativeEnding()
 	}
 	if !g.DeityScreen && inpututil.IsKeyJustPressed(ebiten.KeyF) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
@@ -208,6 +219,7 @@ func (g *Game) Update() error {
 		g.selectSpell(populous2.PapalMagnet)
 	}
 	if g.World.ResultForLocalProfile() != legacy.ResultOngoing {
+		g.playNativeResultCue()
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 			return g.advanceNativeCampaign()
 		}
@@ -329,6 +341,7 @@ func (g *Game) start(level int, custom, demo bool) error {
 	}
 	world.Demo = demo
 	g.World = world
+	g.resultCuePlayed = false
 	g.lastHazardSoundSerial = world.HazardSerial
 	if custom && g.hasCustomScenarioOptions {
 		for player, raw := range g.customScenarioOptions {
@@ -566,7 +579,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Scale(2, 2)
 	op.GeoM.Translate(0, 40)
 	screen.DrawImage(g.background, op)
-	if g.ScenarioScreen {
+	if g.ending != nil {
+		screen.DrawImage(g.endingImage, op)
+	} else if g.ScenarioScreen {
 		g.drawScenarioRules(screen)
 	} else if g.DeityScreen {
 		g.drawDeity(screen)
@@ -1016,6 +1031,7 @@ func (g *Game) load() {
 		return
 	}
 	g.World = world
+	g.resultCuePlayed = false
 	g.LevelIndex = world.Level.Number
 	g.lastHazardSoundSerial = world.HazardSerial
 	g.Profile = world.Deity
