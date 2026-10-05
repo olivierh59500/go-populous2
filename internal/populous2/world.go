@@ -205,6 +205,9 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.ForestNative, w.RenewNative = bundle.ForestNative, bundle.RenewNative
 	w.CampaignResult = bundle.CampaignResult
 	w.NativeAI = bundle.NativeAI
+	if err := w.retainNativeLAND(bundle.Raw[fmt.Sprintf("land%d.dat", level.Terrain)]); err != nil {
+		return nil, err
+	}
 	w.NativeGameMode, w.NativeProfileSide = 2, 1
 	if custom {
 		w.NativeGameMode = 4

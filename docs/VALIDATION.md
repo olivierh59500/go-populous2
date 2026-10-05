@@ -528,3 +528,26 @@ tests match the 32 captive/ruin and 28 neutral passes through production World
 callbacks. This establishes assembly of the active source-state families;
 filled-pool physics composition, original rendering/input/audio integration
 and replacement of the live inherited Game scheduler remain required work.
+
+## Native sprite pixels and active LAND resources
+
+NativeSpriteBitmapBank prepares the actual HUNK3/S16/S32 mask and color planes
+once per resource bank and paints $f0ee/$f3a0 requests directly into the four
+native screen planes. An independent reference executes original CODE and
+$1069c with a block-DMA model following the Commodore hardware manual's mask,
+shift, modulo and minterm rules. All 1,041 comparisons match complete register
+and BSS outputs, prepared source hashes and the final 32,000-byte bitmap across
+HUD, cursor, camera, slope outlines and direct16/32-pixel clipping requests.
+The 38 direct y=-32768 descriptor cases are deliberately outside this prepared
+image API: native NEG.W overflow reads adjacent source RAM, which is reported
+explicitly rather than fabricated as ordinary clipping. The hardware model
+is an analysis reference, not a production CPU emulator. The source rules are
+documented in the [Amiga Hardware Reference Manual, chapter6](https://www.theflatnet.de/pub/cbm/amiga/AmigaDevDocs/hard_6.html).
+
+NewWorld now installs its selected original 556-byte LAND resource at CODE
+$3365a in a distinct World copy. Previously NativeAI.Code kept LAND0's minimap
+colors even when Landscape selected LAND2/3, producing incorrect terrain
+redraw words. All four campaign resource selections and isolation from other
+Worlds/the immutable Bundle are verified. Filled-pool native physics comparisons
+also exercise this resource seam; whole world rendering and live Game binding
+remain separate required work.
