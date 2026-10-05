@@ -12,6 +12,9 @@ type NativeWorldRenderCallbacks struct {
 	Tile       func(NativeTileChunkRequest, []byte) error
 	Background []byte // Original bitmap$22, distinct from the draw buffer$1e.
 	Children   NativeActorRenderChildren
+	// ResolveTargets refreshes current global actor image targets after a modal.
+	// The retained A6 tile bitmap remains distinct.
+	ResolveTargets func(*NativeWorldRenderCallbacks) error
 }
 
 type NativeWorldRenderPlan struct {
@@ -60,10 +63,8 @@ func (r *NativeActorRenderRules) overlayCell(grid int, cb NativeWorldRenderCallb
 
 // ProjectActor is the actual$e35e fractional position/slope producer. Its
 // wrapper restores all eight incoming data longs after the real actor child.
-func (r *NativeActorRenderRules) ProjectActor(at, grid int, cb NativeWorldRenderCallbacks, state *NativeWorldRenderState) (NativeActorEffectsPlan, error) {
-	p := NativeActorEffectsPlan{}
+func (r *NativeActorRenderRules) projectActorCoordinates(at, grid int, cb NativeWorldRenderCallbacks, state *NativeWorldRenderState) error {
 	c, m := cb.Effects.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Effects.Memory}}
-	saved := c.D
 	c.D[4] = uint32(m.byte(at + 7))
 	c.D[5] = uint32(m.byte(at + 9))
 	c.Word(2, uint16(c.D[4])-uint16(c.D[5]))
@@ -71,14 +72,14 @@ func (r *NativeActorRenderRules) ProjectActor(at, grid int, cb NativeWorldRender
 	c.D[0] = uint32(m.byte(grid - 3))
 	tile := uint16(c.D[0])
 	if 0x33512+int(tile) >= len(r.Frames.code) {
-		return p, fmt.Errorf("native actor projection raster missing")
+		return fmt.Errorf("native actor projection raster missing")
 	}
 	c.Byte(0, r.Frames.code[0x33512+int(tile)])
 	c.Word(0, uint16(c.D[0])&15)
 	c.Word(0, uint16(c.D[0])*2)
 	offset, e := r.word(0xe392 + int(int16(c.D[0])))
 	if e != nil {
-		return p, e
+		return e
 	}
 	c.Word(0, offset)
 	target := 0xe392 + int(int16(c.D[0]))
@@ -193,7 +194,7 @@ func (r *NativeActorRenderRules) ProjectActor(at, grid int, cb NativeWorldRender
 		case 0xe422:
 			steps = 8
 		default:
-			return p, fmt.Errorf("native projection branch%#x outside original graph", target)
+			return fmt.Errorf("native projection branch%#x outside original graph", target)
 		}
 	}
 	c.Word(0, uint16(c.D[6])<<3)
@@ -205,15 +206,23 @@ func (r *NativeActorRenderRules) ProjectActor(at, grid int, cb NativeWorldRender
 	c.Word(1, uint16(c.D[1])+uint16(c.D[3])+state.ProjectionY)
 	c.D[2] = uint32(m.byte(grid-4)&7) * 8
 	c.Word(1, uint16(c.D[1])-uint16(c.D[2]))
+	return m.err
+}
+
+func (r *NativeActorRenderRules) ProjectActor(at, grid int, cb NativeWorldRenderCallbacks, state *NativeWorldRenderState) (NativeActorEffectsPlan, error) {
+	p := NativeActorEffectsPlan{}
+	saved := cb.Effects.Frame.D
+	if e := r.projectActorCoordinates(at, grid, cb, state); e != nil {
+		return p, e
+	}
 	actor := cb.Effects
 	actor.GridCursorAddress = grid
-	var err error
-	p, err = r.Actor(at, actor, &state.Actor, cb.Children)
-	if err != nil {
-		return p, err
+	p, e := r.Actor(at, actor, &state.Actor, cb.Children)
+	if e != nil {
+		return p, e
 	}
-	c.D = saved
-	return p, m.err
+	cb.Effects.Frame.D = saved
+	return p, nil
 }
 
 // WorldDraw is genuine$bbe0's 8x8 ordered grid/list walk. It preserves the
@@ -377,4 +386,122 @@ func (r *NativeActorRenderRules) WorldDraw(cb NativeWorldRenderCallbacks, state 
 	}
 	c.D = saved
 	return p, m.err
+}
+
+func (r *NativeActorRenderRules) beginWorldDraw(cb NativeWorldRenderCallbacks, state *NativeWorldRenderState, s *NativeWorldRenderContinuation) error {
+	c, m := cb.Effects.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Effects.Memory}}
+
+	state.ProjectionX, state.ProjectionY = 192, 72
+	c.RestoreWord(0, m.word(0x5f44))
+	c.RestoreWord(1, m.word(0x5f46))
+	c.Word(2, uint16(c.D[0]))
+	c.Word(3, uint16(c.D[1]))
+	c.Word(3, (uint16(c.D[3])<<6)+uint16(c.D[2]))
+	c.Word(3, uint16(c.D[3])*4)
+	grid := 0xf44 + int(int16(c.D[3]))
+	camX, camY := uint16(c.D[0]), uint16(c.D[1])
+	for side := 0; side < 2; side++ {
+		c.RestoreWord(0, camX)
+		c.RestoreWord(1, camY)
+		if side == 0 {
+			c.Word(1, uint16(c.D[1])+8)
+		} else {
+			c.Word(0, uint16(c.D[0])+8)
+		}
+		if e := r.Frames.TerrainHeight(cb.Effects.Memory, c); e != nil {
+			return e
+		}
+		c.Word(1, uint16(c.D[2])*8-1)
+		if int16(c.D[1]) > 0 {
+			rows := int(uint16(c.D[1]))
+			delta := (64 - rows) * 40
+			src, dst := 0x1028+delta, 0xb20+delta
+			if side != 0 {
+				src, dst = 0x1030+delta, 0xb38+delta
+			}
+			for plane := 0; plane < 4; plane++ {
+				for row := 0; row < rows; row++ {
+					a, b := src+plane*8000+row*40, dst+plane*8000+row*40
+					if a < 0 || a+8 > 32000 || b < 0 || b+8 > 32000 {
+						return fmt.Errorf("native backdrop strip outside retained bitmap")
+					}
+					copy(cb.Effects.Bitmap[b:b+8], cb.Background[a:a+8])
+				}
+			}
+		}
+	}
+	s.Grid = grid
+	s.Destination = 0xa16
+	c.D[7] = 0
+	c.D[6] = 0
+	return m.err
+}
+
+func (r *NativeActorRenderRules) worldDrawCell(cb NativeWorldRenderCallbacks, state *NativeWorldRenderState, s *NativeWorldRenderContinuation, p *NativeWorldRenderPlan) error {
+	c, m := cb.Effects.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Effects.Memory}}
+	grid, destination := s.Grid, s.Destination
+
+	header, tile := m.byte(grid), m.byte(grid+1)
+	c.D[4] = 0
+	c.Byte(4, header*2)
+	c.Byte(4, uint8(c.D[4])&14)
+	height, e := r.word(0xbe36 + int(int16(c.D[4])))
+	if e != nil {
+		return e
+	}
+	c.Word(4, height)
+	c.D[5] = uint32(tile)
+	if tile <= 15 && height != 0 {
+		c.Byte(5, tile+16)
+	}
+	if int8(tile) < 0 {
+		switch tile {
+		case 168:
+			c.Byte(0, m.byte(0xf43)+uint8(c.D[6])+uint8(c.D[7]))
+			c.Word(0, uint16(c.D[0])&3)
+			c.Word(5, uint16(c.D[5])+uint16(c.D[0]))
+		case 143:
+			c.Byte(0, m.byte(0xf43)+uint8(c.D[6])+uint8(c.D[7]))
+			c.Word(0, uint16(c.D[0])&1)
+			c.Word(5, uint16(c.D[5])+uint16(c.D[0]))
+		case 220:
+			c.Byte(0, m.byte(0xf43))
+			c.Word(0, uint16(c.D[0])&3)
+			c.D[0] = uint32(uint16(c.D[0])) * 40
+			c.Word(4, uint16(c.D[4])-uint16(c.D[0]))
+			c.Byte(0, m.byte(0xf43)+uint8(c.D[6])+uint8(c.D[7]))
+			c.Word(0, uint16(c.D[0])&3)
+			c.Word(5, uint16(c.D[5])+uint16(c.D[0]))
+		}
+	} else if uint16(c.D[5]) < 15 {
+		c.Byte(0, m.byte(0xf43)+uint8(c.D[6])+uint8(c.D[7]))
+		c.Word(0, uint16(c.D[0])&7)
+		if uint16(c.D[0]) != 0 {
+			c.Word(0, uint16(c.D[0])+1)
+		}
+		c.Word(0, uint16(c.D[0])<<4)
+		c.Word(5, uint16(c.D[5])+uint16(c.D[0]))
+	}
+	selected := int(uint16(c.D[5]))
+	if selected < 0 || selected >= len(cb.Tiles.Descriptors) {
+		return fmt.Errorf("native tile index%d needs adjacent BLOCK descriptors", selected)
+	}
+	base := destination - int(int16(c.D[4]))
+	for part, offset := range cb.Tiles.Descriptors[selected] {
+		request := NativeTileChunkRequest{SourceOffset: offset, DestinationOffset: base + (part/2)*320 + (part%2)*2}
+		if offset != 0 {
+			p.TileRequests = append(p.TileRequests, request)
+			if cb.Tile == nil {
+				p.HardwarePending = true
+			} else if e := cb.Tile(request, s.TileTarget); e != nil {
+				return e
+			}
+		}
+	}
+	grid += 2
+	if e := r.overlayCell(grid, cb, state, p); e != nil {
+		return e
+	}
+	s.Grid = grid
+	return m.err
 }

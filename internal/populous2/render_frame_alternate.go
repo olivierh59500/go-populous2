@@ -274,3 +274,200 @@ func (r *NativeActorRenderRules) AlternateDraw(cb NativeWorldRenderCallbacks, st
 	c.D = saved
 	return p, m.err
 }
+
+func (r *NativeActorRenderRules) beginAlternateDraw(cb NativeWorldRenderCallbacks, state *NativeAlternateRenderState, s *NativeWorldRenderContinuation) error {
+	c, m := cb.Effects.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Effects.Memory}}
+
+	view := uint16(c.D[0])
+	c.Word(1, view<<3)
+	params := [4]uint16{}
+	for i := range params {
+		v, e := r.word(0xc13c + int(int16(c.D[1])) + i*2)
+		if e != nil {
+			return e
+		}
+		params[i] = v
+	}
+	c.RestoreWord(2, params[0])
+	c.RestoreWord(3, params[1])
+	c.RestoreWord(5, params[2])
+	c.RestoreWord(6, params[3])
+	c.Word(1, view)
+	state.Scratch = [5]uint16{0, view, view, uint16(c.D[2]), uint16(c.D[3])}
+	state.World.ProjectionX, state.World.ProjectionY = 160, uint16(c.D[6])
+	projectionX, projectionY := state.World.ProjectionX, state.World.ProjectionY
+	c.Word(2, view>>1)
+	c.Word(2, uint16(c.D[2])-4)
+	c.RestoreWord(0, m.word(0x5f44))
+	c.RestoreWord(1, m.word(0x5f46))
+	c.Word(0, uint16(c.D[0])-uint16(c.D[2]))
+	if int16(c.D[0]) < 0 {
+		c.Word(3, uint16(c.D[0]))
+		state.Scratch[0] -= uint16(c.D[3])
+		c.Word(3, -uint16(c.D[3]))
+		state.Scratch[1] -= uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*2)
+		state.Scratch[3] += uint16(c.D[3])
+		c.Word(5, uint16(c.D[5])+uint16(c.D[3]))
+		c.Word(3, uint16(c.D[3])*2)
+		state.Scratch[4] += uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*2)
+		state.World.ProjectionY += uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*2)
+		state.World.ProjectionX += uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*4)
+		c.Word(5, uint16(c.D[5])+uint16(c.D[3]))
+		state.Scratch[3] += uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*4)
+		c.Word(5, uint16(c.D[5])+uint16(c.D[3]))
+		state.Scratch[3] += uint16(c.D[3])
+		c.D[0] = 0
+	}
+	c.Word(3, uint16(c.D[0])+state.Scratch[1])
+	c.Word(3, uint16(c.D[3])-64)
+	if int16(c.D[3]) > 0 {
+		state.Scratch[1] -= uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*2)
+		state.Scratch[3] += uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*2)
+		state.Scratch[4] += uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])<<4)
+		state.Scratch[3] += uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*4)
+		state.Scratch[3] += uint16(c.D[3])
+	}
+	c.Word(1, uint16(c.D[1])-uint16(c.D[2]))
+	if int16(c.D[1]) < 0 {
+		c.Word(3, uint16(c.D[1]))
+		state.Scratch[0] += uint16(c.D[3])
+		c.Word(3, -uint16(c.D[3]))
+		state.Scratch[2] -= uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*2)
+		c.Word(5, uint16(c.D[5])-uint16(c.D[3]))
+		c.Word(3, uint16(c.D[3])*4)
+		state.World.ProjectionY += uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*2)
+		state.World.ProjectionX -= uint16(c.D[3])
+		c.Word(3, uint16(c.D[3])*4)
+		c.Word(5, uint16(c.D[5])+uint16(c.D[3]))
+		c.Word(3, uint16(c.D[3])*4)
+		c.Word(5, uint16(c.D[5])+uint16(c.D[3]))
+		c.D[1] = 0
+	}
+	c.Word(2, uint16(c.D[0]))
+	c.Word(3, (uint16(c.D[1])<<6)+uint16(c.D[2]))
+	c.Word(3, uint16(c.D[3])*4)
+	grid := 0xf44 + int(int16(c.D[3]))
+	destination := int(int16(c.D[5]))
+	c.D[7] = 0
+	if state.Scratch[1] == 0 || state.Scratch[2] == 0 || state.Scratch[1] > 64 || state.Scratch[2] > 64 {
+		return fmt.Errorf("native alternate view dimensions need original bounded input")
+	}
+	s.Grid = grid
+	s.Destination = destination
+	s.Columns = int(state.Scratch[1])
+	s.Rows = int(state.Scratch[2])
+	s.ProjectionX, s.ProjectionY = projectionX, projectionY
+	c.D[6] = 0
+	return m.err
+}
+
+func (r *NativeActorRenderRules) alternateDrawCell(cb NativeWorldRenderCallbacks, state *NativeAlternateRenderState, s *NativeWorldRenderContinuation, p *NativeWorldRenderPlan) (bool, error) {
+	c, m := cb.Effects.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Effects.Memory}}
+	grid, destination := s.Grid, s.Destination
+
+	header, tile := m.byte(grid), m.byte(grid+1)
+	c.D[4] = 0
+	c.Byte(4, header*2)
+	c.Byte(4, uint8(c.D[4])&14)
+	height, e := r.word(0xc36e + int(int16(c.D[4])))
+	if e != nil {
+		return false, e
+	}
+	c.Word(4, height)
+	c.D[5] = uint32(tile)
+	if tile <= 15 && height != 0 {
+		c.Byte(5, tile+16)
+	}
+	if int8(tile) < 0 {
+		switch tile {
+		case 168:
+			c.Byte(0, m.byte(0xf43)+uint8(c.D[6])+uint8(c.D[7]))
+			c.Word(0, uint16(c.D[0])&3)
+			c.Word(5, uint16(c.D[5])+uint16(c.D[0]))
+		case 143:
+			c.Byte(0, m.byte(0xf43)+uint8(c.D[6])+uint8(c.D[7]))
+			c.Word(0, uint16(c.D[0])&1)
+			c.Word(5, uint16(c.D[5])+uint16(c.D[0]))
+		case 220:
+			c.Byte(0, m.byte(0xf43))
+			c.Word(0, uint16(c.D[0])&3)
+			c.D[0] = uint32(uint16(c.D[0])) * 40
+			c.Word(4, uint16(c.D[4])-uint16(c.D[0]))
+			c.Byte(0, m.byte(0xf43)+uint8(c.D[6])+uint8(c.D[7]))
+			c.Word(0, uint16(c.D[0])&3)
+			c.Word(5, uint16(c.D[5])+uint16(c.D[0]))
+		}
+	} else if uint16(c.D[5]) < 15 {
+		c.Byte(0, m.byte(0xf43)+uint8(c.D[6])+uint8(c.D[7]))
+		c.Word(0, uint16(c.D[0])&7)
+		if uint16(c.D[0]) != 0 {
+			c.Word(0, uint16(c.D[0])+1)
+		}
+		c.Word(0, uint16(c.D[0])<<4)
+		c.Word(5, uint16(c.D[5])+uint16(c.D[0]))
+	}
+	selected := int(uint16(c.D[5]))
+	if selected >= len(cb.Tiles.Descriptors) {
+		return false, fmt.Errorf("native alternate tile descriptor alias unsupported")
+	}
+	c.Word(0, uint16(c.D[6])-uint16(c.D[7])+state.Scratch[0])
+	c.Word(0, uint16(c.D[0])*2)
+	v, e := r.word(0xc47e + int(int16(c.D[0])))
+	if e != nil {
+		return false, e
+	}
+	c.Word(0, v)
+	target := 0xc47e + int(int16(c.D[0]))
+	skip := target == 0xc4ae
+	if !skip {
+		if target != 0xc4b8 && target != 0xc4ca && target != 0xc4dc {
+			return false, fmt.Errorf("native alternate tile clip branch%#x unsupported", target)
+		}
+		base := destination - int(int16(c.D[4]))
+		for part, offset := range cb.Tiles.Descriptors[selected] {
+			pair := part / 2
+			half := part % 2
+			at := base + pair*320 + half*2
+			if target == 0xc4b8 && half != 0 {
+				continue
+			}
+			if target == 0xc4ca && half != 1 {
+				continue
+			}
+			checkOffset := base + pair*320
+			if target == 0xc4ca {
+				checkOffset += 2
+			}
+			if checkOffset < 0 || checkOffset >= 8000 {
+				continue
+			}
+			if offset != 0 {
+				request := NativeTileChunkRequest{SourceOffset: offset, DestinationOffset: at}
+				p.TileRequests = append(p.TileRequests, request)
+				if cb.Tile == nil {
+					p.HardwarePending = true
+				} else if e := cb.Tile(request, s.TileTarget); e != nil {
+					return false, e
+				}
+			}
+		}
+	}
+	s.Grid = grid + 2
+	if !skip {
+		if e := r.overlayCell(s.Grid, cb, &state.World, p); e != nil {
+			return false, e
+		}
+	}
+	return skip, m.err
+}
