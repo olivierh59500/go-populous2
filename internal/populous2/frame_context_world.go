@@ -53,6 +53,17 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 				}
 				return nil
 			}})
+		case 0x3c:
+			rules := NativeCommandRules{Code: w.NativeAI.Code}
+			return rules.TickFrameHurricane(ref, c, NativeFrameHurricaneCallbacks{Memory: w.nativeCleanupMemory(), Unlink: w.nativeRuntimeUnlink, Move: func(ref NativeRecordReference, context *NativeFrameRegisterContext) error {
+				command := context.CommandContext()
+				e := w.commandMove(cleanupRecordAddress(ref), &command)
+				context.SetCommandContext(command)
+				return e
+			}, Cleanup: func(ref NativeRecordReference, context *NativeFrameRegisterContext) error {
+				_, e := CleanupFollowerWithFrame(ref, context, FollowerCleanupCallbacks{Memory: w.nativeCleanupMemory(), Unlink: w.nativeRuntimeUnlink, Insert: w.nativeRuntimeInsert, ClearFarms: w.clearNativeFarms})
+				return e
+			}})
 		case 0x30, 0x32:
 			rules := NativeCommandRules{Code: w.NativeAI.Code}
 			return rules.TickFrameVolcano(ref, c, NativeFrameVolcanoCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Terrain: func(raise bool, context *NativeFrameRegisterContext) error {
