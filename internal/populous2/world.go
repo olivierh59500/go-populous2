@@ -34,6 +34,7 @@ type World struct {
 	LightningState           LightningState
 	LightningVictims         [legacy.MaxPeeps]NativeLightningFollower
 	FungusRules              FungusRules
+	NativeFungus             NativeFungusRules
 	FungusHazards            FungusHazardRules
 	FungusState              FungusState
 	FollowerMotion           FollowerMotionRules
@@ -178,6 +179,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.NativeWhirlwind, w.WhirlwindFollower = bundle.NativeWhirlwind, bundle.WhirlwindFollower
 	w.LightningRules = bundle.LightningRules
 	w.FungusRules = bundle.FungusRules
+	w.NativeFungus = bundle.NativeFungus
 	w.FungusHazards = bundle.FungusHazards
 	w.FollowerMotion = bundle.FollowerMotion
 	w.FollowerDecision = bundle.FollowerDecision

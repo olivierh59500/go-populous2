@@ -12,7 +12,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Campaign data | 1,000 worlds with native codes and starting templates |
 | Terrain oracle | Eight native executions, 4,225 matching heights per seed |
 | Ground-effect oracle | Nine flat cast maps/RNG; 5,430 font/swamp cases and 28,062 full-memory/RNG frames also replayed through World callbacks |
-| Fungus oracle | Six original controller traces, complete tile maps, packed record fields, collection and generation timing |
+| Fungus oracle | 1,465 original CPU cases/24,748 full BSS+RNG frames match World callbacks, including raw pool/edge aliases and retained follower consumers |
 | Fungus mortality oracle | Seventeen native common-prepass cases: fresh/mature tiles, all heroes, both sides, sound arguments and retained occupancy |
 | Scenery oracle | Original object pools/RNG, including register-continuing seed 777 |
 | Batholith oracle | Four height/object/RNG references covering raising and boulders |
@@ -31,7 +31,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Ground rules | Persistent fonts/swamps/greenery, two-way faith reversal and plague contact |
 | Audio | 31 samples, 133 patterns, signed PCM and read-size-independent playback |
 | Save continuation | Mixed native flame/whirlwind records, town work, experience, random state and earlier controller/ID migrations |
-| Fungus continuation | Version 10 preserves pending controllers, working bounds and tile stages; prototype marks migrate to seeds |
+| Fungus continuation | Version 26 stores native pending references; version 25/prototype migration preserves mana/RNG and 180-frame continuation |
 | Scenery continuation | Original variants, pool recycling, burial counters and save/load |
 | Flame deaths | Retained death frames/slot reservations, current-cell damage and four-neighbor tree spread |
 | Scenario runtime | Independent side rules, height admission, atomic prohibited edits, water, sprog, map visibility and save bindings |
@@ -109,20 +109,15 @@ removal. Death traces stop before native animation helpers. Ordinary walking
 now uses the native motion dispatch; other follower state handlers remain adapted. These fixtures do not establish full native
 follower timing, death transitions or propagated-edit rollback parity.
 
-Fungus fixtures include inland oscillation, stable growth, row-edge aliasing,
-collecting/recast/successive-controller phases, high experience and the first
-bottom-edge generation. Later access beyond the map remains bounded rather
-than emulating adjacent original BSS. Tests check complete map states and
-controller bytes at recorded native boundaries. The world adapter has separate
-seed/debit/pool-failure and save-continuation regressions; native follower
-mortality uses the native mature/fresh distinction, Adonis immunity, decoded
-death artwork and cue. Save tests preserve frame completion/slot release and
-reject forged lifetimes or duplicate death reservations. Native full linked
-death records and redispatch timing remain outside those adapter checks.
-The world comparison covers the sixteen two-side mortality fixtures; the
-native neutral-owner bypass is established by the isolated rules fixture but
-is not yet representable in the inherited follower pool. A bounded desktop
-capture also verifies ordinary/hero death artwork and the surviving Adonis.
+Fungus checks cover full retained memory through `$eb90`, rather than only the
+4,096 terrain cells. The raw World controller matches collection/recycling,
+aging, synchronous generation, signed period branches and edge accesses into
+clock/overlay/view/record data. Consumer comparisons use real native farm,
+leader, cleanup and graph callbacks, including delayed terminal dispatch and
+hero immunity. Smaller World regressions cover debit, full-pool planting,
+recasts, saved continuation and old collecting-reference migration. These prove
+this controller composition; complete campaign and cross-power pacing remain
+separate requirements.
 
 Scenario attrition references compare population arithmetic and native death
 decisions, rather than complete original death animation or fractional movement.

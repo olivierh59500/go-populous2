@@ -61,7 +61,7 @@ func TestNativeGAMViewBackingSnapshot25AndMigration(t *testing.T) {
 	w.NativeViewBytes = [12]byte{0, 8, 0, 4, 0, 1, 0, 2, 0, 3, 0, 4}
 	w.NativeOverlays[100] = 1
 	snapshot := w.Snapshot()
-	if snapshot.Version != 25 || snapshot.NativeViewBytes != w.NativeViewBytes {
+	if snapshot.Version != SaveVersion || snapshot.NativeViewBytes != w.NativeViewBytes {
 		t.Fatal("snapshot omitted native camera/hit-test words")
 	}
 	restored, err := Restore(b, snapshot)

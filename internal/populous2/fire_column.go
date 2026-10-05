@@ -133,7 +133,10 @@ func (w *World) tickNativeEffects() {
 			}
 			continue // The complete native call hydrated its record and children.
 		case FungusActorKind:
-			w.tickFungus(i)
+			if err := w.tickRawFungus(i); err != nil {
+				panic(err)
+			}
+			continue
 		case WhirlpoolActorKind:
 			w.tickWhirlpool(a)
 		case BasaltActorKind:

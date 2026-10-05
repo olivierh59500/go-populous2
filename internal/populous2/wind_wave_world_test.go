@@ -17,6 +17,7 @@ func installNativeFixtureWorld(t *testing.T, raw []byte, heights []uint8) *World
 	w.NativeRaiseEnabled = uint16(raw[0xf12])<<8 | uint16(raw[0xf13])
 	w.NativeClock = uint32(raw[0xf40])<<24 | uint32(raw[0xf41])<<16 | uint32(raw[0xf42])<<8 | uint32(raw[0xf43])
 	copy(w.NativeControlBytes[:], raw[0xdc4:0xf44])
+	copy(w.NativeViewBytes[:], raw[0x5f44:0x5f50])
 	copy(w.RecordImage.Bytes[:], raw[NativeRecordImageStart:NativeMagnetImageStart])
 	copy(w.NativeGlobals.Bytes[:], raw[NativeMagnetImageStart:NativeRuntimeImageEnd])
 	if len(raw) >= 0xeb90 {
@@ -61,6 +62,7 @@ func nativeFixtureWorldImage(w *World, initial []byte) []byte {
 		all[a], all[a+1], all[a+2], all[a+3] = cell.Header, cell.Tile, uint8(cell.Head>>8), uint8(cell.Head)
 	}
 	copy(all[0x4f44:0x5f44], w.NativeOverlays[:])
+	copy(all[0x5f44:0x5f50], w.NativeViewBytes[:])
 	copy(all[NativeRecordImageStart:NativeMagnetImageStart], w.RecordImage.Bytes[:])
 	copy(all[NativeMagnetImageStart:], w.NativeGlobals.Bytes[:])
 	if len(all) >= 0xeb90 {

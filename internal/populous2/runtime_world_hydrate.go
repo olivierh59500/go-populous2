@@ -221,6 +221,11 @@ func (w *World) hydrateNativeRuntimeRecords() {
 		deity, _ := NativeDeityAddress(owner)
 		mana, _ := memory.Read32(deity)
 		leader, _ := memory.Read16(deity + 8)
+		pending, _ := memory.Read16(deity + 14)
+		w.FungusState.Pending[player] = 0
+		if location, ok := LocateNativeRecord(NativeRecordReference(pending)); ok && location.Pool == NativeEffectPool {
+			w.FungusState.Pending[player] = uint16(location.Index + 1)
+		}
 		w.Core.Magnets[player].Mana = int(int32(mana))
 		w.Core.Magnets[player].Carried = 0
 		if location, ok := LocateNativeRecord(NativeRecordReference(leader)); ok && location.Pool == NativeFollowerPool {

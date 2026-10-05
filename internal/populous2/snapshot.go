@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 25
+const SaveVersion = 26
 
 type Snapshot struct {
 	Version                                        int
@@ -552,6 +552,20 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.bindNativeTownEvaluator()
 	if snapshot.Version < 16 {
 		w.initializeNativeRuntime()
+	}
+	if snapshot.Version < 26 {
+		// Earlier Go saves stored collecting slots outside the raw deity.
+		// Populate the native word without replaying casts or consuming RNG.
+		for player, slot := range w.FungusState.Pending {
+			god, _ := NativeDeityAddress(uint8(player + 1))
+			ref := uint16(0)
+			if slot != 0 {
+				ref = uint16(nativeActorReference(NativeEffectPool, int(slot)-1))
+			}
+			if _, err := w.runtimeMemory().Write16(god+14, ref); err != nil {
+				return nil, err
+			}
+		}
 	}
 	if snapshot.Version < 20 {
 		for pos, mark := range w.Marks {

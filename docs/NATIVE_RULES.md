@@ -493,20 +493,15 @@ three. Transitional birth/death properties preserve synchronous counts
 during the original in-place scan. The controller consumes no random numbers
 and applies no area-damage substitute.
 
-The common follower terrain prepass calls `$12ec2` before state dispatch.
+The common follower terrain prepass runs before the resulting state handler.
 Fungus property bit 4 is fatal only when bit 0 is clear: fresh tile 145 is
 harmless, while mature tiles 146–150 are dangerous. Heroes use the death
 table at `$20a48`; its zero Adonis entry grants immunity. Ordinary death uses
 animation `$7dc`, kind `$10`, state `$38`, centered fractions and sound offset
-`$104` (descriptor 26). The adapter removes the group from live population
-while retaining its decoded death frames and slot/occupancy reservation.
-Version 11 saves preserve those states and sound serials, reject invalid
-animation spans/duplicate reservations, and resume frame completion.
-
-The inherited follower dispatcher still supplies the surrounding scheduling,
-population bookkeeping and occupancy adapter. Native redispatch timing,
-full linked death records and remaining terrain-prepass branches remain
-verification targets; visible retained artwork alone does not establish them.
+`$104` (descriptor 26). Complete native cleanup retains the raw owner and graph
+allocation until the original terminal animation, rather than reserving an
+inherited death sidecar. The same common/aftermath callbacks own the actual
+World follower dispatch and the original-CPU composition checks.
 
 Renew Land at `$16a62` scatters tile 245 and never creates this controller.
 Its complete native body checks raster shape 15 without inspecting owner,
@@ -519,10 +514,20 @@ fungus neighbor. Version 10 saves retain pending references, packed working
 coordinates, timers and inclusive bounds.
 
 The original bottom-edge clamp at `$150b0` subtracts the X minimum where a
-Y minimum would be expected. The controller preserves those bytes and linear
-row aliases. Access beyond the tile map is bounded: reads return zero and
-writes are ignored. This differs from accessing adjacent original BSS and
-remains an explicit fidelity gap rather than an unreported correction.
+Y minimum would be expected. The raw World controller retains that calculation
+and the signed linear addressing. Reads and writes can reach the clock,
+overlays, camera/pointer gap and record bytes; these use the same authoritative
+memory backing as the ordinary native helpers. They are not clamped to water
+or silently ignored. Unsupported addresses report an explicit error.
+
+All 1,465 original-CPU cases and 24,748 complete BSS/RNG frames agree both in
+the standalone controller and through World memory/follower callbacks. Cases
+include all tile properties, pending arbitrary-address reuse, planting before
+pool exhaustion, period overflow and zero-divisor write prefixes, six hero
+tables, actual farm/leader cleanup, and seven writes outside the tile map.
+Ordinary play tests retain the blinker, collection/recast cadence, debit and
+saved continuation. Save version 26 migrates older typed collecting slots to
+the native deity word without recasting, mana changes or random draws.
 
 ## Main-loop cadence
 
