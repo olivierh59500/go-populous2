@@ -88,6 +88,7 @@ type World struct {
 	NativeSelected           NativeRecordReference
 	nativeCallDepth          int
 	nativeTerrainPoint       func(*NativeCommandRegisterContext) error
+	nativeDirectSound        func(uint16) error
 	nativeEntryCrossing      func(int) FollowerEntryStep
 	NativeOverlays           [4096]uint8
 	NativeViewBytes          [12]byte // BSS $5f44..$5f50, camera and pointer/hit-test words.

@@ -120,6 +120,11 @@ func (w *World) nativeEntryCallbacks() FollowerEntryCallbacks {
 			if raw%10 != 0 || raw/10 >= 133 {
 				return fmt.Errorf("native follower sound outside sample bank")
 			}
+			if w.nativeDirectSound != nil {
+				if err := w.nativeDirectSound(raw); err != nil {
+					return err
+				}
+			}
 			w.effectSoundCues = append(w.effectSoundCues, int(raw/10))
 			return nil
 		},

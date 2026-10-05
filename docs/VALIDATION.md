@@ -551,3 +551,27 @@ redraw words. All four campaign resource selections and isolation from other
 Worlds/the immutable Bundle are verified. Filled-pool native physics comparisons
 also exercise this resource seam; whole world rendering and live Game binding
 remain separate required work.
+
+## Retained native frame session
+
+NativeFrameSession composes the source VBlank gate, real clock/palette wait,
+caller-owned main rendering, all follower/AI/FX/wall/scenery/script/audio
+stages, actual Copper swap and deferred commands. Raw World ownership remains
+held across pending renderer, serial or modal operations; completed work is
+not replayed. The image/audio bank changes authority once before physics and
+once before swap, so later command drawing is not overwritten by stale audio.
+
+The session's production physics callbacks match all 168 original main-physics
+references, including repeated retained passes: full registers, BSS, RNG,
+shared audio and both overview $1e/persistent terrain $22 bitmaps agree through
+the same before-$072e reference cut. Separate lifecycle tests cover real swap,
+deferred command continuation, scoped callback restoration, failure prefixes,
+seventeen real palette waits, and terrain drawing into its distinct buffer.
+Initialized $190e4 device operations require a real supplied backend; the
+original signed $3b4 disabled-device gate is preserved for direct and scheduled
+calls. No absent initialized sound operation becomes an empty success.
+
+Main rendering remains a genuine required callback while its remaining source
+children are implemented. The live Game still uses its inherited scheduler;
+this session and its bounded native comparisons establish integration APIs,
+not a completed original interface or audible replay.
