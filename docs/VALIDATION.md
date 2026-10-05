@@ -849,3 +849,25 @@ encoded filesystem into the proven19CD0 body, verifies decoded FX/QAZ bytes,
 actual descriptor pointers and closed handles, then executes1A4bc and verifies
 both allocations are unavailable. Remaining initial constructor, coherent
 World/presentation backing and live Game-loop activation remain required work.
+
+## Shared physical session memory
+
+NativeSessionMemory maps physical HUNK1 accesses onto the frame session's
+actual raw World and input owners. Chip screens and pointer images share their
+real HUNK allocations with resource loading and rendering. CODE cursor words
+alias the input state, so source IRQ updates remain visible through physical
+reads. Other addresses use the host's mapped regions; missing RAM stays an
+error instead of acquiring invented padding.
+
+ImportBSS transfers initialized startup bytes while ownership is idle.
+BeginRaw then borrows those authoritative records without flushing inherited
+typed actors over them. Completion retains the existing final hydration and
+ownership release. SnapshotBSS explicitly exports the live callback-backed
+bytes; the original physical HUNK1 slice is not a second live World owner.
+
+Targeted tests verify both directions of BSS access, cross-field word/long
+operations, RNG and record writes, input/CODE cursor aliases, identical screen
+backing, complete startup-byte import and rejection during a borrowed frame.
+They also verify that BeginRaw preserves loaded records and releases its
+borrow. Relocated CODE sharing and complete startup/Game activation remain
+separate integration work.

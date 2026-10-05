@@ -110,6 +110,17 @@ func NewNativeFrameSession(bundle *Bundle, landIndex int, chipBase, pointerBase 
 // Begin accepts the actual incoming caller registers. Initialization of the
 // real Copper buffers and initial World/presentation is owned by startup.
 func (s *NativeFrameSession) Begin(w *World, input NativeFrameRegisterContext) error {
+	return s.begin(w, input, false)
+}
+
+// BeginRaw accepts authoritative bytes produced by the actual startup or
+// loader. It does not flush inherited typed actors back over those records.
+// Complete frame ownership and final hydration remain identical to Begin.
+func (s *NativeFrameSession) BeginRaw(w *World, input NativeFrameRegisterContext) error {
+	return s.begin(w, input, true)
+}
+
+func (s *NativeFrameSession) begin(w *World, input NativeFrameRegisterContext, raw bool) error {
 	if s == nil || w == nil || s.Presentation == nil || s.followerRules == nil {
 		return fmt.Errorf("native frame session backing missing")
 	}
@@ -131,7 +142,7 @@ func (s *NativeFrameSession) Begin(w *World, input NativeFrameRegisterContext) e
 		}
 	}
 	s.outerBorrow = w.nativeCallDepth == 0
-	if s.outerBorrow {
+	if s.outerBorrow && !raw {
 		w.reconcileActorGraph()
 		w.refreshNativeRecordImage()
 		w.syncNativeRuntimeBridge()
