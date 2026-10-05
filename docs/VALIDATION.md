@@ -598,3 +598,22 @@ stored by the original resource set; separate LAND1..3 sprite PAKs do not exist.
 All cached mask/color planes now agree pixel-for-pixel with the independently
 loaded sprite atlas for each of the four landscapes, and the original
 1,041-case DMA renderer regression remains green.
+
+## Session-owned player command continuations
+
+NativeFrameSession now retains one NativeCommandFrameState for each of the
+two original $1744c player records. Ordinary commands execute the real World
+body once; modal/resource children retain their handler, register context and
+child phase. CODE $a2a is the actual mutable pointer-image selector, while
+$3f90/$4468 use the retained per-World CODE words. The actual reverse palette
+child is available by default; absent file/reset/resource bodies remain errors.
+
+The session adapter matches 768 original player-command envelopes, each run
+both immediately and with suspended children. Full D, BSS, CODE words, palette
+arguments and captured terrain targets agree. The other 384 references use
+the independent $dc4 scenario record and remain covered by its separate command
+body proof. A composed session test also suspends the real $3f92 file-requester
+command before the second side's actual mana command, then verifies one swap,
+one renderer invocation, exact command clearing and outer MOVEM restoration.
+This proves orchestration; real $3f92 DOS/modal, reset and resource child bodies
+and their Game binding are still required work.

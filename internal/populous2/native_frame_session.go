@@ -42,6 +42,9 @@ type NativeFrameSession struct {
 	palette              *NativeFramePaletteState
 	previousDirectSound  func(uint16) error
 	directSound          func(uint16) error
+	commandRules         NativeCommandRules
+	commandStates        [2]NativeCommandFrameState
+	commandPalettes      [2]*NativeFramePaletteState
 }
 
 type NativeFrameSessionCallbacks struct {
@@ -61,6 +64,9 @@ type NativeFrameSessionCallbacks struct {
 	// Bitmap resolves source numeric pointers such as persistent terrain
 	// target$22. It must supply that real buffer, not the overview target$1e.
 	Bitmap func(uint32) ([]byte, error)
+	// CommandChild owns real modal/startup/resource children that remain
+	// inside the original17500 command. Completion and CCR.Z stay separate.
+	CommandChild func(NativeCommandFrameCall, *uint32) (NativeCommandFrameResult, error)
 }
 
 func NewNativeFrameSession(bundle *Bundle, landIndex int, chipBase, pointerBase uint32) (*NativeFrameSession, error) {
@@ -84,9 +90,13 @@ func NewNativeFrameSession(bundle *Bundle, landIndex int, chipBase, pointerBase 
 	if err != nil {
 		return nil, err
 	}
+	commandRules, err := DecodeNativeCommandRules(bundle.Executable)
+	if err != nil {
+		return nil, err
+	}
 	return &NativeFrameSession{Presentation: presentation, followerRules: followers, wallRules: wall,
 		Followers: *followers.NewState(), Image: images.NewImageState(), Audio: audio,
-		land: append([]byte(nil), bundle.Raw[fmt.Sprintf("land%d.dat", landIndex)]...)}, nil
+		land: append([]byte(nil), bundle.Raw[fmt.Sprintf("land%d.dat", landIndex)]...), commandRules: commandRules}, nil
 }
 
 // Begin accepts the actual incoming caller registers. Initialization of the
@@ -163,6 +173,8 @@ func (s *NativeFrameSession) Begin(w *World, input NativeFrameRegisterContext) e
 	s.Frame = input
 	s.Pass = NativeFramePassState{}
 	s.Deferred = NativeDeferredFrameState{}
+	s.commandStates = [2]NativeCommandFrameState{}
+	s.commandPalettes = [2]*NativeFramePaletteState{}
 	s.RenderPhase = 0
 	s.palette = nil
 	s.Phase = NativeFrameSessionVBlank
@@ -305,7 +317,11 @@ func (s *NativeFrameSession) physicsCallbacks(cb NativeFrameSessionCallbacks, bi
 			return err == nil, err
 		},
 		Commands: func(c *NativeFrameRegisterContext) (bool, error) {
-			return s.Deferred.TickDeferredFrame(c, NativeDeferredFrameCallbacks{Memory: memory, Execute: cb.Execute, Transport: cb.Transport})
+			execute := cb.Execute
+			if execute == nil {
+				execute = s.commandExecutor(cb, commands)
+			}
+			return s.Deferred.TickDeferredFrame(c, NativeDeferredFrameCallbacks{Memory: memory, Execute: execute, Transport: cb.Transport})
 		},
 	}
 	return w.nativeFrameCallbacks(bindings)
