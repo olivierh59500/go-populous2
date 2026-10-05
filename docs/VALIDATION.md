@@ -663,8 +663,9 @@ background copy, highlights, HUD, selected actor/editor, countdown, normal or
 alternate world, map cursor, camera marker and pointer. The mutable CODE $e8ce
 town hit height is shared across selected, normal and alternate actor drawing.
 Beginning another frame resets only the program position, preserving those
-shared fields. Modal callbacks must currently finish synchronously; this
-collector must not be retried after a partially executed child fails.
+shared fields. MainFrame is the synchronous wrapper; AdvanceMain retains
+editor waits as described below. Failed children keep their mutation prefix
+and cannot be silently retried.
 
 All 727 original CPU/DMA references match eight registers, the complete
 70,272-byte BSS, the shared image/audio bank, town hit height, framebuffer and
@@ -682,9 +683,32 @@ An external RAM window must own the same bitmap slice, preventing detached
 padding from hiding writes. Integration checks execute normal/alternate/normal
 frames through real swaps, preserve the background and shared rendering state,
 and retain the drawn prefix while releasing raw World ownership on a missing
-editor child. This synchronous adapter does not make pending modal callbacks
-safe; a resumable renderer remains required for the full interactive loop.
+editor child. The adapter retains editor waits as described below; actor and
+protection continuations remain required for the full interactive loop.
 The editor-mode diagnostic target at $2e3a uses separate mutable CODE backing,
 not the equal numeric BSS address inside terrain. A targeted integration check
 verifies the original draw-buffer pointer and clock register at the diagnostic
 child while the terrain word remains unchanged.
+
+## Main rendering across actual editor waits
+
+AdvanceMain retains the genuine $346a call across its numeric editor and
+keyboard/VBlank waits. Completed background, HUD and selected-entry work is
+not replayed. The editor admission remains frozen until the child returns,
+even if the mode word changes during the wait. A source failure is terminal
+and retains its mutation prefix.
+
+All twenty complete original $ea0..$10b6 executions match 96 snapshots through
+the actual $4bba/$4c14 modal, $620 keyboard interrupts, $3ec VBlank interrupts,
+$072e swaps, $378e numeric writes and $2ae2 debug formatter. Every comparison
+checks all eight registers, complete BSS, both chip screens/Copper memory,
+pointer-image memory, shared image/audio descriptors and mutable CODE fields.
+The sound boundary remains explicitly register-preserving in this rendering
+proof. No prerecorded modal output is substituted for the editor body.
+
+These comparisons exposed a stale drawing target after an editor swap. Main
+rendering now resolves the actual $1e/$22 targets immediately after the child
+returns, and the retained session refreshes its physics target too. A separate
+session test runs the real editor and keyboard waits while holding raw World
+ownership until the entire frame completes. Actor/protection waits and live
+Game activation still require their own continuations and integration.

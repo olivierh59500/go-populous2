@@ -1,15 +1,22 @@
 package populous2
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var errNativeMainEditorWait = errors.New("native main renderer is waiting in the editor")
 
 // NativeMainRenderState retains the shared mutable rendering state between
-// frames. Its step is a synchronous source checkpoint, not a modal continuation.
+// frames. An editor child can retain the exact selected-rendering continuation.
 type NativeMainRenderState struct {
 	World     NativeWorldRenderState
 	Actor     NativeActorRenderState // Shared mutable CODEE8CE across all render children.
 	Alternate NativeAlternateRenderState
 	Step      uint8
 	View      uint16
+	painting  bool
+	failed    error
 }
 
 // Begin resets only the frame-local program position. Shared CODE fields such
@@ -18,10 +25,14 @@ func (s *NativeMainRenderState) Begin() error {
 	if s == nil {
 		return fmt.Errorf("native main render state missing")
 	}
+	if s.failed != nil {
+		return s.failed
+	}
 	if s.Step != 0 && s.Step != 11 {
 		return fmt.Errorf("native main render frame is incomplete")
 	}
 	s.Step, s.View = 0, 0
+	s.painting = false
 	return nil
 }
 
@@ -33,6 +44,13 @@ type NativeMainRenderCallbacks struct {
 	// Alternate optionally replaces the concrete C826/C204 composition.
 	Alternate    func(uint16, *NativeFrameRegisterContext) error
 	DebugOverlay func(*NativeFrameRegisterContext) error // Actual2AE2 editor overlay.
+	// PaintingAdvance owns the actual346A editor/modal continuation. False
+	// retains the source call, including when F0E changes during the wait.
+	// The host starts a fresh editor state for each new invocation/frame.
+	PaintingAdvance func(*NativeFrameRegisterContext) (bool, error)
+	// RefreshTargets rebinds the actual$1e/$22 buffers after a selected/editor
+	// child returns; real modal swaps can change them within one Advance call.
+	RefreshTargets func(*NativeWorldRenderCallbacks) error
 }
 
 // MainFrame composes the exact EA0..10B6 rendering order. World/pointer
@@ -41,6 +59,34 @@ type NativeMainRenderCallbacks struct {
 // must complete synchronously; after an error, discard this frame rather than
 // replaying a partially executed selected actor or world traversal.
 func (r *NativeActorRenderRules) MainFrame(cb NativeMainRenderCallbacks, state *NativeMainRenderState) error {
+	done, err := r.AdvanceMain(cb, state)
+	if err == nil && !done {
+		return fmt.Errorf("native main renderer requires editor continuation")
+	}
+	return err
+}
+
+// AdvanceMain resumes the genuine editor call without repeating background,
+// highlights or HUD work. Town/protection children still require synchronous
+// completion; a source error is terminal and keeps its mutated prefix.
+func (r *NativeActorRenderRules) AdvanceMain(cb NativeMainRenderCallbacks, state *NativeMainRenderState) (bool, error) {
+	if state == nil {
+		return false, fmt.Errorf("native main render state missing")
+	}
+	if state.failed != nil {
+		return false, state.failed
+	}
+	err := r.mainFrame(cb, state)
+	if errors.Is(err, errNativeMainEditorWait) {
+		return false, nil
+	}
+	if err != nil {
+		state.failed = err
+	}
+	return err == nil, err
+}
+
+func (r *NativeActorRenderRules) mainFrame(cb NativeMainRenderCallbacks, state *NativeMainRenderState) error {
 	if r == nil || state == nil || cb.World.Effects.Frame == nil || !winMemoryValid(cb.World.Effects.Memory) {
 		return fmt.Errorf("native main render frame backing missing")
 	}
@@ -81,18 +127,49 @@ func (r *NativeActorRenderRules) MainFrame(cb NativeMainRenderCallbacks, state *
 		state.Step = 4
 	}
 	if state.Step == 4 {
-		children := cb.Selected
-		if children.SelectedHit == nil {
-			children.SelectedHit = func(*NativeFrameRegisterContext) error { return frames.SelectedHit(render) }
+		if !state.painting && cb.PaintingAdvance != nil {
+			edit, err := m.Read16(0xf0e)
+			if err != nil {
+				return err
+			}
+			state.painting = edit != 0
 		}
-		if children.DrawActor == nil {
-			children.DrawActor = func(at int, _ *NativeFrameRegisterContext) error {
-				_, err := r.Actor(at, cb.World.Effects, &state.Actor, cb.World.Children)
+		if state.painting {
+			if cb.PaintingAdvance == nil {
+				return fmt.Errorf("native retained editor child346a missing")
+			}
+			done, err := cb.PaintingAdvance(c)
+			if err != nil {
+				return err
+			}
+			if !done {
+				return errNativeMainEditorWait
+			}
+			state.painting = false
+		} else {
+			children := cb.Selected
+			if children.SelectedHit == nil {
+				children.SelectedHit = func(*NativeFrameRegisterContext) error { return frames.SelectedHit(render) }
+			}
+			if children.DrawActor == nil {
+				children.DrawActor = func(at int, _ *NativeFrameRegisterContext) error {
+					_, err := r.Actor(at, cb.World.Effects, &state.Actor, cb.World.Children)
+					return err
+				}
+			}
+			if _, err := frames.Selected(render, children); err != nil {
 				return err
 			}
 		}
-		if _, err := frames.Selected(render, children); err != nil {
-			return err
+		if cb.RefreshTargets != nil {
+			if err := cb.RefreshTargets(&cb.World); err != nil {
+				return err
+			}
+			render = cb.World.Effects.NativeRenderFrameCallbacks
+			if render.Frame != c || !winMemoryValid(render.Memory) || len(render.Bitmap) != 32000 {
+				return fmt.Errorf("native main refreshed rendering context missing")
+			}
+			m = render.Memory
 		}
 		state.Step = 5
 	}

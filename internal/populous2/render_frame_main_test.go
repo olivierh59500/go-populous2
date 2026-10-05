@@ -3,6 +3,7 @@ package populous2
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -126,5 +127,33 @@ func TestNativeMainRenderBeginPreservesSharedState(t *testing.T) {
 	state.Step = 4
 	if err := state.Begin(); err == nil || state.Step != 4 {
 		t.Fatal("incomplete selected actor rendering was silently restarted")
+	}
+}
+
+func TestNativeMainEditorContinuationDoesNotRereadAdmission(t *testing.T) {
+	raw := make([]byte, 0x11280)
+	memory := commandFrameBacking(raw)
+	_ = memory.Write16(0xf0e, 1)
+	frame := NativeFrameRegisterContext{}
+	state := NativeMainRenderState{Step: 4, View: 8}
+	rules := NativeActorRenderRules{}
+	want := errors.New("retained source editor failure")
+	calls := 0
+	cb := NativeMainRenderCallbacks{World: NativeWorldRenderCallbacks{Effects: NativeActorEffectsCallbacks{NativeRenderFrameCallbacks: NativeRenderFrameCallbacks{Memory: memory, Frame: &frame}}}, PaintingAdvance: func(*NativeFrameRegisterContext) (bool, error) {
+		calls++
+		if calls == 1 {
+			_ = memory.Write16(0xf0e, 0)
+			return false, nil
+		}
+		return false, want
+	}}
+	if done, err := rules.AdvanceMain(cb, &state); err != nil || done || !state.painting || state.Step != 4 {
+		t.Fatal("source editor call did not suspend", done, err)
+	}
+	if done, err := rules.AdvanceMain(cb, &state); done || !errors.Is(err, want) || calls != 2 {
+		t.Fatal("changed editor mode lost the retained source call", done, err, calls)
+	}
+	if err := state.Begin(); !errors.Is(err, want) {
+		t.Fatal("failed native prefix was silently restarted", err)
 	}
 }

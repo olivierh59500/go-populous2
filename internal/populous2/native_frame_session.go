@@ -244,6 +244,12 @@ func (s *NativeFrameSession) Advance(cb NativeFrameSessionCallbacks) (bool, erro
 		// this boundary; copying again during physics would erase queued FX.
 		s.Audio.Entries = s.Image.AudioBank
 		s.Phase = NativeFrameSessionPhysics
+		// A real renderer modal may swap the screens before returning. The
+		// physics suffix must use the current native drawing pointer too.
+		bitmap, err = s.Presentation.BackBuffer()
+		if err != nil {
+			return fail(err)
+		}
 	}
 	done, err := s.Pass.TickFramePass(&s.Frame, s.physicsCallbacks(cb, bitmap))
 	if err != nil {

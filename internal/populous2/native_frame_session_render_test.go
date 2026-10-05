@@ -66,6 +66,77 @@ func TestNativeSessionDebugTargetUsesCODEInsteadOfTerrain(t *testing.T) {
 	}
 }
 
+func TestNativeSessionRetainsActualEditorAcrossKeyboardWaits(t *testing.T) {
+	w, session := nativeSessionTestSetup(t)
+	bindings := nativeSessionRenderTestBindings(t)
+	editorRules, err := DecodeNativeEditorFrameRules(testBundle(t).Executable)
+	if err != nil {
+		t.Fatal(err)
+	}
+	code := fileFrameRelocatedCode(t)
+	codeMemory := commandFrameBacking(code)
+	bindings.Code = codeMemory
+	state, editor := NativeMainRenderState{}, NativeEditorFrameState{}
+	if err := session.Begin(w, NativeFrameRegisterContext{AddressBase: 0x200000}); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if session.world != nil {
+			session.finish(nil)
+		}
+	}()
+	memory := session.Presentation.Memory(w.nativeCleanupMemory())
+	for _, patch := range []nativeHeroPatch{{0x22, 4, 0xa00000}, {0x3b8, 2, 1}, {0xf0c, 2, 8}, {0xf0e, 2, 1}, {0xeb44, 2, 8}, {0xdde, 2, 123}, {0xde0, 2, 46}, {0xde2, 1, 20}, {0xde3, 1, 30}, {0x140, 2, 1}, {0x134, 2, 204}, {0x136, 2, 44}} {
+		renderFramePatch(memory, patch)
+	}
+	background := make([]byte, 32000)
+	callbacks := NativeFrameSessionCallbacks{Bitmap: func(address uint32) ([]byte, error) {
+		if address != 0xa00000 {
+			return nil, fmt.Errorf("unknown bitmap%x", address)
+		}
+		return background, nil
+	}}
+	bindings.PaintingAdvance = func(frame *NativeFrameRegisterContext) (bool, error) {
+		step, err := editor.Advance(&editorRules, NativeEditorFrameCallbacks{NativeFileFrameCallbacks: NativeFileFrameCallbacks{Code: codeMemory, Memory: memory, CodeBase: 0x100000, Frame: frame, Presentation: session.Presentation, Bitmap: session.bitmapAt, Sound: func(uint16, *NativeFrameRegisterContext) error { return nil }}, Image: &session.Image, Sprite: bindings.Sprites.Paint})
+		return step.Complete, err
+	}
+	bindings.DebugOverlay = func(frame *NativeFrameRegisterContext) error {
+		_, err := RenderNativeDebugFrame(NativeDebugFrameCallbacks{Code: codeMemory, CodeBase: 0x100000, Frame: frame, FormatAddress: 0x100000 + 0xef6, Bitmap: func(address uint32) (NativeBitmapWindow, error) {
+			at, err := session.Presentation.chipAt(address, 32000)
+			return NativeBitmapWindow{Bytes: session.Presentation.Chip, BitmapOffset: at}, err
+		}})
+		return err
+	}
+	callbacks.Render = session.RenderMain(bindings, &state)
+	session.Presentation.Input.setWord(0xa, 1)
+	complete, err := session.Advance(callbacks)
+	if err != nil || complete || !editor.Started || state.Step != 4 || !state.painting || w.nativeCallDepth != 1 {
+		t.Fatal("real editor entry was not retained", complete, err, state.Step)
+	}
+	for step := 0; step < 16 && !complete; step++ {
+		if _, err := session.Presentation.VBlank(NativeMouseSample{}, memory, &session.Frame); err != nil {
+			t.Fatal(err)
+		}
+		if step == 2 {
+			for _, wire := range []byte{121, 120} {
+				if err := session.Presentation.Input.KeyboardInterrupt(wire); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+		complete, err = session.Advance(callbacks)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !complete && (session.Phase != NativeFrameSessionRender || state.Step != 4 || !state.painting || w.nativeCallDepth != 1) {
+			t.Fatal("editor wait lost raw World or source rendering position")
+		}
+	}
+	if !complete || !editor.Complete || state.Step != 11 || session.RenderPhase != 2 || w.nativeCallDepth != 0 {
+		t.Fatal("real editor did not complete its retained main frame", complete, editor.PC, state.Step)
+	}
+}
+
 func TestNativeSessionConcreteRenderingUsesRealBuffersAcrossSwaps(t *testing.T) {
 	w, session := nativeSessionTestSetup(t)
 	bindings := nativeSessionRenderTestBindings(t)
