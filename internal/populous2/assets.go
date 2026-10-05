@@ -51,6 +51,7 @@ type Bundle struct {
 	ArmageddonRules   ArmageddonRules
 	ForestNative      ForestNativeRules
 	RenewNative       RenewNativeRules
+	CampaignResult    CampaignResultRules
 	Audio             *AudioBank
 	Actions           []NativeAction
 	GroundRules       GroundEffectRules
@@ -268,6 +269,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.RenewNative, err = DecodeRenewNativeRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.CampaignResult, err = DecodeCampaignResultRules(exe)
 	if err != nil {
 		return nil, err
 	}

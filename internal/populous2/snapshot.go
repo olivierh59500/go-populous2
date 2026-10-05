@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 22
+const SaveVersion = 23
 
 type Snapshot struct {
 	Version                                        int
@@ -49,6 +49,10 @@ type Snapshot struct {
 	NativeEnvironment                              [NativeEffectCapacity]NativeEnvironmentController
 	NativeEnvironmentDirty, NativeEnvironmentShake uint16
 	NativeCommandBytes                             [0x78]byte
+	NativeGameMode, NativeFreeCommands             uint16
+	NativeProfileSide                              uint8
+	NativeClock                                    uint32
+	NativeResult                                   NativeGameResult
 }
 
 func (w *World) Snapshot() Snapshot {
@@ -61,12 +65,26 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline, NativeEnvironment: w.NativeEnvironment, NativeEnvironmentDirty: w.NativeEnvironmentDirty, NativeEnvironmentShake: w.NativeEnvironmentShake, NativeCommandBytes: w.NativeCommandBytes}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline, NativeEnvironment: w.NativeEnvironment, NativeEnvironmentDirty: w.NativeEnvironmentDirty, NativeEnvironmentShake: w.NativeEnvironmentShake, NativeCommandBytes: w.NativeCommandBytes, NativeGameMode: w.NativeGameMode, NativeFreeCommands: w.NativeFreeCommands, NativeProfileSide: w.NativeProfileSide, NativeClock: w.NativeClock, NativeResult: w.NativeResult}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if snapshot.Version < 1 || snapshot.Version > SaveVersion {
 		return nil, fmt.Errorf("unsupported save version %d", snapshot.Version)
+	}
+	if snapshot.Version >= 23 {
+		if snapshot.NativeProfileSide < 1 || snapshot.NativeProfileSide > 2 {
+			return nil, fmt.Errorf("invalid saved native profile side")
+		}
+		switch snapshot.NativeGameMode {
+		case 2, 4, 6, 8, 10:
+		default:
+			return nil, fmt.Errorf("invalid saved native game mode")
+		}
+		r := snapshot.NativeResult
+		if r.Applied && !r.Detected || r.Detected && (r.Eliminated < 1 || r.Eliminated > 2) || r.Applied && (r.Progress.NextWorld > 999 || r.Progress.WorldStep > 6 || r.Progress.BoltAward > 5) {
+			return nil, fmt.Errorf("invalid saved native campaign result")
+		}
 	}
 	for _, code := range snapshot.NativeOverlays {
 		if int(code) >= len(bundle.TownEvaluator.OverlayFrames) {
@@ -377,6 +395,11 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.NativeEnvironment = snapshot.NativeEnvironment
 	w.NativeEnvironmentDirty, w.NativeEnvironmentShake = snapshot.NativeEnvironmentDirty, snapshot.NativeEnvironmentShake
 	w.NativeCommandBytes = snapshot.NativeCommandBytes
+	if snapshot.Version >= 23 {
+		w.NativeGameMode, w.NativeFreeCommands, w.NativeProfileSide, w.NativeClock, w.NativeResult = snapshot.NativeGameMode, snapshot.NativeFreeCommands, snapshot.NativeProfileSide, snapshot.NativeClock, snapshot.NativeResult
+	} else {
+		w.NativeClock = uint32(snapshot.Core.GameTurn)
+	}
 	if snapshot.Version < 17 && snapshot.Core.War {
 		w.NativeRaiseEnabled = 1
 	}
@@ -614,6 +637,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		}
 	}
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
+	if snapshot.Version < 23 {
+		w.initializeNativeCampaignStatistics()
+	}
 	w.HazardSerial, w.LastHazardCue = snapshot.HazardSerial, snapshot.LastHazardCue
 	return w, nil
 }

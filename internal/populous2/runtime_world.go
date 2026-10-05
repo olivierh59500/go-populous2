@@ -51,6 +51,11 @@ func (w *World) syncNativeRuntimeBridge() {
 				panic(err)
 			}
 		}
+		if owner == w.NativeProfileSide {
+			if _, err := memory.Write16(deity+0x58, w.Deity.Bolts); err != nil {
+				panic(err)
+			}
+		}
 		leader := uint16(0)
 		if magnet.Carried > 0 && magnet.Carried <= NativeWorldFollowerCapacity {
 			leader = uint16(nativeActorReference(NativeFollowerPool, magnet.Carried-1))
@@ -58,7 +63,7 @@ func (w *World) syncNativeRuntimeBridge() {
 		for _, field := range []struct {
 			offset int
 			value  uint16
-		}{{8, leader}, {12, uint16(w.nativeFollowerMode(player))}} {
+		}{{8, leader}, {12, uint16(w.nativeFollowerMode(player))}, {0x4a, w.Rules[player].Raw}} {
 			if _, err := memory.Write16(deity+field.offset, field.value); err != nil {
 				panic(err)
 			}
@@ -120,6 +125,9 @@ func (w *World) nativeRuntimeInsert(ref NativeRecordReference) error {
 func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 	memory := w.runtimeMemory()
 	read8 := func(address int) (uint8, error) {
+		if address >= 0xf40 && address < 0xf44 {
+			return uint8(w.NativeClock >> uint(24-(address-0xf40)*8)), nil
+		}
 		if address == 0xf12 {
 			return uint8(w.NativeRaiseEnabled >> 8), nil
 		}
@@ -151,6 +159,12 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 	return FollowerCleanupMemory{
 		Read8: read8,
 		Read16: func(address int) (uint16, error) {
+			if address == 0xf40 {
+				return uint16(w.NativeClock >> 16), nil
+			}
+			if address == 0xf42 {
+				return uint16(w.NativeClock), nil
+			}
 			if address == 0xf12 {
 				return w.NativeRaiseEnabled, nil
 			}
@@ -167,6 +181,9 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			return memory.Read16(address)
 		},
 		Read32: func(address int) (uint32, error) {
+			if address == 0xf40 {
+				return w.NativeClock, nil
+			}
 			if address >= 0xeb18 && address <= 0xeb8c {
 				var value uint32
 				for offset := range 4 {
@@ -186,6 +203,11 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			return memory.Read32(address)
 		},
 		Write8: func(address int, value uint8) error {
+			if address >= 0xf40 && address < 0xf44 {
+				shift := uint(24 - (address-0xf40)*8)
+				w.NativeClock = w.NativeClock&^(uint32(255)<<shift) | uint32(value)<<shift
+				return nil
+			}
 			if address == 0xf12 {
 				w.NativeRaiseEnabled = uint16(value)<<8 | w.NativeRaiseEnabled&255
 				return nil
@@ -206,6 +228,14 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			return err
 		},
 		Write16: func(address int, value uint16) error {
+			if address == 0xf40 {
+				w.NativeClock = w.NativeClock&0xffff | uint32(value)<<16
+				return nil
+			}
+			if address == 0xf42 {
+				w.NativeClock = w.NativeClock&0xffff0000 | uint32(value)
+				return nil
+			}
 			if address == 0xf12 {
 				w.NativeRaiseEnabled = value
 				return nil
@@ -224,6 +254,10 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			return err
 		},
 		Write32: func(address int, value uint32) error {
+			if address == 0xf40 {
+				w.NativeClock = value
+				return nil
+			}
 			if address >= 0xf44 && address <= 0x4f40 {
 				for offset := range 4 {
 					writeGridByte(address-0xf44+offset, uint8(value>>uint(24-offset*8)))

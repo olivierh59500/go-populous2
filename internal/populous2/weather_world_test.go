@@ -123,6 +123,7 @@ func TestNativeCommandImagePreservesBoundedAliasesAcrossSave(t *testing.T) {
 
 func TestWorldWeatherRunsInNormalSimulationLoop(t *testing.T) {
 	w := lightningWorld(t, 4311)
+	w.NativeGameMode = 8 // This isolated controller fixture has no followers.
 	w.Core.Magnets[0].Mana = 1000000
 	if !w.Cast(0, Storm, Target{X: 32, Y: 32}) || !w.Cast(0, FireRain, Target{X: 32, Y: 32}) {
 		t.Fatal("native weather command setup failed")

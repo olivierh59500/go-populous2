@@ -19,6 +19,11 @@ Armageddon converts eligible groups into heroes and enables their terrain
 raising; it retains the original state filters, plague cleanup and recast rules.
 Forest and Renew Land use complete native allocation/terrain routines, while
 the raw scenery pass preserves signed aging, burial and fire/town interactions.
+Campaign results use original identity-based elimination, score arithmetic,
+bolt rewards and world skipping. Pending and applied results survive saves;
+the result screen applies its reward once and offers the native deity allocation
+step after a campaign victory. Original result/ending artwork remains under
+conversion.
 
 **The complete original feature set is still being converted.** Several
 powers, hero movement, native combat, campaign progression and
@@ -111,7 +116,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 22 preserves retained native actor, deity and marker bytes, town structure overlays,
+Version 23 preserves retained native actor, deity and marker bytes, town structure overlays,
 lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
@@ -153,6 +158,9 @@ and saved continuation. Older provisional effects migrate without a new cast.
 Version 22 retains native plague phases and Armageddon's terrain permission.
 Legacy global-war saves lose their inherited war lock without replaying a cast;
 old disease flags receive a valid native overlay phase.
+Version 23 retains the native unpaused frame counter, game/profile selection,
+weighted command use and pending/applied campaign outcome. Earlier saves retain
+their elapsed simulation count and receive original deity identity values.
 
 Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can

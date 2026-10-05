@@ -65,6 +65,12 @@ type World struct {
 	ArmageddonRules          ArmageddonRules
 	ForestNative             ForestNativeRules
 	RenewNative              RenewNativeRules
+	CampaignResult           CampaignResultRules
+	NativeGameMode           uint16
+	NativeProfileSide        uint8
+	NativeClock              uint32
+	NativeFreeCommands       uint16
+	NativeResult             NativeGameResult
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
@@ -183,6 +189,11 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.HurricaneRules, w.TsunamiRules = bundle.HurricaneRules, bundle.TsunamiRules
 	w.PlagueRules, w.ArmageddonRules = bundle.PlagueRules, bundle.ArmageddonRules
 	w.ForestNative, w.RenewNative = bundle.ForestNative, bundle.RenewNative
+	w.CampaignResult = bundle.CampaignResult
+	w.NativeGameMode, w.NativeProfileSide = 2, 1
+	if custom {
+		w.NativeGameMode = 4
+	}
 	w.TownEconomy, err = DecodeNativeTownEconomyRules(land)
 	if err != nil {
 		return nil, err
@@ -216,6 +227,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.bindActorGraphHooks()
 	w.bindNativeTownEvaluator()
 	w.initializeNativeRuntime()
+	w.initializeNativeCampaignStatistics()
 	return w, nil
 }
 
@@ -512,12 +524,17 @@ func (w *World) legacyPower(player, cost, oldCost int, action func() bool) bool 
 }
 
 func (w *World) recordCast(player int, id SpellID) {
+	w.recordNativePowerUse(player, id)
 	w.LastSpell = id
 	w.LastPlayer = player
 	w.SpellSerial++
 }
 
 func (w *World) Tick() {
+	if w.NativeResult.Detected {
+		return
+	}
+	w.NativeClock++
 	w.NativeBirthBlocked = false
 	w.reconcileActorGraph()
 	w.syncNativeRuntimeBridge()
@@ -526,6 +543,12 @@ func (w *World) Tick() {
 	w.tickEffects()
 	w.applyGroundEffects()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
+	w.detectNativeResult()
+	if w.NativeResult.Detected {
+		w.reconcileActorGraph()
+		w.refreshNativeRecordImage()
+		return
+	}
 	w.reconcileActorGraph()
 	w.syncNativeRuntimeBridge()
 	w.tickFlameDeaths()

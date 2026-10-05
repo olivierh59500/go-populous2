@@ -17,10 +17,10 @@ power is not sufficient evidence that its original behavior has been ported.
 | Towns | 19 stages, native mixed support/cache, 49-cell compositor and native founding/economy/emigration in World; rare births allocate original neutral actors | Complete land AI, all neutral/environmental interactions and end-to-end campaign parity |
 | Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Version 22 retains native plague phases and Armageddon terrain permission alongside wind/wave/weather controllers, command aliases, economy/deadline and neutral records | Original Amiga GAM interoperability |
+| Saving | Version 23 retains native frame counter, game/profile identity, command weights and latched/applied campaign results alongside retained actors and controllers | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
-| Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
+| Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, final-world reset and saved one-time application | Original result-screen composition, final Zeus presentation and full conquest pacing/script/AI parity |
 
 ## Power inventory
 

@@ -922,3 +922,38 @@ Wind-displaced scenery and walls retain full fractional graph coordinates in
 saves and use those fractions for rendering. Their scalar tile positions remain
 the map-index bridge. A mixed world test runs 50 updates, saves, and compares
 another 150 updates with live followers and environmental controllers.
+
+## Native campaign results and progression
+
+The completed follower pass tests exact zero totals at `$12470/$1247a`, side 1
+before side 2. Deity word `$18` stores profile identity and is initialized to
+1/2; game mode 8 suppresses automatic results. World latches that boundary and
+stops further effects/scenery updates when it ends. Remaining inherited AI
+ordering is still a separate conversion requirement.
+
+Native `$f40` counts unpaused updates and `$f42` is its low-word alias. The result
+screen divides that count by 50 for elapsed seconds. Each current scenario-options
+word is copied into deity `$4a`; battle wins at `$48` and those options form the
+raw long used by `$397e`. Score preserves WORD wrapping, low-word carry behavior,
+DIVU quotient overflow and an explicit divide-zero fault. Peak population/mana
+and metric/loss statistics are retained for display, but do not enter the score.
+
+Shared debit `$17e38` increments deity `$138` by `(slot % 6) + 1` once for each
+admitted command. Free-command word `$f0e`, editor mode 8 and neutral owner 3
+bypass that update. Sculpting uses its separate propagated-cost debit without
+a weighted increment. Lightning marker/cancel are free; activation counts its
+slot 18 debit. Original signed peak updates already run before totals reset.
+
+Conquest mode 2 awards unspent bolts on either result. Local elimination advances
+one world except at 999. Opponent elimination uses the score-derived step capped
+at six, clamps to 999 from below, and reaches completion when winning from 999;
+the completion branch resets the world to zero. Per-element experience changes
+only through deity allocation. World applies this transition once, and version
+23 saves the latched score/statistics, selected profile, frame counter and applied
+reward/progression. Loading an applied result cannot award another reward.
+
+The existing interface now uses these native result rules instead of the former
+one-world victory increment. 1,096 original references are repeated through the
+World statistics/progression adapter. Original result-screen assets, the Zeus
+ending presentation, profile swapping, native AI and command scheduling remain
+requirements before complete campaign parity can be claimed.

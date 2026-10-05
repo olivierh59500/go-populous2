@@ -207,13 +207,9 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
 		g.selectSpell(populous2.PapalMagnet)
 	}
-	if g.World.Core.ResultFor(0) != legacy.ResultOngoing {
+	if g.World.ResultForLocalProfile() != legacy.ResultOngoing {
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-			next := g.LevelIndex
-			if g.World.Core.ResultFor(0) == legacy.ResultWon {
-				next = min(next+1, len(g.Bundle.Levels)-1)
-			}
-			return g.start(next, g.World.Custom, false)
+			return g.advanceNativeCampaign()
 		}
 		return nil
 	}
@@ -870,15 +866,22 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		vector.DrawFilledRect(screen, 128, 424, 512, 20, color.RGBA{10, 13, 18, 238}, false)
 		label(screen, truncate(g.Message, 82), 132, 427, ink)
 	}
-	if result := world.ResultFor(0); result != legacy.ResultOngoing {
-		panel(screen, 146, 235, 462, 118)
+	if result := g.World.ResultForLocalProfile(); result != legacy.ResultOngoing {
+		panel(screen, 146, 220, 462, 154)
 		text := "VICTOIRE"
 		if result == legacy.ResultLost {
 			text = "DEFAITE"
 		}
-		label(screen, text, 317, 254, ink)
-		label(screen, "ENTREE: monde suivant / recommencer", 180, 290, muted)
-		label(screen, "ECHAP: menu", 280, 320, muted)
+		label(screen, text, 317, 235, ink)
+		r := g.World.NativeResult
+		label(screen, fmt.Sprintf("SCORE %d  DUREE %d s", r.Score.Value, g.World.NativeClock/50), 182, 260, ink)
+		label(screen, fmt.Sprintf("COMBATS %d  CHEFS PERDUS %d", r.Local.BattleWins, r.Local.LeaderLosses), 182, 280, muted)
+		if r.ScoreError != "" {
+			label(screen, truncate(r.ScoreError, 58), 182, 300, muted)
+		} else {
+			label(screen, "ENTREE: poursuivre", 248, 315, muted)
+		}
+		label(screen, "ECHAP: menu", 280, 346, muted)
 	}
 }
 
