@@ -16,6 +16,9 @@ type NativeAudioDevice struct {
 	CodeBase, ResourceBase uint32
 	TimerLow               uint8 // The executable writes only the $19 high latch byte.
 	Hardware               []NativeFrameHardwareWrite
+	// A native null envelope can read actual absolute low memory. The host
+	// must provide that backing explicitly; it is not a fabricated zero bank.
+	ReadAbsolute8 func(uint32) (uint8, error)
 }
 
 func NewNativeAudioDevice(exe *amiga.Executable, fx []byte, codeBase, resourceBase uint32, timerLow uint8) (*NativeAudioDevice, error) {
