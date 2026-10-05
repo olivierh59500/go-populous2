@@ -738,3 +738,26 @@ timer update, saved registers, frozen actor selection and delayed restoration
 of the command word. It tests orchestration separately from the actual modal
 body proof. Real protection waits within normal/alternate world traversal,
 the remaining host callbacks and live Game activation are still required.
+
+## Main frame across retained world traversal
+
+AdvanceMain now retains the normal $bbe0 and alternate $c204 traversal when
+a projected actor enters protection. Row/column, linked-list order, computed
+actor projection and complete caller registers survive each wait. Alternate
+clearing and its original view-word load run once, while mutable projection
+and scratch words remain available in the supplied CODE backing.
+
+All 68 complete original $ea0..$10b6 executions match 3,944 snapshots across
+the real protection requester and IRQ/click/palette waits. The cases cover all
+four BLOCK banks, normal/alternate views, mixed same-cell tail-to-head actors
+and a following-cell actor. They compare full D/BSS/CODE, both chip screens
+and Copper state, pointer RAM and shared image state; base sprite resources
+are used, with landscape sprite differences covered separately.
+
+The session tile sink resolves the source A6 address retained at traversal
+entry. Actor and overlay images resolve current global $1e. A targeted buffer
+test permutes image pointers, then verifies that tile DMA still updates the
+original allocation and rejects a mismatched slice. Cursor/debug drawing is
+rebound after the traversal returns. These source comparisons establish the
+complete rendering continuation; remaining startup/resource/menu/transport
+host bindings and live Game activation still require integration.

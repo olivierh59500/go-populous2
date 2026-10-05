@@ -208,6 +208,70 @@ func TestNativeSessionRetainsSelectedActorParentAcrossChildWait(t *testing.T) {
 	}
 }
 
+func TestNativeSessionTileWindowRetainsA6AfterImageTargetSwap(t *testing.T) {
+	w, session := nativeSessionTestSetup(t)
+	bindings := nativeSessionRenderTestBindings(t)
+	if err := session.Begin(w, NativeFrameRegisterContext{AddressBase: 0x200000}); err != nil {
+		t.Fatal(err)
+	}
+	defer session.finish(nil)
+	memory := session.Presentation.Memory(w.nativeCleanupMemory())
+	frozen, _ := memory.Read32(0x1e)
+	imageTarget, _ := memory.Read32(0x1a)
+	_ = memory.Write32(0x22, imageTarget)
+	oldBitmap, err := session.bitmapAt(frozen)
+	if err != nil {
+		t.Fatal(err)
+	}
+	imageBitmap, err := session.bitmapAt(imageTarget)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range oldBitmap {
+		oldBitmap[i] = byte(i*11 + 3)
+		imageBitmap[i] = byte(i*17 + 7)
+	}
+	_ = memory.Write32(0x1e, imageTarget)
+	world, err := session.bindMainRenderWorld(bindings, memory, &session.Frame, &session.Image, imageBitmap, &frozen)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var offset uint16
+	for _, part := range bindings.Tiles.Descriptors[32] {
+		if part != 0 {
+			offset = part
+			break
+		}
+	}
+	if offset == 0 {
+		t.Fatal("original tile chunk unavailable")
+	}
+	request := NativeTileChunkRequest{SourceOffset: offset, DestinationOffset: 0xa16}
+	at, err := session.Presentation.chipAt(frozen, 32000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := append([]byte(nil), session.Presentation.Chip...)
+	if err := bindings.Tiles.PaintChunkWindow(request, NativeBitmapWindow{Bytes: want, BitmapOffset: at}); err != nil {
+		t.Fatal(err)
+	}
+	if err := world.Tile(request, oldBitmap); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(session.Presentation.Chip, want) {
+		t.Fatal("tile DMA used current image target instead of retained A6")
+	}
+	if err := world.ResolveTargets(&world); err != nil {
+		t.Fatal(err)
+	}
+	if &world.Effects.Bitmap[0] != &imageBitmap[0] {
+		t.Fatal("actor target did not follow current global1E")
+	}
+	if err := world.Tile(request, imageBitmap); err == nil {
+		t.Fatal("detached frozen tile target was accepted")
+	}
+}
+
 func TestNativeSessionConcreteRenderingUsesRealBuffersAcrossSwaps(t *testing.T) {
 	w, session := nativeSessionTestSetup(t)
 	bindings := nativeSessionRenderTestBindings(t)

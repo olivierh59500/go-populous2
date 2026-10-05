@@ -5,20 +5,22 @@ import (
 	"fmt"
 )
 
-var errNativeMainChildWait = errors.New("native main renderer is waiting in a selected child")
+var errNativeMainChildWait = errors.New("native main renderer is waiting in a child")
 
 // NativeMainRenderState retains the shared mutable rendering state between
 // frames. An editor child can retain the exact selected-rendering continuation.
 type NativeMainRenderState struct {
-	World     NativeWorldRenderState
-	Actor     NativeActorRenderState // Shared mutable CODEE8CE across all render children.
-	Alternate NativeAlternateRenderState
-	Selection NativeSelectedRenderContinuation
-	Step      uint8
-	View      uint16
-	painting  bool
-	selecting bool
-	failed    error
+	World            NativeWorldRenderState
+	Actor            NativeActorRenderState // Shared mutable CODEE8CE across all render children.
+	Alternate        NativeAlternateRenderState
+	Selection        NativeSelectedRenderContinuation
+	Traversal        NativeWorldRenderContinuation
+	Step             uint8
+	View             uint16
+	painting         bool
+	selecting        bool
+	alternateCleared bool
+	failed           error
 }
 
 // Begin resets only the frame-local program position. Shared CODE fields such
@@ -37,6 +39,8 @@ func (s *NativeMainRenderState) Begin() error {
 	s.painting = false
 	s.selecting = false
 	s.Selection = NativeSelectedRenderContinuation{}
+	s.Traversal = NativeWorldRenderContinuation{}
+	s.alternateCleared = false
 	return nil
 }
 
@@ -71,9 +75,8 @@ func (r *NativeActorRenderRules) MainFrame(cb NativeMainRenderCallbacks, state *
 	return err
 }
 
-// AdvanceMain resumes editor and selected-actor calls without repeating
-// background, highlights or HUD work. World-traversal protection waits still
-// need their own retained traversal. A source error keeps its mutated prefix.
+// AdvanceMain resumes editor, selected-actor and world-traversal calls without
+// repeating their completed work. A source error keeps its mutated prefix.
 func (r *NativeActorRenderRules) AdvanceMain(cb NativeMainRenderCallbacks, state *NativeMainRenderState) (bool, error) {
 	if state == nil {
 		return false, fmt.Errorf("native main render state missing")
@@ -222,10 +225,25 @@ func (r *NativeActorRenderRules) mainFrame(cb NativeMainRenderCallbacks, state *
 	}
 	if state.Step == 6 {
 		state.World.Actor = state.Actor
-		if _, err := r.WorldDraw(cb.World, &state.World); err != nil {
+		if !state.Traversal.Started && cb.Code.Write32 != nil {
+			if err := cb.Code.Write32(0xe458, 0x00c00048); err != nil {
+				return err
+			}
+		}
+		_, done, err := r.AdvanceWorldDraw(cb.World, &state.World, &state.Traversal)
+		state.Actor = state.World.Actor
+		if err != nil {
 			return err
 		}
-		state.Actor = state.World.Actor
+		if !done {
+			return errNativeMainChildWait
+		}
+		if cb.RefreshTargets != nil {
+			if err := cb.RefreshTargets(&cb.World); err != nil {
+				return err
+			}
+			render = cb.World.Effects.NativeRenderFrameCallbacks
+		}
 		if cb.Code.Write32 != nil {
 			if err := cb.Code.Write32(0xe458, uint32(state.World.ProjectionX)<<16|uint32(state.World.ProjectionY)); err != nil {
 				return err
@@ -266,19 +284,44 @@ func (r *NativeActorRenderRules) mainFrame(cb NativeMainRenderCallbacks, state *
 				return err
 			}
 		} else {
-			if err := frames.AlternateClear(render); err != nil {
-				return err
+			if !state.alternateCleared {
+				if err := frames.AlternateClear(render); err != nil {
+					return err
+				}
+				view, err := m.Read16(0xf0c)
+				if err != nil {
+					return err
+				}
+				c.Word(0, view)
+				state.alternateCleared = true
 			}
-			view, err := m.Read16(0xf0c)
+			state.Alternate.World.Actor = state.Actor
+			_, done, err := r.AdvanceAlternateDraw(cb.World, &state.Alternate, &state.Traversal)
+			state.Actor = state.Alternate.World.Actor
 			if err != nil {
 				return err
 			}
-			c.Word(0, view)
-			state.Alternate.World.Actor = state.Actor
-			if _, err := r.AlternateDraw(cb.World, &state.Alternate); err != nil {
+			if cb.Code.Write32 != nil {
+				if err := cb.Code.Write32(0xe458, uint32(state.Alternate.World.ProjectionX)<<16|uint32(state.Alternate.World.ProjectionY)); err != nil {
+					return err
+				}
+			}
+			if cb.Code.Write16 != nil {
+				for i, value := range state.Alternate.Scratch {
+					if err := cb.Code.Write16(0xc132+i*2, value); err != nil {
+						return err
+					}
+				}
+			}
+			if !done {
+				return errNativeMainChildWait
+			}
+		}
+		if cb.RefreshTargets != nil {
+			if err := cb.RefreshTargets(&cb.World); err != nil {
 				return err
 			}
-			state.Actor = state.Alternate.World.Actor
+			render = cb.World.Effects.NativeRenderFrameCallbacks
 		}
 		state.Step = 8
 	}

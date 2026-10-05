@@ -24,8 +24,8 @@ type NativeSessionRenderBindings struct {
 }
 
 // RenderMain supplies the concrete renderer to Advance, retaining actual
-// editor and selected-actor waits. Protection inside world traversal still
-// requires its retained row/list continuation.
+// editor, selected-actor and world-traversal waits. Tile DMA retains its entry
+// A6 target while actor images follow the current global drawing pointer.
 func (s *NativeFrameSession) RenderMain(bindings NativeSessionRenderBindings, state *NativeMainRenderState) func(FollowerCleanupMemory, *NativeFrameRegisterContext, *NativeImageRenderState, []byte, *uint32) (bool, error) {
 	return func(memory FollowerCleanupMemory, frame *NativeFrameRegisterContext, image *NativeImageRenderState, bitmap []byte, phase *uint32) (bool, error) {
 		if s == nil || s.Presentation == nil || state == nil || bindings.Rules == nil || bindings.Sprites == nil || bindings.Tiles == nil || phase == nil || frame == nil || image == nil || !winMemoryValid(memory) || len(bitmap) != 32000 {
@@ -35,10 +35,10 @@ func (s *NativeFrameSession) RenderMain(bindings NativeSessionRenderBindings, st
 			if err := state.Begin(); err != nil {
 				return false, err
 			}
-		} else if *phase != 1 || state.Step != 4 || (!state.painting && !state.selecting) {
-			return false, fmt.Errorf("native main renderer has no retained selected continuation")
+		} else if *phase != 1 || !(state.Step == 4 && (state.painting || state.selecting) || (state.Step == 6 || state.Step == 7) && state.Traversal.Started && !state.Traversal.Complete) {
+			return false, fmt.Errorf("native main renderer has no retained child continuation")
 		}
-		world, err := s.bindMainRenderWorld(bindings, memory, frame, image, bitmap)
+		world, err := s.bindMainRenderWorld(bindings, memory, frame, image, bitmap, &state.Traversal.TileTargetAddress)
 		if err != nil {
 			return false, err
 		}
@@ -46,6 +46,9 @@ func (s *NativeFrameSession) RenderMain(bindings NativeSessionRenderBindings, st
 		// its prefix, and the session closes rather than replaying the renderer.
 		*phase = 1
 		code := bindings.Code
+		if code.Write16 == nil && s.world != nil {
+			code.Write16 = s.writeCommandCodeWord
+		}
 		if code.Write32 == nil && s.world != nil {
 			code.Write32 = func(at int, value uint32) error {
 				if at < 0 || at&1 != 0 || at > len(s.world.NativeAI.Code)-4 {
@@ -57,7 +60,7 @@ func (s *NativeFrameSession) RenderMain(bindings NativeSessionRenderBindings, st
 		}
 		done, err := bindings.Rules.AdvanceMain(NativeMainRenderCallbacks{World: world, Selected: bindings.Selected, Code: code, DebugOverlay: bindings.DebugOverlay, PaintingAdvance: bindings.PaintingAdvance, SelectedOwnership: bindings.SelectedOwnership,
 			RefreshTargets: func(world *NativeWorldRenderCallbacks) error {
-				rebound, err := s.bindMainRenderWorld(bindings, memory, frame, image, nil)
+				rebound, err := s.bindMainRenderWorld(bindings, memory, frame, image, nil, &state.Traversal.TileTargetAddress)
 				if err == nil {
 					*world = rebound
 				}
@@ -75,7 +78,7 @@ func (s *NativeFrameSession) RenderMain(bindings NativeSessionRenderBindings, st
 	}
 }
 
-func (s *NativeFrameSession) bindMainRenderWorld(bindings NativeSessionRenderBindings, memory FollowerCleanupMemory, frame *NativeFrameRegisterContext, image *NativeImageRenderState, bitmap []byte) (NativeWorldRenderCallbacks, error) {
+func (s *NativeFrameSession) bindMainRenderWorld(bindings NativeSessionRenderBindings, memory FollowerCleanupMemory, frame *NativeFrameRegisterContext, image *NativeImageRenderState, bitmap []byte, tileTargetAddress *uint32) (NativeWorldRenderCallbacks, error) {
 	var world NativeWorldRenderCallbacks
 	address, err := memory.Read32(0x1e)
 	if err != nil {
@@ -115,8 +118,33 @@ func (s *NativeFrameSession) bindMainRenderWorld(bindings NativeSessionRenderBin
 	world = NativeWorldRenderCallbacks{
 		Effects: NativeActorEffectsCallbacks{NativeRenderFrameCallbacks: NativeRenderFrameCallbacks{Memory: memory, Frame: frame, Image: image, Input: &s.Presentation.Input, Bitmap: bitmap, Sprite: bindings.Sprites.Paint}, Cropped: bindings.Sprites.PaintCropped, Reinterpreted: bindings.Sprites.PaintReinterpreted},
 		Tiles:   bindings.Tiles, Background: background, Children: bindings.Children,
-		Tile: func(request NativeTileChunkRequest, _ []byte) error {
+		Tile: func(request NativeTileChunkRequest, target []byte) error {
+			if tileTargetAddress != nil && *tileTargetAddress != 0 && *tileTargetAddress != address {
+				var err error
+				address = *tileTargetAddress
+				if bindings.Window != nil {
+					window, err = bindings.Window(address)
+				} else {
+					var at int
+					at, err = s.Presentation.chipAt(address, 32000)
+					window = NativeBitmapWindow{Bytes: s.Presentation.Chip, BitmapOffset: at}
+				}
+				if err != nil {
+					return err
+				}
+			}
+			if len(target) != 32000 || window.BitmapOffset < 0 || window.BitmapOffset > len(window.Bytes)-32000 || &window.Bytes[window.BitmapOffset] != &target[0] {
+				return fmt.Errorf("native frozen tile window does not own the A6 target")
+			}
 			return bindings.Tiles.PaintChunkWindow(request, window)
+		},
+		ResolveTargets: func(target *NativeWorldRenderCallbacks) error {
+			address, err := memory.Read32(0x1e)
+			if err != nil {
+				return err
+			}
+			target.Effects.Bitmap, err = s.bitmapAt(address)
+			return err
 		},
 	}
 	if world.Children.RefreshTargets == nil {
