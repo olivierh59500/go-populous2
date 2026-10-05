@@ -61,6 +61,8 @@ type World struct {
 	FireRainRules            FireRainRules
 	HurricaneRules           HurricaneRules
 	TsunamiRules             TsunamiRules
+	PlagueRules              PlagueRules
+	ArmageddonRules          ArmageddonRules
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
@@ -177,6 +179,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.StormRules = bundle.StormRules
 	w.FireRainRules = bundle.FireRainRules
 	w.HurricaneRules, w.TsunamiRules = bundle.HurricaneRules, bundle.TsunamiRules
+	w.PlagueRules, w.ArmageddonRules = bundle.PlagueRules, bundle.ArmageddonRules
 	w.TownEconomy, err = DecodeNativeTownEconomyRules(land)
 	if err != nil {
 		return nil, err
@@ -428,11 +431,8 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		w.castNativeVolcano(player, target.X, target.Y)
 		applied = true
 	case Armageddon:
-		applied = w.legacyPower(player, spell.Cost, legacy.ManaWarCost, func() bool { return w.Core.WarPower(player) })
-		if applied {
-			w.NativeRaiseEnabled = 1
-			w.removePlagueVictims()
-		}
+		w.castNativeArmageddon()
+		applied = true
 	case Plague:
 		applied = w.castPlague(player, target.X+target.Y*64)
 	case Swamp, Flowers, Baptism:
@@ -481,7 +481,7 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	if !applied {
 		return false
 	}
-	if id != PapalMagnet && id != Armageddon {
+	if id != PapalMagnet {
 		w.Core.Magnets[player].Mana -= spell.Cost
 	}
 	w.recordCast(player, id)
@@ -519,7 +519,6 @@ func (w *World) Tick() {
 	w.rebuildCaptiveIndex()
 	w.tickEffects()
 	w.applyGroundEffects()
-	w.spreadPlague()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
 	w.reconcileActorGraph()
 	w.syncNativeRuntimeBridge()
@@ -529,7 +528,6 @@ func (w *World) Tick() {
 	w.tickScenery()
 	w.followHelenCaptives()
 	w.applyGroundEffects()
-	w.spreadPlague()
 	for i, hero := range w.Heroes {
 		if !hero.Active {
 			continue

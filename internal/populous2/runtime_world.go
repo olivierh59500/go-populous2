@@ -120,6 +120,12 @@ func (w *World) nativeRuntimeInsert(ref NativeRecordReference) error {
 func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 	memory := w.runtimeMemory()
 	read8 := func(address int) (uint8, error) {
+		if address == 0xf12 {
+			return uint8(w.NativeRaiseEnabled >> 8), nil
+		}
+		if address == 0xf13 {
+			return uint8(w.NativeRaiseEnabled), nil
+		}
 		if address >= 0xeb18 && address < 0xeb90 {
 			return w.NativeCommandBytes[address-0xeb18], nil
 		}
@@ -145,6 +151,9 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 	return FollowerCleanupMemory{
 		Read8: read8,
 		Read16: func(address int) (uint16, error) {
+			if address == 0xf12 {
+				return w.NativeRaiseEnabled, nil
+			}
 			if address >= 0xeb18 && address <= 0xeb8e {
 				high, _ := read8(address)
 				low, _ := read8(address + 1)
@@ -177,6 +186,14 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			return memory.Read32(address)
 		},
 		Write8: func(address int, value uint8) error {
+			if address == 0xf12 {
+				w.NativeRaiseEnabled = uint16(value)<<8 | w.NativeRaiseEnabled&255
+				return nil
+			}
+			if address == 0xf13 {
+				w.NativeRaiseEnabled = w.NativeRaiseEnabled&0xff00 | uint16(value)
+				return nil
+			}
 			if address >= 0xf44 && address < 0x4f44 {
 				writeGridByte(address-0xf44, value)
 				return nil
@@ -189,6 +206,10 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			return err
 		},
 		Write16: func(address int, value uint16) error {
+			if address == 0xf12 {
+				w.NativeRaiseEnabled = value
+				return nil
+			}
 			if address >= 0xf44 && address <= 0x4f42 {
 				offset := address - 0xf44
 				writeGridByte(offset, uint8(value>>8))

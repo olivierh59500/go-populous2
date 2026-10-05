@@ -183,11 +183,34 @@ fonts can reverse it again. Swamps kill walkers of either side. Greenery restore
 flat damaged land. Entry animation, special hero immunity and later spread
 rules are still verification targets.
 
-Plague selection at `$1730e` infects opposing actors on the target tile.
-Infection follows the actor, passes through contact, suppresses town mana and
-removes its victims during Armageddon. It is not an expiring ground-radius
-effect. The vulture sequence at animation offset `$ddc` is decoded, including
-its original caw cue. Full native disease timing and immunity remain pending.
+Plague selection at `$1730e` walks the actual parcel chain, selecting signed
+kind bytes at most 4 whose owner byte differs from the caster. It independently
+checks neither positive population nor hero/ruin state. Recasts reset word
+`$30` (decimal 48) to `$ddc`. Infection transfers through actual friendly merge
+and town birth; unrelated groups merely sharing a tile do not infect each other.
+Common prepass advances that word and reads the shipped damage constant 0.
+Nonpositive victims enter retained state `$3e`, with cleanup mode 1 and the
+existing aftermath dispatcher. Overlay artwork/caw now follows each actor's
+native phase, including managed towns/heroes, instead of a global frame modulo.
+
+1,360 original cases compare cast, prepass and exact merge/birth boundaries.
+World repeats all 386 casts against complete BSS memory, and gameplay tests
+exercise real merge inheritance, zero-damage progression and Armageddon cleanup.
+
+Armageddon command 72 plays cue `$051e`, then executes `$13022`. Its native
+state table filters all 399 usable follower slots. Eligible infected records
+receive complete cleanup mode 0; others draw one random value and convert
+directly through `$142fe` into one of the first four heroes. It enables global
+`$f12`, used by the hero terrain-raising planner. No center gathering, countdown
+or separate global war lock is part of this original body. Already-enabled
+recasts still reach their sound/debit while the body changes no records or RNG.
+
+All 720 original body/command-boundary cases match standalone and World full
+BSS/RNG. A 300-update saved gameplay continuation exposed native waiting
+state 10 with animation 0 after hero search found no target. That ordinary
+image bank is now decoded for waiting; 32 additional CPU references prove its
+loops and timer/expiry boundaries. Save version 22 migrates old disease phases
+and inherited war locks without recasting or consuming mana/RNG.
 
 ## Roads
 

@@ -58,8 +58,8 @@ func TestNativeManaHeroAndGlobalPowers(t *testing.T) {
 			if id.IsHero() && (!w.Heroes[carrier].Active || w.Core.Peeps[carrier].Status != legacy.KnightStatus || w.Core.Magnets[0].Carried != 0) {
 				t.Fatal("leader was not converted")
 			}
-			if id == Armageddon && !w.Core.War {
-				t.Fatal("global battle did not begin")
+			if id == Armageddon && (w.Core.War || w.NativeRaiseEnabled != 1) {
+				t.Fatal("native global hero conversion/terrain permission missing")
 			}
 		})
 	}

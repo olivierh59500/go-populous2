@@ -1,40 +1,42 @@
 package populous2
 
-import legacy "go-populous2/internal/legacy"
-
-// castPlague translates the actor selection at CODE:$1730e. The disease lives
-// on the follower, rather than on an expiring circle of neighboring ground.
+// castPlague runs original $1730e against the linked mixed-actor cell list.
+// CommonPrepass owns the phase and mortality; actual merge/birth controllers
+// transfer infection. Co-location alone is not a native propagation rule.
 func (w *World) castPlague(player, pos int) bool {
 	applied := false
-	for i := range w.Core.Peeps {
-		p := &w.Core.Peeps[i]
-		if p.Population > 0 && int(p.Player) != player && p.AtPos == pos && p.Flags&legacy.InRuin == 0 {
-			p.Plague = true
-			applied = true
-		}
+	err := w.runNativeFollowerCall(func() error {
+		step, err := w.PlagueRules.Create(uint16(player+1), uint8(pos%64), uint8(pos/64), PlagueCallbacks{Memory: w.nativeCleanupMemory(), Cleanup: w.cleanupNativeFollower})
+		applied = step.Admitted
+		return err
+	})
+	if err != nil {
+		panic(err)
 	}
 	return applied
 }
 
-func (w *World) spreadPlague() {
-	var infected [4096]bool
-	for _, p := range w.Core.Peeps {
-		if p.Population > 0 && p.Plague && p.AtPos >= 0 && p.AtPos < len(infected) {
-			infected[p.AtPos] = true
-		}
+func (w *World) PlagueFollowerFrame(index int) (AnimationFrame, bool) {
+	if index < 0 || index >= len(w.Core.Peeps) {
+		return AnimationFrame{}, false
 	}
-	for i := range w.Core.Peeps {
-		p := &w.Core.Peeps[i]
-		if p.Population > 0 && p.AtPos >= 0 && p.AtPos < len(infected) && infected[p.AtPos] {
-			p.Plague = true
-		}
+	a, err := w.RecordImage.ReadFollowerEntry(nativeActorReference(NativeFollowerPool, index))
+	if err != nil || a.Owner == 0 || a.Owner == 3 || a.Motion.Flags&16 == 0 {
+		return AnimationFrame{}, false
 	}
+	frame, ok := w.PlagueRules.Frames[int(a.Extra48)]
+	return frame, ok
 }
 
-func (w *World) removePlagueVictims() {
-	for i, p := range w.Core.Peeps {
-		if p.Plague && p.Population > 0 {
-			w.Core.DamagePeep(i, p.Population)
-		}
+func (w *World) castNativeArmageddon() {
+	err := w.runNativeFollowerCall(func() error {
+		_, err := w.ArmageddonRules.Cast(ArmageddonCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Cleanup: w.cleanupNativeFollower,
+			Convert: func(ref NativeRecordReference, hero uint16) error {
+				return w.HeroArt.Convert(ref, heroIDs[hero/2], HeroCreationCallbacks{Memory: w.nativeCleanupMemory(), ClearLeader: w.clearNativeLeader, ClearFarms: w.clearNativeFarms, Sound: w.nativeEntryCallbacks().Sound})
+			}})
+		return err
+	})
+	if err != nil {
+		panic(err)
 	}
 }

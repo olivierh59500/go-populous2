@@ -45,7 +45,9 @@ func DecodeFollowerEntryRules(exe *amiga.Executable) (FollowerEntryRules, error)
 		rules.ReplyAnimations[index] = int(binary.BigEndian.Uint16(code[0x20a0c+index*2:]))
 	}
 	rules.WaitingFrames, rules.WaitingLoops, rules.WaitingCues = make(map[int]AnimationFrame), make(map[int]int), make(map[int]uint16)
-	for _, start := range append([]int{0xccc}, rules.ReplyAnimations[:]...) {
+	// Waiting expiry without an eligible enemy can leave state10 with
+	// animation0. Its next pass reads the ordinary image bank at0.
+	for _, start := range append([]int{0, 0xccc}, rules.ReplyAnimations[:]...) {
 		terminated := false
 		for index := range 256 {
 			offset := start + index*4

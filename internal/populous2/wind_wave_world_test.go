@@ -14,6 +14,7 @@ import (
 func installNativeFixtureWorld(t *testing.T, raw []byte, heights []uint8) *World {
 	t.Helper()
 	w := lightningWorld(t, 4311)
+	w.NativeRaiseEnabled = uint16(raw[0xf12])<<8 | uint16(raw[0xf13])
 	copy(w.RecordImage.Bytes[:], raw[NativeRecordImageStart:NativeMagnetImageStart])
 	copy(w.NativeGlobals.Bytes[:], raw[NativeMagnetImageStart:NativeRuntimeImageEnd])
 	if len(raw) >= 0xeb90 {
@@ -48,6 +49,7 @@ func installNativeFixtureWorld(t *testing.T, raw []byte, heights []uint8) *World
 
 func nativeFixtureWorldImage(w *World, initial []byte) []byte {
 	all := append([]byte(nil), initial...)
+	all[0xf12], all[0xf13] = uint8(w.NativeRaiseEnabled>>8), uint8(w.NativeRaiseEnabled)
 	for pos, cell := range w.Occupancy.Grid.Cells {
 		a := 0xf44 + pos*4
 		all[a], all[a+1], all[a+2], all[a+3] = cell.Header, cell.Tile, uint8(cell.Head>>8), uint8(cell.Head)

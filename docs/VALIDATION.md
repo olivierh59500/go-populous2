@@ -74,6 +74,10 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Native Hurricane | 47 original cases/586 updates match complete BSS, map, overlays and mixed actor pools; World repeats all cases with real move/cleanup callbacks and verifies saved continuation |
 | Native Tsunami | 914 original cases/1,328 updates cover adjacent-water starts, cloning, newborn skip, barriers, direct lowering and seven hero/Helen flood cases; World replays 40 ordered pool/shore cases over 800 updates, matching complete pool/map and 4,225 heights |
 | Wind/wave saves | Version 21 retains unlinked wind and linked wave controllers/direction words; full-pool debit, recycled art suppression, native wave layers, saved continuation and no-debit/RNG old-save migration checked |
+| Native Plague | 1,360 complete CPU cases cover signed-kind casting, per-record zero-damage prepass and real merge/birth inheritance boundaries; World repeats all 386 raw-memory casts and verifies actual merge/overlay/mortality composition |
+| Native Armageddon | 720 complete native state-filter/conversion/cleanup/command-boundary cases match World BSS/RNG; admitted recasts, debit and 300-update saved continuation pass |
+| Waiting continuation | 32 additional original state10/animation0 references cover ordinary image-loop continuation and signed timer expiry after hero search found no target |
+| Disease/global saves | Version 22 preserves plague phases and native terrain permission; old disease/war state migrates without a replayed cast or mutated snapshot |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |

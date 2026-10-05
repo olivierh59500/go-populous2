@@ -14,6 +14,9 @@ speed, population and sound rules.
 Wind now pushes linked occupants using the original parcel scan order;
 tidal waves start from adjacent water, branch sideways and lower shallow shores.
 Their native controllers and directions survive Go saves.
+Plague uses the original per-record clock and actual merge/birth inheritance.
+Armageddon converts eligible groups into heroes and enables their terrain
+raising; it retains the original state filters, plague cleanup and recast rules.
 
 **The complete original feature set is still being converted.** Several
 powers, hero movement, native combat, campaign progression and
@@ -106,7 +109,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 21 preserves retained native actor, deity and marker bytes, town structure overlays,
+Version 22 preserves retained native actor, deity and marker bytes, town structure overlays,
 lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
@@ -145,6 +148,9 @@ unlinked and hidden until activation; falling height comes from the decoded
 sprite layers. Older generic weather saves migrate into native records.
 Version 21 adds wind/wave controllers with original directions, pool order
 and saved continuation. Older provisional effects migrate without a new cast.
+Version 22 retains native plague phases and Armageddon's terrain permission.
+Legacy global-war saves lose their inherited war lock without replaying a cast;
+old disease flags receive a valid native overlay phase.
 
 Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can

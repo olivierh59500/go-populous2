@@ -68,7 +68,6 @@ type Game struct {
 	muted                     bool
 	lastSoundSerial           int
 	lastHazardSoundSerial     int
-	lastPlagueSoundTurn       int
 	lastNativeEffectSoundTurn int
 	roadLastTile              int
 	roadDragging              bool
@@ -264,13 +263,16 @@ func (g *Game) Update() error {
 				played[cue] = true
 			}
 		}
-	}
-	if g.audioReplay != nil && len(g.Bundle.PlagueAnimation) > 0 && g.World.Core.GameTurn%len(g.Bundle.PlagueAnimation) == 0 && g.lastPlagueSoundTurn != g.World.Core.GameTurn {
-		g.lastPlagueSoundTurn = g.World.Core.GameTurn
-		for _, p := range g.World.Core.Peeps {
-			if p.Population > 0 && p.Plague {
-				g.audioReplay.PlayCue(1)
-				break
+		for index, p := range g.World.Core.Peeps {
+			x, y := p.AtPos%64-g.CameraX, p.AtPos/64-g.CameraY
+			if x < 0 || y < 0 || x >= 8 || y >= 8 {
+				continue
+			}
+			frame, ok := g.World.PlagueFollowerFrame(index)
+			cue := frame.SoundCue
+			if ok && cue > 0 && cue < len(played) && !played[cue] {
+				g.audioReplay.PlayCue(cue)
+				played[cue] = true
 			}
 		}
 	}
@@ -727,6 +729,11 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		px, py := project(x, y, cell.BaseAltitude)
 		ox, oy := cell.ActorOffset(fx, fy)
 		cx, cy := px+32+ox*2, py+16+oy*2
+		if frame, ok := g.World.PlagueFollowerFrame(i); ok {
+			for _, layer := range frame.Layers {
+				g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
+			}
+		}
 		if frame, ok := g.World.ManagedFollowerFrame(i); ok {
 			for _, layer := range frame.Layers {
 				g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
@@ -738,12 +745,6 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 				g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
 			}
 			continue
-		}
-		if peep.Plague && len(g.Bundle.PlagueAnimation) > 0 {
-			frame := g.Bundle.PlagueAnimation[world.GameTurn%len(g.Bundle.PlagueAnimation)]
-			for _, layer := range frame.Layers {
-				g.drawSprite(view, layer.Sprite, cx+layer.X*2, cy+layer.Y*2)
-			}
 		}
 		if peep.Flags&legacy.InTown != 0 {
 			stage := clamp(peep.TownStage, 0, populous2.TownStages-1)

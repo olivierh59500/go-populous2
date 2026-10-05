@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 21
+const SaveVersion = 22
 
 type Snapshot struct {
 	Version                                        int
@@ -568,6 +568,48 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	}
 	if snapshot.Version < 21 {
 		if err := w.migrateLegacyWindWaves(); err != nil {
+			return nil, err
+		}
+	}
+	if snapshot.Version < 22 {
+		if snapshot.Core.War {
+			w.Core.War = false
+			w.NativeRaiseEnabled = 1
+		}
+		if err := w.runNativeFollowerCall(func() error {
+			m := w.nativeCleanupMemory()
+			for index, p := range snapshot.Core.Peeps {
+				if !p.Plague {
+					continue
+				}
+				ref := nativeActorReference(NativeFollowerPool, index)
+				at := cleanupRecordAddress(ref)
+				owner, err := m.Read8(at + 12)
+				if err != nil {
+					return err
+				}
+				if owner == 0 {
+					continue
+				}
+				flags, err := m.Read8(at + 13)
+				if err != nil {
+					return err
+				}
+				phase, err := m.Read16(at + 48)
+				if err != nil {
+					return err
+				}
+				if _, ok := w.PlagueRules.Frames[int(phase)]; flags&16 == 0 || !ok {
+					if err := m.Write8(at+13, flags|16); err != nil {
+						return err
+					}
+					if err := m.Write16(at+48, 0xddc); err != nil {
+						return err
+					}
+				}
+			}
+			return nil
+		}); err != nil {
 			return nil, err
 		}
 	}
