@@ -85,6 +85,18 @@ func (m *NativeHostMemory) MapRegion(region NativeHostRegion) error {
 	return nil
 }
 
+func (m *NativeHostMemory) ReleaseRegion(address uint32, length int) error {
+	if m != nil {
+		for i, region := range m.Regions {
+			if region.Base == address && len(region.Bytes) == length {
+				m.Regions = append(m.Regions[:i], m.Regions[i+1:]...)
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("native release%x length%d does not match an allocation", address, length)
+}
+
 // Span returns an alias of one actual allocation. Cross-region operations
 // use Memory's byte callbacks; a bitmap window cannot bridge detached slices.
 func (m *NativeHostMemory) Span(address uint32, length int) ([]byte, error) {

@@ -826,3 +826,26 @@ reference fingerprints declared allocations, without the earlier analysis
 model's zero-filled gaps. FX/QAZ require original runtime allocations and are
 deliberately unavailable in that HUNK-only integration test; their allocations
 and full startup/presentation/World backing remain required integration work.
+
+## Runtime audio and background allocations
+
+NativeStartupAllocationState translates complete $1a43e/$1a4bc. It requests
+exactly $1e0dc audio bytes and $7d00 background bytes with flags2, follows the
+signed allocation return gates, updates real BSS/descriptor pointers and retains
+each genuine resource19CD0 call. Release uses the original positive-pointer
+tests and exact sizes. It preserves the actual visible caller register results,
+including declared host allocator clobbers, rather than normalizing success.
+
+All36 original CPU allocation/release envelopes match full D/A/BSS/CODE,
+with each resource/allocation callback run immediately and suspended. The
+external allocator/resource return contracts are explicit in that proof.
+NativeHostAllocator additionally maps real Go-owned regions in an explicit
+configured address range. Its addresses are host assignments, not claims about
+AmigaOS allocation placement. Exhaustion returns native0; releases validate
+the allocation and remove its mapped backing.
+
+An integrated startup test executes1A43e through the real host allocator and
+encoded filesystem into the proven19CD0 body, verifies decoded FX/QAZ bytes,
+actual descriptor pointers and closed handles, then executes1A4bc and verifies
+both allocations are unavailable. Remaining initial constructor, coherent
+World/presentation backing and live Game-loop activation remain required work.
