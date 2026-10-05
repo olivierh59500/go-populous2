@@ -9,17 +9,18 @@ power is not sufficient evidence that its original behavior has been ported.
 
 | Area | Current implementation | Remaining work |
 |---|---|---|
-| Resources | Original compression, tile fragments, masks, sprite differences and relocated descriptors | Original menu composition and font use |
+| Resources | Original compression, tile fragments, masks, sprite differences and relocated descriptors; prepared bitmap banks and real adjacent-RAM tile sink | Full retained resource load/reload and startup host binding |
+| Native rendering | Complete normal/alternate main rendering, HUD, selected panel, cursors, editor/debug text and retained protection waits; original CPU/DMA pixel comparisons | Live Game activation and startup resource/physical-memory binding |
 | Campaign | 1,000 worlds, passwords, native constructor controls, complete two-side templates/compiled choices, template mana/attrition, opponent XP/bolts and scripted events | Complete native policy/command frame binding and end-to-end pacing |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
-| Followers | 399 usable records; all 35 active native state families collected in a register-bearing World dispatcher, including search, movement, combat, towns, heroes, captivity, neutral actors and retained deaths; 452 complete native pass comparisons | Filled-pool physics composition and replacement of the live inherited Game scheduler; full cross-effect/campaign behavior |
+| Followers | 399 usable records; all 35 active native state families in the register-bearing World dispatcher; 452 native follower passes and 168 composed main-physics/session comparisons, including filled pools | Replacement of the live inherited Game scheduler; full cross-effect/campaign behavior |
 | Towns | 19 stages, native mixed support/cache, 49-cell compositor and native founding/economy/emigration in World; rare births allocate original neutral actors | Complete land AI, all neutral/environmental interactions and end-to-end campaign parity |
 | Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
-| Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
+| Audio | 31 samples, 133 patterns, native four-channel device/CIA replay, raster DMA sample starvation, register-aware menu pause/resume and cast cue bindings; controlled CPU/PCM references | Live Game backend activation, original beam/CIA phase and analog/PWM fidelity, all animation-triggered cue integration |
 | Saving | Native Amiga GAM import/export, original file requester with overwrite/error dialogs and F5/F9/CLI access, saved graph/templates/profile/geometry/camera/RNG and atomic replacement; Go JSON APIs remain available | Native text-input timing, interactive desktop checks and broader two-player/cross-effect interoperability |
-| Interface | Original startup/five actions, result requester/101 PAL wait, full native deity/options screens, world selection, opponent biographies, spell-help base, file controls and Zeus animation | Original in-game/serial menu binding, spell-help preview animation, native text-input timing and interactive desktop validation |
-| Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
+| Interface | Original startup/result/deity/world/help/file/Zeus components; complete raw in-game/options/serial requester, profile/panel and keyboard modal bodies; composed menu and rendering continuations verified | Live menu/frame entry, remaining startup/resource/transport children, spell-help preview animation and interactive desktop validation |
+| Multiplayer | Native raw command/serial protocol and retained scheduler; paired TCP byte/state tests pass | Complete handshake/resume source ABI, live connection/menu/frame binding and save policy |
 | Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, original result text/layout/wait, saved one-time application and final Zeus animation | Visual transition validation and full conquest pacing/script/AI parity |
 
 ## Power inventory

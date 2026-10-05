@@ -761,3 +761,23 @@ original allocation and rejects a mismatched slice. Cursor/debug drawing is
 rebound after the traversal returns. These source comparisons establish the
 complete rendering continuation; remaining startup/resource/menu/transport
 host bindings and live Game activation still require integration.
+
+## Composed in-game menu children
+
+NativeInGameHostState connects the genuine $446a controller to original options
+($471c), profile switching ($111ae), panel restoration ($1da0/$1f5e), palette
+and audio pause/resume bodies. Nested options/serial/palette state survives
+host waits; completion clears only the child invocation. Transport stays an
+explicit callback with independent completion/condition flags, and failures
+retain the mutated prefix without replaying it.
+
+Twenty-four original composed menu executions match 78 complete snapshots
+across both profiles and game modes2/4/6/8: resume, profile-switch/resume and
+options edits/exit. The reference executes the actual child bodies, including
+initialized icon/sprite preparation, full-register audio wrappers and shared
+HUNK3/bitmap drawing. Full D/BSS, both screens/Copper, pointer RAM, requester
+CODE fields, shared image state and call/sound order match. The signed
+transport-resume result is an explicit register-preserving boundary in this
+proof, not a claimed connection. Initialized audio-device behavior and serial
+protocol have separate proofs. Live menu/frame entry and host transport binding
+remain integration work.
