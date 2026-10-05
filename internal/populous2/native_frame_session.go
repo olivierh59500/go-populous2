@@ -50,6 +50,7 @@ type NativeFrameSession struct {
 	commandRules         NativeCommandRules
 	commandStates        [2]NativeCommandFrameState
 	commandPalettes      [2]*NativeFramePaletteState
+	imageAudioCode       *NativeImageAudioCodeAlias
 }
 
 type NativeFrameSessionCallbacks struct {
@@ -279,6 +280,11 @@ func (s *NativeFrameSession) Advance(cb NativeFrameSessionCallbacks) (bool, erro
 		// EE32 and182CE use the same CODE bank. Transfer authority once at
 		// this boundary; copying again during physics would erase queued FX.
 		s.Audio.Entries = s.Image.AudioBank
+		if s.imageAudioCode != nil {
+			if err := s.imageAudioCode.SetOwner(NativeAudioCodeOwner); err != nil {
+				return fail(err)
+			}
+		}
 		s.Phase = NativeFrameSessionPhysics
 		// A real renderer modal may swap the screens before returning. The
 		// physics suffix must use the current native drawing pointer too.
@@ -348,6 +354,11 @@ func (s *NativeFrameSession) physicsCallbacks(cb NativeFrameSessionCallbacks, bi
 			// Audio has completed (or the pause gate skipped it). Transfer
 			// authority before a deferred UI child can draw through EE32.
 			s.Image.AudioBank = s.Audio.Entries
+			if s.imageAudioCode != nil {
+				if err := s.imageAudioCode.SetOwner(NativeImageCodeOwner); err != nil {
+					return false, err
+				}
+			}
 			_, err := s.Presentation.Swap(c)
 			return err == nil, err
 		},

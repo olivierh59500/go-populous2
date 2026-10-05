@@ -928,3 +928,23 @@ and resumes there without replaying or mutating the completed constructor.
 No source completion or terminal condition flags are claimed while that child
 is outstanding. This test proves the assembled prefix, not the complete live
 startup or interactive game.
+
+## Runtime image/audio authority and physical device
+
+The host now exposes image-layer Y, shared queue records and four scheduler
+channels through its physical CODE callbacks. The retained session selects
+Audio immediately after its existing render-to-physics transfer, then Image
+after the audio-to-swap transfer and before deferred UI. Authority is never
+inferred from a broad frame phase, and neither transfer is repeated on resume.
+
+InitializeAudio uses actual allocated/decoded FX and canonical relocated CODE
+for the original driver initialization. A bounded single-owner integration
+test starts native music and reads raster-DMA PCM. Shared device streaming and
+frame/menu/resource access require host serialization; the PCM's own mutex
+does not protect other CODE owners.
+
+Another test retains a render wait followed by a deferred command wait and
+verifies physical queue reads, exact authority changes and survival of the
+late UI sound write. Session and runtime race checks pass. These tests prove
+the shared ownership contract; host streaming serialization and live Game
+activation remain required.
