@@ -633,3 +633,25 @@ original captured A0 target rather than rereading a changed BSS $22 pointer;
 the scoped target regression verifies that only the captured buffer is drawn.
 Complete terrain/world rendering and real file/reset child operations remain
 required before enabling this session as the live Game scheduler.
+
+## World traversal and real adjacent bitmap RAM
+
+NativeBitmapWindow supplies actual RAM surrounding a bitmap with an explicit
+origin. PaintChunkWindow preserves native plane/row DMA order and the +8000
+plane stride; it neither clamps writes to one plane nor invents zero padding
+past the framebuffer. All 480 original adjacent-DMA pair cases match the
+complete initialized RAM window, including negative displacements, plane
+crossings and writes past the nominal end. Unavailable backing retains the
+completed write prefix before reporting the missing address.
+
+The genuine $bbe0 world traversal matches all 340 original CPU/DMA cases:
+eight registers, 70,272-byte BSS, framebuffer and adjacent initialized RAM,
+shared image counters, actor order and projection/terrain permission flags.
+Coverage includes all four BLOCK banks, sixteen slopes and fractional positions,
+overlays, viewport corners and mixed signed actor chains drawn tail-to-head.
+Four animated tile220 cases genuinely write past the nominal buffer and now
+match the same adjacent RAM; no exception or pixel clamp hides them.
+
+This establishes main world drawing and the bitmap sink. Alternate-view $c204,
+town challenge/editor inputs, complete main-render orchestration and live Game
+activation remain required work.
