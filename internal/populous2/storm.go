@@ -53,6 +53,7 @@ func DecodeStormRules(exe *amiga.Executable) (StormRules, error) {
 
 type StormCallbacks struct {
 	Memory       FollowerCleanupMemory
+	Frame        *NativeFrameRegisterContext
 	Random       func() uint16
 	Link, Unlink func(NativeRecordReference) error
 	DestroyTown  func(NativeRecordReference) error // Complete $16184.
@@ -185,9 +186,16 @@ func (rules StormRules) Damage(ref NativeRecordReference, cb StormCallbacks) (ui
 	if err != nil {
 		return 0, err
 	}
+	if cb.Frame != nil {
+		cb.Frame.Word(0, uint16(grid-0xf44))
+		cb.Frame.D[1] = 0
+	}
 	head, err := m.Read16(grid + 2)
 	if err != nil {
 		return 0, err
+	}
+	if cb.Frame != nil {
+		cb.Frame.Word(0, head)
 	}
 	if head == 0 {
 		return 0, fmt.Errorf("native storm unlinked cell would enter the external effect-pool tail")
@@ -232,6 +240,9 @@ func (rules StormRules) Damage(ref NativeRecordReference, cb StormCallbacks) (ui
 						return hits, fmt.Errorf("native storm hero table alias outside decoded window")
 					}
 					animation = rules.HeroDeath[hero/2]
+					if cb.Frame != nil {
+						cb.Frame.Word(0, animation)
+					}
 				}
 				if animation != 0 {
 					if err := m.Write16(address+10, animation); err != nil {
@@ -247,6 +258,9 @@ func (rules StormRules) Damage(ref NativeRecordReference, cb StormCallbacks) (ui
 						return hits, err
 					}
 					hits++
+					if cb.Frame != nil {
+						cb.Frame.Word(1, hits)
+					}
 				}
 			}
 		}
@@ -255,8 +269,14 @@ func (rules StormRules) Damage(ref NativeRecordReference, cb StormCallbacks) (ui
 				return hits, err
 			}
 			hits++
+			if cb.Frame != nil {
+				cb.Frame.Word(1, hits)
+			}
 		}
 		head, err = m.Read16(address + 2)
+		if cb.Frame != nil {
+			cb.Frame.Word(0, head)
+		}
 		if err != nil {
 			return hits, err
 		}
@@ -307,6 +327,9 @@ func (rules StormRules) Tick(ref NativeRecordReference, cb StormCallbacks) (Stor
 			return err
 		}
 		next := uint16(animation + 4)
+		if cb.Frame != nil {
+			cb.Frame.Word(0, next)
+		}
 		word, err := rules.imageWord(next)
 		if err != nil {
 			return err
@@ -353,12 +376,18 @@ func (rules StormRules) Tick(ref NativeRecordReference, cb StormCallbacks) (Stor
 	if word < 0 {
 		next += uint16(word)
 	}
+	if cb.Frame != nil {
+		cb.Frame.Word(0, next)
+	}
 	if err := m.Write16(address+10, next); err != nil {
 		return step, err
 	}
 	extra, err := m.Read16(address + 26)
 	if err != nil {
 		return step, err
+	}
+	if cb.Frame != nil {
+		cb.Frame.Word(0, extra)
 	}
 	if extra != 0 {
 		next := uint16(extra + 4)
@@ -368,6 +397,9 @@ func (rules StormRules) Tick(ref NativeRecordReference, cb StormCallbacks) (Stor
 		}
 		if word < 0 {
 			next = 0
+		}
+		if cb.Frame != nil {
+			cb.Frame.Word(0, next)
 		}
 		if err := m.Write16(address+26, next); err != nil {
 			return step, err
@@ -393,11 +425,30 @@ func (rules StormRules) Tick(ref NativeRecordReference, cb StormCallbacks) (Stor
 	if err := m.Write16(address+20, 0); err != nil {
 		return step, err
 	}
-	if cb.Random()%rules.StrikeModulus != 0 {
+	strike := cb.Random()
+	if cb.Frame != nil {
+		cb.Frame.D[0] = uint32(strike)
+		if e := frameDivide(cb.Frame, 0, rules.StrikeModulus); e != nil {
+			return step, e
+		}
+		cb.Frame.Swap(0)
+	}
+	if strike%rules.StrikeModulus != 0 {
 		return step, nil
 	}
 	step.Struck = true
-	if err := m.Write16(address+20, cb.Random()%rules.CooldownModulus+rules.CooldownModulus/2); err != nil {
+	cooldown := cb.Random()
+	if cb.Frame != nil {
+		cb.Frame.D[0] = uint32(cooldown)
+		cb.Frame.Word(1, rules.CooldownModulus)
+		if e := frameDivide(cb.Frame, 0, rules.CooldownModulus); e != nil {
+			return step, e
+		}
+		cb.Frame.Swap(0)
+		cb.Frame.Word(1, rules.CooldownModulus>>1)
+		cb.Frame.Word(0, uint16(cb.Frame.D[0])+uint16(cb.Frame.D[1]))
+	}
+	if err := m.Write16(address+20, cooldown%rules.CooldownModulus+rules.CooldownModulus/2); err != nil {
 		return step, err
 	}
 	if err := m.Write16(address+26, 0); err != nil {
@@ -421,6 +472,9 @@ func (rules StormRules) Tick(ref NativeRecordReference, cb StormCallbacks) (Stor
 	tile, err := m.Read8(grid + 1)
 	if err != nil {
 		return step, err
+	}
+	if cb.Frame != nil {
+		cb.Frame.Word(4, uint16(tile)*2)
 	}
 	if rules.Properties[tile]&8 != 0 {
 		extra = 0x5ec

@@ -30,6 +30,11 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 			cb.SourceD2 = uint16(c.D[2])
 			step, e := w.NativeWhirlwind.Tick(ref, cb)
 			return NativeFrameFXStep{Draw: !(step.Expired && step.Removed), Color: 5}, e
+		case 0x2c, 0x2e:
+			cb := w.stormCallbacks()
+			cb.Frame = c
+			step, e := w.StormRules.Tick(ref, cb)
+			return NativeFrameFXStep{Draw: !step.Removed, Color: 5}, e
 		case 0x12, 0x14:
 			cb := w.nativeFungusCallbacks()
 			cb.Frame = c
