@@ -44,36 +44,61 @@ func (s *NativeFrameSession) commandExecutor(cb NativeFrameSessionCallbacks, bin
 				if cb.CommandChild != nil {
 					return cb.CommandChild(call, phase)
 				}
-				if call.Routine != 0x102e4 {
-					return NativeCommandFrameResult{}, fmt.Errorf("native session command child%x continuation missing", call.Routine)
-				}
-				if s.commandPalettes[side] == nil {
-					bank := func(address uint32) (NativeFramePaletteBank, error) {
-						p := NativeFramePaletteBank{Address: address}
-						if address&1 != 0 || uint64(address)+32 > uint64(len(s.world.NativeAI.Code)) {
-							return p, fmt.Errorf("native command palette%x outside CODE", address)
-						}
-						for i := range p.Words {
-							p.Words[i] = binary.BigEndian.Uint16(s.world.NativeAI.Code[int(address)+i*2:])
-						}
-						return p, nil
-					}
-					source, err := bank(call.PaletteA2)
-					if err != nil {
-						return NativeCommandFrameResult{}, err
-					}
-					target, err := bank(call.PaletteA3)
-					if err != nil {
-						return NativeCommandFrameResult{}, err
-					}
-					s.commandPalettes[side] = NewNativeFramePaletteState(source, target, 0)
-				}
-				frame := NativeFrameRegisterContext{D: call.Context.D, AddressBase: s.Frame.AddressBase}
-				done, err := s.commandPalettes[side].Advance(s.Presentation, &frame, immediate.Memory)
-				call.Context.D = frame.D
-				return NativeCommandFrameResult{Complete: done}, err
+				return s.AdvanceBuiltInCommandChild(call, phase)
 			},
 		})
 		return done, err
 	}
+}
+
+// AdvanceBuiltInCommandChild executes proven palette/minimap source children.
+// Callers providing file/reset/resource operations can delegate these exact
+// bodies here while retaining their own operation phase for other routines.
+func (s *NativeFrameSession) AdvanceBuiltInCommandChild(call NativeCommandFrameCall, _ *uint32) (NativeCommandFrameResult, error) {
+	if s == nil || s.world == nil || call.Context == nil {
+		return NativeCommandFrameResult{}, fmt.Errorf("native command child session backing missing")
+	}
+	side := (call.Caller - 0xeb56) / 10
+	if side < 0 || side >= 2 || call.Caller != 0xeb56+side*10 {
+		return NativeCommandFrameResult{}, fmt.Errorf("native command child caller outside source records")
+	}
+	if call.Routine == 0xd8cc {
+		bitmap, err := s.bitmapAt(call.TargetA0)
+		if err != nil {
+			return NativeCommandFrameResult{}, err
+		}
+		frame := NativeFrameRegisterContext{D: call.Context.D, AddressBase: s.Frame.AddressBase}
+		err = DrawNativeMinimapFrame(s.world.NativeAI.Code, s.Presentation.Memory(s.world.nativeCleanupMemory()), &frame, bitmap)
+		call.Context.D = frame.D
+		return NativeCommandFrameResult{Complete: err == nil}, err
+	}
+
+	if call.Routine != 0x102e4 {
+		return NativeCommandFrameResult{}, fmt.Errorf("native session command child%x continuation missing", call.Routine)
+	}
+	if s.commandPalettes[side] == nil {
+		bank := func(address uint32) (NativeFramePaletteBank, error) {
+			p := NativeFramePaletteBank{Address: address}
+			if address&1 != 0 || uint64(address)+32 > uint64(len(s.world.NativeAI.Code)) {
+				return p, fmt.Errorf("native command palette%x outside CODE", address)
+			}
+			for i := range p.Words {
+				p.Words[i] = binary.BigEndian.Uint16(s.world.NativeAI.Code[int(address)+i*2:])
+			}
+			return p, nil
+		}
+		source, err := bank(call.PaletteA2)
+		if err != nil {
+			return NativeCommandFrameResult{}, err
+		}
+		target, err := bank(call.PaletteA3)
+		if err != nil {
+			return NativeCommandFrameResult{}, err
+		}
+		s.commandPalettes[side] = NewNativeFramePaletteState(source, target, 0)
+	}
+	frame := NativeFrameRegisterContext{D: call.Context.D, AddressBase: s.Frame.AddressBase}
+	done, err := s.commandPalettes[side].Advance(s.Presentation, &frame, s.Presentation.Memory(s.world.nativeCleanupMemory()))
+	call.Context.D = frame.D
+	return NativeCommandFrameResult{Complete: done}, err
 }

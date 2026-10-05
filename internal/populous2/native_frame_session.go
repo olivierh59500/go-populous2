@@ -151,16 +151,9 @@ func (s *NativeFrameSession) Begin(w *World, input NativeFrameRegisterContext) e
 		if err != nil {
 			return err
 		}
-		var bitmap []byte
-		if at, err := s.Presentation.chipAt(address, 32000); err == nil {
-			bitmap = s.Presentation.Chip[at : at+32000]
-		} else if s.bitmapResolver != nil {
-			bitmap, err = s.bitmapResolver(address)
-			if err != nil {
-				return err
-			}
-		} else {
-			return fmt.Errorf("native terrain target%x bitmap backing missing", address)
+		bitmap, err := s.bitmapAt(address)
+		if err != nil {
+			return err
 		}
 		frame := NativeFrameRegisterContext{D: c.D, AddressBase: s.Frame.AddressBase}
 		point, err := PlanNativeMapPoint(&frame)
@@ -325,4 +318,14 @@ func (s *NativeFrameSession) physicsCallbacks(cb NativeFrameSessionCallbacks, bi
 		},
 	}
 	return w.nativeFrameCallbacks(bindings)
+}
+
+func (s *NativeFrameSession) bitmapAt(address uint32) ([]byte, error) {
+	if at, err := s.Presentation.chipAt(address, 32000); err == nil {
+		return s.Presentation.Chip[at : at+32000], nil
+	}
+	if s.bitmapResolver != nil {
+		return s.bitmapResolver(address)
+	}
+	return nil, fmt.Errorf("native bitmap target%x backing missing", address)
 }

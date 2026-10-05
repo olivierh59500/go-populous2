@@ -191,3 +191,44 @@ func TestNativeSessionResumesActualFileCommandBeforeSecondSide(t *testing.T) {
 		t.Fatal("outer1744C saved register lost")
 	}
 }
+
+func TestNativeSessionMinimapChildUsesCapturedTarget(t *testing.T) {
+	w, s := nativeSessionTestSetup(t)
+	if err := s.Begin(w, NativeFrameRegisterContext{}); err != nil {
+		t.Fatal(err)
+	}
+	defer s.finish(nil)
+	m := s.Presentation.Memory(w.nativeCleanupMemory())
+	_ = m.Write32(0x22, 0xa10000)
+	first, second := make([]byte, 32000), make([]byte, 32000)
+	s.bitmapResolver = func(address uint32) ([]byte, error) {
+		switch address {
+		case 0xa00000:
+			return first, nil
+		case 0xa10000:
+			return second, nil
+		default:
+			return nil, fmt.Errorf("unknown fixture bitmap%x", address)
+		}
+	}
+	c := NativeCommandRegisterContext{D: [8]uint32{1, 2, 3, 4, 5, 6, 7, 8}}
+	result, err := s.AdvanceBuiltInCommandChild(NativeCommandFrameCall{NativeCommandCall: NativeCommandCall{Caller: 0xeb56, Routine: 0xd8cc, Context: &c}, TargetA0: 0xa00000}, nil)
+	if err != nil || !result.Complete {
+		t.Fatal("native full minimap child failed", err)
+	}
+	changed := false
+	for i, v := range first {
+		if v != 0 {
+			changed = true
+		}
+		if second[i] != 0 {
+			t.Fatal("minimap followed changed BSS22 instead of frozen A0")
+		}
+	}
+	if !changed {
+		t.Fatal("native minimap child produced no pixels")
+	}
+	if c.D[6] != 64 || c.D[7] != 64 {
+		t.Fatal("native minimap register loop suffix missing")
+	}
+}

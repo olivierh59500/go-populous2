@@ -617,3 +617,19 @@ command before the second side's actual mana command, then verifies one swap,
 one renderer invocation, exact command clearing and outer MOVEM restoration.
 This proves orchestration; real $3f92 DOS/modal, reset and resource child bodies
 and their Game binding are still required work.
+
+## Full minimap rebuild child
+
+DrawNativeMinimapFrame reproduces the complete $d8cc 64x64 scan and its mutable
+CODE coordinate/pixel-procedure selector, using the loaded LAND color table.
+All 192 original CPU comparisons match eight data registers and final bitmap
+across four landscapes, varied cell codes, shifted selectors, checked-edge
+clipping and nonzero backgrounds. No neighbor pixels are cleared by a guessed
+whole-image rebuild.
+
+The session exposes AdvanceBuiltInCommandChild for the real palette/minimap
+bodies alongside caller-owned DOS/reset/resource operations. $d8cc uses the
+original captured A0 target rather than rereading a changed BSS $22 pointer;
+the scoped target regression verifies that only the captured buffer is drawn.
+Complete terrain/world rendering and real file/reset child operations remain
+required before enabling this session as the live Game scheduler.
