@@ -371,3 +371,21 @@ output. These passes use native mode8 to suppress result dialogs and view0
 to omit minimap pixel drawing. No actor/prepass callback output is replayed
 from a fixture in this composed proof. Other follower families and live Game
 frame/presentation routing remain required work; a missing body still errors.
+
+## Native two-player transport and startup
+
+The portable serial adapter reproduces handshake, eight-byte player packets,
+menu synchronization, disconnect aliases, receive-ring behavior and multiplayer
+startup. CPU comparisons cover 72 handshakes, 160 requester pages/960 actions,
+256 byte translations, 48 receive interrupts and 128 complete mode6 startups.
+Real paired net.Conn tests run 100 protocol stages and 240 World command stages
+with 480 original $17500 player commands; both peers apply both players' commands.
+Full extended tests, race checks and vet pass.
+
+The localhost TCP test, initially unavailable inside the sandbox, was run by
+the user on 2026-10-05: TestNativeSerialTCPConnectionCarriesOriginalBytes passed
+without skipping (test0.00s, package0.254s). This verifies actual socket creation
+and byte transfer on 127.0.0.1. The desktop endpoint UI, full physics/frame
+scheduler and save/reload policy for pending live connections remain separate
+required integration; these protocol tests do not establish complete two-player
+Game behavior.
