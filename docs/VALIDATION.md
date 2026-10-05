@@ -964,3 +964,17 @@ not replayed. Ownership callbacks deliberately clobber caller registers in that
 test, exercising the source panel's full save/restore contract. These are
 runtime-composition checks; full in-game visual/interaction validation and the
 initial menu/campaign startup paths remain outstanding.
+
+## Host audio/frame serialization
+
+The runtime owns one NativeRuntimeAccess for complete frame/menu/resource
+operations and PCM reads. CreatePCM verifies the actual shared device and
+returns the stream wrapper bound to that owner. Source children executing
+inside Access.Execute use the explicitly borrowed callbacks; external controls
+and stream reads acquire the outer owner before the PCM mutex.
+
+A race-enabled integration test runs actual allocated/shared audio playback
+concurrently with host BSS updates and native music commands through the same
+owner. It verifies completed updates and error propagation without asserting
+a deterministic waveform for nondeterministically ordered commands. It does
+not activate the live Game loop or claim original CPU/audio phase timing.

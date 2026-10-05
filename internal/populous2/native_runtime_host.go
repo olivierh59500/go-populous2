@@ -20,6 +20,9 @@ type NativeRuntimeHostConfig struct {
 // that source startup has run: InitializePresentation, resource allocation
 // and the retained startup controller are separate real operations.
 type NativeRuntimeHost struct {
+	// Access owns complete native operations and PCM reads. Do not copy
+	// the runtime or access borrowed fields concurrently outside Execute.
+	Access             NativeRuntimeAccess
 	Bundle             *Bundle
 	Host               *NativeHostMemory
 	Memory             *NativeSessionMemory
