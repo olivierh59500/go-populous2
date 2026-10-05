@@ -575,3 +575,19 @@ Main rendering remains a genuine required callback while its remaining source
 children are implemented. The live Game still uses its inherited scheduler;
 this session and its bounded native comparisons establish integration APIs,
 not a completed original interface or audible replay.
+
+## Original BLOCK tile bitmap sink
+
+NativeTileBitmapBank caches the actual BLOCK descriptors and prepared16x8
+chunks for each landscape. PaintChunk consumes the original source word and
+destination byte displacement, leaving height adjustment, six-part ordering
+and zero-offset pointer advances to the world-draw producer. It updates the
+four real bitmap planes without allocating or repacking chunks during drawing.
+
+All 3,060 original $bfac pair executions match the final native bitmap across
+255 tiles, three pairs and four BLOCK banks. The independent reference runs
+actual $1a3f0 preparation and hardware DMA mask/minterm/modulo rules, including
+the hardware B pointer advancing between color planes. Both half-tiles draw
+at the same row at initial offset/+2; the pair returns at initial offset+320.
+This proves the pixel sink and pair layout, while complete $bbe0 traversal,
+actor ordering and its live Game integration remain required work.
