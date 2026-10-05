@@ -10,7 +10,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Area | Current implementation | Remaining work |
 |---|---|---|
 | Resources | Original compression, tile fragments, masks, sprite differences and relocated descriptors | Original menu composition and font use |
-| Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester, opponent experience and native ten-record scripted events | Complete native opponent policy/command scheduling and end-to-end pacing |
+| Campaign | 1,000 worlds, passwords, native constructor controls, complete two-side templates/compiled choices, template mana/attrition, opponent XP/bolts and scripted events | Complete native policy/command frame binding and end-to-end pacing |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
 | Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion; full terrain prepass, water/conversion/burning, magnet/captive routes, exact crossing admission and retained contact/combat outcomes in World | Full linked effects, remaining animation boundaries and inventions |

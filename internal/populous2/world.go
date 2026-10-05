@@ -72,6 +72,7 @@ type World struct {
 	ForestNative             ForestNativeRules
 	RenewNative              RenewNativeRules
 	CampaignResult           CampaignResultRules
+	NativeAI                 NativeAIRules
 	NativeGameMode           uint16
 	NativeProfileSide        uint8
 	NativeClock              uint32
@@ -201,6 +202,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.PlagueRules, w.ArmageddonRules = bundle.PlagueRules, bundle.ArmageddonRules
 	w.ForestNative, w.RenewNative = bundle.ForestNative, bundle.RenewNative
 	w.CampaignResult = bundle.CampaignResult
+	w.NativeAI = bundle.NativeAI
 	w.NativeGameMode, w.NativeProfileSide = 2, 1
 	if custom {
 		w.NativeGameMode = 4
@@ -239,7 +241,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.bindNativeTownEvaluator()
 	w.initializeNativeRuntime()
 	w.initializeNativeCampaignStatistics()
-	if err := LoadScenarioScript(w.Level.WorldParameters, w.nativeCleanupMemory()); err != nil {
+	if err := w.initializeNativeSceneData(); err != nil {
 		return nil, err
 	}
 	return w, nil

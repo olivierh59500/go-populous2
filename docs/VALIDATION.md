@@ -180,3 +180,15 @@ Result cues use original descriptors $168/$500 once per result; the ending adds
 no separate cue and closes audio on exit. Compile checks cover the Game binding;
 interactive desktop/GPU appearance and the remaining result/menu composition
 are still required validation.
+
+## Native scene initialization
+
+NewWorld now composes the original control suffix and 58-byte player templates,
+including mode 14, command ownership/transport, viewport 8, session seed/RNG,
+compiled policy lists and the eight-byte opponent profile copy. Constructor
+checks use all 1,000 independently executed campaign-template CPU references;
+the helper-level corpus also covers control/profile modes and deferred records.
+Template loading retains the actual XP and bolt writes before later Go bridges.
+This establishes scene metadata; the policy dispatcher still requires its
+complete frame register continuation and normal-player command stage before
+replacing the inherited live strategy loop.
