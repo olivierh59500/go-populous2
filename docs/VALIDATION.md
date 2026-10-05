@@ -914,3 +914,17 @@ deadline/interrupt/mouse/World fields through both directions of the composed
 memory views. It protects the underlying owners and noncanonical nonzero
 interrupt WORDs. Image/audio CODE sharing and remaining startup UI bodies are
 still separate prerequisites for live frame activation.
+
+## Runtime startup callback composition
+
+StartupCallbacks binds the retained startup controller to the runtime's real
+physical RAM, encoded filesystem, resource/error requester and bitmap owners.
+It preserves caller-supplied hardware, audio and genuine UI operations.
+
+An integration test executes source custom-world construction, power-resource
+loads, LAND graphics, terrain/scenery/follower creation and minimap drawing
+using this shared runtime. It reaches the explicit panel restoration boundary
+and resumes there without replaying or mutating the completed constructor.
+No source completion or terminal condition flags are claimed while that child
+is outstanding. This test proves the assembled prefix, not the complete live
+startup or interactive game.
