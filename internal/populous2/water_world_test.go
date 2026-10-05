@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
+	"reflect"
 	"testing"
 
 	legacy "go-populous2/internal/legacy"
@@ -64,7 +65,11 @@ func TestNativeWaterEffectsSaveAndCameraIndependentState(t *testing.T) {
 	for range 100 {
 		w.tickNativeEffects()
 		restored.tickNativeEffects()
-		if !bytes.Equal(encodeSnapshot(t, w), encodeSnapshot(t, restored)) {
+		current, loaded := w.Snapshot(), restored.Snapshot()
+		// Native saves include the camera, while this test deliberately uses
+		// different view origins. Every other retained byte must still agree.
+		copy(loaded.NativeViewBytes[:4], current.NativeViewBytes[:4])
+		if !reflect.DeepEqual(current, loaded) {
 			t.Fatal("saved water pool, graph, pressure, terrain or randomness changed")
 		}
 	}

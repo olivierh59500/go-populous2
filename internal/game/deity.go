@@ -123,7 +123,7 @@ func (g *Game) importDeityPassword() {
 
 func (g *Game) applyDeityProfile() {
 	g.World.Deity = g.Profile
-	g.World.Experience[0] = g.Profile.Experience
+	g.World.Experience[g.localPlayer()] = g.Profile.Experience
 }
 
 func (g *Game) drawDeity(screen *ebiten.Image) {

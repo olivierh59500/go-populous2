@@ -4,7 +4,7 @@ An ongoing Go/Ebitengine recreation of **Populous II: Trials of the Olympian
 Gods**, using its original Amiga graphics, campaign and audio resources.
 
 The playable version includes an isometric world, followers, settlements,
-power selection, computer opposition, a demonstration mode and Go saves.
+power selection, computer opposition, a demonstration mode, native Amiga .GAM interoperability and Go saves.
 Native translations now replace several parts of the supplied Populous I
 foundation: terrain generation, random streams, starting populations, town
 work, mana costs, ordinary fractional walking, complete leader-to-hero
@@ -22,8 +22,9 @@ the raw scenery pass preserves signed aging, burial and fire/town interactions.
 Campaign results use original identity-based elimination, score arithmetic,
 bolt rewards and world skipping. Pending and applied results survive saves;
 the result screen applies its reward once and offers the native deity allocation
-step after a campaign victory. Original result/ending artwork remains under
-conversion.
+step after a campaign victory. Winning the final world plays the supplied Zeus
+animation and original scrolltext at its native PAL cadence. Original result
+and menu composition remain under conversion.
 Whirlwinds now lift, transport and release native followers, collapse town farms
 and create original water children. Their complete retained controllers replace
 the former motion-only World handler.
@@ -122,8 +123,18 @@ per-element experience reductions. The native score and sample bank play
 through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
-Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 24 preserves retained native actor, deity and marker bytes, town structure overlays,
+F5/F9 use `go-populous2.GAM` by default. Native `.GAM` import/export preserves
+the original uncompressed transfer block, actor graph, templates, profile,
+landscape, camera and random state. `-save-file` or `POPULOUS2_SAVE_PATH` selects
+another destination. A `.sav` destination retains the Go JSON format, including
+conversion-specific pending campaign results.
+
+```sh
+go run ./cmd/populous2 -load-game /path/to/PARTIE.GAM
+go run ./cmd/populous2 -play -save-file go-populous2.sav
+```
+
+The Go JSON format preserves retained native actor, deity and marker bytes, town structure overlays,
 lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
@@ -135,8 +146,8 @@ references, town work, infection and persistent ground effects.
 Earlier Go saves remain readable. Versions 1–2 receive the corrected
 Helen/tsunami ID mapping; version 12 also corrects earlier basalt/whirlpool IDs
 30/31. Generic whirlwinds migrate into native effect records. Earlier fungus
-damage marks migrate to native seeds and collecting controllers. Original
-Amiga GAM saves are not yet supported.
+damage marks migrate to native seeds and collecting controllers. Native file
+imports also retain fields that are not exposed by the current interface.
 
 Earlier generic whirlpools migrate to native controller records. Earlier
 basalt marks retain their existing terrain and become persistent native-family

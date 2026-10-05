@@ -1,6 +1,16 @@
 package populous2
 
-func (w *World) SetEffectView(x, y int) { w.effectViewX, w.effectViewY = x, y }
+import "encoding/binary"
+
+func (w *World) SetEffectView(x, y int) {
+	w.effectViewX, w.effectViewY = x, y
+	binary.BigEndian.PutUint16(w.NativeViewBytes[:], uint16(x))
+	binary.BigEndian.PutUint16(w.NativeViewBytes[2:], uint16(y))
+}
+
+func (w *World) EffectView() (int, int) {
+	return int(int16(binary.BigEndian.Uint16(w.NativeViewBytes[:]))), int(int16(binary.BigEndian.Uint16(w.NativeViewBytes[2:])))
+}
 
 // TakeEffectSoundCues drains presentation events. Camera-dependent audio does
 // not enter the deterministic simulation snapshot.

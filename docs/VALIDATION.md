@@ -192,3 +192,14 @@ Template loading retains the actual XP and bolt writes before later Go bridges.
 This establishes scene metadata; the policy dispatcher still requires its
 complete frame register continuation and normal-player command stage before
 replacing the inherited live strategy loop.
+
+## Saved-game application paths
+
+The menu/F9 and `-load-game` share native `.GAM` loading; F5 and `-save-file`
+share atomic native export or Go JSON serialization by destination extension.
+The default is `go-populous2.GAM`. File regressions resume 25 updates plus 80 after
+reload in both formats and verify exact native transfer length, saved camera
+origin and failure preservation of an existing file. Camera origin uses the
+same retained view words as native aliases. GUI mana, power/terrain commands,
+magnet modes and visibility use the selected profile side, including owner 2.
+The original native file requester and interactive desktop checks remain open.

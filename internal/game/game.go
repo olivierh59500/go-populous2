@@ -1,13 +1,11 @@
 package game
 
 import (
-	"encoding/json"
 	"fmt"
 	"image"
 	"image/color"
 	"image/png"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -86,7 +84,7 @@ func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) 
 	if err != nil {
 		return nil, err
 	}
-	g := &Game{Bundle: bundle, World: world, LevelIndex: level, Playing: demo, Selected: populous2.RaiseLower, scheduler: fixedstep.New(populous2.SimulationRate, 60), SavePath: "go-populous2.sav"}
+	g := &Game{Bundle: bundle, World: world, LevelIndex: level, Playing: demo, Selected: populous2.RaiseLower, scheduler: fixedstep.New(populous2.SimulationRate, 60), SavePath: "go-populous2.GAM"}
 	world.Demo = demo
 	g.Profile = populous2.NewDeity("PLAYER")
 	g.applyDeityProfile()
@@ -105,7 +103,7 @@ func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) 
 	}
 	g.minimap = ebiten.NewImage(128, 64)
 	g.miniPixels = make([]byte, 128*64*4)
-	g.centerPlayer(0)
+	g.centerPlayer(g.localPlayer())
 	return g, nil
 }
 
@@ -183,10 +181,10 @@ func (g *Game) Update() error {
 		g.load()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyC) {
-		g.centerPlayer(0)
+		g.centerPlayer(g.localPlayer())
 	}
 	if g.Selected == populous2.Lightning && inpututil.IsKeyJustPressed(ebiten.KeyEnter) && !g.Paused && !g.World.Demo {
-		if g.World.ActivateLightning(0) {
+		if g.World.ActivateLightning(g.localPlayer()) {
 			g.notify("Foudre activee.")
 		}
 	}
@@ -212,7 +210,7 @@ func (g *Game) Update() error {
 	}
 	for i, key := range []ebiten.Key{ebiten.Key1, ebiten.Key2, ebiten.Key3, ebiten.Key4} {
 		if inpututil.IsKeyJustPressed(key) {
-			g.World.Core.SetMagnetMode(0, []int{legacy.SettleMode, legacy.JoinMode, legacy.FightMode, legacy.MagnetMode}[i])
+			g.World.Core.SetMagnetMode(g.localPlayer(), []int{legacy.SettleMode, legacy.JoinMode, legacy.FightMode, legacy.MagnetMode}[i])
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
@@ -231,6 +229,7 @@ func (g *Game) Update() error {
 		for range g.scheduler.Advance() {
 			g.World.SetEffectView(g.CameraX, g.CameraY)
 			g.World.Tick()
+			g.CameraX, g.CameraY = g.World.EffectView()
 			if g.messageTicks > 0 {
 				g.messageTicks--
 			}
@@ -355,7 +354,7 @@ func (g *Game) start(level int, custom, demo bool) error {
 	g.Selected = populous2.RaiseLower
 	g.Category = populous2.People
 	g.lineStart = nil
-	g.centerPlayer(0)
+	g.centerPlayer(g.localPlayer())
 	g.notify("Clic gauche: lever. Clic droit: baisser. H: aide.")
 	return nil
 }
@@ -389,6 +388,7 @@ func (g *Game) centerPlayer(player int) {
 	}
 	g.CameraX = clamp(pos%64-3, 0, 56)
 	g.CameraY = clamp(pos/64-3, 0, 56)
+	g.World.SetEffectView(g.CameraX, g.CameraY)
 }
 
 func (g *Game) handleClick() {
@@ -415,7 +415,7 @@ func (g *Game) handleClick() {
 	if left && y >= 448 {
 		for i, mode := range []int{legacy.SettleMode, legacy.JoinMode, legacy.FightMode, legacy.MagnetMode} {
 			if hit(x, y, 136+i*87, 448, 83, 27) {
-				g.World.Core.SetMagnetMode(0, mode)
+				g.World.Core.SetMagnetMode(g.localPlayer(), mode)
 				return
 			}
 		}
@@ -470,21 +470,21 @@ func (g *Game) handleClick() {
 		}
 	}
 	if g.Selected == populous2.RaiseLower {
-		if right && g.World.Sprog(0, mx, my) {
+		if right && g.World.Sprog(g.localPlayer(), mx, my) {
 			g.notify("Les adorateurs sortent de l'habitation.")
 			return
 		}
-		if !g.World.Sculpt(0, mx, my, left) {
+		if !g.World.Sculpt(g.localPlayer(), mx, my, left) {
 			g.notify("Terrain indisponible ou mana insuffisant.")
 		}
 		return
 	}
 	if g.Selected == populous2.Lightning {
 		if right {
-			g.World.DismissLightning(0)
+			g.World.DismissLightning(g.localPlayer())
 			return
 		}
-		if g.World.PlaceLightning(0, mx, my) {
+		if g.World.PlaceLightning(g.localPlayer(), mx, my) {
 			g.notify("Marqueur place. ENTREE: activer. Clic droit: annuler.")
 		}
 		return
@@ -510,7 +510,7 @@ func (g *Game) handleClick() {
 		target.X2, target.Y2 = mx, my
 		g.lineStart = nil
 	}
-	if g.World.Cast(0, spell.ID, target) {
+	if g.World.Cast(g.localPlayer(), spell.ID, target) {
 		g.notify(spell.Name + " lance.")
 	} else {
 		g.notify("Pouvoir indisponible, cible invalide ou mana insuffisant.")
@@ -522,13 +522,13 @@ func (g *Game) selectSpell(id populous2.SpellID) {
 	if !ok {
 		return
 	}
-	if !g.World.Available(0, id) {
+	if !g.World.Available(g.localPlayer(), id) {
 		g.notify("Ce pouvoir n'est pas disponible sur ce monde.")
 		return
 	}
 	g.lineStart = nil
 	if spell.Aim == populous2.AimLeader || spell.Aim == populous2.AimGlobal {
-		if g.World.Cast(0, id, populous2.Target{}) {
+		if g.World.Cast(g.localPlayer(), id, populous2.Target{}) {
 			g.notify(spell.Name + " lance.")
 		} else {
 			g.notify("Mana insuffisant ou aucun chef disponible.")
@@ -646,7 +646,7 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 	populations := world.PlayerPopulations()
 	label(screen, fmt.Sprintf("BLEU %7d", populations[0]), 466, 90, blue)
 	label(screen, fmt.Sprintf("ROUGE%7d", populations[1]), 466, 114, red)
-	label(screen, fmt.Sprintf("MANA %7d", world.Magnets[0].Mana), 466, 150, ink)
+	label(screen, fmt.Sprintf("MANA %7d", world.Magnets[g.localPlayer()].Mana), 466, 150, ink)
 	view := screen.SubImage(image.Rect(128, 100, 640, 440)).(*ebiten.Image)
 	terrain := g.World.Level.Terrain
 	for y := 0; y < 8; y++ {
@@ -862,18 +862,18 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		button(screen, 4+(i%3)*41, 200+(i/3)*25, 39, 23, name, true, g.Category == populous2.Element(i))
 	}
 	for i, spell := range g.categorySpells() {
-		cost := g.World.ManaCost(0, spell.ID)
-		available := g.World.Available(0, spell.ID)
+		cost := g.World.ManaCost(g.localPlayer(), spell.ID)
+		available := g.World.Available(g.localPlayer(), spell.ID)
 		button(screen, 4, spellButtonsY+i*spellButtonStep, 123, 32, spell.Name, available, g.Selected == spell.ID)
 		c := muted
-		if available && world.Magnets[0].Mana >= cost {
+		if available && world.Magnets[g.localPlayer()].Mana >= cost {
 			c = gold
 		}
 		label(screen, fmt.Sprintf("%d mana", cost), 10, spellButtonsY+17+i*spellButtonStep, c)
 	}
 	label(screen, fmt.Sprintf("DIR %d  Q / E", g.Direction), 6, 423, muted)
 	for i, name := range []string{"COLONISER", "RASSEMBLER", "COMBATTRE", "SUIVRE CHEF"} {
-		button(screen, 136+i*87, 448, 83, 27, name, true, world.Magnets[0].Flags == []int{legacy.SettleMode, legacy.JoinMode, legacy.FightMode, legacy.MagnetMode}[i])
+		button(screen, 136+i*87, 448, 83, 27, name, true, world.Magnets[g.localPlayer()].Flags == []int{legacy.SettleMode, legacy.JoinMode, legacy.FightMode, legacy.MagnetMode}[i])
 	}
 	button(screen, 490, 448, 65, 27, "SAUVER", true, false)
 	button(screen, 562, 448, 73, 27, "MENU", true, false)
@@ -948,7 +948,7 @@ func (g *Game) drawMinimap(screen *ebiten.Image) {
 		if p.Population <= 0 {
 			continue
 		}
-		if !g.World.FollowerVisibleOnMap(0, int(p.Player)) {
+		if !g.World.FollowerVisibleOnMap(g.localPlayer(), int(p.Player)) {
 			continue
 		}
 		x, y := p.AtPos%64, p.AtPos/64
@@ -960,7 +960,7 @@ func (g *Game) drawMinimap(screen *ebiten.Image) {
 		o := (my*128 + mx) * 4
 		g.miniPixels[o], g.miniPixels[o+1], g.miniPixels[o+2], g.miniPixels[o+3] = c.R, c.G, c.B, 255
 	}
-	if g.World.EffectVisibleOnMap(0) {
+	if g.World.EffectVisibleOnMap(g.localPlayer()) {
 		for _, a := range g.World.NativeEffects {
 			if a.Active && a.Kind != populous2.FungusActorKind {
 				g.minimapDot(int(a.X)>>8, int(a.Y)>>8, gold)
@@ -994,24 +994,8 @@ func (g *Game) drawHelp(screen *ebiten.Image) {
 }
 
 func (g *Game) save() {
-	data, err := json.Marshal(g.World.Snapshot())
-	if err == nil {
-		var f *os.File
-		f, err = os.CreateTemp(filepath.Dir(g.SavePath), ".populous2-save-*.tmp")
-		if err == nil {
-			name := f.Name()
-			defer os.Remove(name)
-			_, err = f.Write(data)
-			closeErr := f.Close()
-			if err == nil {
-				err = closeErr
-			}
-			if err == nil {
-				err = os.Rename(name, g.SavePath)
-			}
-		}
-	}
-	if err != nil {
+	g.World.SetEffectView(g.CameraX, g.CameraY)
+	if err := g.World.WriteGameFile(g.SavePath); err != nil {
 		g.notify("Sauvegarde impossible: " + err.Error())
 	} else {
 		g.notify("Partie sauvegardee.")
@@ -1019,22 +1003,26 @@ func (g *Game) save() {
 }
 
 func (g *Game) load() {
-	f, err := os.Open(g.SavePath)
-	if err != nil {
+	if err := g.LoadFile(g.SavePath); err != nil {
 		g.notify("Chargement impossible: " + err.Error())
-		return
+	} else {
+		g.notify("Partie chargee.")
 	}
-	world, err := populous2.ReadSave(g.Bundle, f)
-	f.Close()
+}
+
+// LoadFile shares the menu/F9 path with command-line native save loading.
+func (g *Game) LoadFile(path string) error {
+	world, err := populous2.ReadGameFile(g.Bundle, path)
 	if err != nil {
-		g.notify("Chargement impossible: " + err.Error())
-		return
+		return err
 	}
 	g.World = world
 	g.resultCuePlayed = false
 	g.LevelIndex = world.Level.Number
 	g.lastHazardSoundSerial = world.HazardSerial
 	g.Profile = world.Deity
+	g.deityPortrait = nil
+	g.deityPassword = ""
 	if world.Custom {
 		g.hasCustomScenarioOptions = true
 		for player, rules := range world.Rules {
@@ -1045,8 +1033,14 @@ func (g *Game) load() {
 	g.Paused = false
 	g.lineStart = nil
 	g.Selected = populous2.RaiseLower
-	g.centerPlayer(0)
-	g.notify("Partie chargee.")
+	g.SavePath = path
+	if populous2.IsNativeGAMFile(path) {
+		g.CameraX, g.CameraY = world.EffectView()
+	} else {
+		g.centerPlayer(int(world.NativeProfileSide) - 1)
+		world.SetEffectView(g.CameraX, g.CameraY)
+	}
+	return nil
 }
 
 func (g *Game) notify(message string)      { g.Message = message; g.messageTicks = 48 }

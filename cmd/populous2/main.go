@@ -13,6 +13,8 @@ import (
 )
 
 func main() {
+	loadGame := flag.String("load-game", "", "load an original .GAM or Go JSON saved game")
+	saveFile := flag.String("save-file", "", "save/load path used by F5/F9 (.GAM for native format)")
 	world := flag.Int("world", 0, "campaign world index (0..999)")
 	code := flag.String("code", "", "original world code, for example DOEGAC")
 	demo := flag.Bool("demo", false, "start an AI-vs-AI demonstration")
@@ -110,6 +112,14 @@ func main() {
 	g.CaptureAfter = *captureAfter
 	if path := os.Getenv("POPULOUS2_SAVE_PATH"); path != "" {
 		g.SavePath = path
+	}
+	if *loadGame != "" {
+		if err := g.LoadFile(*loadGame); err != nil {
+			log.Fatal(err)
+		}
+	}
+	if *saveFile != "" {
+		g.SavePath = *saveFile
 	}
 	ebiten.SetWindowSize(*width, *height)
 	ebiten.SetWindowTitle("Populous II - Go / Ebitengine")
