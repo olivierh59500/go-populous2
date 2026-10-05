@@ -12,6 +12,8 @@ import (
 
 type frameContextInput struct {
 	Name          string
+	Actor         uint16
+	StopPC        uint32
 	D             [8]uint32
 	Stages        []uint32
 	Initial, Code []commandNativePatch
@@ -253,7 +255,7 @@ func TestNativeFrameFireColumnRegistersAgainstFullFXPass(t *testing.T) {
 				state = uint8(p.Value)
 			}
 		}
-		if state != 2 && state != 4 && state != 6 && state != 0x12 && state != 0x14 {
+		if state != 2 && state != 4 && state != 6 && state != 8 && state != 10 && state != 12 && state != 0x12 && state != 0x14 {
 			continue
 		}
 		count++
@@ -278,7 +280,7 @@ func TestNativeFrameFireColumnRegistersAgainstFullFXPass(t *testing.T) {
 			}
 		})
 	}
-	if count != 30 {
+	if count != 48 {
 		t.Fatalf("full fire-column frame coverage%d", count)
 	}
 }

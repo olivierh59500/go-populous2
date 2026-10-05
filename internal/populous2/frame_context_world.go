@@ -24,6 +24,12 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 			cb.Frame = c
 			step, e := w.NativeFireColumn.Tick(ref, cb)
 			return NativeFrameFXStep{Draw: !step.Removed, Color: 5}, e
+		case 8, 10, 12:
+			cb := w.nativeWhirlwindCallbacks()
+			cb.Frame = c
+			cb.SourceD2 = uint16(c.D[2])
+			step, e := w.NativeWhirlwind.Tick(ref, cb)
+			return NativeFrameFXStep{Draw: !(step.Expired && step.Removed), Color: 5}, e
 		case 0x12, 0x14:
 			cb := w.nativeFungusCallbacks()
 			cb.Frame = c
