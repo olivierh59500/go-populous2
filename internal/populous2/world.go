@@ -22,6 +22,7 @@ type World struct {
 	BatholithRange           int
 	WallRules                WallRules
 	FireColumns              FireColumnRules
+	NativeFireColumn         NativeFireColumnRules
 	Whirlwinds               WhirlwindRules
 	NativeWhirlwind          NativeWhirlwindRules
 	WhirlwindFollower        WhirlwindFollowerRules
@@ -169,6 +170,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Whirlwinds: bundle.Whirlwinds, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
 	w.Whirlpools, w.BasaltRules = bundle.Whirlpools, bundle.BasaltRules
+	w.NativeFireColumn = bundle.NativeFireColumn
 	w.NativeWhirlwind, w.WhirlwindFollower = bundle.NativeWhirlwind, bundle.WhirlwindFollower
 	w.LightningRules = bundle.LightningRules
 	w.FungusRules = bundle.FungusRules

@@ -53,6 +53,9 @@ func TestFireColumnPoolWaterAndSavedContinuation(t *testing.T) {
 	w.NativeEffects[0].Active = false
 	w.NativeEffects[0].VX = 9
 	w.NativeEffects[0].VY = -9
+	ref := nativeActorReference(NativeEffectPool, 0)
+	_, _ = w.RecordImage.Write16(ref, 14, uint16(w.NativeEffects[0].VX))
+	_, _ = w.RecordImage.Write16(ref, 16, uint16(w.NativeEffects[0].VY))
 	if !w.Cast(0, FireColumn, Target{X: 32, Y: 32}) || w.NativeEffects[0].VX != 9 || w.NativeEffects[0].VY != -9 {
 		t.Fatal("native first free slot or retained velocity bytes lost")
 	}

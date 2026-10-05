@@ -27,6 +27,8 @@ conversion.
 Whirlwinds now lift, transport and release native followers, collapse town farms
 and create original water children. Their complete retained controllers replace
 the former motion-only World handler.
+Fire columns use complete raw routing and linked victim/town scans. Trees and
+rocks use original age-dependent emergence/burial rectangles when drawn.
 
 **The complete original feature set is still being converted.** Several
 powers, hero movement, native combat, campaign progression and

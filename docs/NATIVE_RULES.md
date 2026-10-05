@@ -275,8 +275,13 @@ The pass can affect later scenery slots in that same update.
 code, raw owner/XP and full-pool edges, all signed tree/boulder ages and mixed
 fire chains. World repeats the complete memory/RNG checks and 4,020 aging/fire
 updates with real graph/town callbacks. Saves continue those retained bytes.
-The native age-dependent renderer clips emerging/buried sprites; its separate
-presentation translation remains in progress.
+The native age-dependent renderer now clips emerging/buried sprites in the game.
+Age zero retains the complete image layers. Nonzero signed age uses the first
+descriptor, adds eight pixels to the bottom anchor, draws height minus absolute
+age and omits the bottom source rows. Its top follows the visible height. The
+source plane stride remains the full descriptor height. 5,340 original CPU cases
+cover twelve animation frames and 2,512 actual blits; Ebitengine draws those
+source rectangles at their native doubled coordinates.
 
 Register continuation is also retained during startup: `$cd22` leaves `D2=-99`,
 and `$d9d8` does not clear it before `$da0a`. Its signed deity check can alias
@@ -416,10 +421,15 @@ support settlements. Achilles is immune to the direct-hit death table;
 tree-spread fire instead spares heroic walkers and visits four orthogonal cells.
 Original death images retain their follower slots until the sequence completes.
 Native fixed-point effect and death state are preserved in version 7 saves.
-The twelve isolated traces verify column motion/state and ground mutation on
-empty terrain. Actor death rendering/slot reservation is currently an adapter;
-complete linked-list death metadata and mixed-actor traces remain verification
-targets, rather than being implied by the empty-terrain oracle.
+The twelve earlier isolated traces verify empty-terrain motion/state. World now
+uses the complete raw controller and original creation primitive, without the
+former extra jitter or generic actor-burn adapter. 1,169 original cases and
+12,094 full-memory frames match real World graph/town/scorch/damage callbacks,
+all terrain codes, 360 routing cases, 4,918 scans, 2,321 hits and 1,317 town calls.
+Walker deaths remain linked with owner retained for their later native follower
+dispatcher. Composed fire/tree/town tests and saved continuation use that same
+record state; no new area burn or premature cleanup is inserted. Zero-speed
+DIVU faults preserve their original write prefix before returning an error.
 
 ## Whirlwinds
 

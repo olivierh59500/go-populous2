@@ -15,6 +15,7 @@ func installNativeFixtureWorld(t *testing.T, raw []byte, heights []uint8) *World
 	t.Helper()
 	w := lightningWorld(t, 4311)
 	w.NativeRaiseEnabled = uint16(raw[0xf12])<<8 | uint16(raw[0xf13])
+	w.NativeClock = uint32(raw[0xf40])<<24 | uint32(raw[0xf41])<<16 | uint32(raw[0xf42])<<8 | uint32(raw[0xf43])
 	copy(w.RecordImage.Bytes[:], raw[NativeRecordImageStart:NativeMagnetImageStart])
 	copy(w.NativeGlobals.Bytes[:], raw[NativeMagnetImageStart:NativeRuntimeImageEnd])
 	if len(raw) >= 0xeb90 {

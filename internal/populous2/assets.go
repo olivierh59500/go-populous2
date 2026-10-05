@@ -62,6 +62,8 @@ type Bundle struct {
 	BatholithRange    int
 	DeityArt          *DeityArt
 	FireColumns       FireColumnRules
+	NativeFireColumn  NativeFireColumnRules
+	SceneryRender     SceneryRenderRules
 	Whirlwinds        WhirlwindRules
 	NativeWhirlwind   NativeWhirlwindRules
 	WhirlwindFollower WhirlwindFollowerRules
@@ -319,6 +321,14 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.FireColumns, err = DecodeFireColumnRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.NativeFireColumn, err = DecodeNativeFireColumnRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.SceneryRender, err = DecodeSceneryRenderRules(exe)
 	if err != nil {
 		return nil, err
 	}

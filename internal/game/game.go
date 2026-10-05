@@ -677,13 +677,13 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		px, py := project(x, y, cell.BaseAltitude)
 		graph := g.World.Occupancy.Scenery[index].Record
 		ox, oy := cell.ActorOffset(uint8(graph.X), uint8(graph.Y))
-		frames := g.Bundle.Scenery.Frames[actor.Animation]
-		if len(frames) == 0 {
+		plan, err := g.Bundle.SceneryRender.Plan(uint16(actor.Animation+actor.Frame*4), actor.Age, int16((px+32+ox*2)/2), int16((py+16+oy*2)/2))
+		if err != nil {
 			continue
 		}
-		frame := frames[actor.Frame%len(frames)]
-		for _, layer := range frame.Layers {
-			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
+		for _, part := range plan {
+			source := g.sprites[terrain][part.Sprite].SubImage(image.Rect(part.SourceX, part.SourceY, part.SourceX+part.Width, part.SourceY+part.Height)).(*ebiten.Image)
+			drawImage(view, source, part.X*2, part.Y*2, 2)
 		}
 	}
 	for index, actor := range g.World.Walls.Actors {
