@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 24
+const SaveVersion = 25
 
 type Snapshot struct {
 	Version                                        int
@@ -41,6 +41,7 @@ type Snapshot struct {
 	RecordImage                                    NativeRecordImage
 	NativeEntries                                  [legacy.MaxPeeps]NativeFollowerEntry
 	NativeOverlays                                 [4096]uint8
+	NativeViewBytes                                [12]byte
 	NativeGlobals                                  NativeGlobalImage
 	NativeSelected                                 NativeRecordReference
 	NativeRaiseEnabled                             uint16
@@ -66,7 +67,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline, NativeEnvironment: w.NativeEnvironment, NativeEnvironmentDirty: w.NativeEnvironmentDirty, NativeEnvironmentShake: w.NativeEnvironmentShake, NativeCommandBytes: w.NativeCommandBytes, NativeControlBytes: w.NativeControlBytes, NativeGameMode: w.NativeGameMode, NativeFreeCommands: w.NativeFreeCommands, NativeProfileSide: w.NativeProfileSide, NativeClock: w.NativeClock, NativeResult: w.NativeResult}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeViewBytes: w.NativeViewBytes, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline, NativeEnvironment: w.NativeEnvironment, NativeEnvironmentDirty: w.NativeEnvironmentDirty, NativeEnvironmentShake: w.NativeEnvironmentShake, NativeCommandBytes: w.NativeCommandBytes, NativeControlBytes: w.NativeControlBytes, NativeGameMode: w.NativeGameMode, NativeFreeCommands: w.NativeFreeCommands, NativeProfileSide: w.NativeProfileSide, NativeClock: w.NativeClock, NativeResult: w.NativeResult}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -391,6 +392,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.Marks, w.Heroes, w.Random = snapshot.Marks, snapshot.Heroes, snapshot.Random
 	w.RecordImage, w.NativeEntries, w.NativeOverlays = snapshot.RecordImage, snapshot.NativeEntries, snapshot.NativeOverlays
 	w.NativeGlobals, w.NativeSelected = snapshot.NativeGlobals, snapshot.NativeSelected
+	if snapshot.Version >= 25 {
+		w.NativeViewBytes = snapshot.NativeViewBytes
+	}
 	w.NativeRaiseEnabled, w.NativeBirthBlocked = snapshot.NativeRaiseEnabled, snapshot.NativeBirthBlocked
 	w.NativeCreatureDeadline = snapshot.NativeCreatureDeadline
 	w.NativeEnvironment = snapshot.NativeEnvironment

@@ -132,199 +132,93 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 		w.Core.SetRandomState(value)
 	}
 	read8 := func(address int) (uint8, error) {
-		if address >= 0xf40 && address < 0xf44 {
+		switch {
+		case address >= 0xf40 && address < 0xf44:
 			return uint8(w.NativeClock >> uint(24-(address-0xf40)*8)), nil
-		}
-		if address == 0xf12 {
+		case address == 0xf12:
 			return uint8(w.NativeRaiseEnabled >> 8), nil
-		}
-		if address == 0xf13 {
+		case address == 0xf13:
 			return uint8(w.NativeRaiseEnabled), nil
-		}
-		if address >= 0xdc4 && address < 0xf44 {
+		case address >= 0xdc4 && address < 0xf44:
 			return w.NativeControlBytes[address-0xdc4], nil
-		}
-		if address >= 0xeb18 && address < 0xeb90 {
-			return w.NativeCommandBytes[address-0xeb18], nil
-		}
-		if address >= 0xf44 && address < 0x4f44 {
+		case address >= 0xf44 && address < 0x4f44:
 			value, _ := w.Occupancy.Byte(address - 0xf44)
 			return value, nil
-		}
-		return memory.Read8(address)
-	}
-	writeGridByte := func(offset int, value uint8) {
-		pos := offset / 4
-		switch offset & 3 {
-		case 0:
-			w.Occupancy.Grid.Cells[pos].Header = value
-		case 1:
-			w.writeNativeTownTile(pos%64, pos/64, value)
-		case 2:
-			w.Occupancy.Grid.Cells[pos].Head = NativeRecordReference(value)<<8 | w.Occupancy.Grid.Cells[pos].Head&255
-		case 3:
-			w.Occupancy.Grid.Cells[pos].Head = w.Occupancy.Grid.Cells[pos].Head&0xff00 | NativeRecordReference(value)
+		case address >= 0x4f44 && address < 0x5f44:
+			return w.NativeOverlays[address-0x4f44], nil
+		case address >= 0x5f44 && address < 0x5f50:
+			return w.NativeViewBytes[address-0x5f44], nil
+		case address >= 0xeb18 && address < 0xeb90:
+			return w.NativeCommandBytes[address-0xeb18], nil
+		default:
+			return memory.Read8(address)
 		}
 	}
-	return FollowerCleanupMemory{
-		Read8: read8,
-		Read16: func(address int) (uint16, error) {
-			if address == 0xf40 {
-				return uint16(w.NativeClock >> 16), nil
+	write8 := func(address int, value uint8) error {
+		switch {
+		case address >= 0xf40 && address < 0xf44:
+			shift := uint(24 - (address-0xf40)*8)
+			w.NativeClock = w.NativeClock&^(uint32(255)<<shift) | uint32(value)<<shift
+		case address == 0xf12:
+			w.NativeRaiseEnabled = uint16(value)<<8 | w.NativeRaiseEnabled&255
+		case address == 0xf13:
+			w.NativeRaiseEnabled = w.NativeRaiseEnabled&0xff00 | uint16(value)
+		case address >= 0xdc4 && address < 0xf44:
+			w.NativeControlBytes[address-0xdc4] = value
+		case address >= 0xf44 && address < 0x4f44:
+			offset, pos := address-0xf44, (address-0xf44)/4
+			switch offset & 3 {
+			case 0:
+				w.Occupancy.Grid.Cells[pos].Header = value
+			case 1:
+				w.writeNativeTownTile(pos%64, pos/64, value)
+			case 2:
+				w.Occupancy.Grid.Cells[pos].Head = NativeRecordReference(value)<<8 | w.Occupancy.Grid.Cells[pos].Head&255
+			case 3:
+				w.Occupancy.Grid.Cells[pos].Head = w.Occupancy.Grid.Cells[pos].Head&0xff00 | NativeRecordReference(value)
 			}
-			if address == 0xf42 {
-				return uint16(w.NativeClock), nil
+		case address >= 0x4f44 && address < 0x5f44:
+			w.NativeOverlays[address-0x4f44] = value
+		case address >= 0x5f44 && address < 0x5f50:
+			w.NativeViewBytes[address-0x5f44] = value
+		case address >= 0xeb18 && address < 0xeb90:
+			w.NativeCommandBytes[address-0xeb18] = value
+			if address >= 0xeb28 && address < 0xeb2c {
+				syncRNG()
 			}
-			if address == 0xf12 {
-				return w.NativeRaiseEnabled, nil
-			}
-			if address >= 0xdc4 && address <= 0xf42 {
-				h, err := read8(address)
-				if err != nil {
-					return 0, err
-				}
-				l, err := read8(address + 1)
-				return uint16(h)<<8 | uint16(l), err
-			}
-			if address >= 0xeb18 && address <= 0xeb8e {
-				high, _ := read8(address)
-				low, _ := read8(address + 1)
-				return uint16(high)<<8 | uint16(low), nil
-			}
-			if address >= 0xf44 && address < 0x4f44-1 {
-				high, _ := read8(address)
-				low, _ := read8(address + 1)
-				return uint16(high)<<8 | uint16(low), nil
-			}
-			return memory.Read16(address)
-		},
-		Read32: func(address int) (uint32, error) {
-			if address == 0xf40 {
-				return w.NativeClock, nil
-			}
-			if address >= 0xdc4 && address <= 0xf40 {
-				var value uint32
-				for i := range 4 {
-					v, err := read8(address + i)
-					if err != nil {
-						return 0, err
-					}
-					value = value<<8 | uint32(v)
-				}
-				return value, nil
-			}
-			if address >= 0xeb18 && address <= 0xeb8c {
-				var value uint32
-				for offset := range 4 {
-					part, _ := read8(address + offset)
-					value = value<<8 | uint32(part)
-				}
-				return value, nil
-			}
-			if address >= 0xf44 && address < 0x4f44-3 {
-				var value uint32
-				for offset := range 4 {
-					part, _ := read8(address + offset)
-					value = value<<8 | uint32(part)
-				}
-				return value, nil
-			}
-			return memory.Read32(address)
-		},
-		Write8: func(address int, value uint8) error {
-			if address >= 0xf40 && address < 0xf44 {
-				shift := uint(24 - (address-0xf40)*8)
-				w.NativeClock = w.NativeClock&^(uint32(255)<<shift) | uint32(value)<<shift
-				return nil
-			}
-			if address == 0xf12 {
-				w.NativeRaiseEnabled = uint16(value)<<8 | w.NativeRaiseEnabled&255
-				return nil
-			}
-			if address == 0xf13 {
-				w.NativeRaiseEnabled = w.NativeRaiseEnabled&0xff00 | uint16(value)
-				return nil
-			}
-			if address >= 0xdc4 && address < 0xf44 {
-				w.NativeControlBytes[address-0xdc4] = value
-				return nil
-			}
-			if address >= 0xf44 && address < 0x4f44 {
-				writeGridByte(address-0xf44, value)
-				return nil
-			}
-			if address >= 0xeb18 && address < 0xeb90 {
-				w.NativeCommandBytes[address-0xeb18] = value
-				if address >= 0xeb28 && address < 0xeb2c {
-					syncRNG()
-				}
-				return nil
-			}
+		default:
 			_, err := memory.Write8(address, value)
 			return err
-		},
-		Write16: func(address int, value uint16) error {
-			if address == 0xf40 {
-				w.NativeClock = w.NativeClock&0xffff | uint32(value)<<16
-				return nil
+		}
+		return nil
+	}
+	// Word/long accesses share byte routing across all retained seams. Native
+	// aliases can straddle grid, overlay, camera, pool and deity boundaries.
+	read := func(address, width int) (uint32, error) {
+		var value uint32
+		for offset := range width {
+			part, err := read8(address + offset)
+			if err != nil {
+				return 0, err
 			}
-			if address == 0xf42 {
-				w.NativeClock = w.NativeClock&0xffff0000 | uint32(value)
-				return nil
+			value = value<<8 | uint32(part)
+		}
+		return value, nil
+	}
+	write := func(address, width int, value uint32) error {
+		for offset := range width {
+			if err := write8(address+offset, uint8(value>>uint(8*(width-offset-1)))); err != nil {
+				return err
 			}
-			if address == 0xf12 {
-				w.NativeRaiseEnabled = value
-				return nil
-			}
-			if address >= 0xdc4 && address <= 0xf42 {
-				w.NativeControlBytes[address-0xdc4], w.NativeControlBytes[address-0xdc4+1] = uint8(value>>8), uint8(value)
-				return nil
-			}
-			if address >= 0xf44 && address <= 0x4f42 {
-				offset := address - 0xf44
-				writeGridByte(offset, uint8(value>>8))
-				writeGridByte(offset+1, uint8(value))
-				return nil
-			}
-			if address >= 0xeb18 && address <= 0xeb8e {
-				w.NativeCommandBytes[address-0xeb18], w.NativeCommandBytes[address-0xeb18+1] = uint8(value>>8), uint8(value)
-				if address < 0xeb2c && address+2 > 0xeb28 {
-					syncRNG()
-				}
-				return nil
-			}
-			_, err := memory.Write16(address, value)
-			return err
-		},
-		Write32: func(address int, value uint32) error {
-			if address == 0xf40 {
-				w.NativeClock = value
-				return nil
-			}
-			if address >= 0xdc4 && address <= 0xf40 {
-				for i := range 4 {
-					w.NativeControlBytes[address-0xdc4+i] = uint8(value >> uint(24-i*8))
-				}
-				return nil
-			}
-			if address >= 0xf44 && address <= 0x4f40 {
-				for offset := range 4 {
-					writeGridByte(address-0xf44+offset, uint8(value>>uint(24-offset*8)))
-				}
-				return nil
-			}
-			if address >= 0xeb18 && address <= 0xeb8c {
-				for offset := range 4 {
-					w.NativeCommandBytes[address-0xeb18+offset] = uint8(value >> uint(24-offset*8))
-				}
-				if address < 0xeb2c && address+4 > 0xeb28 {
-					syncRNG()
-				}
-				return nil
-			}
-			_, err := memory.Write32(address, value)
-			return err
-		},
+		}
+		return nil
+	}
+	return FollowerCleanupMemory{
+		Read8: read8, Write8: write8,
+		Read16:  func(address int) (uint16, error) { value, err := read(address, 2); return uint16(value), err },
+		Read32:  func(address int) (uint32, error) { return read(address, 4) },
+		Write16: func(address int, value uint16) error { return write(address, 2, uint32(value)) },
+		Write32: func(address int, value uint32) error { return write(address, 4, value) },
 	}
 }
 
