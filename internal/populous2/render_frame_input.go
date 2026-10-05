@@ -254,41 +254,58 @@ func (r *NativeRenderFrameRules) Selected(cb NativeRenderFrameCallbacks, childre
 		}
 		return p, children.Painting(c)
 	}
+	at, saved2, draw, err := r.selectedPrefix(cb, children, &p)
+	if err != nil || !draw {
+		return p, err
+	}
+	if children.DrawActor == nil {
+		return p, fmt.Errorf("native selected actor childe45c missing")
+	}
+	if err := children.DrawActor(at, c); err != nil {
+		return p, err
+	}
+	return p, r.selectedSuffix(cb, at, saved2, &p, nil)
+}
+
+// selectedPrefix executes the normal $1e18 entry exactly once, stopping at
+// its actual $e45c actor call with the parent command word already hidden.
+func (r *NativeRenderFrameRules) selectedPrefix(cb NativeRenderFrameCallbacks, children NativeRenderFrameChildren, p *NativeRenderFramePlan) (int, uint32, bool, error) {
+	c, m := cb.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Memory}}
 	if m.word(0x146) != 0 {
 		c.RestoreWord(0, m.word(0x134))
 		c.RestoreWord(1, m.word(0x136))
 		x, err := r.word(0x21292)
 		if err != nil {
-			return p, err
+			return 0, 0, false, err
 		}
 		c.Word(0, uint16(c.D[0])-x)
 		if int16(m.word(0x134)) >= int16(x) {
 			y, err := r.word(0x21294)
 			if err != nil {
-				return p, err
+				return 0, 0, false, err
 			}
 			c.Word(1, uint16(c.D[1])-y)
 			if int16(m.word(0x136)) >= int16(y) {
 				width, err := r.word(0x21296)
 				if err != nil {
-					return p, err
+					return 0, 0, false, err
 				}
 				before := int16(c.D[0])
 				c.Word(0, uint16(c.D[0])-width)
 				if before < int16(width) {
 					height, err := r.word(0x21298)
 					if err != nil {
-						return p, err
+						return 0, 0, false, err
 					}
 					before := int16(c.D[1])
 					c.Word(1, uint16(c.D[1])-height)
 					if before < int16(height) {
 						m.putWord(0x142, 0)
 						if children.SelectedHit == nil {
-							return p, fmt.Errorf("native selected hit child2914 missing")
+							return 0, 0, false, fmt.Errorf("native selected hit child2914 missing")
 						}
 						if err := children.SelectedHit(c); err != nil {
-							return p, err
+							return 0, 0, false, err
 						}
 					}
 				}
@@ -306,7 +323,7 @@ func (r *NativeRenderFrameRules) Selected(cb NativeRenderFrameCallbacks, childre
 	for tries := 0; tries < 3; tries++ {
 		c.D[0] = m.long(0xf36)
 		if c.D[0] == 0 {
-			return p, m.err
+			return 0, 0, false, m.err
 		}
 		at = int(int64(c.D[0]) - int64(c.AddressBase))
 		if m.byte(at+12) != 0 {
@@ -314,43 +331,44 @@ func (r *NativeRenderFrameRules) Selected(cb NativeRenderFrameCallbacks, childre
 		}
 		m.putLong(0xf36, 0)
 		if m.word(0xf30) == 0 {
-			return p, m.err
+			return 0, 0, false, m.err
 		}
 		m.putWord(0xf30, 0)
 		m.putLong(0xf36, m.long(0xf32))
 		if tries == 2 {
-			return p, fmt.Errorf("native selected fallback pointer unbounded")
+			return 0, 0, false, fmt.Errorf("native selected fallback pointer unbounded")
 		}
 	}
 	p.Drawn = true
 	x, err := r.word(0x2128a)
 	if err != nil {
-		return p, err
+		return 0, 0, false, err
 	}
 	y, err := r.word(0x2128c)
 	if err != nil {
-		return p, err
+		return 0, 0, false, err
 	}
 	c.RestoreWord(0, x)
 	c.RestoreWord(1, y)
 	c.Word(2, m.word(0xeb18))
 	saved2 := c.D[2]
 	m.putWord(0xeb18, 0xffff)
-	if children.DrawActor == nil {
-		return p, fmt.Errorf("native selected actor childe45c missing")
-	}
-	if err := children.DrawActor(at, c); err != nil {
-		return p, err
-	}
+	return at, saved2, true, m.err
+}
+
+// selectedSuffix resumes immediately after the actor returns, restoring the
+// original command word before drawing its weapon and population indicators.
+func (r *NativeRenderFrameRules) selectedSuffix(cb NativeRenderFrameCallbacks, at int, saved2 uint32, p *NativeRenderFramePlan, ownership func(bool, *NativeFrameRegisterContext) error) error {
+	c, m := cb.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Memory}}
 	c.D[2] = saved2
 	m.putWord(0xeb18, uint16(c.D[2]))
-	x, err = r.word(0x2128e)
+	x, err := r.word(0x2128e)
 	if err != nil {
-		return p, err
+		return err
 	}
-	y, err = r.word(0x21290)
+	y, err := r.word(0x21290)
 	if err != nil {
-		return p, err
+		return err
 	}
 	c.RestoreWord(0, x)
 	c.RestoreWord(1, y)
@@ -358,40 +376,40 @@ func (r *NativeRenderFrameRules) Selected(cb NativeRenderFrameCallbacks, childre
 	c.Word(2, uint16(c.D[2])*2)
 	weapon, err := r.word(0x20b60 + int(int16(c.D[2])))
 	if err != nil {
-		return p, err
+		return err
 	}
 	c.Word(2, weapon+0x140)
 	sprites, err := r.Images.DrawImage(cb.Image, &c.D)
 	if err != nil {
-		return p, err
+		return err
 	}
-	if err := renderFrameSprites(cb, &p, sprites); err != nil {
-		return p, err
+	if err := renderFrameSprites(cb, p, sprites); err != nil {
+		return err
 	}
 	c.D[3] = m.long(at + 26)
 	for pointer := 0x2129a; pointer < 0x212ba; pointer += 4 {
 		x, err := r.word(pointer)
 		if err != nil {
-			return p, err
+			return err
 		}
 		y, err := r.word(pointer + 2)
 		if err != nil {
-			return p, err
+			return err
 		}
 		c.Word(0, x)
 		c.Word(1, y)
 		c.D[2] = c.D[3]
 		if c.D[2] == 0 {
-			return p, m.err
+			return m.err
 		}
 		c.D[3] >>= 4
 		c.Word(2, uint16(c.D[2])&15)
 		c.Word(1, uint16(c.D[1])-uint16(c.D[2]))
 		saved3 := c.D[3]
-		if err := r.descriptor(0x21626+0x84c, cb, &p); err != nil {
-			return p, err
+		if err := r.descriptorOwned(0x21626+0x84c, cb, p, ownership); err != nil {
+			return err
 		}
 		c.D[3] = saved3
 	}
-	return p, m.err
+	return m.err
 }

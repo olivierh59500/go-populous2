@@ -137,6 +137,77 @@ func TestNativeSessionRetainsActualEditorAcrossKeyboardWaits(t *testing.T) {
 	}
 }
 
+func TestNativeSessionRetainsSelectedActorParentAcrossChildWait(t *testing.T) {
+	w, session := nativeSessionTestSetup(t)
+	bindings := nativeSessionRenderTestBindings(t)
+	state := NativeMainRenderState{}
+	if err := session.Begin(w, NativeFrameRegisterContext{AddressBase: 0x200000}); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if session.world != nil {
+			session.finish(nil)
+		}
+	}()
+	memory := session.Presentation.Memory(w.nativeCleanupMemory())
+	at := 0x76f4
+	for _, patch := range []nativeHeroPatch{{0x22, 4, 0xa00000}, {0x3b8, 2, 0}, {0xf0c, 2, 8}, {0xf0e, 2, 0}, {0xeb44, 2, 2}, {0x5f44, 2, 20}, {0x5f46, 2, 20}, {0xf32, 4, 0x200000 + uint32(at)}, {0xf36, 4, 0x200000 + uint32(at)}, {0xf30, 2, 3}, {0xeb18, 2, 12}, {at, 1, 4}, {at + 1, 1, 4}, {at + 12, 1, 1}, {at + 22, 1, 6}, {at + 26, 4, 1000}} {
+		renderFramePatch(memory, patch)
+	}
+	background := make([]byte, 32000)
+	callbacks := NativeFrameSessionCallbacks{Bitmap: func(address uint32) ([]byte, error) {
+		if address != 0xa00000 {
+			return nil, fmt.Errorf("unknown bitmap%x", address)
+		}
+		return background, nil
+	}}
+	calls := 0
+	var saved [8]uint32
+	// This controlled child verifies session ownership and continuation.
+	// The actual protection body has separate complete CPU/pixel references.
+	bindings.Children.TownInfoAdvance = func(gotAt int, frame *NativeFrameRegisterContext) (bool, error) {
+		if gotAt != at {
+			t.Fatal("selected actor changed across the source wait")
+		}
+		calls++
+		if calls == 1 {
+			saved = frame.D
+			frame.D[5] = 0x12345678
+			return false, nil
+		}
+		if calls != 2 || frame.D[5] != 0x12345678 {
+			t.Fatal("selected child registers or invocation count were lost")
+		}
+		frame.D = saved
+		_ = memory.Write16(0x3b8, 1)
+		return true, nil
+	}
+	bindings.SelectedOwnership = func(bool, *NativeFrameRegisterContext) error { return nil }
+	callbacks.Render = session.RenderMain(bindings, &state)
+	session.Presentation.Input.setWord(0xa, 1)
+	complete, err := session.Advance(callbacks)
+	if err != nil || complete || calls != 1 || state.Step != 4 || !state.selecting || w.nativeCallDepth != 1 {
+		t.Fatal("selected actor wait was not retained", complete, err, calls, state.Step)
+	}
+	if timer, _ := memory.Read16(0xf30); timer != 2 {
+		t.Fatal("selected timer did not advance exactly once", timer)
+	}
+	if command, _ := memory.Read16(0xeb18); command != 0xffff {
+		t.Fatal("selected command word was restored before the child returned")
+	}
+	_ = memory.Write32(0xf36, 0)
+	complete, err = session.Advance(callbacks)
+	if err != nil || !complete || calls != 2 || state.Step != 11 || session.RenderPhase != 2 || w.nativeCallDepth != 0 {
+		t.Fatal("selected parent did not resume to frame completion", complete, err, calls, state.Step)
+	}
+	if timer, _ := memory.Read16(0xf30); timer != 2 {
+		t.Fatal("selected prefix was repeated after the wait", timer)
+	}
+	if command, _ := memory.Read16(0xeb18); command != 12 {
+		t.Fatal("original selected command word was not restored", command)
+	}
+}
+
 func TestNativeSessionConcreteRenderingUsesRealBuffersAcrossSwaps(t *testing.T) {
 	w, session := nativeSessionTestSetup(t)
 	bindings := nativeSessionRenderTestBindings(t)

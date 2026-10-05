@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var errNativeMainEditorWait = errors.New("native main renderer is waiting in the editor")
+var errNativeMainChildWait = errors.New("native main renderer is waiting in a selected child")
 
 // NativeMainRenderState retains the shared mutable rendering state between
 // frames. An editor child can retain the exact selected-rendering continuation.
@@ -13,9 +13,11 @@ type NativeMainRenderState struct {
 	World     NativeWorldRenderState
 	Actor     NativeActorRenderState // Shared mutable CODEE8CE across all render children.
 	Alternate NativeAlternateRenderState
+	Selection NativeSelectedRenderContinuation
 	Step      uint8
 	View      uint16
 	painting  bool
+	selecting bool
 	failed    error
 }
 
@@ -33,6 +35,8 @@ func (s *NativeMainRenderState) Begin() error {
 	}
 	s.Step, s.View = 0, 0
 	s.painting = false
+	s.selecting = false
+	s.Selection = NativeSelectedRenderContinuation{}
 	return nil
 }
 
@@ -50,7 +54,8 @@ type NativeMainRenderCallbacks struct {
 	PaintingAdvance func(*NativeFrameRegisterContext) (bool, error)
 	// RefreshTargets rebinds the actual$1e/$22 buffers after a selected/editor
 	// child returns; real modal swaps can change them within one Advance call.
-	RefreshTargets func(*NativeWorldRenderCallbacks) error
+	RefreshTargets    func(*NativeWorldRenderCallbacks) error
+	SelectedOwnership func(bool, *NativeFrameRegisterContext) error
 }
 
 // MainFrame composes the exact EA0..10B6 rendering order. World/pointer
@@ -66,9 +71,9 @@ func (r *NativeActorRenderRules) MainFrame(cb NativeMainRenderCallbacks, state *
 	return err
 }
 
-// AdvanceMain resumes the genuine editor call without repeating background,
-// highlights or HUD work. Town/protection children still require synchronous
-// completion; a source error is terminal and keeps its mutated prefix.
+// AdvanceMain resumes editor and selected-actor calls without repeating
+// background, highlights or HUD work. World-traversal protection waits still
+// need their own retained traversal. A source error keeps its mutated prefix.
 func (r *NativeActorRenderRules) AdvanceMain(cb NativeMainRenderCallbacks, state *NativeMainRenderState) (bool, error) {
 	if state == nil {
 		return false, fmt.Errorf("native main render state missing")
@@ -77,7 +82,7 @@ func (r *NativeActorRenderRules) AdvanceMain(cb NativeMainRenderCallbacks, state
 		return false, state.failed
 	}
 	err := r.mainFrame(cb, state)
-	if errors.Is(err, errNativeMainEditorWait) {
+	if errors.Is(err, errNativeMainChildWait) {
 		return false, nil
 	}
 	if err != nil {
@@ -127,7 +132,15 @@ func (r *NativeActorRenderRules) mainFrame(cb NativeMainRenderCallbacks, state *
 		state.Step = 4
 	}
 	if state.Step == 4 {
-		if !state.painting && cb.PaintingAdvance != nil {
+		retainedSelected := cb.Selected.DrawActor == nil && cb.SelectedOwnership != nil
+		if retainedSelected && !state.selecting {
+			edit, err := m.Read16(0xf0e)
+			if err != nil {
+				return err
+			}
+			retainedSelected = edit == 0
+		}
+		if !state.painting && !state.selecting && cb.PaintingAdvance != nil {
 			edit, err := m.Read16(0xf0e)
 			if err != nil {
 				return err
@@ -143,9 +156,31 @@ func (r *NativeActorRenderRules) mainFrame(cb NativeMainRenderCallbacks, state *
 				return err
 			}
 			if !done {
-				return errNativeMainEditorWait
+				return errNativeMainChildWait
 			}
 			state.painting = false
+		} else if state.selecting || retainedSelected {
+			state.selecting = true
+			selected := NativeSelectedRenderCallbacks{Effects: cb.World.Effects, Children: cb.World.Children, SelectedHit: cb.Selected.SelectedHit, Ownership: cb.SelectedOwnership}
+			if cb.RefreshTargets != nil {
+				selected.RefreshTargets = func(effects *NativeActorEffectsCallbacks) error {
+					world := cb.World
+					world.Effects = *effects
+					if err := cb.RefreshTargets(&world); err != nil {
+						return err
+					}
+					*effects = world.Effects
+					return nil
+				}
+			}
+			_, done, err := r.AdvanceSelected(selected, &state.Actor, &state.Selection)
+			if err != nil {
+				return err
+			}
+			if !done {
+				return errNativeMainChildWait
+			}
+			state.selecting = false
 		} else {
 			children := cb.Selected
 			if children.SelectedHit == nil {
@@ -191,6 +226,11 @@ func (r *NativeActorRenderRules) mainFrame(cb NativeMainRenderCallbacks, state *
 			return err
 		}
 		state.Actor = state.World.Actor
+		if cb.Code.Write32 != nil {
+			if err := cb.Code.Write32(0xe458, uint32(state.World.ProjectionX)<<16|uint32(state.World.ProjectionY)); err != nil {
+				return err
+			}
+		}
 		mode, err := m.Read16(0xeb44)
 		if err != nil {
 			return err

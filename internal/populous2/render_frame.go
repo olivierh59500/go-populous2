@@ -155,6 +155,10 @@ func (r *NativeRenderFrameRules) TerrainAdmission(m FollowerCleanupMemory, c *Na
 // descriptor executes an actual direct $f0ee/$f3a0 call. Unlike $ee32 it
 // receives already-positioned top-left coordinates and assigns no image cue.
 func (r *NativeRenderFrameRules) descriptor(a int, cb NativeRenderFrameCallbacks, p *NativeRenderFramePlan) error {
+	return r.descriptorOwned(a, cb, p, nil)
+}
+
+func (r *NativeRenderFrameRules) descriptorOwned(a int, cb NativeRenderFrameCallbacks, p *NativeRenderFramePlan, ownership func(bool, *NativeFrameRegisterContext) error) error {
 	if a < 0 || a+12 > len(r.code) || cb.Frame == nil {
 		return fmt.Errorf("native direct rendering descriptor missing")
 	}
@@ -165,11 +169,22 @@ func (r *NativeRenderFrameRules) descriptor(a int, cb NativeRenderFrameCallbacks
 		return fmt.Errorf("native direct sprite needs original procedure %#x", routine)
 	}
 	c.Word(2, height)
+	if ownership != nil {
+		if err := ownership(false, c); err != nil {
+			return err
+		}
+	}
 	sprite := NativePresentationSprite{Sprite: (a - 0x21626) / 12, X: int16(c.D[0]), Y: int16(c.D[1]), HalfWidth: int16(binary.BigEndian.Uint16(r.code[a+4:])), Height: int16(height), Routine: routine}
 	if err := r.primitiveRegisters(routine, c); err != nil {
 		return err
 	}
-	return renderFrameSprites(cb, p, []NativePresentationSprite{sprite})
+	if err := renderFrameSprites(cb, p, []NativePresentationSprite{sprite}); err != nil {
+		return err
+	}
+	if ownership != nil {
+		return ownership(true, c)
+	}
+	return nil
 }
 
 // primitiveRegisters retains the complete direct hardware primitive ABI.

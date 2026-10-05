@@ -712,3 +712,29 @@ returns, and the retained session refreshes its physics target too. A separate
 session test runs the real editor and keyboard waits while holding raw World
 ownership until the entire frame completes. Actor/protection waits and live
 Game activation still require their own continuations and integration.
+
+## Selected actor and main-frame protection continuation
+
+AdvanceSelected retains the complete normal $1e18 parent around its actual
+$e45c/$314a child. Camera admission, the selection timer and fallback pointer
+run once; the original command word stays hidden while the child is pending.
+The parent restores it after the actor returns, then draws the actual weapon
+and population indicators into the current $1e target. Source $e28/$e4c host
+blitter handoffs surround both the actor and each direct population primitive,
+with all caller data registers preserved at each handoff.
+
+All 24 complete original selected-panel executions match 1,416 snapshots
+through the genuine protection requester, click/IRQ/palette waits and cached
+resource return protocol. A further 24 complete $ea0..$10b6 main-render
+executions match another 1,416 snapshots, including the normal world and cursor
+suffix after the protection returns. Comparisons cover eight data registers,
+complete BSS/CODE, both chip screens and Copper state, pointer-image memory,
+shared image counters and callback order. The full-world reference includes
+the actual DMA channel-pointer writeback between BLOCK color planes.
+
+AdvanceMain and the retained session now preserve this selected continuation.
+A controlled child-wait integration test verifies raw World ownership, one
+timer update, saved registers, frozen actor selection and delayed restoration
+of the command word. It tests orchestration separately from the actual modal
+body proof. Real protection waits within normal/alternate world traversal,
+the remaining host callbacks and live Game activation are still required.
