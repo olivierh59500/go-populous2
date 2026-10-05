@@ -1,0 +1,1892 @@
+{
+  "Source": "Supplied French Amiga Populous II original save/load source",
+  "SourceSHA256": "86ad7f58200fc3295328d3a7ebad4e0ae6663be402d5ed090981b1e53b0a3841",
+  "Range": [
+    3542,
+    60232
+  ],
+  "Size": 56690,
+  "Scope": "Actual $4324 save caller and $42b0 load caller invoke complete $19afc/$19c1c transfer bodies. OS file gates implement deterministic byte transfers/counts; OS locking, palette fade, graphics reload/minimap/HUD rendering are external boundaries. Actual $420e..$4278 filename routine runs. Raw source pointer subtraction/restoration and all transferred bytes are compared.",
+  "Reference": {
+    "SHA256": "727555379859154223e2934d2bd5115ed7ce70661d1ecae3da4a38c0c45d9911",
+    "Size": 56690,
+    "Session": {
+      "Clock": 112,
+      "Seed": 71091,
+      "Random": 3684594459,
+      "Landscape": 1,
+      "ProfileSide": 1,
+      "GameMode": 2,
+      "World": 27,
+      "Rules": [
+        35,
+        4
+      ],
+      "Name": [
+        68,
+        65,
+        77,
+        79,
+        67,
+        76,
+        69,
+        83,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "AfterName": [
+        255,
+        0
+      ]
+    },
+    "Regions": [
+      {
+        "Name": "Control",
+        "Start": 3542,
+        "End": 3908,
+        "SHA256": "2c69573d8d4529cdaabb6609c680c2f6263a4bdca27b98334c11b95fa92810a8",
+        "NonzeroBytes": 4
+      },
+      {
+        "Name": "Grid",
+        "Start": 3908,
+        "End": 20292,
+        "SHA256": "acf8001e761c55a4a4a364580737ce7ece6a980e7da0f6b9bf44ed927ee13c5e",
+        "NonzeroBytes": 3227
+      },
+      {
+        "Name": "Overlays",
+        "Start": 20292,
+        "End": 24388,
+        "SHA256": "ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7",
+        "NonzeroBytes": 0
+      },
+      {
+        "Name": "ViewInput",
+        "Start": 24388,
+        "End": 24400,
+        "SHA256": "230f96989dfb630b0d2a9df61eff3cd6c6c0f4550cfdbb2bf24db2fa4025a2a8",
+        "NonzeroBytes": 2
+      },
+      {
+        "Name": "Walls",
+        "Start": 24400,
+        "End": 27600,
+        "SHA256": "5a312281df4bd8dfbb4d4a94ad0bf44d01bb8cfced1206b90e21b4ca0568cdb1",
+        "NonzeroBytes": 0
+      },
+      {
+        "Name": "Scenery",
+        "Start": 27600,
+        "End": 30400,
+        "SHA256": "71ad3703f706dd41cf22e66a6ea7feaf4529ea53474c2e71250d38356c131bf1",
+        "NonzeroBytes": 531
+      },
+      {
+        "Name": "Followers",
+        "Start": 30400,
+        "End": 51200,
+        "SHA256": "9cb743f26ac06ab915d1b3d66525daeaa98715924049071a29995ea5f30bb128",
+        "NonzeroBytes": 246
+      },
+      {
+        "Name": "Effects",
+        "Start": 51200,
+        "End": 59200,
+        "SHA256": "668946bab9868b28489bb906205ee1026045c8bcd3ca62a1bdf733c65491351b",
+        "NonzeroBytes": 0
+      },
+      {
+        "Name": "MagnetsDeities",
+        "Start": 59200,
+        "End": 60184,
+        "SHA256": "619138346e04a35b7d62d60d84b975a2f27ac4df539ef897ae5f73c76527f0f0",
+        "NonzeroBytes": 139
+      },
+      {
+        "Name": "Session",
+        "Start": 60184,
+        "End": 60232,
+        "SHA256": "ff8ace40973b31303aeb40167c8301d8e4e02623b2285b24cb2fe93cb40015f4",
+        "NonzeroBytes": 23
+      }
+    ]
+  },
+  "Cases": [
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "save0-count56690",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save0-count56689",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56689,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save0-count0",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 0,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save0-count-1",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": -1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "save1-count56690",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 1,
+        "Pointer1": 2127604,
+        "Pointer2": 2148300,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "6ffe7b85ca37d340b6669d6c9f31edc8d8484ddb360aef02f11da6611f3a404c",
+      "Path": "",
+      "Pointers": [
+        2127604,
+        2148300
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "605a0a87c8e9760f90fb25f0e9a686a026fb67f8bebe86cc7a0ba17052bf996a",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save1-count56689",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 1,
+        "Pointer1": 2127604,
+        "Pointer2": 2148300,
+        "Length": 56690,
+        "Result": 56689,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "6ffe7b85ca37d340b6669d6c9f31edc8d8484ddb360aef02f11da6611f3a404c",
+      "Path": "",
+      "Pointers": [
+        2127604,
+        2148300
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "605a0a87c8e9760f90fb25f0e9a686a026fb67f8bebe86cc7a0ba17052bf996a",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save1-count0",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 1,
+        "Pointer1": 2127604,
+        "Pointer2": 2148300,
+        "Length": 56690,
+        "Result": 0,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "6ffe7b85ca37d340b6669d6c9f31edc8d8484ddb360aef02f11da6611f3a404c",
+      "Path": "",
+      "Pointers": [
+        2127604,
+        2148300
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "605a0a87c8e9760f90fb25f0e9a686a026fb67f8bebe86cc7a0ba17052bf996a",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save1-count-1",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 1,
+        "Pointer1": 2127604,
+        "Pointer2": 2148300,
+        "Length": 56690,
+        "Result": -1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "6ffe7b85ca37d340b6669d6c9f31edc8d8484ddb360aef02f11da6611f3a404c",
+      "Path": "",
+      "Pointers": [
+        2127604,
+        2148300
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "605a0a87c8e9760f90fb25f0e9a686a026fb67f8bebe86cc7a0ba17052bf996a",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "save2-count56690",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 2,
+        "Pointer1": 2127552,
+        "Pointer2": 2127604,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "8701d9ef2318b3d87c902cef1735aa28b64da6e68d256c51a2572e99dccafd6a",
+      "Path": "",
+      "Pointers": [
+        0,
+        2127604
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "dcd9ea3957951af674d7462963e2930c74e88d7ab7f6795fda65a39663cd0c31",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save2-count56689",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 2,
+        "Pointer1": 2127552,
+        "Pointer2": 2127604,
+        "Length": 56690,
+        "Result": 56689,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "8701d9ef2318b3d87c902cef1735aa28b64da6e68d256c51a2572e99dccafd6a",
+      "Path": "",
+      "Pointers": [
+        0,
+        2127604
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "dcd9ea3957951af674d7462963e2930c74e88d7ab7f6795fda65a39663cd0c31",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save2-count0",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 2,
+        "Pointer1": 2127552,
+        "Pointer2": 2127604,
+        "Length": 56690,
+        "Result": 0,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "8701d9ef2318b3d87c902cef1735aa28b64da6e68d256c51a2572e99dccafd6a",
+      "Path": "",
+      "Pointers": [
+        0,
+        2127604
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "dcd9ea3957951af674d7462963e2930c74e88d7ab7f6795fda65a39663cd0c31",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save2-count-1",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 2,
+        "Pointer1": 2127552,
+        "Pointer2": 2127604,
+        "Length": 56690,
+        "Result": -1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "8701d9ef2318b3d87c902cef1735aa28b64da6e68d256c51a2572e99dccafd6a",
+      "Path": "",
+      "Pointers": [
+        0,
+        2127604
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "dcd9ea3957951af674d7462963e2930c74e88d7ab7f6795fda65a39663cd0c31",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "save3-count56690",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 3,
+        "Pointer1": 1,
+        "Pointer2": 4294967295,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "cb28bbcac76bf0389d66885dc41082083b40b3673200c4c81a60234e6ff71f62",
+      "Path": "",
+      "Pointers": [
+        1,
+        4294967295
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "5f424864613b5f6ddb820daa5350a829a263f6eb82220cdc17e58948ea7b5ae5",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save3-count56689",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 3,
+        "Pointer1": 1,
+        "Pointer2": 4294967295,
+        "Length": 56690,
+        "Result": 56689,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "cb28bbcac76bf0389d66885dc41082083b40b3673200c4c81a60234e6ff71f62",
+      "Path": "",
+      "Pointers": [
+        1,
+        4294967295
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "5f424864613b5f6ddb820daa5350a829a263f6eb82220cdc17e58948ea7b5ae5",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save3-count0",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 3,
+        "Pointer1": 1,
+        "Pointer2": 4294967295,
+        "Length": 56690,
+        "Result": 0,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "cb28bbcac76bf0389d66885dc41082083b40b3673200c4c81a60234e6ff71f62",
+      "Path": "",
+      "Pointers": [
+        1,
+        4294967295
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "5f424864613b5f6ddb820daa5350a829a263f6eb82220cdc17e58948ea7b5ae5",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save3-count-1",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 3,
+        "Pointer1": 1,
+        "Pointer2": 4294967295,
+        "Length": 56690,
+        "Result": -1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "cb28bbcac76bf0389d66885dc41082083b40b3673200c4c81a60234e6ff71f62",
+      "Path": "",
+      "Pointers": [
+        1,
+        4294967295
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "5f424864613b5f6ddb820daa5350a829a263f6eb82220cdc17e58948ea7b5ae5",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "save4-count56690",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 4,
+        "Pointer1": 4294901760,
+        "Pointer2": 2147483647,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "c50399da4d10f9d9ab856c83557d9ede13b89e4820279c1a30c8e4f31a9fbb80",
+      "Path": "",
+      "Pointers": [
+        4294901760,
+        2147483647
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "4b51a445ecc8957b5a623389ed251c59c221dbe552a491761e27f87406b174cd",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save4-count56689",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 4,
+        "Pointer1": 4294901760,
+        "Pointer2": 2147483647,
+        "Length": 56690,
+        "Result": 56689,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "c50399da4d10f9d9ab856c83557d9ede13b89e4820279c1a30c8e4f31a9fbb80",
+      "Path": "",
+      "Pointers": [
+        4294901760,
+        2147483647
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "4b51a445ecc8957b5a623389ed251c59c221dbe552a491761e27f87406b174cd",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save4-count0",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 4,
+        "Pointer1": 4294901760,
+        "Pointer2": 2147483647,
+        "Length": 56690,
+        "Result": 0,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "c50399da4d10f9d9ab856c83557d9ede13b89e4820279c1a30c8e4f31a9fbb80",
+      "Path": "",
+      "Pointers": [
+        4294901760,
+        2147483647
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "4b51a445ecc8957b5a623389ed251c59c221dbe552a491761e27f87406b174cd",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "save4-count-1",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 4,
+        "Pointer1": 4294901760,
+        "Pointer2": 2147483647,
+        "Length": 56690,
+        "Result": -1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "c50399da4d10f9d9ab856c83557d9ede13b89e4820279c1a30c8e4f31a9fbb80",
+      "Path": "",
+      "Pointers": [
+        4294901760,
+        2147483647
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "4b51a445ecc8957b5a623389ed251c59c221dbe552a491761e27f87406b174cd",
+      "Stop": "error"
+    },
+    {
+      "Calls": [],
+      "D0": 4294967295,
+      "Input": {
+        "Name": "save-existing-confirm0",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 5,
+        "Pointer1": 2127604,
+        "Pointer2": 2127656,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": true,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "fcc527dafb218c96f4ef82728dbd4077bcd53373fff3ba22bdedca6b3072af02",
+      "Path": "",
+      "Pointers": [
+        2127604,
+        2127656
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "cancel"
+    },
+    {
+      "Calls": [
+        "Write"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "save-existing-confirm1",
+        "Mode": "save",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 5,
+        "Pointer1": 2127604,
+        "Pointer2": 2127656,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": true,
+        "Confirm": 1,
+        "Reference": false
+      },
+      "MemoryHash": "fcc527dafb218c96f4ef82728dbd4077bcd53373fff3ba22bdedca6b3072af02",
+      "Path": "",
+      "Pointers": [
+        2127604,
+        2127656
+      ],
+      "RequestedBytes": 56690,
+      "RequestedHash": "8a6b0f6a85a6df478ec58f4cfb87a95eed3a0f807816364ad8d14748192e1beb",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read0-len0",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 31,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 0,
+        "Result": 0,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read0-len1",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 31,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 1,
+        "Result": 1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "4530193b689803c8438eb98c6d7774810dd34d6ee1c77fa0d5a727477cdf52ed",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read0-len366",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 31,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 366,
+        "Result": 366,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "a21eb29c708914b98c4028f27020e4532c3c2b11abbaa9311542670a1567e479",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read0-len367",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 31,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 367,
+        "Result": 367,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "6c9565b441b2f5f26c9fb063cb73f4ccebde62e086df0f1ca3378d39b830794d",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read0-len5150",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 31,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 5150,
+        "Result": 5150,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "134ed930bdd21056e7fcbafe1910024491a1b7ee7d8dc9779d42d3fa53d36efb",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read0-len56689",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 31,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56689,
+        "Result": 56689,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "4d26dd3a0ccef5da794e2053b958d6ef5d8c3927183dad776fc657456b8742de",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "read0-len56690",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 31,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "f6fe5078647cf369d548210c843ac1554757396f39b7201f99598ddc5cbadaa1",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "read0-len56699",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 31,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56699,
+        "Result": 56699,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "f6fe5078647cf369d548210c843ac1554757396f39b7201f99598ddc5cbadaa1",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read1-len0",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 32,
+        "Pointer1": 52,
+        "Pointer2": 20748,
+        "Length": 0,
+        "Result": 0,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "605a0a87c8e9760f90fb25f0e9a686a026fb67f8bebe86cc7a0ba17052bf996a",
+      "Path": "",
+      "Pointers": [
+        52,
+        20748
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read1-len1",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 32,
+        "Pointer1": 52,
+        "Pointer2": 20748,
+        "Length": 1,
+        "Result": 1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "bb4ffa3276001271e2eddd9673be2b3b408b3b30390d61af4b517b7e0a37c98f",
+      "Path": "",
+      "Pointers": [
+        52,
+        20748
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read1-len366",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 32,
+        "Pointer1": 52,
+        "Pointer2": 20748,
+        "Length": 366,
+        "Result": 366,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "7b116a03450eda3cf715ff9f156ee7b58a8467f2bd3b04c86abdba52293b5f15",
+      "Path": "",
+      "Pointers": [
+        52,
+        20748
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read1-len367",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 32,
+        "Pointer1": 52,
+        "Pointer2": 20748,
+        "Length": 367,
+        "Result": 367,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "81564803769c075a3e27e6a8694d8d44c4234018bcdd29ae80921169e2a1242f",
+      "Path": "",
+      "Pointers": [
+        52,
+        20748
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read1-len5150",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 32,
+        "Pointer1": 52,
+        "Pointer2": 20748,
+        "Length": 5150,
+        "Result": 5150,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "e2bf7337279310ca1381ef113310634d1db187efd8d98f3cfd31c6b485a932d4",
+      "Path": "",
+      "Pointers": [
+        52,
+        20748
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read1-len56689",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 32,
+        "Pointer1": 52,
+        "Pointer2": 20748,
+        "Length": 56689,
+        "Result": 56689,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "ffc4f019f3dad88cbbe0e175f0d45c5b0c49e1a132db7a86b0339124d22fc60d",
+      "Path": "",
+      "Pointers": [
+        52,
+        20748
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "read1-len56690",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 32,
+        "Pointer1": 52,
+        "Pointer2": 20748,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "c6d346b394a72305eab8aef209ccd60dfe45c4e4ad1171ba5d9fb1ab8998f1c3",
+      "Path": "",
+      "Pointers": [
+        2127604,
+        2148300
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "read1-len56699",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 32,
+        "Pointer1": 52,
+        "Pointer2": 20748,
+        "Length": 56699,
+        "Result": 56699,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "c6d346b394a72305eab8aef209ccd60dfe45c4e4ad1171ba5d9fb1ab8998f1c3",
+      "Path": "",
+      "Pointers": [
+        2127604,
+        2148300
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read2-len0",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 33,
+        "Pointer1": 4294967294,
+        "Pointer2": 2147483648,
+        "Length": 0,
+        "Result": 0,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "497503b8d1e8657dcd8108fc0b0ed503d2209f00e84a76f8bbdfd789b2c55d28",
+      "Path": "",
+      "Pointers": [
+        4294967294,
+        2147483648
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read2-len1",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 33,
+        "Pointer1": 4294967294,
+        "Pointer2": 2147483648,
+        "Length": 1,
+        "Result": 1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "fda703eeaeddf6d1f005b72416f2181a034481d077ccbb4a9abb808ed7ef2a57",
+      "Path": "",
+      "Pointers": [
+        4294967294,
+        2147483648
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read2-len366",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 33,
+        "Pointer1": 4294967294,
+        "Pointer2": 2147483648,
+        "Length": 366,
+        "Result": 366,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "e79233e8d74ab862e8df669c93cfce617ff4cb23ff42b247617ba27de4cc0d5a",
+      "Path": "",
+      "Pointers": [
+        4294967294,
+        2147483648
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read2-len367",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 33,
+        "Pointer1": 4294967294,
+        "Pointer2": 2147483648,
+        "Length": 367,
+        "Result": 367,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "9d4e582eec842606840d87a602b2a5527e9b791d2f9310092458d107f0a0e692",
+      "Path": "",
+      "Pointers": [
+        4294967294,
+        2147483648
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read2-len5150",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 33,
+        "Pointer1": 4294967294,
+        "Pointer2": 2147483648,
+        "Length": 5150,
+        "Result": 5150,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "ab1192051b44db1541000297daa2dcb1613889f7a64c4704ba663ffd44968b2c",
+      "Path": "",
+      "Pointers": [
+        4294967294,
+        2147483648
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read2-len56689",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 33,
+        "Pointer1": 4294967294,
+        "Pointer2": 2147483648,
+        "Length": 56689,
+        "Result": 56689,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "d803a9837e5ecc1038e9d6353e5d7659da83742901e3cf1cc27dce7c7d5d4ac2",
+      "Path": "",
+      "Pointers": [
+        4294967294,
+        2147483648
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "read2-len56690",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 33,
+        "Pointer1": 4294967294,
+        "Pointer2": 2147483648,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "938751b2698898913b573655c8599000a823946b152243e9ed648c2b1f09aa04",
+      "Path": "",
+      "Pointers": [
+        2127550,
+        2149611200
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "read2-len56699",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 33,
+        "Pointer1": 4294967294,
+        "Pointer2": 2147483648,
+        "Length": 56699,
+        "Result": 56699,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "938751b2698898913b573655c8599000a823946b152243e9ed648c2b1f09aa04",
+      "Path": "",
+      "Pointers": [
+        2127550,
+        2149611200
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read-ioerror-1",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 1,
+        "Pointer1": 52,
+        "Pointer2": 104,
+        "Length": 56690,
+        "Result": -1,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "8a6b0f6a85a6df478ec58f4cfb87a95eed3a0f807816364ad8d14748192e1beb",
+      "Path": "",
+      "Pointers": [
+        52,
+        104
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "ReloadGraphics"
+      ],
+      "D0": 0,
+      "Input": {
+        "Name": "read-ioerror-2",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 1,
+        "Pointer1": 52,
+        "Pointer2": 104,
+        "Length": 56690,
+        "Result": -2,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "8a6b0f6a85a6df478ec58f4cfb87a95eed3a0f807816364ad8d14748192e1beb",
+      "Path": "",
+      "Pointers": [
+        52,
+        104
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": "error"
+    },
+    {
+      "Calls": [
+        "Read",
+        "ReloadGraphics"
+      ],
+      "D0": 1,
+      "Input": {
+        "Name": "supplied-reference",
+        "Mode": "read",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": true
+      },
+      "MemoryHash": "727555379859154223e2934d2bd5115ed7ce70661d1ecae3da4a38c0c45d9911",
+      "Path": "",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 0,
+      "Input": {
+        "Name": "path0",
+        "Mode": "path",
+        "Drawer": "",
+        "Filename": "ARNY 1.GAM",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "ARNY 1.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 65535,
+      "Input": {
+        "Name": "path1",
+        "Mode": "path",
+        "Drawer": "DF0:",
+        "Filename": "TEST",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "DF0:TEST.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 65535,
+      "Input": {
+        "Name": "path2",
+        "Mode": "path",
+        "Drawer": "DF0:",
+        "Filename": "test.gam",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "DF0:test.gam.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 0,
+      "Input": {
+        "Name": "path3",
+        "Mode": "path",
+        "Drawer": "SAVE",
+        "Filename": "A.GAM",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "SAVE/A.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 0,
+      "Input": {
+        "Name": "path4",
+        "Mode": "path",
+        "Drawer": "SAVE/",
+        "Filename": "A.GAM",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "SAVE/A.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 65535,
+      "Input": {
+        "Name": "path5",
+        "Mode": "path",
+        "Drawer": "",
+        "Filename": "",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": ".GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 65535,
+      "Input": {
+        "Name": "path6",
+        "Mode": "path",
+        "Drawer": "DF0:",
+        "Filename": "A.GAMx",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "DF0:A.GAMx.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 0,
+      "Input": {
+        "Name": "path7",
+        "Mode": "path",
+        "Drawer": "",
+        "Filename": "A.GAM.GAM",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "A.GAM.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 65535,
+      "Input": {
+        "Name": "path8",
+        "Mode": "path",
+        "Drawer": "RAM:DIR",
+        "Filename": " SPACE NAME ",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "RAM:DIR/ SPACE NAME .GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 65535,
+      "Input": {
+        "Name": "path9",
+        "Mode": "path",
+        "Drawer": "",
+        "Filename": "A\u0000TAIL",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "A.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 65535,
+      "Input": {
+        "Name": "path10",
+        "Mode": "path",
+        "Drawer": "DF0:",
+        "Filename": "filegam",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "DF0:filegam.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    },
+    {
+      "Calls": [],
+      "D0": 65535,
+      "Input": {
+        "Name": "path11",
+        "Mode": "path",
+        "Drawer": "",
+        "Filename": "GAM",
+        "Pattern": 0,
+        "Pointer1": 0,
+        "Pointer2": 0,
+        "Length": 56690,
+        "Result": 56690,
+        "Exists": false,
+        "Confirm": 0,
+        "Reference": false
+      },
+      "MemoryHash": "2da998c72e6f8a99180d5bc2d1acf3a801c780434e2743fc193ad97235a5600a",
+      "Path": "GAM.GAM",
+      "Pointers": [
+        0,
+        0
+      ],
+      "RequestedBytes": 0,
+      "RequestedHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Stop": ""
+    }
+  ]
+}
