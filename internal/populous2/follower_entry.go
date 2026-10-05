@@ -94,6 +94,7 @@ func DecodeFollowerEntryRules(exe *amiga.Executable) (FollowerEntryRules, error)
 // than normalizing references. Write must preserve graph links except where
 // Unlink explicitly removes the source; it synchronizes same-cell fractions.
 type FollowerEntryCallbacks struct {
+	Context        *NativeFollowerRegisterContext
 	Head           func(NativePackedTile) (NativeRecordReference, error)
 	Node           func(NativeRecordReference) (FollowerEntryNode, error)
 	Read           func(NativeRecordReference) (FollowerEntryActor, error)
@@ -160,6 +161,9 @@ func (rules FollowerEntryRules) Enter(reference NativeRecordReference, callbacks
 	if err != nil {
 		return step, err
 	}
+	if head != 0 && callbacks.Context != nil {
+		callbacks.Context.EntryScan()
+	}
 	priority := 0
 	seen := make(map[NativeRecordReference]bool)
 	for current := head; current != 0; {
@@ -195,10 +199,16 @@ func (rules FollowerEntryRules) Enter(reference NativeRecordReference, callbacks
 				}
 				if candidate > priority {
 					priority, step.Target = candidate, current
+					if callbacks.Context != nil {
+						callbacks.Context.EntryCandidate(callbacks.Context.RecordAddress(current), uint16(candidate))
+					}
 				}
 			}
 		}
 		current = node.Next
+	}
+	if callbacks.Context != nil {
+		callbacks.Context.EntryDispatch(uint16(priority))
 	}
 	if priority == 4 {
 		step.Outcome = FollowerEntryBattle
@@ -214,7 +224,7 @@ func (rules FollowerEntryRules) Enter(reference NativeRecordReference, callbacks
 		}
 		actor.Motion.ReturnState = 12
 		motion := FollowerMotionRules{}
-		if err := motion.BeginLeg(&actor.Motion, target.Motion.X, target.Motion.Y); err != nil {
+		if err := motion.BeginLegWithContext(&actor.Motion, target.Motion.X, target.Motion.Y, callbacks.Context); err != nil {
 			return step, err
 		}
 		if err := callbacks.Write(reference, actor); err != nil {
@@ -340,6 +350,10 @@ func (rules FollowerEntryRules) TickWaiting(reference NativeRecordReference, cal
 }
 
 func (rules FollowerEntryRules) settle(reference NativeRecordReference, callbacks FollowerEntryCallbacks) (int, error) {
+	if callbacks.Context != nil {
+		saved := *callbacks.Context
+		defer func() { *callbacks.Context = saved }()
+	}
 	actor, err := callbacks.Read(reference)
 	if err != nil {
 		return 0, err

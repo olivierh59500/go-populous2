@@ -73,6 +73,7 @@ type FollowerDecisionRecord struct {
 }
 
 type FollowerDecisionCallbacks struct {
+	Context *NativeFollowerRegisterContext
 	// Leave Prepass nil when the motion dispatcher already ran $12c3c.
 	// Attrition and nonmoving death states belong to that caller's dispatch.
 	Prepass func(*FollowerMotionActor) bool
@@ -118,6 +119,9 @@ func (rules *FollowerDecisionRules) Select(actor *FollowerMotionActor, searchInd
 		result.Kind = FollowerMagnetHandler
 		return result, nil
 	}
+	if callbacks.Context != nil {
+		callbacks.Context.Long4(0)
+	}
 	x, y := int(actor.X)>>8, int(actor.Y)>>8
 	wanted := uint8(0)
 	if mode == NativeFollowerJoin {
@@ -154,10 +158,16 @@ func (rules *FollowerDecisionRules) Select(actor *FollowerMotionActor, searchInd
 		}
 		if matched {
 			selected = index * 4
+			if callbacks.Context != nil {
+				callbacks.Context.Word4(uint16(selected))
+			}
 			break
 		}
 		if rules.Properties[cell.Tile]&1 != 0 {
 			selected = index * 4
+			if callbacks.Context != nil {
+				callbacks.Context.Word4(uint16(selected))
+			}
 			if wanted == 0 {
 				break
 			}
@@ -165,12 +175,16 @@ func (rules *FollowerDecisionRules) Select(actor *FollowerMotionActor, searchInd
 	}
 	if selected != 0 {
 		result.Kind = FollowerPreferredTarget
-		return rules.beginDecision(actor, selected, false, result)
+		return rules.beginDecision(actor, selected, false, result, callbacks.Context)
 	}
 	if callbacks.Random == nil {
 		return result, fmt.Errorf("native follower decision RNG missing")
 	}
 	bits := uint16(callbacks.Random())
+	if callbacks.Context != nil {
+		callbacks.Context.Long4(uint32(uint8(-followerMotionSign(int(actor.VX)))))
+		callbacks.Context.Long5(uint32(uint8(-followerMotionSign(int(actor.VY)))))
+	}
 	start := int(bits&14) / 2
 	pressure := uint8(255)
 	road := 0
@@ -197,7 +211,7 @@ func (rules *FollowerDecisionRules) Select(actor *FollowerMotionActor, searchInd
 			if road != 0 {
 				result.Kind = FollowerRoadTarget
 			}
-			return rules.beginDecision(actor, selected, road != 0, result)
+			return rules.beginDecision(actor, selected, road != 0, result, callbacks.Context)
 		}
 		blocked, _, err := decisionChain(cell.Head, callbacks.Record, func(record FollowerDecisionRecord) (bool, bool) { return record.Kind == 24, false })
 		if err != nil {
@@ -216,19 +230,25 @@ func (rules *FollowerDecisionRules) Select(actor *FollowerMotionActor, searchInd
 		return result, nil
 	}
 	result.Kind = FollowerPressureTarget
-	return rules.beginDecision(actor, selected, false, result)
+	return rules.beginDecision(actor, selected, false, result, callbacks.Context)
 }
 
-func (rules *FollowerDecisionRules) beginDecision(actor *FollowerMotionActor, address int, road bool, result FollowerDecision) (FollowerDecision, error) {
+func (rules *FollowerDecisionRules) beginDecision(actor *FollowerMotionActor, address int, road bool, result FollowerDecision, context *NativeFollowerRegisterContext) (FollowerDecision, error) {
 	result.TargetX, result.TargetY = int16((address&255)<<6), int16(address&0xff00)
 	if road {
 		actor.Speed = uint8(min(255, int(actor.Speed)+int(rules.RoadBonus)))
+		if context != nil {
+			context.Long5(uint32(actor.Speed))
+		}
 	}
-	err := rules.Motion.BeginLeg(actor, result.TargetX, result.TargetY)
+	err := rules.Motion.BeginLegWithContext(actor, result.TargetX, result.TargetY, context)
 	if road {
 		// $11556 subtracts the full bonus even after saturation. Starting
 		// speed240..255 therefore becomes235 while velocity remains255.
 		actor.Speed -= rules.RoadBonus
+		if context != nil && err == nil {
+			context.Word5(uint16(rules.RoadBonus))
+		}
 	}
 	if err != nil {
 		return result, err

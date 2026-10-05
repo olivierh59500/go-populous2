@@ -15,6 +15,7 @@ type NativeTownRecord struct {
 }
 
 type NativeTownCallbacks struct {
+	Context      *NativeFollowerRegisterContext
 	Record       func(NativeRecordReference) (NativeTownRecord, bool)
 	SetRecord    func(NativeRecordReference, NativeTownRecord)
 	Head         func(int, int) NativeRecordReference
@@ -113,6 +114,10 @@ func (e *NativeTownEvaluator) ClearFarms(reference NativeRecordReference, replac
 	if e == nil || !nativeTownCallbacksValid(callbacks) {
 		return fmt.Errorf("native settlement cleanup callbacks missing")
 	}
+	if callbacks.Context != nil {
+		saved := *callbacks.Context
+		defer func() { *callbacks.Context = saved }()
+	}
 	record, err := nativeTownRecord(reference, callbacks)
 	if err != nil {
 		return err
@@ -146,6 +151,10 @@ func (e *NativeTownEvaluator) Evaluate(reference NativeRecordReference, clock ui
 	if e == nil || !nativeTownCallbacksValid(callbacks) {
 		return 0, fmt.Errorf("native settlement evaluator callbacks missing")
 	}
+	if callbacks.Context != nil {
+		saved := uint16(callbacks.Context.D4)
+		defer func() { callbacks.Context.RestoreWord4(saved) }()
+	}
 	record, err := nativeTownRecord(reference, callbacks)
 	if err != nil {
 		return 0, err
@@ -160,6 +169,13 @@ func (e *NativeTownEvaluator) Evaluate(reference NativeRecordReference, clock ui
 	}
 	if record.Stage != 0 && clock&3 != uint16(location.Index)&3 && e.Properties[callbacks.ReadTile(x, y)]&7 != 0 {
 		return record.Stage, nil
+	}
+	if callbacks.Context != nil {
+		callbacks.Context.Word4(47)
+		callbacks.Context.Word5(0x17)
+		if record.Owner != 1 {
+			callbacks.Context.Word4(63)
+		}
 	}
 	origin := record.Y&0xff00 | record.X>>8
 	farm, forbiddenHighBit := uint8(47), uint16(0x400)

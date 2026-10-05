@@ -44,6 +44,7 @@ func DecodeFollowerHeroRules(exe *amiga.Executable) (FollowerHeroRules, error) {
 }
 
 type FollowerHeroCallbacks struct {
+	Context      *NativeFollowerRegisterContext
 	Memory       FollowerCleanupMemory
 	RaiseEnabled func() bool                                              // Original global word $f12.
 	Raise        func(uint8, uint8) error                                 // Direct unpriced $d81e, not player sculpting.
@@ -74,6 +75,12 @@ func heroByteDistance(a, b uint8) int16 {
 // If every enemy is captive or claimed, the fallback is the last qualifying
 // record, rather than the closest. Existing stale backlinks are not cleared.
 func (rules FollowerHeroRules) SelectTarget(ref NativeRecordReference, m FollowerCleanupMemory) (NativeRecordReference, error) {
+	return rules.SelectTargetWithContext(ref, m, nil)
+}
+
+// SelectTargetWithContext retains $14414's native data-register writes for
+// the following policy stage without changing the existing memory ABI.
+func (rules FollowerHeroRules) SelectTargetWithContext(ref NativeRecordReference, m FollowerCleanupMemory, context *NativeFollowerRegisterContext) (NativeRecordReference, error) {
 	if !winMemoryValid(m) {
 		return 0, fmt.Errorf("native hero memory callbacks missing")
 	}
@@ -89,6 +96,9 @@ func (rules FollowerHeroRules) SelectTarget(ref NativeRecordReference, m Followe
 	y, err := m.Read8(source + 8)
 	if err != nil {
 		return 0, err
+	}
+	if context != nil {
+		context.HeroTarget(y)
 	}
 	best, preferred, fallback := int16(0x7fff), 0, 0
 	for address := 0x76f4; address < 0xc800; address += 52 {
@@ -131,6 +141,9 @@ func (rules FollowerHeroRules) SelectTarget(ref NativeRecordReference, m Followe
 			continue
 		}
 		best, preferred = distance, address
+		if context != nil {
+			context.HeroTargetDistance(uint16(distance))
+		}
 	}
 	if preferred == 0 {
 		preferred = fallback
@@ -305,8 +318,15 @@ func (rules FollowerHeroRules) Plan(ref NativeRecordReference, targetX, targetY 
 	if result != 0 {
 		if result == -1 {
 			if cb.RaiseEnabled() {
+				var savedContext NativeFollowerRegisterContext
+				if cb.Context != nil {
+					savedContext = *cb.Context
+				}
 				if err := cb.Raise(x+uint8(dx), y+uint8(dy)); err != nil {
 					return 0, err
+				}
+				if cb.Context != nil {
+					*cb.Context = savedContext
 				}
 			} else {
 				owner, err := m.Read8(source + 12)
@@ -322,6 +342,9 @@ func (rules FollowerHeroRules) Plan(ref NativeRecordReference, targetX, targetY 
 				}
 			}
 		}
+		if cb.Context != nil {
+			cb.Context.HeroFallback(dx, dy)
+		}
 		found := false
 		for _, direction := range rules.Alternatives[3*dx+dy+4] {
 			if direction[0] == -dx && direction[1] == -dy {
@@ -330,6 +353,9 @@ func (rules FollowerHeroRules) Plan(ref NativeRecordReference, targetX, targetY 
 			result, err = probe(direction[0], direction[1])
 			if err != nil {
 				return 0, err
+			}
+			if cb.Context != nil {
+				cb.Context.HeroAlternativeRestore()
 			}
 			if result == 0 {
 				dx, dy, found = direction[0], direction[1], true
@@ -383,7 +409,7 @@ func (rules FollowerHeroRules) Decide(ref NativeRecordReference, cb FollowerHero
 		return step, err
 	}
 	if state == 0x24 {
-		step.Target, err = rules.SelectTarget(ref, m)
+		step.Target, err = rules.SelectTargetWithContext(ref, m, cb.Context)
 		step.Selected, step.CountPopulation = step.Target != 0, true
 		return step, err
 	}
@@ -448,7 +474,7 @@ func (rules FollowerHeroRules) Decide(ref NativeRecordReference, cb FollowerHero
 		valid = int32(p) > 0 && int8(o) > 0 && o != owner
 	}
 	if !valid {
-		selected, err := rules.SelectTarget(ref, m)
+		selected, err := rules.SelectTargetWithContext(ref, m, cb.Context)
 		if err != nil {
 			return step, err
 		}
