@@ -802,3 +802,27 @@ World, current presentation, image bank and physical bitmap resolver.
 This connects the source entry to the verified menu and rendering APIs. Initial
 $10a10/$10a8c startup, physical resource loading, complete transport return
 semantics and live Ebitengine loop activation are still required.
+
+## Physical HUNK and encoded-file host backing
+
+NativeHostMemory loads each segment into its actual declared allocation at
+explicit caller-supplied addresses and applies validated32-bit relocations.
+CODE/data payload, real BSS and allocation tails remain distinct from missing
+gaps. Mapped host regions alias their owners; byte operations can cross truly
+adjacent regions, but a bitmap window cannot join detached slices or invent
+padding. Missing writes retain their completed prefix before reporting the
+unavailable address.
+
+NativeResourceFilesystem opens original encoded assets with Amiga-style case
+lookup and supplies actual host read counts/payloads. It retains open handles
+and short reads, exposes native0/-1 failures for genuine requester handling,
+rejects ambiguous names and closes retained handles. Decoded Bundle.Raw never
+stands in for packed disk bytes.
+
+All26 embedded encoded resources match their host read counts/bytes. Twenty-four
+fresh source19CD0 executions additionally match full registers and every actual
+HUNK allocation using the sparse host memory and real file adapter. The source
+reference fingerprints declared allocations, without the earlier analysis
+model's zero-filled gaps. FX/QAZ require original runtime allocations and are
+deliberately unavailable in that HUNK-only integration test; their allocations
+and full startup/presentation/World backing remain required integration work.
