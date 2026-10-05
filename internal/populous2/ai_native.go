@@ -48,8 +48,9 @@ const (
 )
 
 type NativeAICallbacks struct {
-	Memory FollowerCleanupMemory
-	Random func() uint16
+	Memory  FollowerCleanupMemory
+	Random  func() uint16
+	Context *NativeAIRegisterContext
 	// Policy supplies original $13ba4/$13c1c/$13dde until those separate
 	// controllers are bound. A missing required policy is an explicit error,
 	// not a silent no-op or an inherited fixed list of powers.
@@ -433,16 +434,26 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 	if err != nil {
 		return false, err
 	}
+	if cb.Context != nil {
+		cb.Context.D4 = origin&0xff00 | uint16(uint8(origin)<<2)
+		cb.Context.D5 = uint16(originHeight)
+	}
 	identity, err := m.Read8(god + 0x19)
 	if err != nil {
 		return false, err
 	}
 	for _, offset := range r.ExpansionOffsets {
 		packed := origin + offset
+		if cb.Context != nil {
+			cb.Context.D4 = packed
+		}
 		if packed&0xc0c0 != 0 {
 			continue
 		}
 		grid := 0xf44 + int(int16(packed&0xff00|uint16(uint8(packed)<<2)))
+		if cb.Context != nil {
+			cb.Context.D4 = uint16(grid - 0xf44)
+		}
 		head, err := m.Read16(grid + 2)
 		if err != nil {
 			return false, err
@@ -479,6 +490,9 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 		if err != nil {
 			return false, err
 		}
+		if cb.Context != nil {
+			cb.Context.D5 = uint16(height)
+		}
 		tile, err := m.Read8(grid + 1)
 		if err != nil {
 			return false, err
@@ -498,6 +512,9 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 		if !forceRaise && int8(height) > int8(originHeight) {
 			kind = 4
 		}
+		if cb.Context != nil {
+			cb.Context.D5 = uint16(kind)
+		}
 		if err := m.Write8(command+1, kind); err != nil {
 			return false, err
 		}
@@ -509,6 +526,9 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 	stage, err := m.Read8(actor + 1)
 	if err != nil {
 		return false, err
+	}
+	if cb.Context != nil {
+		cb.Context.D4 = 0xff9d
 	}
 	return false, m.Write8(actor+0x13, stage)
 }
