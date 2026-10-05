@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 26
+const SaveVersion = 27
 
 type Snapshot struct {
 	Version                                        int
@@ -365,6 +365,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	if err != nil {
 		return nil, err
 	}
+	initializationDefaults := captureNativeInitializationDefaults(w)
 	if snapshot.Version >= 8 {
 		for player, raw := range snapshot.ScenarioOptions {
 			w.Rules[player] = DecodeScenarioRules(raw)
@@ -670,6 +671,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		// rather than infer an unrecorded cursor from elapsed time.
 	}
 	w.HazardSerial, w.LastHazardCue = snapshot.HazardSerial, snapshot.LastHazardCue
+	if err := w.migrateNativeInitialization(snapshot.Version, initializationDefaults); err != nil {
+		return nil, err
+	}
 	return w, nil
 }
 
