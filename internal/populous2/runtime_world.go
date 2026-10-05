@@ -124,6 +124,13 @@ func (w *World) nativeRuntimeInsert(ref NativeRecordReference) error {
 
 func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 	memory := w.runtimeMemory()
+	syncRNG := func() {
+		var value uint32
+		for i := range 4 {
+			value = value<<8 | uint32(w.NativeCommandBytes[0xeb28-0xeb18+i])
+		}
+		w.Core.SetRandomState(value)
+	}
 	read8 := func(address int) (uint8, error) {
 		if address >= 0xf40 && address < 0xf44 {
 			return uint8(w.NativeClock >> uint(24-(address-0xf40)*8)), nil
@@ -133,6 +140,9 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 		}
 		if address == 0xf13 {
 			return uint8(w.NativeRaiseEnabled), nil
+		}
+		if address >= 0xdc4 && address < 0xf44 {
+			return w.NativeControlBytes[address-0xdc4], nil
 		}
 		if address >= 0xeb18 && address < 0xeb90 {
 			return w.NativeCommandBytes[address-0xeb18], nil
@@ -168,6 +178,14 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			if address == 0xf12 {
 				return w.NativeRaiseEnabled, nil
 			}
+			if address >= 0xdc4 && address <= 0xf42 {
+				h, err := read8(address)
+				if err != nil {
+					return 0, err
+				}
+				l, err := read8(address + 1)
+				return uint16(h)<<8 | uint16(l), err
+			}
 			if address >= 0xeb18 && address <= 0xeb8e {
 				high, _ := read8(address)
 				low, _ := read8(address + 1)
@@ -183,6 +201,17 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 		Read32: func(address int) (uint32, error) {
 			if address == 0xf40 {
 				return w.NativeClock, nil
+			}
+			if address >= 0xdc4 && address <= 0xf40 {
+				var value uint32
+				for i := range 4 {
+					v, err := read8(address + i)
+					if err != nil {
+						return 0, err
+					}
+					value = value<<8 | uint32(v)
+				}
+				return value, nil
 			}
 			if address >= 0xeb18 && address <= 0xeb8c {
 				var value uint32
@@ -216,12 +245,19 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 				w.NativeRaiseEnabled = w.NativeRaiseEnabled&0xff00 | uint16(value)
 				return nil
 			}
+			if address >= 0xdc4 && address < 0xf44 {
+				w.NativeControlBytes[address-0xdc4] = value
+				return nil
+			}
 			if address >= 0xf44 && address < 0x4f44 {
 				writeGridByte(address-0xf44, value)
 				return nil
 			}
 			if address >= 0xeb18 && address < 0xeb90 {
 				w.NativeCommandBytes[address-0xeb18] = value
+				if address >= 0xeb28 && address < 0xeb2c {
+					syncRNG()
+				}
 				return nil
 			}
 			_, err := memory.Write8(address, value)
@@ -240,6 +276,10 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 				w.NativeRaiseEnabled = value
 				return nil
 			}
+			if address >= 0xdc4 && address <= 0xf42 {
+				w.NativeControlBytes[address-0xdc4], w.NativeControlBytes[address-0xdc4+1] = uint8(value>>8), uint8(value)
+				return nil
+			}
 			if address >= 0xf44 && address <= 0x4f42 {
 				offset := address - 0xf44
 				writeGridByte(offset, uint8(value>>8))
@@ -248,6 +288,9 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			}
 			if address >= 0xeb18 && address <= 0xeb8e {
 				w.NativeCommandBytes[address-0xeb18], w.NativeCommandBytes[address-0xeb18+1] = uint8(value>>8), uint8(value)
+				if address < 0xeb2c && address+2 > 0xeb28 {
+					syncRNG()
+				}
 				return nil
 			}
 			_, err := memory.Write16(address, value)
@@ -256,6 +299,12 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 		Write32: func(address int, value uint32) error {
 			if address == 0xf40 {
 				w.NativeClock = value
+				return nil
+			}
+			if address >= 0xdc4 && address <= 0xf40 {
+				for i := range 4 {
+					w.NativeControlBytes[address-0xdc4+i] = uint8(value >> uint(24-i*8))
+				}
 				return nil
 			}
 			if address >= 0xf44 && address <= 0x4f40 {
@@ -267,6 +316,9 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			if address >= 0xeb18 && address <= 0xeb8c {
 				for offset := range 4 {
 					w.NativeCommandBytes[address-0xeb18+offset] = uint8(value >> uint(24-offset*8))
+				}
+				if address < 0xeb2c && address+4 > 0xeb28 {
+					syncRNG()
 				}
 				return nil
 			}

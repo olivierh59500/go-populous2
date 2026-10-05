@@ -996,3 +996,35 @@ calls and 845 landings. Gameplay tests verify source dispatch/art, real release,
 retained recycled velocities and lift/save continuation. These comparisons prove
 this composed controller; full command scheduling, AI and presentation parity
 remain separate requirements.
+
+## Native scenario script execution
+
+The sixty-byte world table is ten six-byte events, copied to `$dde`. Each holds
+an unsigned time word, one reserved byte, command byte and two coordinate bytes.
+Zero time is the terminator. Cursor `$f0a` advances by six before execution;
+`$17e9a` runs after the scenery pass and dispatches at most one due event per
+update using `$f42`, the low word of the native frame counter. Same-time events
+therefore occupy successive calls. An inadmissible command still consumes its
+event. Odd-word cursor accesses remain explicit native address faults.
+
+The scratch command at `$dc4` uses neutral owner 3 normally and owner 2 in editor
+mode 8. World calls real primitive/body helpers without player availability,
+affordability or weighted-use gates. The original conquest catalog contains
+commands 6, 22, 40, 46, 62, 64 and 90 through 100: fire/whirlwind, directed quake,
+forest, volcano, storm and the six neutral invention selectors. Command 38 is
+also composed in the original CPU proof. Storm's caller+$1a write aliases the
+first script time at `$dde`; preserving the already advanced cursor lets later
+events continue. No guessed AI settings are read from this table.
+
+All 272 scheduler cases/278 updates repeat against complete World memory/RNG,
+including 36 original command compositions. Original per-body references cover
+the other catalog commands. Gameplay tests cover every catalog command, neutral
+mana bypass, event order, aliasing and cursor/table save continuation. Version 24
+retains the bounded control region `$dc4..$f44`, including the original revision
+word and script scratch data. Random byte/word aliases in the command region
+update the actual generator, rather than only a stale serialized copy.
+
+Earlier Go saves did not run scripts or record a cursor. Migration copies their
+world's original table and starts at its first event instead of inferring unknown
+execution from elapsed time. Native AI decisions and deferred normal command
+execution remain separate requirements from this scheduler integration.

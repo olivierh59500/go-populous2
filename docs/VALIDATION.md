@@ -83,6 +83,8 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Complete Whirlwind composition | 789 original CPU cases/19,296 frames match full World BSS/map/actors/command/RNG through real graph/farm/cleanup callbacks; tests cover lift/transport/release/landing, saved continuation, recycled creation words and actual routed owner-word water aliases |
 | Complete Fire Column composition | 1,169 original CPU cases/12,094 frames match full World BSS/map/actors/command/RNG with actual town/scorch/damage helpers; mixed retained mortality, saved continuation, creation jitter/RNG and zero-speed fault prefixes pass |
 | Scenery age renderer | 5,340 original CPU cases across twelve animation frames, 2,512 blits; native signed-age anchor/visible-height/source-plane clipping plans drive Ebitengine source subrectangles |
+| Scenario script World adapter | All 272 original cases/278 updates match full memory/RNG, including 36 actual neutral/editor command compositions; all twelve commands present in the 1,000-world script catalog have native World bodies, ordered one-event dispatch, Storm caller/table alias and saved continuation |
+| Native script/control saves | Version 24 retains BSS DC4..F44, raw cursor/table/scratch; partial RNG byte/word writes reach the generator, and older saves load the previously unrecorded table/cursor |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |

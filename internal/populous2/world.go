@@ -59,7 +59,8 @@ type World struct {
 	NativeEnvironment        [NativeEffectCapacity]NativeEnvironmentController
 	NativeEnvironmentDirty   uint16
 	NativeEnvironmentShake   uint16
-	NativeCommandBytes       [0x78]byte // BSS $eb18..$eb90, including command aliases.
+	NativeCommandBytes       [0x78]byte  // BSS $eb18..$eb90, including command aliases.
+	NativeControlBytes       [0x180]byte // BSS $dc4..$f44, script/scratch/control aliases.
 	StormRules               StormRules
 	FireRainRules            FireRainRules
 	HurricaneRules           HurricaneRules
@@ -233,6 +234,9 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.bindNativeTownEvaluator()
 	w.initializeNativeRuntime()
 	w.initializeNativeCampaignStatistics()
+	if err := LoadScenarioScript(w.Level.WorldParameters, w.nativeCleanupMemory()); err != nil {
+		return nil, err
+	}
 	return w, nil
 }
 
@@ -560,6 +564,9 @@ func (w *World) Tick() {
 	w.tickNativeEffects()
 	w.Walls.Tick(&w.WallRules, w.nativeTileAt)
 	w.tickScenery()
+	if err := w.tickNativeScenarioScript(); err != nil {
+		panic(err)
+	}
 	w.followHelenCaptives()
 	w.applyGroundEffects()
 	for i, hero := range w.Heroes {

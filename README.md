@@ -29,6 +29,8 @@ and create original water children. Their complete retained controllers replace
 the former motion-only World handler.
 Fire columns use complete raw routing and linked victim/town scans. Trees and
 rocks use original age-dependent emergence/burial rectangles when drawn.
+The ten-record native scenario script now creates its original disasters,
+plantings and neutral inventions, one due event per simulation update.
 
 **The complete original feature set is still being converted.** Several
 powers, hero movement, native combat, campaign progression and
@@ -121,7 +123,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 23 preserves retained native actor, deity and marker bytes, town structure overlays,
+Version 24 preserves retained native actor, deity and marker bytes, town structure overlays,
 lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
@@ -166,6 +168,9 @@ old disease flags receive a valid native overlay phase.
 Version 23 retains the native unpaused frame counter, game/profile selection,
 weighted command use and pending/applied campaign outcome. Earlier saves retain
 their elapsed simulation count and receive original deity identity values.
+Version 24 retains the raw script cursor/table and scratch/control aliases.
+Older saves start the script at its first event because no previous cursor was
+recorded; loaded scripts otherwise continue without replaying consumed events.
 
 Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can

@@ -16,6 +16,7 @@ func installNativeFixtureWorld(t *testing.T, raw []byte, heights []uint8) *World
 	w := lightningWorld(t, 4311)
 	w.NativeRaiseEnabled = uint16(raw[0xf12])<<8 | uint16(raw[0xf13])
 	w.NativeClock = uint32(raw[0xf40])<<24 | uint32(raw[0xf41])<<16 | uint32(raw[0xf42])<<8 | uint32(raw[0xf43])
+	copy(w.NativeControlBytes[:], raw[0xdc4:0xf44])
 	copy(w.RecordImage.Bytes[:], raw[NativeRecordImageStart:NativeMagnetImageStart])
 	copy(w.NativeGlobals.Bytes[:], raw[NativeMagnetImageStart:NativeRuntimeImageEnd])
 	if len(raw) >= 0xeb90 {
@@ -50,7 +51,11 @@ func installNativeFixtureWorld(t *testing.T, raw []byte, heights []uint8) *World
 
 func nativeFixtureWorldImage(w *World, initial []byte) []byte {
 	all := append([]byte(nil), initial...)
+	copy(all[0xdc4:0xf44], w.NativeControlBytes[:])
 	all[0xf12], all[0xf13] = uint8(w.NativeRaiseEnabled>>8), uint8(w.NativeRaiseEnabled)
+	for i := range 4 {
+		all[0xf40+i] = uint8(w.NativeClock >> uint(24-i*8))
+	}
 	for pos, cell := range w.Occupancy.Grid.Cells {
 		a := 0xf44 + pos*4
 		all[a], all[a+1], all[a+2], all[a+3] = cell.Header, cell.Tile, uint8(cell.Head>>8), uint8(cell.Head)

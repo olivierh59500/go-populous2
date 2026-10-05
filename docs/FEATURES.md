@@ -10,14 +10,14 @@ power is not sufficient evidence that its original behavior has been ported.
 | Area | Current implementation | Remaining work |
 |---|---|---|
 | Resources | Original compression, tile fragments, masks, sprite differences and relocated descriptors | Original menu composition and font use |
-| Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester and opponent experience | Scripted events and opponent personalities |
+| Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester, opponent experience and native ten-record scripted events | Complete native opponent policy/command scheduling and end-to-end pacing |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
 | Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion; full terrain prepass, water/conversion/burning, magnet/captive routes, exact crossing admission and retained contact/combat outcomes in World | Full linked effects, remaining animation boundaries and inventions |
 | Towns | 19 stages, native mixed support/cache, 49-cell compositor and native founding/economy/emigration in World; rare births allocate original neutral actors | Complete land AI, all neutral/environmental interactions and end-to-end campaign parity |
 | Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Version 23 retains native frame counter, game/profile identity, command weights and latched/applied campaign results alongside retained actors and controllers | Original Amiga GAM interoperability |
+| Saving | Version 24 retains the native script/control/scratch region and cursor alongside frame/profile/results and actors | Original Amiga GAM World adapter; standalone codec is verified |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, final-world reset and saved one-time application | Original result-screen composition, final Zeus presentation and full conquest pacing/script/AI parity |
