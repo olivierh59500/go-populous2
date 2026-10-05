@@ -53,6 +53,14 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 				}
 				return nil
 			}})
+		case 0x16, 0x18, 0x1a:
+			rules := NativeCommandRules{Code: w.NativeAI.Code}
+			return rules.TickFrameLightning(ref, c, NativeFrameLightningCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Unlink: w.nativeRuntimeUnlink, Dismiss: func(context *NativeFrameRegisterContext) error {
+				command := context.CommandContext()
+				_, e := w.commandLightning(NativeCommandCall{Routine: 0x15f80, Context: &command})
+				context.SetCommandContext(command)
+				return e
+			}, Scorch: func(ref NativeRecordReference) error { return w.StormRules.Scorch(ref, w.nativeCleanupMemory()) }})
 		case 0x36, 0x38, 0x3a:
 			rules := NativeCommandRules{Code: w.NativeAI.Code}
 			return rules.TickFrameBasalt(ref, c, NativeFrameBasaltCallbacks{Memory: w.nativeCleanupMemory(), Unlink: w.nativeRuntimeUnlink, Create: func(context *NativeFrameRegisterContext) error {
