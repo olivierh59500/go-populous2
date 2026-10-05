@@ -298,3 +298,19 @@ from font, icon and description data. Per-power preview animation starts at the
 next source boundary and remains open. Game text editing remains provisional
 until the verified keyboard/VBlank modal is bound; interactive GPU validation
 and full in-game/native frame routing are also still required.
+
+## In-game requester World continuations
+
+The World adapter now applies all 2,808 CPU-referenced in-game menu action
+decisions to the selected live control word, painting flag and command pointer.
+Direct solo profile changes use $111ae; multiplayer profile changes queue124.
+Save/load/restart/quit only replace command byte1, preserving XY, the clock and
+simulation turn until $1744c. This checks World state/continuation binding; it
+is not a complete menu register/drawing/input timing proof.
+
+Resume uses the actual $181c0 controller and raw command transport byte. Solo
+records complete without network callbacks; multiplayer records require an
+actual port. Tests verify that resume does not execute or clear queued commands
+and refuses a fabricated multiplayer exchange. The underlying packet/resume/
+disconnect controller is covered by 432 original-CPU cases. Game integration
+awaits the full ordered frame and asynchronous command-stage continuations.
