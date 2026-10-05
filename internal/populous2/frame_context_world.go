@@ -53,6 +53,24 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 				}
 				return nil
 			}})
+		case 0x22, 0x24, 0x26:
+			rules := NativeCommandRules{Code: w.NativeAI.Code}
+			return rules.TickFrameQuake(ref, c, NativeFrameQuakeCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Lower: func(context *NativeFrameRegisterContext) error {
+				command := context.CommandContext()
+				_, e := w.commandDirectTerrain(NativeCommandCall{Routine: 0xd7f0, Context: &command}, false)
+				context.SetCommandContext(command)
+				return e
+			}, Create: w.frameQuakeCreate, Sound: func() error {
+				if bindings.Audio == nil {
+					return fmt.Errorf("native Earthquake frame audio descriptors missing")
+				}
+				at := 105 * 10
+				binary.BigEndian.PutUint16(bindings.Audio.Entries[at:], binary.BigEndian.Uint16(bindings.Audio.Entries[at:])+1)
+				if len(w.effectSoundCues) < NativeEffectCapacity {
+					w.effectSoundCues = append(w.effectSoundCues, 105)
+				}
+				return nil
+			}})
 		case 0x1c, 0x1e, 0x20:
 			cb := w.fireRainCallbacks()
 			cb.Frame = c
@@ -107,4 +125,25 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 func (w *World) tickNativeFrameFX(context *NativeFrameRegisterContext, bindings NativeFrameWorldBindings) error {
 	rules := NativeCommandRules{Code: w.NativeAI.Code}
 	return rules.TickFrameFX(context, w.nativeFrameFXCallbacks(bindings))
+}
+
+// frameQuakeCreate retains the returned A1 address from$165da in addition to
+// its already proven data-register and memory result.
+func (w *World) frameQuakeCreate(parent int, context *NativeFrameRegisterContext) (int, error) {
+	address := parent
+	x, y := int(int8(uint8(context.D[0]))), int(int8(uint8(context.D[1])))
+	if inside(x, y) {
+		var e error
+		address, e = primitiveFreeRecord(w.nativeCleanupMemory(), 0xc800, 0xe740, 32)
+		if e != nil {
+			return address, e
+		}
+		if address == 0 {
+			address = 0xe740
+		}
+	}
+	command := context.CommandContext()
+	_, e := w.commandEarthquakeCreation(NativeCommandCall{Routine: 0x165da, Caller: parent, Context: &command})
+	context.SetCommandContext(command)
+	return address, e
 }
