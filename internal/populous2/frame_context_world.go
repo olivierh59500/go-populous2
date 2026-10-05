@@ -53,6 +53,17 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 				}
 				return nil
 			}})
+		case 0x28, 0x2a:
+			cb := w.tsunamiCallbacks()
+			cb.Frame = c
+			cb.LowerFrame = func(context *NativeFrameRegisterContext) error {
+				command := context.CommandContext()
+				_, e := w.commandDirectTerrain(NativeCommandCall{Routine: 0xd7f0, Context: &command}, false)
+				context.SetCommandContext(command)
+				return e
+			}
+			step, e := w.TsunamiRules.Tick(ref, cb)
+			return NativeFrameFXStep{Draw: !step.Removed, Color: 5}, e
 		case 0x2c, 0x2e:
 			cb := w.stormCallbacks()
 			cb.Frame = c

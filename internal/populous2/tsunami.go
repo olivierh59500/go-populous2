@@ -59,6 +59,8 @@ func DecodeTsunamiRules(exe *amiga.Executable) (TsunamiRules, error) {
 
 type TsunamiCallbacks struct {
 	Memory       FollowerCleanupMemory
+	Frame        *NativeFrameRegisterContext
+	LowerFrame   func(*NativeFrameRegisterContext) error
 	Link, Unlink func(NativeRecordReference) error
 	Move         func(NativeRecordReference, uint16, uint16) (bool, error) // Native D0 is1 when the tile changes.
 	Lower        func(uint8, uint8) error                                  // Direct $d7f0, including propagation.
@@ -207,6 +209,9 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 		return step, err
 	}
 	next, err := rules.nextAnimation(animation)
+	if cb.Frame != nil {
+		cb.Frame.Word(0, next)
+	}
 	if err != nil {
 		return step, err
 	}
@@ -229,6 +234,14 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 	if err != nil {
 		return step, err
 	}
+	if cb.Frame != nil {
+		cb.Frame.RestoreWord(6, x)
+		cb.Frame.RestoreWord(7, y)
+		cb.Frame.Word(6, x+vx)
+		if int16(x+vx) >= 0 && int16(x+vx) < 0x4000 {
+			cb.Frame.Word(7, y+vy)
+		}
+	}
 	x, y = x+vx, y+vy
 	remove := func() error {
 		if err := m.Write8(address+12, 0); err != nil {
@@ -240,7 +253,16 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 	if int16(x) < 0 || int16(y) < 0 || int16(x) >= 0x4000 || int16(y) >= 0x4000 {
 		return step, remove()
 	}
+	if cb.Frame != nil {
+		cb.Frame.D[5] = 0
+		if e := cb.Frame.ObserveMove(ref, x, y, m); e != nil {
+			return step, e
+		}
+	}
 	step.CellChanged, err = cb.Move(ref, x, y)
+	if cb.Frame != nil {
+		cb.Frame.Word(5, uint16(cb.Frame.D[0]))
+	}
 	if err != nil {
 		return step, err
 	}
@@ -255,6 +277,11 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 	index := direction / 4
 	packed := y&0xff00 | x>>8
 	front := packed + rules.Fronts[index][0]
+	if cb.Frame != nil {
+		cb.Frame.Word(1, packed)
+		cb.Frame.Word(2, front)
+		cb.Frame.Word(0, front&0xc0c0)
+	}
 	if front&0xc0c0 == 0 {
 		grid := tsunamiGrid(front)
 		header, err := m.Read8(grid)
@@ -265,20 +292,53 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 		if err != nil {
 			return step, err
 		}
+		if cb.Frame != nil {
+			cb.Frame.Byte(2, uint8(front)*4)
+			cb.Frame.Byte(0, header)
+			if tile != 0xe0 {
+				cb.Frame.Byte(0, header&7)
+			}
+		}
 		if tile == 0xe0 || header&7 != 0 {
 			return step, remove()
 		}
 	}
 	front = packed + rules.Fronts[index][1]
+	if cb.Frame != nil {
+		cb.Frame.Word(2, front)
+		cb.Frame.Word(0, front&0xc0c0)
+	}
 	if front&0xc0c0 == 0 {
 		tile, err := m.Read8(tsunamiGrid(front) + 1)
 		if err != nil {
 			return step, err
 		}
+		if cb.Frame != nil {
+			cb.Frame.Word(3, front)
+			cb.Frame.Byte(2, uint8(front)*4)
+			cb.Frame.Byte(0, tile)
+			cb.Frame.Word(0, uint16(cb.Frame.D[0])*2)
+		}
 		if rules.Properties[tile]&8 == 0 {
+			firstLower := true
 			lower := func(target uint16) error {
 				xx, yy := uint8(target), uint8(target>>8)
 				step.Lowered = append(step.Lowered, [2]uint8{xx, yy})
+				if cb.Frame != nil {
+					if cb.LowerFrame == nil {
+						return fmt.Errorf("native Tsunami terrain register callback missing")
+					}
+					saved1, saved5 := cb.Frame.D[1], cb.Frame.D[5]
+					cb.Frame.Word(1, target>>8)
+					cb.Frame.Word(0, target&0xff)
+					e := cb.LowerFrame(cb.Frame)
+					if firstLower {
+						cb.Frame.D[1] = saved1
+					}
+					cb.Frame.D[5] = saved5
+					firstLower = false
+					return e
+				}
 				return cb.Lower(xx, yy)
 			}
 			if err := lower(front); err != nil {
@@ -287,6 +347,13 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 			tile, err = m.Read8(tsunamiGrid(packed) + 1)
 			if err != nil {
 				return step, err
+			}
+			if cb.Frame != nil {
+				cb.Frame.Word(2, packed)
+				cb.Frame.Word(3, packed)
+				cb.Frame.Byte(2, uint8(packed)*4)
+				cb.Frame.Byte(0, tile)
+				cb.Frame.Word(0, uint16(cb.Frame.D[0])*2)
 			}
 			if rules.Properties[tile]&8 == 0 {
 				if err := lower(packed); err != nil {
@@ -298,8 +365,19 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 	if step.CellChanged {
 		return step, nil
 	}
-	for _, offset := range rules.Sides[index] {
+	if cb.Frame != nil {
+		cb.Frame.Word(1, packed)
+		cb.Frame.D[3] = 1
+	}
+	for side, offset := range rules.Sides[index] {
+		if cb.Frame != nil {
+			cb.Frame.Word(3, uint16(1-side))
+		}
 		neighbor := packed + offset
+		if cb.Frame != nil {
+			cb.Frame.Word(2, neighbor)
+			cb.Frame.Word(0, neighbor&0xc0c0)
+		}
 		if neighbor&0xc0c0 != 0 {
 			continue
 		}
@@ -308,12 +386,20 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 		if err != nil {
 			return step, err
 		}
+		if cb.Frame != nil {
+			cb.Frame.Byte(2, uint8(neighbor)*4)
+			cb.Frame.Byte(0, tile)
+			cb.Frame.Word(0, uint16(cb.Frame.D[0])*2)
+		}
 		if rules.Properties[tile]&8 == 0 {
 			continue
 		}
 		head, err := m.Read16(grid + 2)
 		if err != nil {
 			return step, err
+		}
+		if cb.Frame != nil {
+			cb.Frame.Word(0, head)
 		}
 		blocked := false
 		seen := map[uint16]bool{}
@@ -332,6 +418,9 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 				break
 			}
 			head, err = m.Read16(a + 2)
+			if cb.Frame != nil {
+				cb.Frame.Word(0, head)
+			}
 			if err != nil {
 				return step, err
 			}
@@ -354,6 +443,9 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 		if err != nil {
 			return step, err
 		}
+		if cb.Frame != nil {
+			cb.Frame.Word(0, animation)
+		}
 		if err := m.Write16(child+10, animation); err != nil {
 			return step, err
 		}
@@ -369,6 +461,9 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 		// D2 now holds the four-byte grid offset. Only X is shifted back;
 		// the following copied Y fraction replaces its low offset byte.
 		offsetWord := neighbor&0xff00 | uint16(uint8(neighbor)<<2)
+		if cb.Frame != nil {
+			cb.Frame.Byte(0, uint8(offsetWord)>>2)
+		}
 		if err := m.Write8(child+6, uint8(offsetWord)>>2); err != nil {
 			return step, err
 		}
@@ -404,12 +499,18 @@ func (rules TsunamiRules) Tick(ref NativeRecordReference, cb TsunamiCallbacks) (
 		if err := cb.Link(childRef); err != nil {
 			return step, err
 		}
+		if cb.Frame != nil {
+			cb.Frame.D[0] = uint32(childRef)
+		}
 		if child >= address {
 			if err := m.Write8(child+22, 0x28); err != nil {
 				return step, err
 			}
 		}
 		step.Children = append(step.Children, childRef)
+	}
+	if cb.Frame != nil {
+		cb.Frame.Word(3, 0xffff)
 	}
 	return step, nil
 }
