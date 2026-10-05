@@ -7,6 +7,10 @@ type NativeFollowerFrameBindings struct {
 	Motion    *FollowerMotionFrameRules
 	Entry     *NativeFollowerEntryFrameRules
 	Combat    *FollowerCombatFrameRules
+	Town      *NativeFollowerTownFrameRules
+	// TownState retains the evaluator property cache and parcel scratch across
+	// actors. Only its outer flag and minimap variant reset at dispatch.
+	TownState *NativeTownFrameState
 	// Continue executes direct search/town/hero tails reached from a child,
 	// without inventing another prepass or starting a new actor update.
 	Continue func(NativeRecordReference, uint32, *NativeFrameRegisterContext, *NativeFollowerPassState) (NativeFollowerPassFlow, error)
@@ -43,6 +47,20 @@ func (w *World) nativeFollowerFrameCallbacks(frame *NativeFrameRegisterContext, 
 			}
 			if actorState == 4 {
 				return w.nativeMotionFrameBody(ref, frame, state, bindings)
+			}
+			if actorState == 6 {
+				if bindings.Town == nil || bindings.TownState == nil {
+					return NativeFollowerNext, fmt.Errorf("native follower town frame rules/state missing")
+				}
+				bindings.TownState.OuterFlag13350 = state.TownCacheFlag
+				bindings.TownState.MinimapVariant = state.MinimapVariant
+				step, err := bindings.Town.Tick(ref, w.nativeTownFrameCallbacks(frame, bindings.TownState))
+				state.TownCacheFlag = bindings.TownState.OuterFlag13350
+				state.MinimapVariant = bindings.TownState.MinimapVariant
+				if err != nil {
+					return NativeFollowerNext, err
+				}
+				return w.nativeFollowerFrameContinuation(ref, step.Continuation, frame, state, bindings)
 			}
 			if actorState == 0x0e || actorState == 0x10 {
 				return w.nativeCombatFrameBody(ref, actorState, frame, state, bindings)

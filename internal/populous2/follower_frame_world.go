@@ -75,6 +75,19 @@ func (w *World) nativeCombatFrameCallbacks(frame *NativeFrameRegisterContext, st
 	}
 }
 
+func (w *World) nativeTownFrameCallbacks(frame *NativeFrameRegisterContext, state *NativeTownFrameState) NativeFollowerTownFrameCallbacks {
+	memory := w.nativeCleanupMemory()
+	return NativeFollowerTownFrameCallbacks{Memory: memory, Frame: frame, State: state,
+		Insert: w.nativeRuntimeInsert,
+		LandAI: func(context *NativeFrameRegisterContext) error {
+			// $11738 saves all D registers around this creator. Its actual raw
+			// record/list writes survive; the town controller restores D.
+			_, err := CreateNativeNeutral(FollowerCleanupRegisters{D0: context.D[0], D1: context.D[1], D2: context.D[2]}, NativeNeutralCallbacks{Memory: memory, Insert: w.nativeRuntimeInsert})
+			return err
+		},
+	}
+}
+
 func (w *World) nativeEntryFrameCallbacks(frame *NativeFrameRegisterContext, state *NativeFollowerEntryFrameState) NativeFollowerEntryFrameCallbacks {
 	memory := w.nativeCleanupMemory()
 	return NativeFollowerEntryFrameCallbacks{Memory: memory, Frame: frame, State: state,

@@ -452,3 +452,20 @@ production and 70,272 retained bytes for both owners and two caller contexts.
 This establishes the composed combat caller in the raw follower dispatcher.
 Ordinary search tails and other unbound follower families, live frame/UI
 presentation and complete game integration remain required work.
+
+## Town controller in the raw World pass
+
+Town state $06 now uses the full register-bearing $11738 controller in the
+World dispatcher. The evaluator's $13550 property cache and 50-word parcel
+scratch remain shared across actors; the caller resets only the distinct
+$13350 flag and minimap variant. Births execute actual raw record allocation,
+linked insertion and the rare $131cc neutral creator without typed-record
+flushes. A lost town's direct search continuation remains explicit.
+
+The World adapter matches all 820 independent town-controller references,
+including 144 original DIVU-zero prefixes. Sixty-four additional complete
+$11252 passes match eight data registers, 70,272 retained bytes and mutable
+CODE cache/flags for two towns, both owners, all four LAND banks, work-counter
+wrapping and infected/uninfected growth. These complete-pass cases retain
+small populations; birth and exhausted-pool behavior are covered by the
+controller corpus rather than claimed as complete newborn-search passes.
