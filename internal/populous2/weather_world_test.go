@@ -104,7 +104,7 @@ func TestNativeCommandImagePreservesBoundedAliasesAcrossSave(t *testing.T) {
 	if err := memory.Write32(0xeb70, 0x12345678); err != nil {
 		t.Fatal(err)
 	}
-	if err := memory.Write32(0xeb8e, 0xffffffff); err == nil {
+	if err := memory.Write32(0x1127e, 0xffffffff); err == nil {
 		t.Fatal("command image allowed partial out-of-bounds write")
 	}
 	value, err := memory.Read32(0xeb70)

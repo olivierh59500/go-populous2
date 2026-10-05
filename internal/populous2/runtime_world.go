@@ -150,6 +150,8 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			return w.NativeViewBytes[address-0x5f44], nil
 		case address >= 0xeb18 && address < 0xeb90:
 			return w.NativeCommandBytes[address-0xeb18], nil
+		case address >= 0xeb90 && address < 0x11280:
+			return w.NativeRedrawBytes[address-0xeb90], nil
 		default:
 			return memory.Read8(address)
 		}
@@ -186,6 +188,8 @@ func (w *World) nativeCleanupMemory() FollowerCleanupMemory {
 			if address >= 0xeb28 && address < 0xeb2c {
 				syncRNG()
 			}
+		case address >= 0xeb90 && address < 0x11280:
+			w.NativeRedrawBytes[address-0xeb90] = value
 		default:
 			_, err := memory.Write8(address, value)
 			return err

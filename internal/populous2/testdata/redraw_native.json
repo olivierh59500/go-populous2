@@ -1,0 +1,103 @@
+{
+  "Source": "Original native redraw FIFO d87a..d8a4 executed on supplied Amiga binary",
+  "SourceSHA256": "86ad7f58200fc3295328d3a7ebad4e0ae6663be402d5ed090981b1e53b0a3841",
+  "InputRegisters": {
+    "D2": 10,
+    "D4": 2,
+    "D5": 3
+  },
+  "EncodedWord": 41091,
+  "Scope": "Actual signed cursor address, upper allocation bound, raw word store and ADDI.W cursor alias; raster drawing afterd8a4 omitted.",
+  "Cases": [
+    {
+      "Address": 60272,
+      "Cursor": 2,
+      "Offset": 0,
+      "Word": 41091
+    },
+    {
+      "Address": 60274,
+      "Cursor": 4,
+      "Offset": 2,
+      "Word": 41091
+    },
+    {
+      "Address": 60302,
+      "Cursor": 32,
+      "Offset": 30,
+      "Word": 41091
+    },
+    {
+      "Address": 60304,
+      "Cursor": 34,
+      "Offset": 32,
+      "Word": 41091
+    },
+    {
+      "Address": 60306,
+      "Cursor": 36,
+      "Offset": 34,
+      "Word": 41091
+    },
+    {
+      "Address": 60528,
+      "Cursor": 258,
+      "Offset": 256,
+      "Word": 41091
+    },
+    {
+      "Address": 68464,
+      "Cursor": 8194,
+      "Offset": 8192,
+      "Word": 41091
+    },
+    {
+      "Address": 70268,
+      "Cursor": 9998,
+      "Offset": 9996,
+      "Word": 41091
+    },
+    {
+      "Address": 70270,
+      "Cursor": 10000,
+      "Offset": 9998,
+      "Word": 41091
+    },
+    {
+      "Address": 70272,
+      "Cursor": 10000,
+      "Offset": 10000,
+      "Word": 0
+    },
+    {
+      "Address": 70274,
+      "Cursor": 10002,
+      "Offset": 10002,
+      "Word": 0
+    },
+    {
+      "Address": 60270,
+      "Cursor": 41093,
+      "Offset": 65534,
+      "Word": 41093
+    },
+    {
+      "Address": 60240,
+      "Cursor": 65506,
+      "Offset": 65504,
+      "Word": 41091
+    },
+    {
+      "Address": 27504,
+      "Cursor": 32770,
+      "Offset": 32768,
+      "Word": 41091
+    },
+    {
+      "Address": 27506,
+      "Cursor": 32772,
+      "Offset": 32770,
+      "Word": 41091
+    }
+  ]
+}

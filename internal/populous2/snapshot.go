@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 27
+const SaveVersion = 28
 
 type Snapshot struct {
 	Version                                        int
@@ -50,6 +50,7 @@ type Snapshot struct {
 	NativeEnvironment                              [NativeEffectCapacity]NativeEnvironmentController
 	NativeEnvironmentDirty, NativeEnvironmentShake uint16
 	NativeCommandBytes                             [0x78]byte
+	NativeRedrawBytes                              [0x26f0]byte
 	NativeControlBytes                             [0x180]byte
 	NativeGameMode, NativeFreeCommands             uint16
 	NativeProfileSide                              uint8
@@ -67,7 +68,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeViewBytes: w.NativeViewBytes, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline, NativeEnvironment: w.NativeEnvironment, NativeEnvironmentDirty: w.NativeEnvironmentDirty, NativeEnvironmentShake: w.NativeEnvironmentShake, NativeCommandBytes: w.NativeCommandBytes, NativeControlBytes: w.NativeControlBytes, NativeGameMode: w.NativeGameMode, NativeFreeCommands: w.NativeFreeCommands, NativeProfileSide: w.NativeProfileSide, NativeClock: w.NativeClock, NativeResult: w.NativeResult}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeViewBytes: w.NativeViewBytes, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline, NativeEnvironment: w.NativeEnvironment, NativeEnvironmentDirty: w.NativeEnvironmentDirty, NativeEnvironmentShake: w.NativeEnvironmentShake, NativeCommandBytes: w.NativeCommandBytes, NativeRedrawBytes: w.NativeRedrawBytes, NativeControlBytes: w.NativeControlBytes, NativeGameMode: w.NativeGameMode, NativeFreeCommands: w.NativeFreeCommands, NativeProfileSide: w.NativeProfileSide, NativeClock: w.NativeClock, NativeResult: w.NativeResult}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -401,6 +402,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.NativeEnvironment = snapshot.NativeEnvironment
 	w.NativeEnvironmentDirty, w.NativeEnvironmentShake = snapshot.NativeEnvironmentDirty, snapshot.NativeEnvironmentShake
 	w.NativeCommandBytes = snapshot.NativeCommandBytes
+	if snapshot.Version >= 28 {
+		w.NativeRedrawBytes = snapshot.NativeRedrawBytes
+	}
 	if snapshot.Version >= 24 {
 		w.NativeControlBytes = snapshot.NativeControlBytes
 	}

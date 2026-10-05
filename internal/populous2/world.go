@@ -61,8 +61,9 @@ type World struct {
 	NativeEnvironment        [NativeEffectCapacity]NativeEnvironmentController
 	NativeEnvironmentDirty   uint16
 	NativeEnvironmentShake   uint16
-	NativeCommandBytes       [0x78]byte  // BSS $eb18..$eb90, including command aliases.
-	NativeControlBytes       [0x180]byte // BSS $dc4..$f44, script/scratch/control aliases.
+	NativeCommandBytes       [0x78]byte   // BSS $eb18..$eb90, including command aliases.
+	NativeRedrawBytes        [0x26f0]byte // BSS $eb90..$11280, native redraw FIFO tail.
+	NativeControlBytes       [0x180]byte  // BSS $dc4..$f44, script/scratch/control aliases.
 	StormRules               StormRules
 	FireRainRules            FireRainRules
 	HurricaneRules           HurricaneRules
