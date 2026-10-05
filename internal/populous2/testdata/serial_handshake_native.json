@@ -1,0 +1,3304 @@
+{
+  "Cases": [
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "01"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "01"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "01"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "01"
+      ],
+      "SignatureBudget": -1
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": 0
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 1,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        6,
+        8
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "01",
+        "00010001a3b5778899aa015502aa",
+        "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "01",
+        "00010001a3b5778899aa015502aa",
+        "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        6,
+        8
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "01",
+        "00010001a3b5778899aa015502aa",
+        "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        6,
+        8
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "01",
+        "00010001a3b5778899aa015502aa",
+        "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02"
+      ],
+      "SignatureBudget": -1
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": 0
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 2,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        6,
+        8
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "01",
+        "00010001a3b5778899aa015502aa",
+        "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "01",
+        "00010001a3b5778899aa015502aa",
+        "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        6,
+        8
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "01",
+        "00010001a3b5778899aa015502aa",
+        "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        6,
+        8
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "01",
+        "00010001a3b5778899aa015502aa",
+        "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02"
+      ],
+      "SignatureBudget": -1
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": 0
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 1,
+        "Peer": 3,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 2,
+      "God1Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        8,
+        6
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "02",
+        "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "02"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 4,
+      "God1Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        8,
+        6
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "02",
+        "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 20,
+      "God1Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        8,
+        6
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "02",
+        "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2"
+      ],
+      "SignatureBudget": -1
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": 0
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 1,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "02"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "02"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "02"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "02"
+      ],
+      "SignatureBudget": -1
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": 0
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 2,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 2,
+      "God1Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        8,
+        6
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "02",
+        "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 3,
+      "Attempts": [
+        1,
+        2,
+        3
+      ],
+      "CPUWaits": [
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 2,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 0,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "02"
+      ],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 4,
+      "God1Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        8,
+        6
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "02",
+        "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 1,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 1,
+      "Flushes": 20,
+      "God1Hex": "65788b9eb1c4d7eafd102336495c6f8295a8bbcee1f4071a2d405366798c9fb2c5d8ebfe1124374a5d708396a9bccfe2f5081b2e4154677a8da0b3c6d9ecff1225384b5e718497aabdd0e3f6091c2f4255687b8ea1b4c7daed001326394c5f728598abbed1e4f70a1d304356697c8fa2b5c8dbee0114273a4d60738699acbfd2e5f80b1e3144576a7d90a3b6c9dcef0215283b4e6174879aadc0d3e6f90c1f3245586b7e91a4b7caddf00316293c4f6275889baec1d4e7fa0d203346596c7f92a5b8cbdef104172a3d506376899cafc2d5e8fb0e2134475a6d8093a6b9ccdff205182b3e5164778a9db0c3d6",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b50001a3b5015502aa",
+      "Initialized": 1,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 6,
+      "RNG": 107445,
+      "Roles": [
+        8,
+        6
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "02",
+        "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2"
+      ],
+      "SignatureBudget": -1
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 9,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 20,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": -1,
+        "Seed": 107445
+      },
+      "Messages": 1,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": 0
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [],
+      "CPUWaits": [],
+      "Connected": 0,
+      "Flushes": 1,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 1,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [],
+      "SignatureBudget": -10
+    },
+    {
+      "Attempt": 1,
+      "Attempts": [
+        1,
+        2,
+        3,
+        1
+      ],
+      "CPUWaits": [
+        98226,
+        98246,
+        98226,
+        98246
+      ],
+      "Connected": 0,
+      "Flushes": 4,
+      "God1Hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5caef14395e83a8cdf2173c6186abd0f51a3f6489aed3f81d42678cb1d6fb20456a8fb4d9fe23486d92b7dc01264b7095badf04294e7398bde2072c51769bc0e50a2f54799ec3e80d32577ca1c6eb10355a7fa4c9ee13385d82a7ccf1163b6085aacff4193e6388add2f71c41668bb0d5fa1f44698eb3d8fd22476c91b6db00254a6f94b9de03284d7297bce1062b50759abfe4092e53789dc2e70c31567ba0c5ea0f34597ea3c8ed12375c81a6cbf0153a5f84a9cef3183d6287acd1f61b40658aafd4f91e43688db2d7fc21466b90b5daff24496e93b8dd02",
+      "God2Hex": "53708daac7e4011e3b587592afcce90623405d7a97b4d1ee0b2845627f9cb9d6f3102d4a6784a1bedbf815324f6c89a6c3e0fd1a3754718eabc8e5021f3c597693b0cdea0724415e7b98b5d2ef0c294663809dbad7f4112e4b6885a2bfdcf91633506d8aa7c4e1fe1b3855728facc9e603203d5a7794b1ceeb0825425f7c99b6d3f00d2a4764819ebbd8f5122f4c6986a3c0ddfa1734516e8ba8c5e2ff1c39567390adcae704213e5b7895b2cfec092643607d9ab7d4f10e2b4865829fbcd9f613304d6a87a4c1defb1835526f8ca9c6e3001d3a577491aecbe805223f5c7996b3d0ed0a2744617e9bb8d5f2",
+      "HeaderHex": "00010001a3b5778899aa015502aa",
+      "Initialized": 0,
+      "Input": {
+        "Profile": 2,
+        "Peer": 3,
+        "WrongSignatures": 10,
+        "WrongTokens": 2,
+        "CancelAt": 6,
+        "Seed": 107445
+      },
+      "Messages": 0,
+      "Mode": 4,
+      "RNG": 2005440938,
+      "Roles": [
+        2,
+        4
+      ],
+      "Sent": [
+        "3f",
+        "3f",
+        "3f",
+        "41424344",
+        "3f",
+        "41424344"
+      ],
+      "SignatureBudget": -9
+    }
+  ],
+  "Scope": "Original complete17eec..181ac handshake controller with deterministic byte-stream peer, real decimal/menu compilation, seven interrupt-counter increments per beacon and explicit100000-iteration CPU wait boundaries. Graphics/baud hardware/modal acknowledgment/10ad8world startup are callback boundaries. Both selected profiles, wrong tokens/signatures, retry exhaustion, same/other/noncanonical peer IDs and user cancellation are covered.",
+  "SourceSHA256": "86ad7f58200fc3295328d3a7ebad4e0ae6663be402d5ed090981b1e53b0a3841"
+}

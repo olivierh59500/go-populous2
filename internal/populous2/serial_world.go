@@ -1,0 +1,201 @@
+package populous2
+
+import (
+	"encoding/binary"
+	"fmt"
+)
+
+// NewNativeSerialWorld is the negotiated mode6 startup adapter. Complete
+// original CPU fixtures validate its maps, pools and retained session images.
+// The constructor preserves the source12-byte deity prefix, not the entire
+// transmitted236-byte suffix:10f1a clears everything after those saved bytes.
+func NewNativeSerialWorld(bundle *Bundle, source FollowerCleanupMemory, rules *NativeSerialRules, defaults [250]byte) (*World, [250]byte, error) {
+	if bundle == nil || rules == nil || !winMemoryValid(source) {
+		return nil, defaults, fmt.Errorf("native multiplayer startup inputs missing")
+	}
+	profile, err := source.Read16(0xeb42)
+	if err != nil {
+		return nil, defaults, err
+	}
+	world, err := source.Read16(0xeb46)
+	if err != nil {
+		return nil, defaults, err
+	}
+	land, err := source.Read16(0xeb22)
+	if err != nil {
+		return nil, defaults, err
+	}
+	seed, err := source.Read32(0xeb24)
+	if err != nil {
+		return nil, defaults, err
+	}
+	if profile < 1 || profile > 2 || land >= 4 || world >= 1000 {
+		return nil, defaults, fmt.Errorf("native multiplayer startup context unsupported")
+	}
+	var prefix [2][12]byte
+	for side := range prefix {
+		for i := range prefix[side] {
+			prefix[side][i], err = source.Read8(0xe8f2 + side*314 + i)
+			if err != nil {
+				return nil, defaults, err
+			}
+		}
+	}
+	commands, err := serialReadBytes(source, 0xeb22, 0x6e)
+	if err != nil {
+		return nil, defaults, err
+	}
+	next, err := rules.AccumulateCustomPowers(defaults, world, profile, bundle.Raw["conquest.pak"], land, uint16(seed))
+	if err != nil {
+		return nil, defaults, err
+	}
+	level := Level{Number: int(world), Code: CodeForLevel(int(world)), Terrain: int(land), Seed: uint16(seed), RandomSeed: seed, Raw: next}
+	for side := range level.Players {
+		for i := range level.Players[side].Parameters {
+			level.Players[side].Parameters[i] = binary.BigEndian.Uint16(next[side*58+i*2:])
+		}
+		for i := range level.Players[side].Powers {
+			level.Players[side].Powers[i] = int8(next[side*58+22+i]) > 0
+		}
+	}
+	copy(level.WorldParameters[:], next[122:182])
+	copyBundle := *bundle
+	copyBundle.Levels = []Level{level}
+	w, err := NewWorld(&copyBundle, 0, true)
+	if err != nil {
+		return nil, defaults, err
+	}
+	m := w.nativeCleanupMemory()
+	generatedRNG := w.Core.RandomState()
+	for i, value := range commands {
+		if err := m.Write8(0xeb22+i, value); err != nil {
+			return nil, defaults, err
+		}
+	}
+	w.NativeGameMode, w.NativeProfileSide = 6, uint8(profile)
+	if err := m.Write16(0xeb44, 6); err != nil {
+		return nil, defaults, err
+	}
+	if err := m.Write16(0xeb42, profile); err != nil {
+		return nil, defaults, err
+	}
+	if err := m.Write32(0xeb28, generatedRNG); err != nil {
+		return nil, defaults, err
+	}
+	for side := range prefix {
+		for i, value := range prefix[side] {
+			if err := m.Write8(0xe8f2+side*314+i, value); err != nil {
+				return nil, defaults, err
+			}
+		}
+	}
+	if err := w.initializeNativeAIControls(); err != nil {
+		return nil, defaults, err
+	}
+	xp, err := w.loadNativeAITemplates(&w.NativeAI, level)
+	if err != nil {
+		return nil, defaults, err
+	}
+	w.Experience = xp
+	for side := 0; side < 2; side++ {
+		// $10b38 creates each marker at its template coordinate before
+		// allocating the first follower. A default negative coordinate
+		// selects32,32; it is not the leader's placement cell.
+		position := level.Players[side].Parameters[10]
+		x, y := uint8(32), uint8(32)
+		if int16(position) >= 0 {
+			x, y = uint8(position>>8), uint8(position)
+		}
+		w.Core.Magnets[side].GoTo = int(x) + int(y)*64
+		if err := w.MagnetRules.Relocate(uint8(side+1), x, y, w.runtimeMemory(), &w.Occupancy.Grid); err != nil {
+			return nil, defaults, err
+		}
+		if err := m.Write16(0xeb2c+side*2, level.Players[side].Parameters[6]); err != nil {
+			return nil, defaults, err
+		}
+	}
+	w.hydrateNativeRuntimeGraph()
+	leader := w.Core.Magnets[profile-1].Carried
+	if leader > 0 && leader <= len(w.Core.Peeps) {
+		pos := w.Core.Peeps[leader-1].AtPos
+		if err := m.Write8(0x5f45, uint8(pos%64)-4); err != nil {
+			return nil, defaults, err
+		}
+		if err := m.Write8(0x5f47, uint8(pos/64)-4); err != nil {
+			return nil, defaults, err
+		}
+	}
+	dirty, calls, err := nativeSerialTerrainCounters(seed, bundle.HillParameters)
+	if err != nil {
+		return nil, defaults, err
+	}
+	if err := m.Write16(0xdd2, dirty); err != nil {
+		return nil, defaults, err
+	}
+	if err := m.Write16(0xf2e, calls); err != nil {
+		return nil, defaults, err
+	}
+	w.Deity.FaceParts = [3]uint8{prefix[profile-1][0], prefix[profile-1][1], prefix[profile-1][2]}
+	w.Deity.Experience = xp[profile-1]
+	w.Deity.Bolts = binary.BigEndian.Uint16(prefix[profile-1][10:])
+	w.Deity.Name = string(nativeFileCString(commands[14:30]))
+	return w, next, nil
+}
+
+// nativeSerialTerrainCounters reproduces the successful/attempted $cdca
+// counters during the source hill walks. Heights are private work for this
+// audit-facing metadata; the actual map is generated by the existing kernel.
+func nativeSerialTerrainCounters(seed uint32, hills [4][4]int) (uint16, uint16, error) {
+	var heights [65 * 65]int
+	dirty, calls := uint16(0), uint16(0)
+	var raise func(int, int) int
+	raise = func(x, y int) int {
+		calls++
+		if x < 0 || x > 64 || y < 0 || y > 64 {
+			return -1
+		}
+		old := heights[x+y*65]
+		if old == 8 {
+			return -1
+		}
+		wanted := old + 1
+		for _, delta := range [8][2]int{{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}} {
+			xx, yy := x+delta[0], y+delta[1]
+			if xx >= 0 && xx <= 64 && yy >= 0 && yy <= 64 && wanted-heights[xx+yy*65] > 1 {
+				raise(xx, yy)
+			}
+		}
+		heights[x+y*65] = wanted
+		dirty++
+		return wanted
+	}
+	rng := seed
+	next := func() uint16 {
+		if rng == 0 {
+			rng = 12345678
+		}
+		rng *= 0xbb40e62d
+		return uint16(rng>>8) & 0x7fff
+	}
+	for _, hill := range hills {
+		if hill[0] <= 0 || hill[2] <= 0 {
+			return 0, 0, fmt.Errorf("native hill divisor invalid")
+		}
+		xState, yState := next(), next()
+		y, x := int(xState)%hill[0]+hill[1], int(yState)%hill[2]+hill[3]
+		for steps := 0; steps < 65536; steps++ {
+			xState = uint16(uint32(xState)*0x24a1+0x24df) & 0x7fff
+			yState = uint16(uint32(yState)*0x24a1+0x24df) & 0x7fff
+			x += int(xState)%7 - 3
+			y += int(yState)%7 - 3
+			value := raise(x, y)
+			if value < 0 || value >= 8 {
+				break
+			}
+			if steps == 65535 {
+				return 0, 0, fmt.Errorf("native hill walk exceeds bound")
+			}
+		}
+	}
+	return dirty, calls, nil
+}
