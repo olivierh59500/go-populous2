@@ -195,14 +195,16 @@ replacing the inherited live strategy loop.
 
 ## Saved-game application paths
 
-The menu/F9 and `-load-game` share native `.GAM` loading; F5 and `-save-file`
-share atomic native export or Go JSON serialization by destination extension.
+The menu/F9 requester and `-load-game` share native `.GAM` loading; F5 opens
+the native save requester, using the same atomic export API. Explicit file APIs
+retain Go JSON serialization by destination extension.
 The default is `go-populous2.GAM`. File regressions resume 25 updates plus 80 after
 reload in both formats and verify exact native transfer length, saved camera
 origin and failure preservation of an existing file. Camera origin uses the
 same retained view words as native aliases. GUI mana, power/terrain commands,
 magnet modes and visibility use the selected profile side, including owner 2.
-The original native file requester and interactive desktop checks remain open.
+The original file requester is now bound to Game; interactive desktop checks
+and source-exact keyboard/editor timing remain open.
 
 ## Startup and result application binding
 
@@ -237,3 +239,23 @@ requester replaces the modern checkbox list, including both sides, ten flags,
 reaction-speed arrows, conquest admission and the MUSI music toggle. Its prepared
 text/frame source remains covered by the 2,048 native option references. Game
 binding compiles; interactive GPU/presentation validation remains open.
+
+## File requester host binding and birth-block backing
+
+Startup Load, F5/F9 and the in-game save button now open the original compiled
+file requester. Actual host callbacks enumerate without reordering, resolve
+case-insensitive names, retain file identity on overwrite, load native GAM data
+and atomically replace complete saves. Transfer tests cover row selection,
+confirmed/declined overwrite, persisted camera, missing-file error dialogs and
+missing-parent failures. Existing 171 original-CPU controller references and
+3,000 marker probes remain the requester geometry/action evidence. Gameplay
+updates stop while the requester is open. Current Game text entry accepts ASCII
+with a 38-byte capacity; the original keyboard/VBlank editor timing remains a
+separate integration step. GPU interaction is not yet verified.
+
+BSS $dc2 now retains the full pool-birth block word, including partial-byte writes
+and accesses crossing into $dc4 control data. The legacy public bool remains a
+compatible view. Follower-pass clearing and allocation failure write the original
+zero/one values. Save version 29 retains raw words; older bool-only snapshots
+migrate to zero/one. Seam, snapshot, reset and GAM-extent regressions pass; this
+state lies outside the original GAM transfer block and does not change it.

@@ -126,11 +126,15 @@ per-element experience reductions. The native score and sample bank play
 through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
-F5/F9 use `go-populous2.GAM` by default. Native `.GAM` import/export preserves
-the original uncompressed transfer block, actor graph, templates, profile,
-landscape, camera and random state. `-save-file` or `POPULOUS2_SAVE_PATH` selects
-another destination. A `.sav` destination retains the Go JSON format, including
-conversion-specific pending campaign results.
+F5/F9 and the startup Load action open the original `.GAM` file requester,
+with directory/name fields, twelve visible rows, overwrite confirmation and
+the original transfer-error dialog. The initial filename is `go-populous2.GAM`;
+`-save-file` or `POPULOUS2_SAVE_PATH` selects another initial path. Host lookup
+is case-insensitive like Amiga DOS and retains the existing filename on overwrite.
+Native import/export preserves the original uncompressed transfer block, actor
+graph, templates, profile, landscape, camera and random state. The explicit
+`ReadGameFile`/`WriteGameFile` APIs also retain Go JSON `.sav` files, including
+conversion-specific pending campaign results; the native browser lists `.GAM` files.
 
 ```sh
 go run ./cmd/populous2 -load-game /path/to/PARTIE.GAM

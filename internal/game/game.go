@@ -90,6 +90,10 @@ type Game struct {
 	resultRequester           *populous2.NativeRequester
 	resultImage               *ebiten.Image
 	resultBackground          *ebiten.Image
+	fileRequester             *populous2.NativeFileRequester
+	fileImage                 *ebiten.Image
+	fileBackground            *ebiten.Image
+	fileEdit                  []byte
 }
 
 func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) {
@@ -133,6 +137,9 @@ func (g *Game) Update() error {
 	}
 	if g.ending != nil {
 		return g.updateNativeEnding()
+	}
+	if g.fileRequester != nil {
+		return g.updateFileRequester()
 	}
 	if !g.DeityScreen && inpututil.IsKeyJustPressed(ebiten.KeyF) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
@@ -192,9 +199,11 @@ func (g *Game) Update() error {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF5) {
 		g.save()
+		return nil
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF9) {
 		g.load()
+		return nil
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyC) {
 		g.centerPlayer(g.localPlayer())
@@ -237,6 +246,9 @@ func (g *Game) Update() error {
 	}
 	g.updateCamera()
 	g.handleClick()
+	if g.fileRequester != nil {
+		return nil
+	}
 	if !g.Paused {
 		for range g.scheduler.Advance() {
 			g.World.SetEffectView(g.CameraX, g.CameraY)
@@ -568,6 +580,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	if g.Help {
 		g.drawHelp(screen)
+	}
+	if g.fileRequester != nil {
+		g.drawFileRequester(screen)
 	}
 	if g.Capture != "" && !g.captured && g.Updates >= g.CaptureAfter {
 		g.captured = true
@@ -949,23 +964,14 @@ func (g *Game) drawHelp(screen *ebiten.Image) {
 }
 
 func (g *Game) save() {
-	g.World.SetEffectView(g.CameraX, g.CameraY)
-	if err := g.World.WriteGameFile(g.SavePath); err != nil {
-		g.notify("Sauvegarde impossible: " + err.Error())
-	} else {
-		g.notify("Partie sauvegardee.")
-	}
+	g.openFileRequester(populous2.NativeFileSave)
 }
 
 func (g *Game) load() {
-	if err := g.LoadFile(g.SavePath); err != nil {
-		g.notify("Chargement impossible: " + err.Error())
-	} else {
-		g.notify("Partie chargee.")
-	}
+	g.openFileRequester(populous2.NativeFileLoad)
 }
 
-// LoadFile shares the menu/F9 path with command-line native save loading.
+// LoadFile performs the transfer shared by the requester and CLI loading.
 func (g *Game) LoadFile(path string) error {
 	world, err := populous2.ReadGameFile(g.Bundle, path)
 	if err != nil {
