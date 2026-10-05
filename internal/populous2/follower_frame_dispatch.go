@@ -6,6 +6,7 @@ type NativeFollowerFrameBindings struct {
 	Aftermath *NativeFollowerAftermathFrameRules
 	Motion    *FollowerMotionFrameRules
 	Entry     *NativeFollowerEntryFrameRules
+	Combat    *FollowerCombatFrameRules
 	// Continue executes direct search/town/hero tails reached from a child,
 	// without inventing another prepass or starting a new actor update.
 	Continue func(NativeRecordReference, uint32, *NativeFrameRegisterContext, *NativeFollowerPassState) (NativeFollowerPassFlow, error)
@@ -42,6 +43,9 @@ func (w *World) nativeFollowerFrameCallbacks(frame *NativeFrameRegisterContext, 
 			}
 			if actorState == 4 {
 				return w.nativeMotionFrameBody(ref, frame, state, bindings)
+			}
+			if actorState == 0x0e || actorState == 0x10 {
+				return w.nativeCombatFrameBody(ref, actorState, frame, state, bindings)
 			}
 			if bindings.Other != nil {
 				return bindings.Other(ref, target, frame, state)
@@ -85,6 +89,28 @@ func (w *World) nativeMotionFrameBody(ref NativeRecordReference, frame *NativeFr
 		}
 		return bindings.Aftermath.Tick(ref, w.nativeAftermathFrameCallbacks(frame))
 	}
+	return w.nativeFollowerFrameContinuation(ref, boundary, frame, state, bindings)
+}
+
+func (w *World) nativeCombatFrameBody(ref NativeRecordReference, actorState uint8, frame *NativeFrameRegisterContext, state *NativeFollowerPassState, bindings NativeFollowerFrameBindings) (NativeFollowerPassFlow, error) {
+	if bindings.Combat == nil {
+		return NativeFollowerNext, fmt.Errorf("native follower combat frame rules missing")
+	}
+	cb := w.nativeCombatFrameCallbacks(frame, state)
+	var step FollowerCombatFrameStep
+	var err error
+	if actorState == 0x0e {
+		step, err = bindings.Combat.Aggressor(ref, cb)
+	} else {
+		step, err = bindings.Combat.Defender(ref, cb)
+	}
+	if err != nil {
+		return NativeFollowerNext, err
+	}
+	return w.nativeFollowerFrameContinuation(ref, step.Boundary, frame, state, bindings)
+}
+
+func (w *World) nativeFollowerFrameContinuation(ref NativeRecordReference, boundary uint32, frame *NativeFrameRegisterContext, state *NativeFollowerPassState, bindings NativeFollowerFrameBindings) (NativeFollowerPassFlow, error) {
 	switch boundary {
 	case 0x123b4:
 		return NativeFollowerCount, nil
@@ -96,7 +122,7 @@ func (w *World) nativeMotionFrameBody(ref NativeRecordReference, frame *NativeFr
 		if bindings.Continue != nil {
 			return bindings.Continue(ref, boundary, frame, state)
 		}
-		return NativeFollowerNext, fmt.Errorf("native movement tail%x continuation missing", boundary)
+		return NativeFollowerNext, fmt.Errorf("native follower tail%x continuation missing", boundary)
 	}
 }
 

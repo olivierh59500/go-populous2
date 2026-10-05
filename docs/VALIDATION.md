@@ -432,3 +432,23 @@ register continuation, with a four-plane pixel writer. Its 768 native CPU
 references cover sixteen colors, eight bit positions, three rows and two
 background patterns; both bitmap hashes and all incoming/surviving register
 values match. Full presentation/native frame binding remains separate work.
+
+## Composed combat, winner and follower pass
+
+The raw World dispatcher now binds aggressor state $0e and defender state $10
+to the complete register-bearing combat and winner bodies. Victory resolution
+retains the original A0 context and actual returned A3 before choosing the
+count/next continuation. Failed defender contacts continue directly to $1131c
+through the explicit search adapter, without an extra common prepass.
+
+The independent native corpus executes 3,092 combat cases across all four LAND
+banks, including 1,120 complete winner calls. All eight data registers, ordered
+cleanup/winner inputs, minimap variant and the full 64KiB retained BSS match.
+Go runs real cleanup and reward bodies; reference callback mutations are not
+replayed. Sixty-four further original $11252 executions compare the complete
+400-slot pass, counters, linked records, celebration aftermath, minimap register
+production and 70,272 retained bytes for both owners and two caller contexts.
+
+This establishes the composed combat caller in the raw follower dispatcher.
+Ordinary search tails and other unbound follower families, live frame/UI
+presentation and complete game integration remain required work.

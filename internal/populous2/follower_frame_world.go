@@ -57,6 +57,24 @@ func (w *World) nativeWinnerFrameCallbacks() NativeFollowerWinFrameCallbacks {
 	}
 }
 
+func (w *World) nativeCombatFrameCallbacks(frame *NativeFrameRegisterContext, state *NativeFollowerPassState) FollowerCombatFrameCallbacks {
+	memory := w.nativeCleanupMemory()
+	return FollowerCombatFrameCallbacks{Memory: memory, Frame: frame,
+		SetMinimapVariant: func(variant uint16) error {
+			state.MinimapVariant = variant
+			return nil
+		},
+		CleanupFrame: func(ref NativeRecordReference, context *NativeFrameRegisterContext) error {
+			_, err := CleanupFollowerWithFrame(ref, context, FollowerCleanupCallbacks{Memory: memory, Unlink: w.nativeRuntimeUnlink, Insert: w.nativeRuntimeInsert, ClearFarms: w.clearNativeFarms})
+			return err
+		},
+		WinFrame: func(winner, loser, original NativeRecordReference, context *NativeFrameRegisterContext) (NativeRecordReference, error) {
+			step, err := w.FollowerWin.WinWithFrame(winner, loser, original, context, w.nativeWinnerFrameCallbacks())
+			return step.ReturnedA3, err
+		},
+	}
+}
+
 func (w *World) nativeEntryFrameCallbacks(frame *NativeFrameRegisterContext, state *NativeFollowerEntryFrameState) NativeFollowerEntryFrameCallbacks {
 	memory := w.nativeCleanupMemory()
 	return NativeFollowerEntryFrameCallbacks{Memory: memory, Frame: frame, State: state,
