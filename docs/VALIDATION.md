@@ -978,3 +978,17 @@ concurrently with host BSS updates and native music commands through the same
 owner. It verifies completed updates and error propagation without asserting
 a deterministic waveform for nondeterministically ordered commands. It does
 not activate the live Game loop or claim original CPU/audio phase timing.
+
+## Runtime campaign chooser ownership
+
+CampaignCallbacks connects the original chooser and retained opponent/help,
+palette, profile and resource children to one physical runtime and its actual
+encoded filesystem. Blitter state and device operations remain explicit;
+unsupplied help operations fail instead of being acknowledged.
+
+Integration checks verify shared CODE/BSS owners and frame-base validation.
+Another executes real startup allocation/audio and the10A10 icon/animation
+prelude up to its outstanding main menu, then invokes the real chooser as an
+explicit separate operation and retains its first video/input gate. It does
+not prefill resource banks or manufacture cache bits. This establishes the
+bound chooser prefix, not a completed initial-menu/campaign startup path.
