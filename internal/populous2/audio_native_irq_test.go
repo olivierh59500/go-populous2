@@ -58,7 +58,7 @@ func TestNativeAudioIRQAgainstOriginalCPU(t *testing.T) {
 				t.Fatal(err)
 			}
 			if f.Input.Music {
-				c.D[0], err = d.MusicCommand(0x80f, 0, c.D[0])
+				c.D[0], err = d.MusicCommand(0x8f, 0, c.D[0])
 				if err != nil {
 					t.Fatal(err)
 				}
