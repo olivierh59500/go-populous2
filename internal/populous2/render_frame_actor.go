@@ -13,6 +13,12 @@ type NativeActorRenderState struct {
 
 type NativeActorRenderChildren struct {
 	TownInfo func(int, *NativeFrameRegisterContext) error // Genuine$314a caller boundary.
+	// TownInfoAdvance is the same original child with a retained modal wait.
+	// It is consumed only by AdvanceActor; synchronous APIs retain TownInfo.
+	TownInfoAdvance func(int, *NativeFrameRegisterContext) (bool, error)
+	// RefreshTargets resolves the physical screen after a completed modal
+	// reload/swap, without changing caller registers or repeating projection.
+	RefreshTargets func(*NativeActorEffectsCallbacks) error
 }
 
 type NativeActorRenderRules struct{ Frames NativeRenderFrameRules }
@@ -161,6 +167,13 @@ func (r *NativeActorRenderRules) Follower(at int, cb NativeRenderFrameCallbacks,
 	}
 	c.Word(2, branch)
 	target := 0xe4ba + int(int16(c.D[2]))
+	return r.followerBranch(at, target, cb, state, children)
+}
+
+func (r *NativeActorRenderRules) followerBranch(at, target int, cb NativeRenderFrameCallbacks, state *NativeActorRenderState, children NativeActorRenderChildren) (NativeRenderFramePlan, error) {
+	p := NativeRenderFramePlan{Pixels: []NativeHUDPixel{}, Sprites: []NativePresentationSprite{}, Drawn: true}
+	c, m := cb.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Memory}}
+	var err error
 	if target == 0xe72e {
 		return r.Town(at, cb, state, children)
 	}
@@ -312,6 +325,13 @@ func (r *NativeActorRenderRules) Town(at int, cb NativeRenderFrameCallbacks, sta
 			return p, err
 		}
 	}
+	return r.townBody(at, cb, state)
+}
+
+// townBody resumes immediately at $e744 after the original $314a child.
+func (r *NativeActorRenderRules) townBody(at int, cb NativeRenderFrameCallbacks, state *NativeActorRenderState) (NativeRenderFramePlan, error) {
+	p := NativeRenderFramePlan{Pixels: []NativeHUDPixel{}, Sprites: []NativePresentationSprite{}, Drawn: true}
+	c, m := cb.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Memory}}
 	if m.byte(at+13)&16 != 0 {
 		c.Word(2, m.word(at+48))
 		if err := r.image(cb, &p); err != nil {

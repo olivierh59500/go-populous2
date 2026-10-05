@@ -118,6 +118,13 @@ func (r *NativeActorRenderRules) Actor(at int, cb NativeActorEffectsCallbacks, s
 	}
 	c.Word(2, branch)
 	target := 0xe46a + int(int16(c.D[2]))
+	return r.actorBranch(at, target, cb, state, children)
+}
+
+func (r *NativeActorRenderRules) actorBranch(at, target int, cb NativeActorEffectsCallbacks, state *NativeActorRenderState, children NativeActorRenderChildren) (NativeActorEffectsPlan, error) {
+	p := NativeActorEffectsPlan{NativeRenderFramePlan: NativeRenderFramePlan{Drawn: true, Pixels: []NativeHUDPixel{}, Sprites: []NativePresentationSprite{}}, Crops: []NativeCroppedSpriteRequest{}}
+	c, m := cb.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Memory}}
+	var err error
 	if target == 0xe4a8 {
 		q, err := r.Follower(at, cb.NativeRenderFrameCallbacks, state, children)
 		p.NativeRenderFramePlan = q
