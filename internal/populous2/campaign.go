@@ -62,7 +62,7 @@ func CodeForLevel(number int) string {
 	if number < 0 {
 		number = 0
 	}
-	code := uint16(uint32(uint16(number*5))*0x24a1+0x24df) & 0x7fff
+	code := uint16(uint32(uint16(number))*0x24a1+0x24df) & 0x7fff
 	var result strings.Builder
 	for code != 0 {
 		result.WriteString(worldSyllables[code&63])

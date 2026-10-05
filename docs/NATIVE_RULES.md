@@ -1046,3 +1046,13 @@ Earlier Go saves did not run scripts or record a cursor. Migration copies their
 world's original table and starts at its first event instead of inferring unknown
 execution from elapsed time. Native AI decisions and deferred normal command
 execution remain separate requirements from this scheduler integration.
+
+## World-code word input
+
+The requester passes the world word directly to CODE103c6. Multiplication by
+five belongs to the 200-record CONQUEST layout and must not be repeated in the
+code generator. Public CodeForLevel and decoded campaign labels now agree with
+all 1,000 independently executed native outputs. Representative codes are
+world 1 AAWOAK, world 5 AKSUAF, world 27 IMAT, world 215 SIMOAG and world 999 WOITAB.
+The CLI helper retains its existing case/space convenience; the native World
+requester uses its separately proven exact-byte lookup and first-match rule.
