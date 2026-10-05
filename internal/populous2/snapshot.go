@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 19
+const SaveVersion = 20
 
 type Snapshot struct {
 	Version                                        int
@@ -48,6 +48,7 @@ type Snapshot struct {
 	NativeCreatureDeadline                         uint32
 	NativeEnvironment                              [NativeEffectCapacity]NativeEnvironmentController
 	NativeEnvironmentDirty, NativeEnvironmentShake uint16
+	NativeCommandBytes                             [0x78]byte
 }
 
 func (w *World) Snapshot() Snapshot {
@@ -60,7 +61,7 @@ func (w *World) Snapshot() Snapshot {
 	for i := range heroes {
 		heroes[i].Captives = append([]int(nil), heroes[i].Captives...)
 	}
-	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline, NativeEnvironment: w.NativeEnvironment, NativeEnvironmentDirty: w.NativeEnvironmentDirty, NativeEnvironmentShake: w.NativeEnvironmentShake}
+	return Snapshot{Version: SaveVersion, LevelIndex: w.Level.Number, ScenarioOptions: [2]uint16{w.Rules[0].Raw, w.Rules[1].Raw}, Custom: w.Custom, Demo: w.Demo, Experience: w.Experience, Deity: w.Deity, Core: w.Core.Snapshot(), Effects: append([]Effect(nil), w.Effects...), Marks: w.Marks, Heroes: heroes, Random: w.Random, LastSpell: w.LastSpell, LastPlayer: w.LastPlayer, SpellSerial: w.SpellSerial, HazardSerial: w.HazardSerial, LastHazardCue: w.LastHazardCue, Scenery: w.Scenery, Walls: w.Walls, NativeEffects: w.NativeEffects, NativeFollowers: w.nativeFollowerSnapshot(), Occupancy: w.Occupancy, BasaltState: w.BasaltState, LightningState: w.LightningState, LightningVictims: w.LightningVictims, FungusState: w.FungusState, FlameDeaths: append([]FlameDeath(nil), w.FlameDeaths...), RecordImage: w.RecordImage, NativeEntries: w.NativeEntries, NativeOverlays: w.NativeOverlays, NativeGlobals: w.NativeGlobals, NativeSelected: w.NativeSelected, NativeRaiseEnabled: w.NativeRaiseEnabled, NativeBirthBlocked: w.NativeBirthBlocked, NativeCreatureDeadline: w.NativeCreatureDeadline, NativeEnvironment: w.NativeEnvironment, NativeEnvironmentDirty: w.NativeEnvironmentDirty, NativeEnvironmentShake: w.NativeEnvironmentShake, NativeCommandBytes: w.NativeCommandBytes}
 }
 
 func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
@@ -216,6 +217,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		if snapshot.Version >= 14 && effect.Spell == Lightning {
 			return nil, fmt.Errorf("saved lightning requires a native marker/bolt")
 		}
+		if snapshot.Version >= 20 && (effect.Spell == Storm || effect.Spell == FireRain) {
+			return nil, fmt.Errorf("saved weather requires native environmental records")
+		}
 	}
 	var sceneryTiles [4096]bool
 	for _, actor := range snapshot.Scenery {
@@ -235,7 +239,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	}
 	for index, a := range snapshot.NativeEffects {
 		if controller := snapshot.NativeEnvironment[index]; controller != NativeEnvironmentNone {
-			if snapshot.Version < 19 || controller > NativeEnvironmentLava {
+			if snapshot.Version < 19 || controller > NativeEnvironmentFireRain || controller >= NativeEnvironmentStorm && snapshot.Version < 20 {
 				return nil, fmt.Errorf("invalid saved environment controller")
 			}
 			ref := nativeActorReference(NativeEffectPool, index)
@@ -243,7 +247,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			state, _ := snapshot.RecordImage.Read8(ref, 22)
 			x, _ := snapshot.RecordImage.Read8(ref, 6)
 			y, _ := snapshot.RecordImage.Read8(ref, 8)
-			validState := controller == NativeEnvironmentQuake && (state == 0x22 || state == 0x24 || state == 0x26) || controller == NativeEnvironmentVolcano && (state == 0x30 || state == 0x32) || controller == NativeEnvironmentLava && (state == 0x34 || state == 0x36)
+			validState := controller == NativeEnvironmentQuake && (state == 0x22 || state == 0x24 || state == 0x26) || controller == NativeEnvironmentVolcano && (state == 0x30 || state == 0x32) || controller == NativeEnvironmentLava && (state == 0x34 || state == 0x36) || controller == NativeEnvironmentStorm && (state == 0x2c || state == 0x2e) || controller == NativeEnvironmentFireRain && (state == 0x1c || state == 0x1e || state == 0x20)
 			if owner == 0 || owner > 3 || !validState || x >= 64 || y >= 64 || !a.Active || a.Player+1 != owner || a.State != state {
 				return nil, fmt.Errorf("invalid saved environmental state/owner")
 			}
@@ -360,6 +364,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.NativeCreatureDeadline = snapshot.NativeCreatureDeadline
 	w.NativeEnvironment = snapshot.NativeEnvironment
 	w.NativeEnvironmentDirty, w.NativeEnvironmentShake = snapshot.NativeEnvironmentDirty, snapshot.NativeEnvironmentShake
+	w.NativeCommandBytes = snapshot.NativeCommandBytes
 	if snapshot.Version < 17 && snapshot.Core.War {
 		w.NativeRaiseEnabled = 1
 	}
@@ -504,6 +509,50 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	w.bindNativeTownEvaluator()
 	if snapshot.Version < 16 {
 		w.initializeNativeRuntime()
+	}
+	if snapshot.Version < 20 {
+		for pos, mark := range w.Marks {
+			if mark.Spell == FireRain && !mark.Persistent {
+				w.Marks[pos] = Mark{}
+			}
+		}
+		live := w.Effects[:0]
+		for _, effect := range w.Effects {
+			if effect.Spell != Storm && effect.Spell != FireRain {
+				live = append(live, effect)
+				continue
+			}
+			slot := -1
+			for index, actor := range w.NativeEffects {
+				if !actor.Active {
+					slot = index
+					break
+				}
+			}
+			if slot < 0 {
+				return nil, fmt.Errorf("saved weather exceeds native shared pool")
+			}
+			a := NativeEffectActor{Active: true, Player: uint8(effect.Player), X: int16(effect.X*256 + 128), Y: int16(effect.Y*256 + 128), Life: int16(max(1, effect.Life))}
+			if effect.Spell == Storm {
+				a.Kind, a.State, a.Animation = 0x36, 0x2c, 0xce4
+				w.NativeEnvironment[slot] = NativeEnvironmentStorm
+			} else {
+				a.Kind, a.State, a.Animation = FireRainActorKind, 0x1c, 0x81c
+				a.Life = 24
+				w.NativeEnvironment[slot] = NativeEnvironmentFireRain
+			}
+			w.NativeEffects[slot] = a
+			w.NativeEnvironment[slot] = NativeEnvironmentNone
+			w.projectNativeEffectRecord(slot)
+			if effect.Spell == Storm {
+				w.linkEffect(slot)
+				w.NativeEnvironment[slot] = NativeEnvironmentStorm
+			} else {
+				w.NativeEnvironment[slot] = NativeEnvironmentFireRain
+			}
+		}
+		w.Effects = live
+		w.refreshNativeRecordImage()
 	}
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	w.HazardSerial, w.LastHazardCue = snapshot.HazardSerial, snapshot.LastHazardCue

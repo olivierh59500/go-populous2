@@ -101,7 +101,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 19 preserves retained native actor, deity and marker bytes, town structure overlays,
+Version 20 preserves retained native actor, deity and marker bytes, town structure overlays,
 lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
@@ -134,6 +134,10 @@ controller ownership independently of stale kind bytes, including directed
 earthquakes, volcano growth/eruption and lava. Neutral composition and owner-3
 water children now have complete original-machine comparisons. Remaining powers,
 campaign behavior, menus and multiplayer are tracked in the feature inventory.
+Version 20 adds native Storm clouds/thunder, FireRain meteors and the retained
+command context affected by their original writes. Delayed meteors remain
+unlinked and hidden until activation; falling height comes from the decoded
+sprite layers. Older generic weather saves migrate into native records.
 
 Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can

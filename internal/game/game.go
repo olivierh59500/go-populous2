@@ -778,13 +778,16 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		g.drawSprite(view, sprite, px+32, py+32)
 	}
 	for index, a := range g.World.NativeEffects {
-		if g.World.NativeEnvironment[index] != populous2.NativeEnvironmentNone && g.World.NativeEnvironment[index] != populous2.NativeEnvironmentLava {
+		if g.World.NativeEnvironment[index] != populous2.NativeEnvironmentNone && g.World.NativeEnvironment[index] != populous2.NativeEnvironmentLava && g.World.NativeEnvironment[index] != populous2.NativeEnvironmentStorm && g.World.NativeEnvironment[index] != populous2.NativeEnvironmentFireRain {
 			continue
 		}
 		if !a.Active {
 			continue
 		}
 		frame, ok := g.Bundle.NativeEffectFrame(a)
+		if g.World.NativeEnvironment[index] != populous2.NativeEnvironmentNone {
+			frame, ok = g.World.EnvironmentalEffectFrame(index)
+		}
 		if !ok {
 			continue
 		}

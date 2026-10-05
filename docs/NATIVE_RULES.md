@@ -794,3 +794,34 @@ of which spell first wrote it. The renderer uses native lava composites and
 terrain cracks, while unlinked controllers do not inherit stale sprite kinds.
 The missing macOS monitor prevents a new desktop visual check of this slice;
 headless simulation and saved continuation remain valid regression evidence.
+
+## Native cloud and meteor weather
+
+Storm command 64 creates raw kind `$36` clouds in positive 0..7 offsets from
+its origin. Admission follows the creator's original Z flag: partial creation
+followed by pool exhaustion leaves clouds but rejects the debit; clipped attempts
+can admit without any new cloud. Each spawn clears word `$1a` at the caller's
+A0 context. Local command records are `$eb56/$eb60`, so their writes alias later
+bytes of the command/control region. Version 20 retains the bounded region
+`$eb18..$eb90` and its actual byte/word/long assignments.
+
+Storm ticks retain cooldown, main cloud animation and word `$1a` flash animation.
+The linked `$16542` damage scan handles trees, immunity, retained follower deaths
+and complete town destruction. A successful no-hit strike can scan again; it
+is not replaced by radius damage. The 710 original cases prove creation and
+runtime; World callbacks replay all 546 runtime cases/1,541 updates against
+complete retained memory and RNG.
+
+FireRain creates initially unlinked kind `$2c` meteors with delay and lifetime.
+Activation links then advances the first falling frame in that update. Falling
+Y offsets are already encoded in the `$81c` image bank; adding a life-based
+height offset would apply the fall twice. Unlinked delay phase `$1c` is hidden.
+Impact uses the original terrain height, scorch and shared linked damage scan;
+empty hits start `$49c/$5ec` effects, while hits can remove the meteor immediately.
+The 809 original cases include 1,450 runtime updates and exact primitive order.
+
+World tests cover command admission/cost, preserved partial clouds, bounded
+command aliases, delayed meteor visibility, normal-loop terminal release and
+byte-identical save continuation. Earlier generic weather effects migrate to
+native records without replaying the old area-damage logic. Native wind, tsunami,
+scenario scripts and all command scheduling still need their complete mappings.

@@ -68,6 +68,9 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Native Earthquake | 34 original scenarios/3,067 updates; World replays 31 scenarios/3,061 updates with complete raw pool, map, height and RNG comparisons |
 | Native Volcano/Lava | 30 crater/eruption sequences and 356 Lava cases; World replays 24 complete unoccupied-pool eruptions, including raw owner-word aliases, real child creators and terrain reconstruction |
 | Environmental saves | Version 19 preserves controller tags independently of kind; tests cover full-pool debit, water rejection, recycled Basalt/Fungus kinds, directed quake and eruption continuation |
+| Native Storm | 710 original cases/1,705 samples, including actual local/script command-context aliases; World replays 546 runtime cases/1,541 updates against complete raw memory/RNG |
+| Native FireRain | 809 original cases with 1,450 runtime updates; real shared scorch/damage callbacks and original fall-layer offsets; World delay/link/impact/save tests pass |
+| Weather integration | Native cast admission/debit versus partial-pool creation, command alias preservation/bounds, normal-loop terminal release, delayed meteor visibility and old-save migration |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |

@@ -9,7 +9,43 @@ const (
 	NativeEnvironmentQuake
 	NativeEnvironmentVolcano
 	NativeEnvironmentLava
+	NativeEnvironmentStorm
+	NativeEnvironmentFireRain
 )
+
+func environmentalActorMapped(controller NativeEnvironmentController, state uint8) bool {
+	return controller == NativeEnvironmentLava || controller == NativeEnvironmentStorm || controller == NativeEnvironmentFireRain && state != 0x1c
+}
+
+func (w *World) EnvironmentalEffectFrame(index int) (AnimationFrame, bool) {
+	if index < 0 || index >= NativeEffectCapacity {
+		return AnimationFrame{}, false
+	}
+	a := w.NativeEffects[index]
+	if w.NativeEnvironment[index] == NativeEnvironmentLava {
+		frame, ok := w.LavaRules.Frames[a.Animation]
+		return frame, ok
+	}
+	if w.NativeEnvironment[index] == NativeEnvironmentFireRain {
+		if a.State == 0x1c {
+			return AnimationFrame{}, false
+		}
+		frame, ok := w.FireRainRules.Frames[a.Animation]
+		return frame, ok
+	}
+	if w.NativeEnvironment[index] != NativeEnvironmentStorm {
+		return AnimationFrame{}, false
+	}
+	frame, ok := w.StormRules.Frames[a.Animation]
+	if !ok {
+		return AnimationFrame{}, false
+	}
+	extra, _ := w.RecordImage.Read16(nativeActorReference(NativeEffectPool, index), 26)
+	if overlay, found := w.StormRules.Frames[int(extra)]; extra != 0 && found {
+		frame.Layers = append(append([]SpriteLayer(nil), frame.Layers...), overlay.Layers...)
+	}
+	return frame, true
+}
 
 func (w *World) quakeCallbacks() EarthquakeCallbacks {
 	return EarthquakeCallbacks{Memory: w.nativeCleanupMemory(), Tile: func(x, y int) (uint8, error) {
@@ -90,6 +126,14 @@ func (w *World) tickNativeEnvironment(index int) error {
 			if _, err := w.LavaRules.Tick(ref, w.lavaCallbacks()); err != nil {
 				return err
 			}
+		case NativeEnvironmentStorm:
+			if _, err := w.StormRules.Tick(ref, w.stormCallbacks()); err != nil {
+				return err
+			}
+		case NativeEnvironmentFireRain:
+			if _, err := w.FireRainRules.Tick(ref, w.fireRainCallbacks()); err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("native environment controller not implemented")
 		}
@@ -107,6 +151,71 @@ func (w *World) nativeEnvironmentCell(tile NativePackedTile) (NativeOccupancyCel
 		return NativeOccupancyCell{}, fmt.Errorf("native environment cell outside world")
 	}
 	return w.Occupancy.Grid.Cells[x+y*64], nil
+}
+
+func (w *World) stormCallbacks() StormCallbacks {
+	return StormCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Unlink: w.nativeRuntimeUnlink, DestroyTown: w.nativeDestroyTown,
+		Link: func(ref NativeRecordReference) error {
+			if err := w.nativeRuntimeInsert(ref); err != nil {
+				return err
+			}
+			location, _ := LocateNativeRecord(ref)
+			w.NativeEnvironment[location.Index] = NativeEnvironmentStorm
+			return nil
+		}}
+}
+
+func (w *World) castNativeStorm(player, x, y int) bool {
+	admitted := false
+	err := w.runNativeFollowerCall(func() error {
+		caller := 0xeb56 + player*10
+		m := w.nativeCleanupMemory()
+		for offset, value := range []uint8{uint8(player + 1), 64, uint8(x), uint8(y)} {
+			if err := m.Write8(caller+offset, value); err != nil {
+				return err
+			}
+		}
+		step, err := w.StormRules.Create(uint16(player+1), uint8(x), uint8(y), caller, w.stormCallbacks())
+		admitted = step.Admitted
+		return err
+	})
+	if err != nil {
+		panic(err)
+	}
+	return admitted
+}
+
+func (w *World) fireRainCallbacks() FireRainCallbacks {
+	return FireRainCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Unlink: w.nativeRuntimeUnlink,
+		Link: func(ref NativeRecordReference) error {
+			if err := w.nativeRuntimeInsert(ref); err != nil {
+				return err
+			}
+			location, _ := LocateNativeRecord(ref)
+			w.NativeEnvironment[location.Index] = NativeEnvironmentFireRain
+			return nil
+		},
+		Scorch: func(ref NativeRecordReference) error { return w.StormRules.Scorch(ref, w.nativeCleanupMemory()) }, Damage: func(ref NativeRecordReference) (uint16, error) { return w.StormRules.Damage(ref, w.stormCallbacks()) }}
+}
+
+func (w *World) castNativeFireRain(player, x, y int) bool {
+	admitted := false
+	err := w.runNativeFollowerCall(func() error {
+		step, err := w.FireRainRules.Create(uint16(player+1), uint8(x), uint8(y), w.fireRainCallbacks())
+		if err != nil {
+			return err
+		}
+		for _, ref := range step.References {
+			location, _ := LocateNativeRecord(ref)
+			w.NativeEnvironment[location.Index] = NativeEnvironmentFireRain
+		}
+		admitted = step.Admitted
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	return admitted
 }
 
 func (w *World) volcanoCallbacks() VolcanoCallbacks {

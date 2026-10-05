@@ -167,7 +167,7 @@ func TestWhirlwindPrototypeSaveMigration(t *testing.T) {
 		t.Fatal(err)
 	}
 	a := restored.NativeEffects[0]
-	if len(restored.Effects) != 1 || restored.Effects[0].Spell != Storm || !a.Active || a.Kind != 0x20 || a.State != 10 || a.Player != 1 || a.Life != 15 || a.VX != -24 || a.VY != 24 || !reflect.DeepEqual(before, s.Effects) {
+	if len(restored.Effects) != 0 || restored.NativeEnvironment[1] != NativeEnvironmentStorm || !a.Active || a.Kind != 0x20 || a.State != 10 || a.Player != 1 || a.Life != 15 || a.VX != -24 || a.VY != 24 || !reflect.DeepEqual(before, s.Effects) {
 		t.Fatal("prototype migration changed the caller's data or lost motion/life")
 	}
 	for index := range s.NativeEffects {

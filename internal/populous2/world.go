@@ -56,6 +56,9 @@ type World struct {
 	NativeEnvironment        [NativeEffectCapacity]NativeEnvironmentController
 	NativeEnvironmentDirty   uint16
 	NativeEnvironmentShake   uint16
+	NativeCommandBytes       [0x78]byte // BSS $eb18..$eb90, including command aliases.
+	StormRules               StormRules
+	FireRainRules            FireRainRules
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
@@ -169,6 +172,8 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.PrimitiveCreators, w.NeutralRules = bundle.PrimitiveCreators, bundle.NeutralRules
 	w.EarthquakeRules = bundle.EarthquakeRules
 	w.VolcanoRules, w.LavaRules = bundle.VolcanoRules, bundle.LavaRules
+	w.StormRules = bundle.StormRules
+	w.FireRainRules = bundle.FireRainRules
 	w.TownEconomy, err = DecodeNativeTownEconomyRules(land)
 	if err != nil {
 		return nil, err
@@ -457,7 +462,11 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		applied = w.castWhirlwind(player, target.X, target.Y)
 	case Whirlpool:
 		applied = w.castWhirlpool(player, target.X, target.Y)
-	case Storm, Wind, FireRain, Tsunami:
+	case Storm:
+		applied = w.castNativeStorm(player, target.X, target.Y)
+	case FireRain:
+		applied = w.castNativeFireRain(player, target.X, target.Y)
+	case Wind, Tsunami:
 		if id == Tsunami && !w.isWaterAt(target.X+target.Y*64) {
 			return false
 		}

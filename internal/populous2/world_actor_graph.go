@@ -91,7 +91,7 @@ func (w *World) reconcileActorGraph() {
 	}
 	for index, entry := range w.Occupancy.Effects {
 		actor := w.NativeEffects[index]
-		mapped := actor.Active && (w.NativeEnvironment[index] == NativeEnvironmentLava || w.NativeEnvironment[index] == NativeEnvironmentNone && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a))
+		mapped := actor.Active && (environmentalActorMapped(w.NativeEnvironment[index], actor.State) || w.NativeEnvironment[index] == NativeEnvironmentNone && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a))
 		if !mapped {
 			if entry.Linked {
 				w.unlinkActor(NativeEffectPool, index)
@@ -304,7 +304,7 @@ func validateSavedActorGraph(snapshot Snapshot) error {
 	}
 	for index, entry := range snapshot.Occupancy.Effects {
 		actor := snapshot.NativeEffects[index]
-		mapped := actor.Active && (snapshot.NativeEnvironment[index] == NativeEnvironmentLava || snapshot.NativeEnvironment[index] == NativeEnvironmentNone && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a))
+		mapped := actor.Active && (environmentalActorMapped(snapshot.NativeEnvironment[index], actor.State) || snapshot.NativeEnvironment[index] == NativeEnvironmentNone && (actor.Kind == 0x20 || actor.Kind == 0x22 || actor.Kind == BasaltActorKind || actor.Kind == 0x28 || actor.Kind == 0x2a))
 		if entry.Linked != mapped || mapped && (entry.Record.X != uint16(actor.X) || entry.Record.Y != uint16(actor.Y)) {
 			return fmt.Errorf("saved effect graph differs at slot %d", index)
 		}

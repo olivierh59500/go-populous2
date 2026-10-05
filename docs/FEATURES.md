@@ -17,7 +17,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Towns | 19 stages, native mixed support/cache, 49-cell compositor and native founding/economy/emigration in World; rare births allocate original neutral actors | Complete land AI, all neutral/environmental interactions and end-to-end campaign parity |
 | Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
-| Saving | Version 19 retains raw environmental controller ownership, quake/volcano/lava states, native economy/deadline and neutral records | Original Amiga GAM interoperability |
+| Saving | Version 20 retains weather/environmental controller ownership, command-context aliases, meteors/clouds, native economy/deadline and neutral records | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
 | Multiplayer | Deterministic state hashes retained in the engine | Two-player transport and shared command scheduling |
 | Campaign progression | Current prototype advances one world after a victory | Native score, awards, world skipping and final Zeus outcome |
@@ -47,11 +47,11 @@ the remaining simulation routines.
 | Heracles | 16 | 60 | Native double population and speed bonus; native combat/routing pending |
 | Lightning | 18 | 28 / 30 / 32 | Native marker/activation/bolts, gradual victims, procedural beams and living-town native farm reform; remaining terrain/hero cleanup branches pending |
 | Whirlwind | 19 | 22 | Native fixed-point trajectory, phases, experience lifetime, composite art and frame cues; pickup/release, town collapse and child whirlpools pending |
-| Storm | 20 | 64 | Provisional timed area damage; native rain/lightning/terrain simulation pending |
+| Storm | 20 | 64 | Native raw cloud creation/admission, thunder/cooldown, exact terrain scorch and linked victim scan; World/runtime/save comparisons pass |
 | Odysseus | 21 | 66 | Native doubled speed attribute/art; runtime movement still inherited |
 | Hurricane wind | 22 | 76 | Provisional directed movement/damage; native pushing and terrain interactions pending |
 | Fire column | 24 | 6 | Native fixed-point pool, phases, uphill routing, experience lifetime and current-cell burns; full mixed actor-list parity/timing pending |
-| Fire rain | 25 | 38 | Provisional timed damage; native drops and burn propagation pending |
+| Fire rain | 25 | 38 | Native unlinked meteor delay, decoded falling art, height-aware impact and exact victim/terrain callbacks; World/save continuation pass |
 | Volcano | 26 | 62 | Native crater growth/terrain preservation, raw fire-column eruption, lava/Basalt creation and contact states; World full-eruption comparisons pass |
 | Achilles | 27 | 68 | Native conversion/art; provisional burning; native movement/combat pending |
 | Whirlpool | 31 | 24 | Native four-water admission, terrain animation, motion, direct coast lowering, lifetime and ordered shared-pool execution; broader terrain/actor interactions pending |
