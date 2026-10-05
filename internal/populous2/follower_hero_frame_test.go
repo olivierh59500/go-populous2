@@ -107,7 +107,7 @@ func TestNativeFollowerHeroFrameAgainstOriginalCPU(t *testing.T) {
 		BSSBytes int
 		Cases    []heroFrameFixture
 	}
-	if err = json.Unmarshal(data, &corpus); err != nil || corpus.BSSBytes != 0x11280 || len(corpus.Cases) != 2138 {
+	if err = json.Unmarshal(data, &corpus); err != nil || corpus.BSSBytes != 0x11280 || len(corpus.Cases) != 2462 {
 		t.Fatalf("hero frame corpus incomplete: %v", err)
 	}
 	bundle := testBundle(t)
@@ -154,6 +154,8 @@ func TestNativeFollowerHeroFrameAgainstOriginalCPU(t *testing.T) {
 			step := NativeFollowerHeroFrameStep{RedispatchSource: 52}
 			var err error
 			switch f.Input.Mode {
+			case "chase":
+				step, err = rules.Chase(52, cb)
 			case "select":
 				_, err = rules.Select(52, cb)
 			case "probe":
@@ -198,7 +200,7 @@ func TestNativeFollowerHeroFrameAgainstOriginalCPU(t *testing.T) {
 			if binary.BigEndian.Uint32(b[0xeb28:]) != f.RNG {
 				t.Error("native RNG changed")
 			}
-			if f.Input.Mode == "decision24" || f.Input.Mode == "decision26" {
+			if f.Input.Mode == "decision24" || f.Input.Mode == "decision26" || f.Input.Mode == "chase" {
 				if f.Trap == "" && fmt.Sprintf("%x", step.Continuation) != f.Exit {
 					t.Errorf("native decision continuation differs: %+v, exit %s", step, f.Exit)
 				}

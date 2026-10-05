@@ -332,7 +332,7 @@ func (r *NativeFollowerHeroFrameRules) Tick(ref NativeRecordReference, cb Native
 	if r == nil || !heroFrameValid(cb) {
 		return step, fmt.Errorf("native hero decision memory/frame missing")
 	}
-	c, m := cb.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Memory}}
+	m := nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Memory}}
 	at := cleanupRecordAddress(ref)
 	state := m.byte(at + 22)
 	if state == 0x24 {
@@ -344,7 +344,18 @@ func (r *NativeFollowerHeroFrameRules) Tick(ref NativeRecordReference, cb Native
 	if state != 0x26 {
 		return step, fmt.Errorf("native hero decision state %x unsupported", state)
 	}
-	step.Continuation = 0x112b8
+	return r.Chase(ref, cb)
+}
+
+// Chase enters $1204e directly. Completed contact can branch here with raw
+// state $0c; changing that byte to $26 would invent a write before attrition.
+func (r *NativeFollowerHeroFrameRules) Chase(ref NativeRecordReference, cb NativeFollowerHeroFrameCallbacks) (NativeFollowerHeroFrameStep, error) {
+	step := NativeFollowerHeroFrameStep{RedispatchSource: ref, Continuation: 0x112b8}
+	if r == nil || !heroFrameValid(cb) {
+		return step, fmt.Errorf("native hero chase memory/frame missing")
+	}
+	c, m := cb.Frame, nativeTownFrameMemory{nativeWhirlwindMemory: nativeWhirlwindMemory{m: cb.Memory}}
+	at := cleanupRecordAddress(ref)
 	c.Byte(2, m.byte(at+12))
 	c.ExtendWord(2)
 	c.D[2] = uint32(uint16(c.D[2])) * 314
