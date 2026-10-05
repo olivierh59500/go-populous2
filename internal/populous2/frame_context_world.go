@@ -53,6 +53,28 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 				}
 				return nil
 			}})
+		case 0x30, 0x32:
+			rules := NativeCommandRules{Code: w.NativeAI.Code}
+			return rules.TickFrameVolcano(ref, c, NativeFrameVolcanoCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Terrain: func(raise bool, context *NativeFrameRegisterContext) error {
+				command := context.CommandContext()
+				routine := 0xd7f0
+				if raise {
+					routine = 0xd81e
+				}
+				_, e := w.commandDirectTerrain(NativeCommandCall{Routine: routine, Context: &command}, raise)
+				context.SetCommandContext(command)
+				return e
+			}, FireColumn: func(context *NativeFrameRegisterContext) error {
+				command := context.CommandContext()
+				_, e := w.nativeNormalCommandCallbacks(bindings.Commands).Call(NativeCommandCall{Routine: 0x15b7c, Context: &command})
+				context.SetCommandContext(command)
+				return e
+			}, Lava: func(context *NativeFrameRegisterContext) error {
+				return rules.CreateFrameLava(context, w.frameLavaCallbacks())
+			}})
+		case 0x34:
+			rules := NativeCommandRules{Code: w.NativeAI.Code}
+			return rules.TickFrameLava(ref, c, w.frameLavaCallbacks())
 		case 0x22, 0x24, 0x26:
 			rules := NativeCommandRules{Code: w.NativeAI.Code}
 			return rules.TickFrameQuake(ref, c, NativeFrameQuakeCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Lower: func(context *NativeFrameRegisterContext) error {
@@ -146,4 +168,18 @@ func (w *World) frameQuakeCreate(parent int, context *NativeFrameRegisterContext
 	_, e := w.commandEarthquakeCreation(NativeCommandCall{Routine: 0x165da, Caller: parent, Context: &command})
 	context.SetCommandContext(command)
 	return address, e
+}
+
+func (w *World) frameLavaCallbacks() NativeFrameLavaCallbacks {
+	return NativeFrameLavaCallbacks{Memory: w.nativeCleanupMemory(), Random: func() uint16 { return uint16(w.random()) }, Link: w.nativeRuntimeInsert, Unlink: w.nativeRuntimeUnlink, Move: func(ref NativeRecordReference, context *NativeFrameRegisterContext) error {
+		command := context.CommandContext()
+		e := w.commandMove(cleanupRecordAddress(ref), &command)
+		context.SetCommandContext(command)
+		return e
+	}, Basalt: func(context *NativeFrameRegisterContext) error {
+		command := context.CommandContext()
+		_, e := w.commandBasaltCreation(NativeCommandCall{Routine: 0x171ea, Context: &command})
+		context.SetCommandContext(command)
+		return e
+	}, Scorch: func(ref NativeRecordReference) error { return w.StormRules.Scorch(ref, w.nativeCleanupMemory()) }, DestroyTown: w.nativeDestroyTown}
 }
