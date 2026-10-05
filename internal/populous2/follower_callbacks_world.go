@@ -171,10 +171,10 @@ func (w *World) nativeCommonPrepassCallbacks() CommonPrepassCallbacks {
 			return nil
 		},
 		Scenario: func(owner uint8) (uint16, error) {
-			if owner < 1 || owner > 2 {
-				return 0, fmt.Errorf("native prepass scenario owner outside game")
+			if owner == 1 {
+				return w.Rules[0].Raw, nil
 			}
-			return w.Rules[owner-1].Raw, nil
+			return w.Rules[1].Raw, nil
 		},
 		ClearFarms: w.clearNativeFarms, Cleanup: w.cleanupNativeFollower, ClearLeader: w.clearNativeLeader, Unlink: w.nativeRuntimeUnlink,
 		Sound: func(raw uint16) error {

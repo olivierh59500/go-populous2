@@ -11,7 +11,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Landscape graphics | Four variants, 255 tiles and 830 sprite descriptors each |
 | Campaign data | 1,000 worlds with native codes and starting templates |
 | Terrain oracle | Eight native executions, 4,225 matching heights per seed |
-| Ground-effect oracle | Nine matching tile maps and final 32-bit random states |
+| Ground-effect oracle | Nine flat cast maps/RNG; 5,430 font/swamp cases and 28,062 full-memory/RNG frames also replayed through World callbacks |
 | Fungus oracle | Six original controller traces, complete tile maps, packed record fields, collection and generation timing |
 | Fungus mortality oracle | Seventeen native common-prepass cases: fresh/mature tiles, all heroes, both sides, sound arguments and retained occupancy |
 | Scenery oracle | Original object pools/RNG, including register-continuing seed 777 |

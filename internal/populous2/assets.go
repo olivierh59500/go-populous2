@@ -55,6 +55,7 @@ type Bundle struct {
 	Audio             *AudioBank
 	Actions           []NativeAction
 	GroundRules       GroundEffectRules
+	NativeGround      NativeGroundRules
 	HillParameters    [4][4]int
 	PlagueAnimation   []AnimationFrame
 	RoadRules         RoadRules
@@ -289,6 +290,10 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.GroundRules, err = DecodeGroundEffectRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.NativeGround, err = DecodeNativeGroundRules(exe)
 	if err != nil {
 		return nil, err
 	}

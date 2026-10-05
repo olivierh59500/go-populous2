@@ -37,7 +37,7 @@ the remaining simulation routines.
 | Armageddon | 4 | 72 | Complete native eligible-state scan: plague cleanup and random conversion into the first four heroes; enables direct hero terrain raising, with admitted no-op recasts; World full-memory/RNG and saved continuation comparisons pass |
 | Forest | 6 | 46 | Complete native sampled raw allocation, signed tile/owner aliases, created-tree deity metric, aging/burial and mixed fire/town interactions; full World memory/RNG comparisons pass; native age-based emergence/clipping is rendered |
 | Renew land | 7 | 80 | Complete native raster-shape placement of tile 245, including occupied/hero cells and retained negative-owner DIVU aliases; full World memory/RNG comparisons pass; no separate popularity write exists in this body |
-| Swamp | 8 | 54 | Native placement/tiles, shallow restoration, hero immunity and retained death/terminal dispatch |
+| Swamp | 8 | 54 | Complete native sampled placement and retained death, Adonis immunity, victim-side shallow restoration, leader release and terminal dispatch; full World memory/RNG comparisons pass |
 | Fungus | 9 | 26 | Native seed/collection, staged B3/S23 automaton, cadence, mature-tile mortality/Adonis immunity and retained death art; full linked death state and adjacent-BSS edge behavior pending |
 | Adonis | 10 | 58 | Complete native creation, shared routing/combat and verified native post-victory split/full-pool behavior; combined interactions pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
@@ -56,7 +56,7 @@ the remaining simulation routines.
 | Achilles | 27 | 68 | Complete native creation, original art and shared native routing/combat; provisional incidental burning and combined interactions pending |
 | Whirlpool | 31 | 24 | Native four-water admission, terrain animation, motion, direct coast lowering, lifetime and ordered shared-pool execution; broader terrain/actor interactions pending |
 | Basalt | 30 | 74 | Native linked propagation actors, four cardinal directions, persistent terrain prefix and original sculpture shapes; remaining environmental interactions pending |
-| Baptismal fonts | 32 | 52 | Native sampled placement and tiles 143–144; faith reversal on entry; original entry animation/immunities pending |
+| Baptismal fonts | 32 | 52 | Complete native sampled placement, original delayed conversion and hero tables, leader release and fractional movement; full World memory/RNG comparisons pass |
 | Helen | 33 | 70 | Capture without faith conversion, follower chain, release on death and water immunity; exact subpixel routing/collateral death animation pending |
 | Tidal wave | 34 | 56 | Native four adjacent-water fronts, fixed fractional speed, lateral cloning/newborn cadence, shore lowering and height/Basalt barriers; World pool/map/height and saved continuation comparisons pass; drowning uses the shared native water prepass |
 

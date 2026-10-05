@@ -62,19 +62,19 @@ func TestHelenCapturesWithoutChangingFaith(t *testing.T) {
 	}
 }
 
-func TestHelenWaterAndHeraclesSwampImmunity(t *testing.T) {
+func TestHelenWaterAndNativeSwampHeroTable(t *testing.T) {
 	w := flatGroundWorld(t)
 	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 2000, Flags: legacy.OnMove, Status: legacy.KnightStatus}, {Player: 0, Population: 100, AtPos: 2001, Flags: legacy.OnMove, Status: legacy.KnightStatus}}
 	w.Heroes[0] = Hero{Spell: Helen, Active: true, Player: 0, Population: 100}
-	w.Heroes[1] = Hero{Spell: Heracles, Active: true, Player: 0, Population: 100}
+	w.Heroes[1] = Hero{Spell: Adonis, Active: true, Player: 0, Population: 100}
 	w.bindHeroCombat()
 	if !w.Core.CanHeroCrossWater(0) || w.Core.CanHeroCrossWater(1) {
 		t.Fatal("native Helen water immunity missing")
 	}
 	w.Marks[2000] = Mark{Spell: Swamp, Player: 1, Life: 1, Persistent: true, NativeTile: 168}
 	w.Marks[2001] = w.Marks[2000]
-	w.applyGroundEffects()
+	tickGroundPrepassForTest(t, w)
 	if w.Core.Peeps[0].Population != 0 || w.Core.Peeps[1].Population != 100 {
-		t.Fatal("native Heracles swamp immunity missing")
+		t.Fatal("native table must retain Helen death and spare Adonis in swamp")
 	}
 }

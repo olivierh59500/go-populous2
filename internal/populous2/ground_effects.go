@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"go-populous2/internal/amiga"
-	legacy "go-populous2/internal/legacy"
 )
 
 type GroundEffectRules struct {
@@ -40,80 +39,4 @@ func DecodeGroundEffectRules(exe *amiga.Executable) (GroundEffectRules, error) {
 		r.Properties[i] = binary.BigEndian.Uint16(code[0x33312+i*2:])
 	}
 	return r, nil
-}
-
-// castGroundEffect follows $16938 (fonts) and $169cc (swamps). The sampled positions and number of attempts come from the
-// native tables, rather than a filled radius-two circle. Empty attempts still
-// consume the cast: these three native command handlers do not test success.
-func (w *World) castGroundEffect(player int, id SpellID, x, y int) bool {
-	r := w.GroundRules
-	count, tile, mask := 0, uint8(0), uint16(0)
-	switch id {
-	case Baptism:
-		base := r.FontCount + int(w.Experience[player][Water]>>5)
-		count = w.random()%base + base/2
-		tile, mask = 143, 0x67
-	case Swamp:
-		base := r.SwampCount
-		count = w.random()%base + base/2
-		tile, mask = 168, 0x27
-	default:
-		return false
-	}
-	for attempt := 0; attempt <= count; attempt++ {
-		// Native DIVU #90 followed by clearing bit zero addresses words.
-		// Modulo 45 would consume the same RNG stream but choose other cells.
-		d := r.Offsets[(w.random()%90)/2]
-		xx, yy := x+d[0], y+d[1]
-		if !inside(xx, yy) {
-			continue
-		}
-		pos := xx + yy*64
-		cell := w.TerrainCell(xx, yy)
-		if w.Core.MapWho[pos] != 0 || w.sceneryAt(pos) >= 0 || r.Properties[cell.Code]&mask == 0 {
-			continue
-		}
-		w.Marks[pos] = Mark{Spell: id, Player: player, Life: 1, Persistent: true, NativeTile: tile}
-	}
-	return true
-}
-
-func (w *World) applyGroundEffects() {
-	for i := range w.Core.Peeps {
-		p := &w.Core.Peeps[i]
-		if p.Population <= 0 || p.AtPos < 0 || p.AtPos >= len(w.Marks) {
-			continue
-		}
-		mark := w.Marks[p.AtPos]
-		if !mark.Persistent || mark.Spell != Baptism {
-			p.InFont = false
-		}
-		if !mark.Persistent {
-			continue
-		}
-		switch mark.Spell {
-		case Swamp:
-			if w.Heroes[i].Active && w.Heroes[i].Spell == Heracles {
-				continue
-			}
-			if p.Flags&legacy.InTown == 0 {
-				if w.Rules[p.Player].ShallowSwamps {
-					w.Marks[p.AtPos] = Mark{}
-				}
-				w.Core.DamagePeep(i, p.Population)
-			}
-		case Baptism:
-			if !p.InFont || p.LastFontTile != p.AtPos {
-				player := int(p.Player) ^ 1
-				if w.Core.ConvertPeep(i, player) {
-					p = &w.Core.Peeps[i]
-					p.InFont = true
-					p.LastFontTile = p.AtPos
-					if w.Heroes[i].Active {
-						w.Heroes[i].Player = player
-					}
-				}
-			}
-		}
-	}
 }

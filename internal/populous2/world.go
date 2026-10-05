@@ -17,6 +17,7 @@ type World struct {
 	Spells                   []Spell
 	ManaRules                ManaRules
 	GroundRules              GroundEffectRules
+	NativeGround             NativeGroundRules
 	RoadRules                RoadRules
 	SceneryBank              *SceneryBank
 	BatholithRange           int
@@ -84,6 +85,7 @@ type World struct {
 	nativeCallDepth          int
 	nativeEntryCrossing      func(int) FollowerEntryStep
 	NativeOverlays           [4096]uint8
+	NativeViewBytes          [12]byte // BSS $5f44..$5f50, camera and pointer/hit-test words.
 	NativeFollowers          [legacy.MaxPeeps]NativeFollower
 	NativeEffects            [NativeEffectCapacity]NativeEffectActor
 	Occupancy                NativeWorldOccupancy
@@ -170,6 +172,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	core.OlympianTowns = townRules
 	w := &World{Level: level, Core: core, Landscape: land, Spells: bundle.Spells, ManaRules: bundle.ManaRules, GroundRules: bundle.GroundRules, RoadRules: bundle.RoadRules, SceneryBank: bundle.Scenery, BatholithRange: bundle.BatholithRange, WallRules: bundle.WallRules, FireColumns: bundle.FireColumns, Whirlwinds: bundle.Whirlwinds, Custom: custom, Random: level.Seed}
 	w.Experience[1] = level.OpponentExperience
+	w.NativeGround = bundle.NativeGround
 	w.Whirlpools, w.BasaltRules = bundle.Whirlpools, bundle.BasaltRules
 	w.NativeFireColumn = bundle.NativeFireColumn
 	w.NativeWhirlwind, w.WhirlwindFollower = bundle.NativeWhirlwind, bundle.WhirlwindFollower
@@ -550,7 +553,6 @@ func (w *World) Tick() {
 	w.refreshNativeRecordImage()
 	w.rebuildCaptiveIndex()
 	w.tickEffects()
-	w.applyGroundEffects()
 	w.Core.TickWithComputer([2]bool{w.Demo, true})
 	w.detectNativeResult()
 	if w.NativeResult.Detected {
@@ -568,7 +570,6 @@ func (w *World) Tick() {
 		panic(err)
 	}
 	w.followHelenCaptives()
-	w.applyGroundEffects()
 	for i, hero := range w.Heroes {
 		if !hero.Active {
 			continue

@@ -127,7 +127,7 @@ func TestScenarioSprogVisibilityAndShallowSwampUseCorrectSide(t *testing.T) {
 	w.Core.Peeps[0].Player = 1
 	w.Rules[1] = DecodeScenarioRules(1 << 9)
 	w.Marks[2000] = Mark{Spell: Swamp, Player: 0, Life: 1, Persistent: true, NativeTile: 168}
-	w.applyGroundEffects()
+	tickGroundPrepassForTest(t, w)
 	if w.Core.Peeps[0].Population != 0 || w.Marks[2000].NativeTile != 0 {
 		t.Fatal("shallow swamp did not use victim-side rule")
 	}

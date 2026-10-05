@@ -111,39 +111,73 @@ func TestNativeGroundCastTablesAndPersistence(t *testing.T) {
 	}
 }
 
-func TestFontsChangeEitherFaithOncePerEntry(t *testing.T) {
-	w := flatGroundWorld(t)
-	w.Marks[2000] = Mark{Spell: Baptism, Player: 0, Life: 1, Persistent: true, NativeTile: 143}
-	w.Marks[2001] = w.Marks[2000]
-	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 2000, Flags: legacy.OnMove}}
-	w.applyGroundEffects()
-	if w.Core.Peeps[0].Player != 1 {
-		t.Fatal("font did not reverse friendly faith")
+// tickGroundPrepassForTest runs the same terrain entry used by the follower
+// dispatcher, without advancing unrelated movement or the campaign result.
+func tickGroundPrepassForTest(t *testing.T, w *World) {
+	t.Helper()
+	for index := range w.Core.Peeps {
+		if !w.NativeEntries[index].Initialized {
+			w.initializeNativeFollower(index)
+		}
 	}
-	w.applyGroundEffects()
-	if w.Core.Peeps[0].Player != 1 {
-		t.Fatal("stationary group converted repeatedly")
-	}
-	w.Core.Peeps[0].AtPos = 2001
-	w.applyGroundEffects()
-	if w.Core.Peeps[0].Player != 0 {
-		t.Fatal("adjacent font did not reverse faith again")
-	}
-	w.Core.Peeps[0].AtPos = 2002
-	w.applyGroundEffects()
-	w.Core.Peeps[0].AtPos = 2001
-	w.applyGroundEffects()
-	if w.Core.Peeps[0].Player != 1 {
-		t.Fatal("reentry into a font ignored")
+	for index := range w.Core.Peeps {
+		if err := w.runNativeFollowerCall(func() error {
+			_, err := w.CommonPrepass.Tick(nativeActorReference(NativeFollowerPool, index), w.nativeCommonPrepassCallbacks())
+			return err
+		}); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
-func TestSwampsKillWalkersOfBothSides(t *testing.T) {
+func TestFontsRetainAnimationBeforeChangingFaith(t *testing.T) {
+	for _, player := range []byte{0, 1} {
+		w := flatGroundWorld(t)
+		w.Marks[2000] = Mark{Spell: Baptism, Player: 0, Life: 1, Persistent: true, NativeTile: 143}
+		w.Core.Peeps = []legacy.Peep{{Player: player, Population: 100, AtPos: 2000, Flags: legacy.OnMove}}
+		tickGroundPrepassForTest(t, w)
+		ref := nativeActorReference(NativeFollowerPool, 0)
+		a, _ := w.RecordImage.ReadFollowerEntry(ref)
+		if a.Owner != player+1 || a.Motion.Kind != 14 || a.Motion.State != 0x36 || a.Motion.Population != 100 {
+			t.Fatalf("font skipped the retained conversion animation: %+v; peep %+v", a, w.Core.Peeps[0])
+		}
+		initial := a.Motion.Animation
+		tickGroundPrepassForTest(t, w)
+		a, _ = w.RecordImage.ReadFollowerEntry(ref)
+		if a.Motion.Animation != initial || a.Owner != player+1 {
+			t.Fatal("terrain entry restarted or completed the conversion")
+		}
+		completed := false
+		for range 100 {
+			var step FollowerTerrainStep
+			if err := w.runNativeFollowerCall(func() error {
+				var err error
+				step, err = w.FollowerTerrain.TickConversion(ref, w.nativeTerrainCallbacks())
+				return err
+			}); err != nil {
+				t.Fatal(err)
+			}
+			if step.Search {
+				completed = true
+				break
+			}
+		}
+		a, _ = w.RecordImage.ReadFollowerEntry(ref)
+		if !completed || a.Owner != (player^1)+1 || a.Motion.Population != 100 || a.Motion.Kind != 2 || a.Motion.State != 2 {
+			t.Fatal("native conversion did not finish with opposite faith and ordinary search")
+		}
+	}
+}
+
+func TestSwampsRetainDeathForWalkersOfBothSides(t *testing.T) {
 	w := flatGroundWorld(t)
 	w.Marks[2000] = Mark{Spell: Swamp, Player: 0, Life: 1, Persistent: true, NativeTile: 168}
 	w.Core.Peeps = []legacy.Peep{{Player: 0, Population: 100, AtPos: 2000, Flags: legacy.OnMove}, {Player: 1, Population: 100, AtPos: 2000, Flags: legacy.OnMove}}
-	w.applyGroundEffects()
-	if w.Core.Peeps[0].Population != 0 || w.Core.Peeps[1].Population != 0 {
-		t.Fatal("swamp restricted to caster's enemy")
+	tickGroundPrepassForTest(t, w)
+	for index := range w.Core.Peeps {
+		a, _ := w.RecordImage.ReadFollowerEntry(nativeActorReference(NativeFollowerPool, index))
+		if a.Motion.Population != 0 || a.Owner != uint8(index+1) || a.Motion.Kind != 16 || a.Motion.State != 0x38 || !w.Occupancy.Followers[index].Linked {
+			t.Fatalf("swamp did not retain the native death allocation and graph link: %+v; linked %v", a, w.Occupancy.Followers[index].Linked)
+		}
 	}
 }

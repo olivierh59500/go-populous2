@@ -178,10 +178,23 @@ native offsets and a sampled attempt count. The original offset selection is
 tile codes 143, 168 and 245. Their maps and final RNG states match nine reference
 casts executed by the original routines on empty flat land.
 
-Fonts change a passing group's faith to the opposite side. Successive adjacent
-fonts can reverse it again. Swamps kill walkers of either side. Greenery restores
-flat damaged land. Entry animation, special hero immunity and later spread
-rules are still verification targets.
+Fonts enter kind14/state `$36`, center the follower and preserve its faith and
+population until the original conversion animation ends. Completion releases a
+leader, reverses faith, moves by the velocity signs with the fractions retained,
+and returns to search. Adjacent fonts can trigger a later conversion; terrain
+entry cannot restart the current animation. Swamps use kind16/state `$38`,
+retained cleanup and the original terminal handler for either faith. The shipped
+swamp hero table spares Adonis, not Heracles. The victim's shallow-swamp option
+restores tile15 before the mortality callback.
+
+The World font/swamp creators and retained consumer callbacks now reproduce all
+5,430 original CPU cases and 28,062 intermediate full-memory/RNG frames. These
+cover all 256 tile types, raw occupied/dangling heads, hero tables, leader release,
+negative XP/count arithmetic, delayed conversions and shallow/retained deaths.
+The swamp caster reads Earth XP, but its later SWAP discards the added low word;
+placement therefore must not add an invented XP-dependent number of attempts.
+Greenery uses the separately verified raw Renew controller and restores eligible
+land without a synthetic popularity bonus.
 
 Plague selection at `$1730e` walks the actual parcel chain, selecting signed
 kind bytes at most 4 whose owner byte differs from the caster. It independently

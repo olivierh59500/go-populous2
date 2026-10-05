@@ -52,7 +52,7 @@ func TestScenarioObserverAndVictimRulesAgainstOriginal68000(t *testing.T) {
 				pos := 2000
 				w.Marks[pos] = Mark{Spell: Swamp, Player: fixture.Player ^ 1, Life: 1, Persistent: true, NativeTile: 168}
 				w.Core.Peeps = []legacy.Peep{{Player: byte(fixture.Player), Population: fixture.Population, AtPos: pos, Flags: legacy.OnMove}}
-				w.applyGroundEffects()
+				tickGroundPrepassForTest(t, w)
 				// The original fixture's untouched tile is 51. Only the native
 				// shallow rule changes it to 15 before the death helper.
 				if (w.Marks[pos].NativeTile == 0) != (fixture.NativeTile == 15) {
