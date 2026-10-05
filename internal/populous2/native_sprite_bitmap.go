@@ -20,6 +20,18 @@ func DecodeNativeSpriteBitmapBank(bundle *Bundle, landIndex int) (*NativeSpriteB
 		return nil, fmt.Errorf("native sprite bitmap resources missing")
 	}
 	bank := &NativeSpriteBitmapBank{Sprites: make([]NativePreparedSprite, len(bundle.Sprites[landIndex]))}
+	small, err := ApplySpriteDifference(bundle.Raw["s16-0.pak"], bundle.Raw[fmt.Sprintf("s16-%d.dif", landIndex)])
+	if err != nil {
+		return nil, err
+	}
+	largeDiff := fmt.Sprintf("s32-%d.pif", landIndex)
+	if landIndex == 0 {
+		largeDiff = "s32-0.dif"
+	}
+	large, err := ApplySpriteDifference(bundle.Raw["s32-0.pak"], bundle.Raw[largeDiff])
+	if err != nil {
+		return nil, err
+	}
 	for index, s := range bundle.Sprites[landIndex] {
 		if s.Image == nil {
 			continue
@@ -32,10 +44,10 @@ func DecodeNativeSpriteBitmapBank(bundle *Bundle, landIndex int) (*NativeSpriteB
 			raw = bundle.Executable.Hunks[3].Data
 		case 5:
 			if offset >= 0x118c8 {
-				raw = bundle.Raw[fmt.Sprintf("s16-%d.pak", landIndex)]
+				raw = small
 				offset -= 0x118c8
 			} else {
-				raw = bundle.Raw[fmt.Sprintf("s32-%d.pak", landIndex)]
+				raw = large
 			}
 		default:
 			return nil, fmt.Errorf("native sprite%d source hunk%d unsupported", index, s.Hunk)

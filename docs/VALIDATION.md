@@ -591,3 +591,10 @@ the hardware B pointer advancing between color planes. Both half-tiles draw
 at the same row at initial offset/+2; the pair returns at initial offset+320.
 This proves the pixel sink and pair layout, while complete $bbe0 traversal,
 actor ordering and its live Game integration remain required work.
+
+The prepared sprite bank also reconstructs the selected landscape's original
+S16 DIF and S32 DIF/PIF resources before preparation. Only base PAK files are
+stored by the original resource set; separate LAND1..3 sprite PAKs do not exist.
+All cached mask/color planes now agree pixel-for-pixel with the independently
+loaded sprite atlas for each of the four landscapes, and the original
+1,041-case DMA renderer regression remains green.
