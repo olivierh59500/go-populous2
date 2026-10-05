@@ -11,6 +11,9 @@ type NativeFollowerFrameBindings struct {
 	// TownState retains the evaluator property cache and parcel scratch across
 	// actors. Only its outer flag and minimap variant reset at dispatch.
 	TownState *NativeTownFrameState
+	Decision  *FollowerDecisionFrameRules
+	Hero      *NativeFollowerHeroFrameRules
+	Magnet    *NativeFollowerMagnetFrameRules
 	// Continue executes direct search/town/hero tails reached from a child,
 	// without inventing another prepass or starting a new actor update.
 	Continue func(NativeRecordReference, uint32, *NativeFrameRegisterContext, *NativeFollowerPassState) (NativeFollowerPassFlow, error)
@@ -47,6 +50,29 @@ func (w *World) nativeFollowerFrameCallbacks(frame *NativeFrameRegisterContext, 
 			}
 			if actorState == 4 {
 				return w.nativeMotionFrameBody(ref, frame, state, bindings)
+			}
+			if actorState == 2 {
+				return w.nativeFollowerFrameContinuation(ref, 0x1131c, frame, state, bindings)
+			}
+			if actorState == 0x24 || actorState == 0x26 {
+				if bindings.Hero == nil {
+					return NativeFollowerNext, fmt.Errorf("native follower hero frame rules missing")
+				}
+				step, err := bindings.Hero.Tick(ref, w.nativeHeroFrameCallbacks(frame))
+				if err != nil {
+					return NativeFollowerNext, err
+				}
+				return w.nativeFollowerFrameContinuation(step.RedispatchSource, step.Continuation, frame, state, bindings)
+			}
+			if actorState == 0x12 || actorState == 0x3a {
+				if bindings.Magnet == nil || bindings.Hero == nil {
+					return NativeFollowerNext, fmt.Errorf("native follower magnet/planner frame rules missing")
+				}
+				boundary, err := bindings.Magnet.Tick(ref, w.nativeMagnetFrameCallbacks(frame, bindings.Hero))
+				if err != nil {
+					return NativeFollowerNext, err
+				}
+				return w.nativeFollowerFrameContinuation(ref, boundary, frame, state, bindings)
 			}
 			if actorState == 6 {
 				if bindings.Town == nil || bindings.TownState == nil {
@@ -130,6 +156,32 @@ func (w *World) nativeCombatFrameBody(ref NativeRecordReference, actorState uint
 
 func (w *World) nativeFollowerFrameContinuation(ref NativeRecordReference, boundary uint32, frame *NativeFrameRegisterContext, state *NativeFollowerPassState, bindings NativeFollowerFrameBindings) (NativeFollowerPassFlow, error) {
 	switch boundary {
+	case 0x1131c:
+		if bindings.Decision == nil {
+			return NativeFollowerNext, fmt.Errorf("native follower search frame rules missing")
+		}
+		step, err := bindings.Decision.Search(ref, FollowerDecisionFrameCallbacks{Memory: w.nativeCleanupMemory(), Frame: frame, AttritionFrame: w.nativeFollowerAttritionFrame})
+		if err != nil {
+			return NativeFollowerNext, err
+		}
+		return w.nativeFollowerFrameContinuation(ref, step.Boundary, frame, state, bindings)
+	case 0x1156c:
+		return w.nativeMotionFrameBody(ref, frame, state, bindings)
+	case 0x12044:
+		if bindings.Hero == nil {
+			return NativeFollowerNext, fmt.Errorf("native follower hero selection frame rules missing")
+		}
+		_, err := bindings.Hero.Select(ref, w.nativeHeroFrameCallbacks(frame))
+		return NativeFollowerCount, err
+	case 0x11bb4:
+		if bindings.Magnet == nil || bindings.Hero == nil {
+			return NativeFollowerNext, fmt.Errorf("native follower search magnet/planner frame rules missing")
+		}
+		next, err := bindings.Magnet.Start(ref, w.nativeMagnetFrameCallbacks(frame, bindings.Hero))
+		if err != nil {
+			return NativeFollowerNext, err
+		}
+		return w.nativeFollowerFrameContinuation(ref, next, frame, state, bindings)
 	case 0x123b4:
 		return NativeFollowerCount, nil
 	case 0x12462:

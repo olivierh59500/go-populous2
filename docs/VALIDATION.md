@@ -469,3 +469,23 @@ CODE cache/flags for two towns, both owners, all four LAND banks, work-counter
 wrapping and infected/uninfected growth. These complete-pass cases retain
 small populations; birth and exhausted-pool behavior are covered by the
 controller corpus rather than claimed as complete newborn-search passes.
+
+## Composed search, hero and magnet movement
+
+Ordinary state $02, hero states $24/$26 and magnet states $12/$3a are now
+attached to the raw World follower pass. Direct $1131c/$1156c/$12044/$11bb4
+tails enter the actual child body without manufacturing a new state or
+prepass. Magnet homing $140f0 uses the real $1452e planner, marker/leader
+selection, fractional-coordinate adoption, merge and leader registration;
+it preserves the caller's D1-D7 at the original merge wrapper.
+
+All 496 independently executed magnet/homing references match eight data
+registers and the complete 70,272-byte retained image, including attrition
+death, timer wrapping, same-cell merges, owner aliases and direct homing.
+An additional 112 complete $11252 passes match the original registers and
+retained image across both owners, all four behavior modes, search-to-magnet,
+hero selection, hero pursuit, same-cell contact/combat and three random seeds.
+These comparisons execute actual World graph/contact/cleanup/terrain bodies.
+Waiting/contact, captive/neutral controllers and live presentation remain
+separate required integrations; the raw dispatcher is not yet the live Game
+scheduler.
