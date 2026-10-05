@@ -138,7 +138,9 @@ func TestPreHUDInputAgainstOriginalCPU(t *testing.T) {
 			case "copy":
 				var p NativePresentationCopy
 				p, err = r.CopyBackground(m.callbacks(), &c)
-				if err == nil && ([6]uint32{p.Source, p.Destination, uint32(p.Control), uint32(p.Size), 0, 0} != f.Blit || p.Bytes != 32000) {
+				// The native fixture records BLTDPT then BLTAPT, followed
+				// by control/size/modulo words. Those are destination/source.
+				if err == nil && ([6]uint32{p.Destination, p.Source, uint32(p.Control), uint32(p.Size), 0, 0} != f.Blit || p.Bytes != 32000) {
 					t.Fatalf("original bitmap blitter request differs: %+v want%x", p, f.Blit)
 				}
 			case "highlight":

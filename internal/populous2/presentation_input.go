@@ -21,7 +21,7 @@ type NativePresentationInputRules struct {
 }
 
 // NativePresentationCopy is the $c8c2 blitter request. Its 800 rows of 20
-// words copy all four contiguous 8,000-byte planes; it does not swap buffers.
+// words copy all four contiguous 8,000-byte planes from$22 to$1e.
 type NativePresentationCopy struct {
 	Source, Destination uint32
 	Bytes               int
@@ -94,11 +94,11 @@ func (*NativePresentationInputRules) CopyBackground(m FollowerCleanupMemory, c *
 		return p, fmt.Errorf("native pre-HUD bitmap pointers missing")
 	}
 	var err error
-	p.Source, err = m.Read32(0x1e)
+	p.Source, err = m.Read32(0x22)
 	if err != nil {
 		return p, err
 	}
-	p.Destination, err = m.Read32(0x22)
+	p.Destination, err = m.Read32(0x1e)
 	if err != nil {
 		return p, err
 	}
