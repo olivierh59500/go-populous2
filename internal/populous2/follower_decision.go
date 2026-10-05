@@ -10,7 +10,7 @@ import (
 type NativeFollowerMode uint16
 
 const (
-	NativeFollowerSettle NativeFollowerMode = 0
+	NativeFollowerSettle NativeFollowerMode = 14
 	NativeFollowerMagnet NativeFollowerMode = 16
 	NativeFollowerJoin   NativeFollowerMode = 18
 	NativeFollowerFight  NativeFollowerMode = 20
