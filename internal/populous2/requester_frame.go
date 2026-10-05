@@ -195,6 +195,12 @@ func (b nativeRequesterFrameBacking) compile(definition uint32, parameters []Nat
 // click translates $4d9c/$4dac, including signed MOVEM.W inputs, raw marker
 // table reads, retained workspace radio mutations and the real sound child.
 func (b nativeRequesterFrameBacking) click() (end uint32, failure error) {
+	return b.clickAt(true)
+}
+
+// clickAt(false) enters actual$4dac; true includes$4d9c's unconditional
+// outside-click clear. The valid-hit clear inside4dac remains in both modes.
+func (b nativeRequesterFrameBacking) clickAt(clearAfter bool) (end uint32, failure error) {
 	c, m, code := b.Frame, b.Memory, b.Code
 	pressed, e := m.Read16(0x140)
 	if e != nil {
@@ -202,7 +208,7 @@ func (b nativeRequesterFrameBacking) click() (end uint32, failure error) {
 	}
 	zero := func() (uint32, error) { c.D[0] = 0; return end, nil }
 	defer func() {
-		if failure == nil {
+		if failure == nil && clearAfter {
 			failure = m.Write16(0x140, 0)
 		}
 	}()
