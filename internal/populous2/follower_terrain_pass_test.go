@@ -51,7 +51,7 @@ func TestNativeFollowerTerrainFrameCompletePassAgainstCPU(t *testing.T) {
 					return e
 				},
 			}
-			bindings := NativeFollowerFrameBindings{Aftermath: &rules.Aftermath, Other: func(ref NativeRecordReference, _ uint16, _ *NativeFrameRegisterContext, _ *NativeFollowerPassState) (NativeFollowerPassFlow, error) {
+			bindings := NativeFollowerFrameBindings{Terrain: &rules, Aftermath: &rules.Aftermath, Other: func(ref NativeRecordReference, _ uint16, _ *NativeFrameRegisterContext, _ *NativeFollowerPassState) (NativeFollowerPassFlow, error) {
 				boundary, e := rules.Tick(ref, terrain)
 				switch boundary {
 				case 0x123b4:

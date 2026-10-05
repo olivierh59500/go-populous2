@@ -489,3 +489,23 @@ These comparisons execute actual World graph/contact/cleanup/terrain bodies.
 Waiting/contact, captive/neutral controllers and live presentation remain
 separate required integrations; the raw dispatcher is not yet the live Game
 scheduler.
+
+## Waiting, contact, terrain and siege dispatcher bindings
+
+The World dispatcher now binds waiting $0a, completed contact $0c, water $16,
+conversion $36, burning $3c and siege states $1c/$1e/$22. A contact's direct
+$1204e continuation executes Chase without changing the source state. Actual
+zero references remain valid selected reserved records; contact and merge flags
+distinguish them from no selection. The production World callbacks match all
+947 waiting/contact references (including 36 odd-word prefixes, 148 merges
+and 229 contacts) and all 1,324 terrain references (including 12 original
+address-fault prefixes). Seventy-two complete terrain passes also match through
+the dispatcher itself, rather than an external replacement body.
+
+The new siege body retains animation loops, signed-target admission, population
+shift/wrap, hero-specific release animation and exact word writes before real
+cleanup or town reform. All 1,796 independent native controller executions and
+48 complete $11252 passes match eight data registers and 70,272 retained bytes.
+The complete passes also run genuine downstream search/movement and aftermath.
+These source-family checks advance the raw simulation; captive/neutral/ruin
+dispatch and live frame/presentation remain required integration.

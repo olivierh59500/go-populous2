@@ -10,10 +10,13 @@ type NativeFollowerFrameBindings struct {
 	Town      *NativeFollowerTownFrameRules
 	// TownState retains the evaluator property cache and parcel scratch across
 	// actors. Only its outer flag and minimap variant reset at dispatch.
-	TownState *NativeTownFrameState
-	Decision  *FollowerDecisionFrameRules
-	Hero      *NativeFollowerHeroFrameRules
-	Magnet    *NativeFollowerMagnetFrameRules
+	TownState   *NativeTownFrameState
+	Decision    *FollowerDecisionFrameRules
+	Hero        *NativeFollowerHeroFrameRules
+	Magnet      *NativeFollowerMagnetFrameRules
+	Terrain     *NativeFollowerTerrainFrameRules
+	WaitContact *NativeFollowerWaitContactFrameRules
+	Siege       *NativeFollowerSiegeFrameRules
 	// Continue executes direct search/town/hero tails reached from a child,
 	// without inventing another prepass or starting a new actor update.
 	Continue func(NativeRecordReference, uint32, *NativeFrameRegisterContext, *NativeFollowerPassState) (NativeFollowerPassFlow, error)
@@ -53,6 +56,42 @@ func (w *World) nativeFollowerFrameCallbacks(frame *NativeFrameRegisterContext, 
 			}
 			if actorState == 2 {
 				return w.nativeFollowerFrameContinuation(ref, 0x1131c, frame, state, bindings)
+			}
+			if actorState == 0x1c || actorState == 0x1e || actorState == 0x22 {
+				if bindings.Siege == nil {
+					return NativeFollowerNext, fmt.Errorf("native follower siege frame rules missing")
+				}
+				boundary, err := bindings.Siege.Tick(ref, w.nativeSiegeFrameCallbacks(frame))
+				if err != nil {
+					return NativeFollowerNext, err
+				}
+				return w.nativeFollowerFrameContinuation(ref, boundary, frame, state, bindings)
+			}
+			if actorState == 0x0a || actorState == 0x0c {
+				if bindings.WaitContact == nil {
+					return NativeFollowerNext, fmt.Errorf("native follower waiting/contact frame rules missing")
+				}
+				cb := w.nativeWaitContactFrameCallbacks(frame)
+				var step NativeFollowerWaitContactFrameStep
+				if actorState == 0x0a {
+					step, err = bindings.WaitContact.TickWaiting(ref, cb)
+				} else {
+					step, err = bindings.WaitContact.CompleteContact(ref, cb)
+				}
+				if err != nil {
+					return NativeFollowerNext, err
+				}
+				return w.nativeFollowerFrameContinuation(ref, step.Continuation, frame, state, bindings)
+			}
+			if actorState == 0x16 || actorState == 0x36 || actorState == 0x3c {
+				if bindings.Terrain == nil {
+					return NativeFollowerNext, fmt.Errorf("native follower terrain frame rules missing")
+				}
+				boundary, err := bindings.Terrain.Tick(ref, w.nativeTerrainFrameCallbacks(frame))
+				if err != nil {
+					return NativeFollowerNext, err
+				}
+				return w.nativeFollowerFrameContinuation(ref, boundary, frame, state, bindings)
 			}
 			if actorState == 0x24 || actorState == 0x26 {
 				if bindings.Hero == nil {
@@ -173,6 +212,15 @@ func (w *World) nativeFollowerFrameContinuation(ref NativeRecordReference, bound
 		}
 		_, err := bindings.Hero.Select(ref, w.nativeHeroFrameCallbacks(frame))
 		return NativeFollowerCount, err
+	case 0x1204e:
+		if bindings.Hero == nil {
+			return NativeFollowerNext, fmt.Errorf("native follower hero chase frame rules missing")
+		}
+		step, err := bindings.Hero.Chase(ref, w.nativeHeroFrameCallbacks(frame))
+		if err != nil {
+			return NativeFollowerNext, err
+		}
+		return w.nativeFollowerFrameContinuation(step.RedispatchSource, step.Continuation, frame, state, bindings)
 	case 0x11bb4:
 		if bindings.Magnet == nil || bindings.Hero == nil {
 			return NativeFollowerNext, fmt.Errorf("native follower search magnet/planner frame rules missing")
