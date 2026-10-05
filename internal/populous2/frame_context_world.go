@@ -53,6 +53,14 @@ func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) Native
 				}
 				return nil
 			}})
+		case 0x36, 0x38, 0x3a:
+			rules := NativeCommandRules{Code: w.NativeAI.Code}
+			return rules.TickFrameBasalt(ref, c, NativeFrameBasaltCallbacks{Memory: w.nativeCleanupMemory(), Unlink: w.nativeRuntimeUnlink, Create: func(context *NativeFrameRegisterContext) error {
+				command := context.CommandContext()
+				_, e := w.commandBasaltCreation(NativeCommandCall{Routine: 0x171ea, Context: &command})
+				context.SetCommandContext(command)
+				return e
+			}})
 		case 0x28, 0x2a:
 			cb := w.tsunamiCallbacks()
 			cb.Frame = c
