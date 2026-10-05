@@ -1,0 +1,44 @@
+package populous2
+
+import "fmt"
+
+type NativeFrameWorldBindings struct {
+	// FXBody is required for effect families whose full source-register
+	// controller has not yet been installed in this adapter.
+	FXBody   func(NativeRecordReference, *NativeFrameRegisterContext) (NativeFrameFXStep, error)
+	Commands NativeCommandWorldBindings
+}
+
+func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) NativeFrameFXCallbacks {
+	return NativeFrameFXCallbacks{Memory: w.nativeCleanupMemory(), Tick: func(ref NativeRecordReference, c *NativeFrameRegisterContext) (NativeFrameFXStep, error) {
+		at := cleanupRecordAddress(ref)
+		state, e := w.nativeCleanupMemory().Read8(at + 22)
+		if e != nil {
+			return NativeFrameFXStep{}, e
+		}
+		switch state {
+		case 0:
+			return NativeFrameFXStep{}, nil
+		case 2, 4, 6:
+			cb := w.nativeFireColumnCallbacks()
+			cb.Frame = c
+			step, e := w.NativeFireColumn.Tick(ref, cb)
+			return NativeFrameFXStep{Draw: !step.Removed, Color: 5}, e
+		case 0x12, 0x14:
+			cb := w.nativeFungusCallbacks()
+			cb.Frame = c
+			step, e := w.NativeFungus.Tick(ref, cb)
+			return NativeFrameFXStep{Draw: !step.Generated, Color: 5}, e
+		default:
+			if bindings.FXBody != nil {
+				return bindings.FXBody(ref, c)
+			}
+			return NativeFrameFXStep{}, fmt.Errorf("native FX frame state%02x register controller missing", state)
+		}
+	}}
+}
+
+func (w *World) tickNativeFrameFX(context *NativeFrameRegisterContext, bindings NativeFrameWorldBindings) error {
+	rules := NativeCommandRules{Code: w.NativeAI.Code}
+	return rules.TickFrameFX(context, w.nativeFrameFXCallbacks(bindings))
+}

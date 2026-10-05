@@ -48,6 +48,7 @@ const (
 )
 
 type NativeAICallbacks struct {
+	Frame   *NativeFrameRegisterContext
 	Memory  FollowerCleanupMemory
 	Random  func() uint16
 	Context *NativeAIRegisterContext
@@ -150,7 +151,15 @@ func (r *NativeAIRules) Tick(cb NativeAICallbacks) (NativeAIStep, error) {
 // ReleaseTown translates $13ba4: its own cooldown, baseline sculpt price and
 // original town-stage population threshold select right-click command4. It
 // does not release a Go follower itself; command execution remains later.
-func (r *NativeAIRules) ReleaseTown(god, command int, cb NativeAICallbacks) (bool, error) {
+func (r *NativeAIRules) ReleaseTown(god, command int, cb NativeAICallbacks) (chosen bool, failure error) {
+	defer func() {
+		if cb.Frame != nil && failure == nil {
+			cb.Frame.D[0] = 0
+			if chosen {
+				cb.Frame.D[0] = 1
+			}
+		}
+	}()
 	m := cb.Memory
 	if r == nil || !winMemoryValid(m) {
 		return false, fmt.Errorf("native AI town-release memory missing")
@@ -295,7 +304,15 @@ func aiReferenceAddress(ref uint16) int { return 0x76c0 + int(int16(ref)) }
 // Urgent translates $138c0: repair the observed water-follower cell, emit a
 // prepared affordable power, or repair the observed hazardous tile. It uses
 // native base prices and raw references rather than player admission or XP.
-func (r *NativeAIRules) Urgent(god, command int, cb NativeAICallbacks) (bool, error) {
+func (r *NativeAIRules) Urgent(god, command int, cb NativeAICallbacks) (chosen bool, failure error) {
+	defer func() {
+		if cb.Frame != nil && failure == nil {
+			cb.Frame.D[0] = 0
+			if chosen {
+				cb.Frame.D[0] = 1
+			}
+		}
+	}()
 	m := cb.Memory
 	if r == nil || !winMemoryValid(m) {
 		return false, fmt.Errorf("native AI urgent memory missing")
@@ -314,6 +331,9 @@ func (r *NativeAIRules) Urgent(god, command int, cb NativeAICallbacks) (bool, er
 	prepared, err := m.Read16(god + 0x38)
 	if err != nil {
 		return false, err
+	}
+	if cb.Frame != nil {
+		cb.Frame.Word(1, prepared)
 	}
 	if prepared != 0 {
 		price, err := r.basePrice(prepared)
@@ -384,7 +404,15 @@ func (r *NativeAIRules) commandAtActor(command int, kind uint8, actor int, m Fol
 // Expand translates $1395a and its exact sentinel-terminated parcel order.
 // Friendly nontown occupants reject a parcel; towns do not. Property masks,
 // random hazardous-ground choice and byte comparisons retain native ordering.
-func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, error) {
+func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (chosen bool, failure error) {
+	defer func() {
+		if cb.Frame != nil && failure == nil {
+			cb.Frame.D[0] = 0
+			if chosen {
+				cb.Frame.D[0] = 1
+			}
+		}
+	}()
 	m := cb.Memory
 	if r == nil || !winMemoryValid(m) {
 		return false, fmt.Errorf("native AI expansion memory missing")
@@ -430,6 +458,9 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 		return false, err
 	}
 	origin := uint16(y)<<8 | uint16(x)
+	if cb.Frame != nil {
+		cb.Frame.Word(1, origin)
+	}
 	originHeight, err := r.height(origin, m)
 	if err != nil {
 		return false, err
@@ -437,6 +468,11 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 	if cb.Context != nil {
 		cb.Context.D4 = origin&0xff00 | uint16(uint8(origin)<<2)
 		cb.Context.D5 = uint16(originHeight)
+	}
+	if cb.Frame != nil {
+		cb.Frame.Word(4, origin&0xff00|uint16(uint8(origin)<<2))
+		cb.Frame.Word(5, uint16(originHeight))
+		cb.Frame.Word(2, uint16(originHeight))
 	}
 	identity, err := m.Read8(god + 0x19)
 	if err != nil {
@@ -447,12 +483,18 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 		if cb.Context != nil {
 			cb.Context.D4 = packed
 		}
+		if cb.Frame != nil {
+			cb.Frame.Word(4, packed)
+		}
 		if packed&0xc0c0 != 0 {
 			continue
 		}
 		grid := 0xf44 + int(int16(packed&0xff00|uint16(uint8(packed)<<2)))
 		if cb.Context != nil {
 			cb.Context.D4 = uint16(grid - 0xf44)
+		}
+		if cb.Frame != nil {
+			cb.Frame.Word(4, uint16(grid-0xf44))
 		}
 		head, err := m.Read16(grid + 2)
 		if err != nil {
@@ -493,6 +535,9 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 		if cb.Context != nil {
 			cb.Context.D5 = uint16(height)
 		}
+		if cb.Frame != nil {
+			cb.Frame.Word(5, uint16(height))
+		}
 		tile, err := m.Read8(grid + 1)
 		if err != nil {
 			return false, err
@@ -515,6 +560,9 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 		if cb.Context != nil {
 			cb.Context.D5 = uint16(kind)
 		}
+		if cb.Frame != nil {
+			cb.Frame.Word(5, uint16(kind))
+		}
 		if err := m.Write8(command+1, kind); err != nil {
 			return false, err
 		}
@@ -529,6 +577,9 @@ func (r *NativeAIRules) Expand(god, command int, cb NativeAICallbacks) (bool, er
 	}
 	if cb.Context != nil {
 		cb.Context.D4 = 0xff9d
+	}
+	if cb.Frame != nil {
+		cb.Frame.Word(4, 0xff9d)
 	}
 	return false, m.Write8(actor+0x13, stage)
 }

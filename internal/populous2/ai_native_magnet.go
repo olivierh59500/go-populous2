@@ -23,6 +23,10 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 	if err != nil {
 		return false, err
 	}
+	frame := cb.Frame
+	if frame != nil {
+		frame.Word(0, minimum)
+	}
 	towns, err := m.Read16(god + 0x24)
 	if err != nil {
 		return false, err
@@ -51,11 +55,17 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 		if index == 3 {
 			kind = 20
 		}
+		if frame != nil {
+			frame.D[0] = 1
+		}
 		return true, m.Write8(command+1, kind)
 	}
 	if int16(towns) <= int16(minimum) {
 		if mode == 16 {
 			return switchMode()
+		}
+		if frame != nil {
+			frame.D[0] = 0
 		}
 		return false, nil
 	}
@@ -63,8 +73,21 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 	if err != nil {
 		return false, err
 	}
+	if frame != nil {
+		frame.Word(0, leader)
+	}
 	join := false
 	if leader == 0 {
+		if frame != nil {
+			choice, e := m.Read16(god + 0x26)
+			if e != nil {
+				return false, e
+			}
+			frame.Word(0, choice)
+			if choice != 0 {
+				frame.Word(0, choice>>2)
+			}
+		}
 		if err := r.clearLeaderChoice(god, m); err != nil {
 			return false, err
 		}
@@ -83,11 +106,17 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 		if err != nil {
 			return false, err
 		}
+		if frame != nil {
+			frame.D[3] = 4096
+		}
 		useEnemy := false
 		if int32(population) >= 4096 {
 			leaderChoices, err := m.Read16(god + 0x96)
 			if err != nil {
 				return false, err
+			}
+			if frame != nil {
+				frame.Word(1, leaderChoices)
 			}
 			if leaderChoices != 0 {
 				if cb.Random == nil {
@@ -97,10 +126,23 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 				if err != nil {
 					return false, err
 				}
-				choice := (cb.Random()%leaderChoices + firstCount) * 4
+				bits := cb.Random()
+				choice := (bits%leaderChoices + firstCount) * 4
+				if frame != nil {
+					frame.D[0] = uint32(bits)
+					_ = frameDivide(frame, 0, leaderChoices)
+					frame.Swap(0)
+					frame.Word(0, (uint16(frame.D[0])+firstCount)*4)
+				}
 				old, err := m.Read16(god + 0x26)
 				if err != nil {
 					return false, err
+				}
+				if frame != nil {
+					frame.Word(1, old)
+					if old != 0 {
+						frame.Word(1, old>>2)
+					}
 				}
 				if old != 0 && old>>2 >= firstCount {
 					useEnemy = true
@@ -111,6 +153,9 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 				}
 			}
 			if !useEnemy {
+				if frame != nil {
+					frame.D[3] = 8192
+				}
 				useEnemy = int32(population) >= 8192
 			}
 		}
@@ -120,6 +165,9 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 				return false, err
 			}
 			if available == 0 {
+				if frame != nil {
+					frame.D[0] = 0
+				}
 				return false, nil
 			}
 			target, err = m.Read16(enemy + 0x22)
@@ -144,7 +192,16 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 		if err != nil {
 			return false, err
 		}
+		if frame != nil {
+			frame.Byte(0, mx)
+			if x == mx {
+				frame.Byte(0, my)
+			}
+		}
 		if x != mx || y != my {
+			if frame != nil {
+				frame.D[0] = 1
+			}
 			return true, r.commandAtActor(command, 8, targetActor, m)
 		}
 		timer, err := m.Read16(god + 0x28)
@@ -171,9 +228,15 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 				if r.Properties[tile]&1 == 0 {
 					return switchMode()
 				}
+				if frame != nil {
+					frame.Word(0, uint16(tile)*2)
+				}
 			}
 		} else {
 			if int16(timer) > 1 {
+				if frame != nil {
+					frame.D[0] = 0
+				}
 				return false, nil
 			}
 			join = true
@@ -215,6 +278,9 @@ func (r *NativeAIRules) MagnetMode(god, command int, cb NativeAICallbacks) (bool
 		if err := m.Write16(god+0x28, 0); err != nil {
 			return false, err
 		}
+	}
+	if frame != nil {
+		frame.Word(1, r.Properties[tile]&0x790)
 	}
 	pending, err := m.Read8(command + 1)
 	return pending != 0, err

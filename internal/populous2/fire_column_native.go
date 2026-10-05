@@ -36,6 +36,7 @@ func DecodeNativeFireColumnRules(exe *amiga.Executable) (NativeFireColumnRules, 
 }
 
 type NativeFireColumnCallbacks struct {
+	Frame  *NativeFrameRegisterContext
 	Memory FollowerCleanupMemory
 	Random func() uint16
 	Move   func(NativeRecordReference, uint16, uint16) (bool, error)
@@ -51,8 +52,11 @@ type NativeFireColumnStep struct {
 	Hits                                             uint16
 }
 
-func (r *NativeFireColumnRules) advance(m *nativeWhirlwindMemory, at int, loop bool) (bool, error) {
+func (r *NativeFireColumnRules) advance(m *nativeWhirlwindMemory, at int, loop bool, frame *NativeFrameRegisterContext) (bool, error) {
 	next := m.word(at+10) + 4
+	if frame != nil {
+		frame.Word(0, next)
+	}
 	address := 0x23d1a + int(int16(next))
 	if m.err != nil {
 		return false, m.err
@@ -66,6 +70,9 @@ func (r *NativeFireColumnRules) advance(m *nativeWhirlwindMemory, at int, loop b
 			return false, nil
 		}
 		next += uint16(marker)
+		if frame != nil {
+			frame.Word(0, next)
+		}
 	}
 	m.putWord(at+10, next)
 	return true, m.err
@@ -77,34 +84,70 @@ func (r *NativeFireColumnRules) route(at int, cb NativeFireColumnCallbacks, step
 	m := nativeWhirlwindMemory{m: cb.Memory}
 	origin := m.word(at+8)&0xff00 | uint16(m.byte(at+6))
 	height := uint16(m.byte(nativeWhirlwindGrid(origin)) & 7)
+	frame := cb.Frame
+	if frame != nil {
+		frame.Word(6, origin)
+		frame.Word(3, origin&0xff00|uint16(uint8(origin)*4))
+		frame.Byte(3, uint8(height))
+	}
 	if m.err != nil {
 		return m.err
 	}
 	bits := cb.Random()
+	if frame != nil {
+		frame.D[0] = uint32(bits)
+		frame.Word(4, bits)
+		frame.Word(5, (bits&14)*2)
+		frame.D[2] = 7
+	}
 	step.RandomDraws++
 	start, selected := int(bits&0x0e)/2, uint16(0)
 	for i := 0; i < 8; i++ {
 		parcel := origin + r.Neighbors[start+i]
+		if frame != nil {
+			frame.Word(1, parcel)
+			frame.Word(0, parcel&0xc0c0)
+		}
 		if parcel&0xc0c0 != 0 {
 			continue
 		}
 		candidate := uint16(m.byte(nativeWhirlwindGrid(parcel)) & 7)
+		if frame != nil {
+			frame.Word(1, parcel&0xff00|uint16(uint8(parcel)*4))
+			frame.Byte(0, uint8(candidate))
+		}
 		if candidate < height {
 			continue
 		}
 		if candidate == height {
 			accept := bits&1 != 0
 			bits >>= 1
+			if frame != nil {
+				frame.Word(4, bits)
+			}
 			if !accept {
 				continue
 			}
 		}
 		height, selected = candidate, uint16((start+i)*4)
+		if frame != nil {
+			frame.Word(3, candidate)
+		}
+	}
+	if frame != nil {
+		frame.Word(5, (uint16(start)*4)+32)
+		frame.Word(2, 0xffff)
 	}
 	if selected == 0 {
 		selected = bits & 0x3c
+		if frame != nil {
+			frame.Word(4, selected)
+		}
 	}
 	speed := m.byte(at + 18)
+	if frame != nil {
+		frame.D[1] = uint32(speed)
+	}
 	if m.err != nil {
 		return m.err
 	}
@@ -118,6 +161,11 @@ func (r *NativeFireColumnRules) route(at int, cb NativeFireColumnCallbacks, step
 		return fmt.Errorf("native fire column route division by zero")
 	}
 	m.putWord(at+20, uint16(255/uint16(speed))*2)
+	if frame != nil {
+		frame.D[0] = 255
+		_ = frameDivide(frame, 0, uint16(speed))
+		frame.Word(0, uint16(frame.D[0])*2)
+	}
 	step.Routed = true
 	return m.err
 }
@@ -145,7 +193,7 @@ func (r *NativeFireColumnRules) Tick(ref NativeRecordReference, cb NativeFireCol
 		return cb.Unlink(ref)
 	}
 	ending := func() error {
-		advanced, err := r.advance(&m, at, false)
+		advanced, err := r.advance(&m, at, false, cb.Frame)
 		if err != nil {
 			return err
 		}
@@ -157,7 +205,7 @@ func (r *NativeFireColumnRules) Tick(ref NativeRecordReference, cb NativeFireCol
 	}
 	state := m.byte(at + 22)
 	if state == 2 {
-		advanced, err := r.advance(&m, at, false)
+		advanced, err := r.advance(&m, at, false, cb.Frame)
 		if err != nil {
 			return step, err
 		}
@@ -180,7 +228,7 @@ func (r *NativeFireColumnRules) Tick(ref NativeRecordReference, cb NativeFireCol
 			err := ending()
 			return step, err
 		}
-		advanced, err := r.advance(&m, at, true)
+		advanced, err := r.advance(&m, at, true, cb.Frame)
 		if err != nil {
 			return step, err
 		}
@@ -188,6 +236,12 @@ func (r *NativeFireColumnRules) Tick(ref NativeRecordReference, cb NativeFireCol
 		grid, err := stormCell(cb.Memory, at)
 		if err != nil {
 			return step, err
+		}
+		if cb.Frame != nil {
+			packed := m.word(at+8)&0xff00 | uint16(m.byte(at+6))
+			cb.Frame.Word(6, packed)
+			cb.Frame.Word(3, uint16(grid-0xf44))
+			cb.Frame.D[0] = uint32(m.byte(grid+1)) * 2
 		}
 		if r.Storm.Properties[m.byte(grid+1)]&8 != 0 {
 			step.Water = true
@@ -207,12 +261,24 @@ func (r *NativeFireColumnRules) Tick(ref NativeRecordReference, cb NativeFireCol
 			}
 		}
 		x, y := m.word(at+6)+m.word(at+14), m.word(at+8)+m.word(at+16)
+		if cb.Frame != nil {
+			cb.Frame.Word(6, x)
+			cb.Frame.Word(7, m.word(at+8))
+			if int16(x) >= 0 {
+				cb.Frame.Word(7, y)
+			}
+		}
 		if m.err != nil {
 			return step, m.err
 		}
 		if int16(x) < 0 || int16(y) < 0 || int16(x) >= 0x4000 || int16(y) >= 0x4000 {
 			err = remove()
 			return step, err
+		}
+		if cb.Frame != nil {
+			if err := cb.Frame.ObserveMove(ref, x, y, cb.Memory); err != nil {
+				return step, err
+			}
 		}
 		if _, err := cb.Move(ref, x, y); err != nil {
 			return step, err
@@ -223,6 +289,10 @@ func (r *NativeFireColumnRules) Tick(ref NativeRecordReference, cb NativeFireCol
 		}
 		step.DamageScans++
 		step.Hits, err = r.Storm.Damage(ref, StormCallbacks{Memory: cb.Memory, DestroyTown: cb.DestroyTown})
+		if cb.Frame != nil {
+			cb.Frame.Word(0, 0)
+			cb.Frame.D[1] = uint32(step.Hits)
+		}
 		return step, err
 	}
 	if state == 6 {

@@ -37,7 +37,10 @@ func DecodeNativeFungusRules(exe *amiga.Executable) (NativeFungusRules, error) {
 	return r, err
 }
 
-type NativeFungusCallbacks struct{ Memory FollowerCleanupMemory }
+type NativeFungusCallbacks struct {
+	Memory FollowerCleanupMemory
+	Frame  *NativeFrameRegisterContext
+}
 type NativeFungusCreation struct {
 	Reference                          NativeRecordReference
 	Planted, Created, Reused, PoolFull bool
@@ -127,8 +130,9 @@ func (r *NativeFungusRules) Create(owner uint16, x, y uint8, cb NativeFungusCall
 }
 
 type nativeFungusSurface struct {
-	m    *nativeWhirlwindMemory
-	step *NativeFungusStep
+	m     *nativeWhirlwindMemory
+	step  *NativeFungusStep
+	frame *NativeFrameRegisterContext
 }
 
 func (s nativeFungusSurface) read(address int) uint8 {
@@ -151,21 +155,41 @@ func (s nativeFungusSurface) write(address int, tile uint8, revision bool) {
 func (r *NativeFungusRules) age(at int, s nativeFungusSurface) error {
 	x, y := s.m.byte(at+7), s.m.byte(at+9)
 	start := nativeWhirlwindGrid(uint16(y)<<8 | uint16(x))
+	if s.frame != nil {
+		s.frame.Word(0, uint16(start-0xf44))
+	}
 	dx, dy := s.m.byte(at+28), s.m.byte(at+29)
+	if s.frame != nil {
+		s.frame.D[7] = uint32(dy)
+		s.frame.D[1] = uint32(dx)
+	}
 	for row := 0; row <= int(dy) && s.m.err == nil; row++ {
 		for col := 0; col <= int(dx) && s.m.err == nil; col++ {
 			address := start + row*256 + col*4 + 1
 			tile := s.read(address)
+			if s.frame != nil {
+				s.frame.Byte(0, tile)
+			}
 			if tile > 144 && tile <= 148 {
 				s.write(address, tile+1, true)
+				if s.frame != nil {
+					s.frame.Byte(0, tile+1)
+				}
 			} else if tile > 149 && tile <= 151 {
 				next := tile + 1
 				if next == 152 {
 					next = 15
 				}
 				s.write(address, next, true)
+				if s.frame != nil {
+					s.frame.Byte(0, next)
+				}
 			}
 		}
+	}
+	if s.frame != nil {
+		s.frame.Word(1, 0xffff)
+		s.frame.Word(7, 0xffff)
 	}
 	return s.m.err
 }
@@ -173,20 +197,47 @@ func (r *NativeFungusRules) age(at int, s nativeFungusSurface) error {
 func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 	m := s.m
 	start := nativeWhirlwindGrid(m.word(at+8)&0xff00 | uint16(m.byte(at+6)))
+	if s.frame != nil {
+		s.frame.Word(0, uint16(start-0xf44))
+	}
 	dx, dy := m.byte(at+26), m.byte(at+27)
+	if s.frame != nil {
+		s.frame.D[2] = 0
+		s.frame.D[7] = uint32(dy)
+		s.frame.D[1] = uint32(dx)
+	}
 	scratch := NativeFungusScratch{MinX: 255, MinY: 0x4100, MaxY: 0xffff}
 	for row := 0; row <= int(dy) && m.err == nil; row++ {
 		for col := 0; col <= int(dx) && m.err == nil; col++ {
 			address := start + row*256 + col*4
-			properties := r.Properties[s.read(address+1)] & 0x37
+			tile := s.read(address + 1)
+			properties := r.Properties[tile] & 0x37
+			if s.frame != nil {
+				s.frame.Word(2, uint16(tile)*2)
+				s.frame.Word(4, properties)
+			}
 			if properties == 0 {
 				continue
 			}
 			neighbors := 0
+			if s.frame != nil {
+				s.frame.D[3] = 0
+			}
 			for _, delta := range r.Neighbors {
-				if r.Properties[s.read(address+int(delta)+1)] == 0x10 {
-					neighbors++
+				neighbor := s.read(address + int(delta) + 1)
+				if s.frame != nil {
+					s.frame.Word(0, uint16(delta))
+					s.frame.Word(2, uint16(neighbor)*2)
 				}
+				if r.Properties[neighbor] == 0x10 {
+					neighbors++
+					if s.frame != nil {
+						s.frame.Word(3, uint16(neighbors))
+					}
+				}
+			}
+			if s.frame != nil {
+				s.frame.Word(0, 0xff9d)
 			}
 			if m.err != nil {
 				return m.err
@@ -203,6 +254,10 @@ func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 				s.write(address+1, 145, false)
 			}
 			offset := uint16(address - 0xf44)
+			if s.frame != nil {
+				s.frame.D[0] = uint32(int32(address - 0xf44))
+				s.frame.Byte(0, 0)
+			}
 			x, y := uint8(offset), offset&0xff00
 			if x <= scratch.MinX {
 				scratch.MinX = x
@@ -219,6 +274,11 @@ func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 		}
 	}
 	s.step.Scratch = scratch
+	if s.frame != nil {
+		s.frame.Word(1, 0xffff)
+		s.frame.Word(7, 0xffff)
+		s.frame.Byte(0, scratch.MinX)
+	}
 	if m.err != nil {
 		return m.err
 	}
@@ -232,6 +292,10 @@ func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 	if int8(newX) < 0 {
 		newX = 0
 	}
+	if s.frame != nil {
+		s.frame.Byte(0, newX)
+		s.frame.Byte(1, scratch.MaxX>>2)
+	}
 	workX := newX
 	if newX > oldX {
 		workX = oldX
@@ -239,6 +303,9 @@ func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 	m.putByte(at+7, workX)
 	m.putByte(at+6, newX)
 	newDX := (scratch.MaxX >> 2) - newX + 1
+	if s.frame != nil {
+		s.frame.Byte(0, newDX+newX)
+	}
 	workDX := newDX
 	if newDX <= dx {
 		workDX = dx
@@ -247,10 +314,16 @@ func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 	m.putByte(at+26, newDX)
 	if int8(newX+newDX) >= 64 {
 		m.putByte(at+26, 63-newX)
+		if s.frame != nil {
+			s.frame.Byte(0, 63-newX)
+		}
 	}
 	newY := uint8(scratch.MinY>>8) - 1
 	if int8(newY) < 0 {
 		newY = 0
+	}
+	if s.frame != nil {
+		s.frame.Byte(0, newY)
 	}
 	workY := newY
 	if newY > oldY {
@@ -259,6 +332,9 @@ func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 	m.putByte(at+9, workY)
 	m.putByte(at+8, newY)
 	newDY := uint8(scratch.MaxY>>8) - newY + 1
+	if s.frame != nil {
+		s.frame.Byte(0, newDY+newY)
+	}
 	workDY := newDY
 	if newDY <= dy {
 		workDY = dy
@@ -269,6 +345,9 @@ func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 	// stored and remain independent of this current-rectangle typo.
 	if int8(newY+newDY) >= 64 {
 		m.putByte(at+27, 63-newX)
+		if s.frame != nil {
+			s.frame.Byte(0, 63-newX)
+		}
 	}
 	return m.err
 }
@@ -290,6 +369,11 @@ func (r *NativeFungusRules) Tick(ref NativeRecordReference, cb NativeFungusCallb
 	state := m.byte(at + 22)
 	if state == 0x12 {
 		god := heroGodAddress(m.byte(at + 12))
+		if cb.Frame != nil {
+			cb.Frame.Byte(0, m.byte(at+12))
+			cb.Frame.ExtendWord(0)
+			cb.Frame.D[0] = uint32(uint16(cb.Frame.D[0])) * 314
+		}
 		if m.word(god+14) != 0 {
 			wait := m.word(at + 20)
 			m.putWord(at+20, wait-1)
@@ -312,7 +396,7 @@ func (r *NativeFungusRules) Tick(ref NativeRecordReference, cb NativeFungusCallb
 	if m.err != nil {
 		return step, m.err
 	}
-	surface := nativeFungusSurface{m: &m, step: &step}
+	surface := nativeFungusSurface{m: &m, step: &step, frame: cb.Frame}
 	if int8(phase) <= 0 {
 		m.putByte(at+21, m.byte(at+18))
 		step.Generated = true
@@ -320,11 +404,20 @@ func (r *NativeFungusRules) Tick(ref NativeRecordReference, cb NativeFungusCallb
 		return step, err
 	}
 	divisor := m.byte(at+18) / 3
+	if cb.Frame != nil {
+		cb.Frame.D[0] = uint32(m.byte(at + 18))
+		_ = frameDivide(cb.Frame, 0, 3)
+		cb.Frame.D[1] = uint32(phase - 1)
+	}
 	if m.err != nil {
 		return step, m.err
 	}
 	if divisor == 0 {
 		return step, fmt.Errorf("native fungus age division by zero")
+	}
+	if cb.Frame != nil {
+		_ = frameDivide(cb.Frame, 1, uint16(divisor))
+		cb.Frame.D[1] &= 0xffff0000
 	}
 	if (phase-1)%divisor == 0 {
 		step.Aged = true

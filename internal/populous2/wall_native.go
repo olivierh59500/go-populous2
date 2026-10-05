@@ -47,6 +47,7 @@ func DecodeNativeWallRules(exe *amiga.Executable) (NativeWallRules, error) {
 type NativeWallPlacementState struct{ Neighbors [4]NativeRecordReference }
 
 type NativeWallCallbacks struct {
+	Frame        *NativeFrameRegisterContext
 	Memory       FollowerCleanupMemory
 	SourceD7     uint16 // $16270 replaces only the low mask byte.
 	Link, Unlink func(NativeRecordReference) error
@@ -220,6 +221,9 @@ func (r *NativeWallRules) TickPool(cb NativeWallCallbacks) (NativeWallPass, erro
 		return step, fmt.Errorf("native wall pool callbacks missing")
 	}
 	m := nativeWhirlwindMemory{m: cb.Memory}
+	if cb.Frame != nil {
+		cb.Frame.D[1] = 0
+	}
 	for at := 0x5f50; at < 0x6bd0; at += 16 {
 		owner := m.byte(at + 12)
 		if m.err != nil {
@@ -230,10 +234,19 @@ func (r *NativeWallRules) TickPool(cb NativeWallCallbacks) (NativeWallPass, erro
 		}
 		step.Visited++
 		packed := m.word(at+8)&0xff00 | uint16(m.byte(at+6))
-		if r.Art.Properties[m.byte(nativeWhirlwindGrid(packed)+1)]&0x77 == 0 {
+		tile := m.byte(nativeWhirlwindGrid(packed) + 1)
+		property := r.Art.Properties[tile] & 0x77
+		if cb.Frame != nil {
+			cb.Frame.Word(0, packed&0xff00|uint16(uint8(packed)*4))
+			cb.Frame.Word(1, property)
+		}
+		if property == 0 {
 			m.putWord(0xf2e, m.word(0xf2e)+1)
 			god := heroGodAddress(owner)
 			ref := NativeRecordReference(uint16(at - 0x76c0))
+			if cb.Frame != nil {
+				cb.Frame.D[0] = uint32(int32(at - 0x76c0))
+			}
 			if m.word(god+16) == uint16(ref) {
 				m.putWord(god+16, m.word(at+14))
 			}
@@ -248,6 +261,9 @@ func (r *NativeWallRules) TickPool(cb NativeWallCallbacks) (NativeWallPass, erro
 			continue
 		}
 		next := m.word(at+10) + 4
+		if cb.Frame != nil {
+			cb.Frame.Word(0, next-4)
+		}
 		word, err := r.word(0x23d1a + int(int16(next)))
 		if m.err != nil {
 			return step, m.err

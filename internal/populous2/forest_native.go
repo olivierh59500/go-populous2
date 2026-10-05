@@ -49,6 +49,7 @@ func DecodeForestNativeRules(exe *amiga.Executable) (ForestNativeRules, error) {
 }
 
 type ForestNativeCallbacks struct {
+	Frame        *NativeFrameRegisterContext
 	Memory       FollowerCleanupMemory
 	Random       func() uint16
 	Link, Unlink func(NativeRecordReference) error
@@ -282,6 +283,9 @@ func (rules ForestNativeRules) Tick(ref NativeRecordReference, clock uint16, cb 
 		return step, err
 	}
 	if kind == 0x1e {
+		if cb.Frame != nil {
+			cb.Frame.Byte(0, age)
+		}
 		if age != 0 {
 			if int8(age) > 0 {
 				if err := m.Write8(address+1, uint8(-int8(age))); err != nil {
@@ -292,8 +296,14 @@ func (rules ForestNativeRules) Tick(ref NativeRecordReference, clock uint16, cb 
 				}
 			}
 			magnitude := uint8(-int8(age)) + 1
+			if cb.Frame != nil {
+				cb.Frame.Byte(0, magnitude)
+			}
 			if magnitude == rules.InitialAge {
 				return step, remove()
+			}
+			if cb.Frame != nil {
+				cb.Frame.Byte(0, uint8(-int8(magnitude)))
 			}
 			return step, m.Write8(address+1, uint8(-int8(magnitude)))
 		}
@@ -302,6 +312,9 @@ func (rules ForestNativeRules) Tick(ref NativeRecordReference, clock uint16, cb 
 			return step, err
 		}
 		next := uint16(animation + 4)
+		if cb.Frame != nil {
+			cb.Frame.Word(0, next)
+		}
 		if next&1 != 0 || int(next)/2 >= len(rules.ImageWords) {
 			return step, fmt.Errorf("native tree burning animation outside bank")
 		}
@@ -326,14 +339,28 @@ func (rules ForestNativeRules) Tick(ref NativeRecordReference, clock uint16, cb 
 		if err != nil {
 			return 0, err
 		}
-		return rules.Properties[tile], nil
+		value := rules.Properties[tile] & 0x88
+		if cb.Frame != nil {
+			cb.Frame.D[0] = uint32(value)
+		}
+		return value, nil
+	}
+	if cb.Frame != nil {
+		cb.Frame.Word(1, uint16(grid-0xf44))
+		cb.Frame.Byte(0, age)
 	}
 	if int8(age) < 0 {
 		magnitude := uint8(-int8(age)) + 1
+		if cb.Frame != nil {
+			cb.Frame.Byte(0, magnitude)
+		}
 		if magnitude == rules.InitialAge {
 			return step, remove()
 		}
 		age = uint8(-int8(magnitude))
+		if cb.Frame != nil {
+			cb.Frame.Byte(0, age)
+		}
 		if err := m.Write8(address+1, age); err != nil {
 			return step, err
 		}
@@ -346,7 +373,11 @@ func (rules ForestNativeRules) Tick(ref NativeRecordReference, clock uint16, cb 
 		}
 		return step, nil
 	}
-	if int8(age) > 0 && clock&rules.AgeMask == 0 {
+	positiveAge := int8(age) > 0
+	if cb.Frame != nil && positiveAge {
+		cb.Frame.Word(2, clock&rules.AgeMask)
+	}
+	if positiveAge && clock&rules.AgeMask == 0 {
 		age--
 		if err := m.Write8(address+1, age); err != nil {
 			return step, err
