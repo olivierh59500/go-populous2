@@ -391,18 +391,18 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		return false
 	}
 	if id.IsHero() {
-		index := w.Core.Magnets[player].Carried - 1
-		if index < 0 || index >= len(w.Core.Peeps) || w.Core.Peeps[index].Population <= 0 {
+		created := false
+		err := w.runNativeFollowerCall(func() error {
+			step, err := w.HeroArt.Create(id, uint16(player+1), HeroCreationCallbacks{Memory: w.nativeCleanupMemory(), ClearLeader: w.clearNativeLeader, ClearFarms: w.clearNativeFarms, Sound: w.nativeEntryCallbacks().Sound})
+			created = step.Created
+			return err
+		})
+		if err != nil {
+			panic(err)
+		}
+		if !created {
 			return false
 		}
-		if !w.Core.PromoteHero(index) {
-			return false
-		}
-		p := &w.Core.Peeps[index]
-		population, speed, _ := HeroAttributes(id, p.Population, p.MovementSpeed, w.Experience[player])
-		p.Population = population
-		p.MovementSpeed = speed
-		w.Heroes[index] = Hero{Spell: id, Active: true, Player: player, Population: p.Population, Speed: speed}
 		w.Core.Magnets[player].Mana -= spell.Cost
 		w.recordCast(player, id)
 		return true

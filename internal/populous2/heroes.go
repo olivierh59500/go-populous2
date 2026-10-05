@@ -19,7 +19,9 @@ type HeroArt struct {
 }
 
 type HeroRules struct {
-	Art [6]HeroArt
+	Art      [6]HeroArt
+	Variants [6]uint16
+	Sounds   [6]uint16
 }
 
 var heroIDs = [6]SpellID{Perseus, Adonis, Heracles, Odysseus, Achilles, Helen}
@@ -43,8 +45,10 @@ func DecodeHeroRules(exe *amiga.Executable) (HeroRules, error) {
 		return result, fmt.Errorf("Populous II hero animation tables missing")
 	}
 	code := exe.Hunks[0].Data
+	result.Sounds = [6]uint16{0x30c, 0x316, 0x320, 0x32a, 0x15e, 0x35c}
 	for hero := range result.Art {
 		start := int(binary.BigEndian.Uint16(code[0x20a00+hero*2:]))
+		result.Variants[hero] = uint16(start)
 		for direction := range result.Art[hero].Directions {
 			at := 0x23d1a + start
 			terminated := false
@@ -107,23 +111,4 @@ func (rules HeroRules) Layers(id SpellID, direction, frame int) []SpriteLayer {
 		return nil
 	}
 	return frames[frame%len(frames)]
-}
-
-// HeroAttributes translates creation at $14360-$14408. Heracles doubles the
-// leader's population. Every hero gains elemental experience >>3 in movement
-// speed; Odysseus also doubles the leader's original speed. No weapons bonus
-// is applied by this routine.
-func HeroAttributes(id SpellID, population int, speed uint8, experience [6]uint8) (int, uint8, bool) {
-	i := heroIndex(id)
-	if i < 0 || population <= 0 {
-		return population, speed, false
-	}
-	if id == Heracles {
-		population *= 2
-	}
-	bonus := int(experience[i] >> 3)
-	if id == Odysseus {
-		bonus += int(speed)
-	}
-	return population, uint8(min(255, int(speed)+bonus)), true
 }

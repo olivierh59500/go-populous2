@@ -27,7 +27,7 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Follower motion oracle | 72 traces / 528 updates, direction-image banks, cell heads and two full-dispatch/prepass references |
 | Follower motion integration | Fixed-leg Core replays, precise crossing contacts, same-slot generations and save 12 continuation |
 | Mana | Native divisor thresholds, quarter-mana units and propagated sculpt debits |
-| Heroes | Six conversion types and eight-direction composite artwork |
+| Heroes | Six conversion types and eight-direction composite artwork; 1,104 full original creation cases match standalone and World callbacks, with native farm/marker writes, overflow and sound boundaries; all six heroes pass 180-update saved continuation |
 | Ground rules | Persistent fonts/swamps/greenery, two-way faith reversal and plague contact |
 | Audio | 31 samples, 133 patterns, signed PCM and read-size-independent playback |
 | Save continuation | Mixed native flame/whirlwind records, town work, experience, random state and earlier controller/ID migrations |

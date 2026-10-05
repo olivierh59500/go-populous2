@@ -13,9 +13,9 @@ power is not sufficient evidence that its original behavior has been ported.
 | Campaign | 1,000 worlds, passwords, template mana/attrition, per-side rules/requester and opponent experience | Scripted events and opponent personalities |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
-| Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion; full terrain prepass, water/conversion/burning, magnet/captive routes, exact crossing admission and retained contact/combat outcomes in World | Hero creation/art boundaries, full linked effects, native economy/neutral runtime and inventions |
+| Followers | 399 usable records, native ordinary search/pressure/road decisions and 8.8 motion; full terrain prepass, water/conversion/burning, magnet/captive routes, exact crossing admission and retained contact/combat outcomes in World | Full linked effects, remaining animation boundaries and inventions |
 | Towns | 19 stages, native mixed support/cache, 49-cell compositor and native founding/economy/emigration in World; rare births allocate original neutral actors | Complete land AI, all neutral/environmental interactions and end-to-end campaign parity |
-| Hero creation | Correct attributes/art, Adonis splitting, Helen captivity and verified water/swamp immunities | Native subpixel routing, combat and remaining state transitions |
+| Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
 | Audio | 31 samples, 133 patterns, native note/envelope data and cast cue bindings | Hardware timing/mixing comparison and all animation-triggered cues |
 | Saving | Version 20 retains weather/environmental controller ownership, command-context aliases, meteors/clouds, native economy/deadline and neutral records | Original Amiga GAM interoperability |
 | Interface | Playable controls, native deity faces/experience allocation/profile codes, demo and saving | Original menu composition, statistics and end sequence |
@@ -32,28 +32,28 @@ the remaining simulation routines.
 |---|---:|---:|---|
 | Raise/lower land | 0 | 2 / 4 | Native height admission, prohibitions, propagated enemy-land protection and costs; inherited propagation; special editor/battle modes pending |
 | Papal magnet | 1 | 8 | Native marker/leader routing, destination waiting, mode changes, merging and original double attrition; remaining command/native-init fidelity |
-| Perseus | 2 | 36 | Native conversion/art; inherited knight movement and combat |
+| Perseus | 2 | 36 | Complete native creation, original art, shared native hero decisions and combat; combined interaction coverage pending |
 | Plague | 3 | 78 | Actor infection, contact, suppressed town mana, Armageddon removal and native vulture art/caw; detailed disease states pending |
 | Armageddon | 4 | 72 | Global battle and plague removal; inherited combat/central gathering |
 | Forest | 6 | 46 | Native sampled allocation, original variants, signed aging/burial counters and rendering; popularity and remaining actor interactions pending |
 | Renew land | 7 | 80 | Native sampled placement and tile 245; separate from the fungus automaton; popularity interactions pending |
 | Swamp | 8 | 54 | Native placement/tiles, shallow restoration, hero immunity and retained death/terminal dispatch |
 | Fungus | 9 | 26 | Native seed/collection, staged B3/S23 automaton, cadence, mature-tile mortality/Adonis immunity and retained death art; full linked death state and adjacent-BSS edge behavior pending |
-| Adonis | 10 | 58 | Native conversion/art and post-victory hero splitting; native movement/combat and pool-full edge state pending |
+| Adonis | 10 | 58 | Complete native creation, shared routing/combat and verified native post-victory split/full-pool behavior; combined interactions pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
 | City walls | 13 | 34 | Native placement/art/gates, saves, sculpt protection, crossing thresholds and terminal break art; fractional climb/hero attack states pending |
 | Earthquake | 14 | 40 | Native directed creation, fissure branching, original terrain reconstruction and fade; raw slot/full-pool aliases retained and World comparisons pass |
 | Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
-| Heracles | 16 | 60 | Native double population and speed bonus; native combat/routing pending |
+| Heracles | 16 | 60 | Complete native creation, wrapping population doubling, capped speed bonus and shared native combat/routing; combined interactions pending |
 | Lightning | 18 | 28 / 30 / 32 | Native marker/activation/bolts, gradual victims, procedural beams and living-town native farm reform; remaining terrain/hero cleanup branches pending |
 | Whirlwind | 19 | 22 | Native fixed-point trajectory, phases, experience lifetime, composite art and frame cues; pickup/release, town collapse and child whirlpools pending |
 | Storm | 20 | 64 | Native raw cloud creation/admission, thunder/cooldown, exact terrain scorch and linked victim scan; World/runtime/save comparisons pass |
-| Odysseus | 21 | 66 | Native doubled speed attribute/art; runtime movement still inherited |
+| Odysseus | 21 | 66 | Complete native creation, doubled/capped speed, original art and shared native routing/combat; combined interactions pending |
 | Hurricane wind | 22 | 76 | Provisional directed movement/damage; native pushing and terrain interactions pending |
 | Fire column | 24 | 6 | Native fixed-point pool, phases, uphill routing, experience lifetime and current-cell burns; full mixed actor-list parity/timing pending |
 | Fire rain | 25 | 38 | Native unlinked meteor delay, decoded falling art, height-aware impact and exact victim/terrain callbacks; World/save continuation pass |
 | Volcano | 26 | 62 | Native crater growth/terrain preservation, raw fire-column eruption, lava/Basalt creation and contact states; World full-eruption comparisons pass |
-| Achilles | 27 | 68 | Native conversion/art; provisional burning; native movement/combat pending |
+| Achilles | 27 | 68 | Complete native creation, original art and shared native routing/combat; provisional incidental burning and combined interactions pending |
 | Whirlpool | 31 | 24 | Native four-water admission, terrain animation, motion, direct coast lowering, lifetime and ordered shared-pool execution; broader terrain/actor interactions pending |
 | Basalt | 30 | 74 | Native linked propagation actors, four cardinal directions, persistent terrain prefix and original sculpture shapes; remaining environmental interactions pending |
 | Baptismal fonts | 32 | 52 | Native sampled placement and tiles 143–144; faith reversal on entry; original entry animation/immunities pending |

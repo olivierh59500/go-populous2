@@ -7,8 +7,10 @@ The playable version includes an isometric world, followers, settlements,
 power selection, computer opposition, a demonstration mode and Go saves.
 Native translations now replace several parts of the supplied Populous I
 foundation: terrain generation, random streams, starting populations, town
-work, mana costs, ordinary fractional walking, hero creation and persistent
-ground effects.
+work, mana costs, ordinary fractional walking, complete leader-to-hero
+conversion and persistent ground effects. Hero creation retains native leg
+and target fields, relocates the magnet, clears town farms and uses original
+speed, population and sound rules.
 
 **The complete original feature set is still being converted.** Several
 powers, hero movement, native combat, campaign progression and

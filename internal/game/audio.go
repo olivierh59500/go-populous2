@@ -25,6 +25,9 @@ func (g *Game) playPowerSound(id populous2.SpellID, player int) {
 	if g.audioReplay == nil {
 		return
 	}
+	if id.IsHero() {
+		return // The native conversion emits its cue through World events.
+	}
 	for _, cue := range g.Bundle.CastSoundCues(id, player) {
 		g.audioReplay.PlayCue(cue)
 	}

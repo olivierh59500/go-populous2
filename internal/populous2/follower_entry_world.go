@@ -79,7 +79,11 @@ func (w *World) readEntryRecord(ref NativeRecordReference) (FollowerEntryActor, 
 		a.Motion.Kind, a.Motion.State, a.Motion.Animation, a.Byte1 = 2, 2, 0, 0
 	}
 	if native := w.NativeFollowers[index]; native.Active && w.ordinaryWalker(index) {
+		flags := a.Motion.Flags
 		a.Motion = native.Actor
+		// Fractional motion owns its coordinates and leg, while the entry
+		// record owns leader, hero, captive and disease flags.
+		a.Motion.Flags = flags
 		a.Motion.Population = int32(p.Population)
 	}
 	if w.flameDeathIndex[index] {

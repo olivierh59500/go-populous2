@@ -69,6 +69,7 @@ func flatGroundWorld(t *testing.T) *World {
 		w.Core.MapWho[i] = 0
 	}
 	w.Core.Peeps = nil
+	w.Core.Magnets[0].Carried, w.Core.Magnets[1].Carried = 0, 0
 	w.Core.Magnets[0].Mana = 1000000
 	return w
 }

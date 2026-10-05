@@ -2,7 +2,7 @@ package populous2
 
 import "testing"
 
-func TestNativeHeroArtAndAttributes(t *testing.T) {
+func TestNativeHeroArt(t *testing.T) {
 	b := testBundle(t)
 	for _, id := range heroIDs {
 		for direction := range 8 {
@@ -25,25 +25,6 @@ func TestNativeHeroArtAndAttributes(t *testing.T) {
 	}
 	if _, err := DecodeHeroRules(nil); err == nil {
 		t.Fatal("missing native table accepted")
-	}
-	for _, tc := range []struct {
-		id         SpellID
-		exp        [6]uint8
-		population int
-		speed      uint8
-	}{
-		{Perseus, [6]uint8{64}, 100, 28},
-		{Heracles, [6]uint8{0, 0, 64}, 200, 28},
-		{Odysseus, [6]uint8{0, 0, 0, 64}, 100, 48},
-		{Helen, [6]uint8{0, 0, 0, 0, 0, 255}, 100, 51},
-	} {
-		population, speed, ok := HeroAttributes(tc.id, 100, 20, tc.exp)
-		if !ok || population != tc.population || speed != tc.speed {
-			t.Fatalf("hero %d got %d/%d", tc.id, population, speed)
-		}
-	}
-	if _, speed, _ := HeroAttributes(Odysseus, 100, 200, [6]uint8{}); speed != 255 {
-		t.Fatal("movement speed overflow")
 	}
 }
 

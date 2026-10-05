@@ -47,10 +47,27 @@ Their frames point into the composite-image table at `$26956`. Signed image
 offsets and chained layers are retained; this is essential for the additional
 parts of Adonis and Achilles. All six heroes' eight directions are decoded.
 
-These changes establish creation arithmetic and original artwork. The inherited
-hero movement/combat engine does not yet use the native speed byte. Ordinary
-walkers now use the verified controller described below; hero-specific native
-routing and other state transitions remain separate work.
+Creation now uses the complete `$142d4/$142fe` routine in World. The raw deity
+leader reference is its only admission test: the routine does not independently
+reject zero population or a missing leader flag. `$140ae` relocates the magnet
+and clears the leader flag when present; a town additionally runs `$135ca` with
+replacement tile 15. Conversion sets hero flag bit 1, kind 2, state `$24`, hero
+word `$28`, and the original walking-table offset at `$32`. It clears only the
+animation word and writes no new leg, target, velocity or timer. Heracles's
+population doubles with native 32-bit wrapping. Native sound arguments and
+speed saturation are preserved.
+
+1,104 complete original CPU cases cover the six types, both sides, all 19 town
+stages, leader flags, speed/experience boundaries, population overflow, missing
+leaders and direct conversion. Both the standalone helper and real World
+callbacks match every BSS byte from 0 through `$eb18`. Normal game tests cover
+conversion debit, marker relocation and 180 updates of saved continuation for
+each hero. The fractional-motion adapter now preserves entry-owned flags, so
+it cannot discard leader or disease flags while copying an ordinary leg.
+
+Heroes use the shared native routing, contact, motion and combat controllers
+described below. These checks do not establish every combined environmental,
+wall-climb or animation interaction.
 
 ## Starting populations and settlements
 
