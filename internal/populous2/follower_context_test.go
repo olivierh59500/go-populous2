@@ -145,6 +145,14 @@ func followerContextEntryCallbacks(t *testing.T, m *entryFixtureMemory, c *Nativ
 }
 
 func TestFollowerRegisterContextAgainstOriginalControllers(t *testing.T) {
+	testFollowerRegisterControllers(t, false)
+}
+
+func TestFollowerRegisterControllersWithSharedFrame(t *testing.T) {
+	testFollowerRegisterControllers(t, true)
+}
+
+func testFollowerRegisterControllers(t *testing.T, sharedFrame bool) {
 	data, err := os.ReadFile("testdata/follower_context_native.json")
 	if err != nil {
 		t.Fatal(err)
@@ -181,7 +189,11 @@ func TestFollowerRegisterContextAgainstOriginalControllers(t *testing.T) {
 		counts[f.Input.Mode]++
 		t.Run(f.Input.Name, func(t *testing.T) {
 			m := followerContextMemory(f)
+			frame := NativeFrameRegisterContext{D: [8]uint32{0xabcd0000, 0xabcd0001, 0xabcd0002, 0xabcd0003, f.Input.D4, f.Input.D5, 0xabcd0006, 0xabcd0007}, AddressBase: 0x200000}
 			c := NativeFollowerRegisterContext{D4: f.Input.D4, D5: f.Input.D5, AddressBase: 0x200000}
+			if sharedFrame {
+				c = NewNativeFollowerFrameContext(&frame)
+			}
 			memory := FollowerCleanupMemory{Read8: func(a int) (uint8, error) { return m.bytes[a], nil }, Read16: func(a int) (uint16, error) { return m.word(a), nil }, Read32: func(a int) (uint32, error) { return m.long(a), nil }, Write8: func(a int, v uint8) error { m.bytes[a] = v; return nil }, Write16: func(a int, v uint16) error { m.putWord(a, v); return nil }, Write32: func(a int, v uint32) error { m.putLong(a, v); return nil }}
 			actor, err := m.read(52)
 			if err != nil {
@@ -250,7 +262,7 @@ func TestFollowerRegisterContextAgainstOriginalControllers(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if c.D4 != f.D4 || c.D5 != f.D5 {
+			if c.D4 != f.D4 || c.D5 != f.D5 || sharedFrame && (frame.D[4] != f.D4 || frame.D[5] != f.D5) {
 				t.Fatalf("native register continuation differs: got%08x/%08x want%08x/%08x", c.D4, c.D5, f.D4, f.D5)
 			}
 			if got := fmt.Sprintf("%x", sha256.Sum256(m.bytes[:])); f.Input.Mode != "lower" && got != f.Hash {
@@ -300,6 +312,14 @@ func TestFollowerRegisterFullPassOriginalEvidence(t *testing.T) {
 }
 
 func TestFollowerNeutralContextAgainstOriginalFullPass(t *testing.T) {
+	testFollowerNeutralContext(t, false)
+}
+
+func TestFollowerNeutralContextWithSharedFrame(t *testing.T) {
+	testFollowerNeutralContext(t, true)
+}
+
+func testFollowerNeutralContext(t *testing.T, sharedFrame bool) {
 	data, err := os.ReadFile("testdata/follower_context_native.json")
 	if err != nil {
 		t.Fatal(err)
@@ -325,7 +345,11 @@ func TestFollowerNeutralContextAgainstOriginalFullPass(t *testing.T) {
 		checked++
 		t.Run(f.Input.Name, func(t *testing.T) {
 			m := followerContextMemory(f)
+			frame := NativeFrameRegisterContext{D: [8]uint32{0xabcd0000, 0xabcd0001, 0xabcd0002, 0xabcd0003, f.Input.D4, f.Input.D5, 0xabcd0006, 0xabcd0007}, AddressBase: 0x200000}
 			c := NativeFollowerRegisterContext{D4: f.Input.D4, D5: f.Input.D5, AddressBase: 0x200000}
+			if sharedFrame {
+				c = NewNativeFollowerFrameContext(&frame)
+			}
 			raw := FollowerCleanupMemory{Read8: func(a int) (uint8, error) { return m.bytes[a], nil }, Read16: func(a int) (uint16, error) { return m.word(a), nil }, Read32: func(a int) (uint32, error) { return m.long(a), nil }, Write8: func(a int, v uint8) error { m.bytes[a] = v; return nil }, Write16: func(a int, v uint16) error { m.putWord(a, v); return nil }, Write32: func(a int, v uint32) error { m.putLong(a, v); return nil }}
 			random := func() int {
 				rng := m.long(0xeb28)
@@ -392,7 +416,7 @@ func TestFollowerNeutralContextAgainstOriginalFullPass(t *testing.T) {
 			if _, err := rules.Tick(52, cb); err != nil {
 				t.Fatal(err)
 			}
-			if c.D4 != f.D4 || c.D5 != f.D5 {
+			if c.D4 != f.D4 || c.D5 != f.D5 || sharedFrame && (frame.D[4] != f.D4 || frame.D[5] != f.D5) {
 				t.Fatalf("neutral full-pass continuation differs: got%x/%x want%x/%x", c.D4, c.D5, f.D4, f.D5)
 			}
 			if got := fmt.Sprintf("%x", sha256.Sum256(m.bytes[0xf44:0x4f44])); got != f.GridHash {

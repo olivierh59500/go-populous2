@@ -351,8 +351,8 @@ func (rules FollowerEntryRules) TickWaiting(reference NativeRecordReference, cal
 
 func (rules FollowerEntryRules) settle(reference NativeRecordReference, callbacks FollowerEntryCallbacks) (int, error) {
 	if callbacks.Context != nil {
-		saved := *callbacks.Context
-		defer func() { *callbacks.Context = saved }()
+		saved := callbacks.Context.saveContext()
+		defer callbacks.Context.restoreContext(saved)
 	}
 	actor, err := callbacks.Read(reference)
 	if err != nil {

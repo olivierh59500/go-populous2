@@ -314,3 +314,39 @@ actual port. Tests verify that resume does not execute or clear queued commands
 and refuses a fabricated multiplayer exchange. The underlying packet/resume/
 disconnect controller is covered by 432 original-CPU cases. Game integration
 awaits the full ordered frame and asynchronous command-stage continuations.
+
+## Complete follower prepass register continuation
+
+CommonPrepass now accepts the actual full frame context and explicit
+register-bearing cleanup/leader callbacks. Its 630 original-CPU cases cover
+210 terrain/plague/hero/corpse combinations under three data-register seeds.
+Both the isolated composition and raw World adapter reproduce all eight data
+registers and the complete retained BSS image. Cleanup and leader composition
+reuse their already verified native bodies; farm clearing and sound calls
+preserve their original saved data registers. The World adapter reads real
+scenario words and retains the original signed, byte-wrapped tile displacement.
+
+The existing follower D4/D5 controllers can now share that full frame. Their
+native comparison corpus runs with both the retained nil-frame ABI and the
+shared-frame bridge. Farm clearing, settlement and hero terrain-raise wrappers
+restore the complete saved context; the town evaluator retains its original
+MOVEM.W sign extension when restoring D4.
+
+## Ordered follower pass boundaries
+
+The new $11252 outer pass preserves physical slot order, active redispatch,
+peak statistic/working-counter initialization, minimap descriptor admission,
+raw population addition and the original first-zero-side result boundary.
+Ninety-six independently executed source cases compare complete retained BSS,
+all eight data registers and callback order/counts, including an empty pool,
+last physical slot, suppressed/visible markers, painting-state reset and both
+conquest/custom result gates. The marker lookup uses the signed -16 brief-index
+displacement at $12414, rather than an unsigned +240 offset.
+
+These outer-pass comparisons explicitly replace prepass, actor, map-point and
+result bodies with controlled register-bearing callback boundaries. They prove
+the outer scheduler, not whole follower gameplay or pixels. The actual prepass
+has its separate complete proof above; movement and remaining actor register
+bodies still require composition before the live strategy/frame loop can use
+this pass. Missing active bodies, map drawing and result continuations return
+explicit errors; no silent successful placeholder is installed in Game.

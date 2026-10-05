@@ -318,15 +318,15 @@ func (rules FollowerHeroRules) Plan(ref NativeRecordReference, targetX, targetY 
 	if result != 0 {
 		if result == -1 {
 			if cb.RaiseEnabled() {
-				var savedContext NativeFollowerRegisterContext
+				var savedContext nativeFollowerSavedContext
 				if cb.Context != nil {
-					savedContext = *cb.Context
+					savedContext = cb.Context.saveContext()
 				}
 				if err := cb.Raise(x+uint8(dx), y+uint8(dy)); err != nil {
 					return 0, err
 				}
 				if cb.Context != nil {
-					*cb.Context = savedContext
+					cb.Context.restoreContext(savedContext)
 				}
 			} else {
 				owner, err := m.Read8(source + 12)

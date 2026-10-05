@@ -7,10 +7,51 @@ package populous2
 // preserve their high byte, while MOVEQ and MOVEM.W affect the entire long.
 type NativeFollowerRegisterContext struct {
 	D4, D5 uint32
+	Frame  *NativeFrameRegisterContext
 	// AddressBase is the BSS relocation base for MOVE.L An,D4. The Go
 	// runtime's address convention is BSS-relative (zero); CPU fixtures may
 	// supply their actual relocated base without substituting host pointers.
 	AddressBase uint32
+}
+
+func NewNativeFollowerFrameContext(frame *NativeFrameRegisterContext) NativeFollowerRegisterContext {
+	if frame == nil {
+		return NativeFollowerRegisterContext{}
+	}
+	return NativeFollowerRegisterContext{D4: frame.D[4], D5: frame.D[5], AddressBase: frame.AddressBase, Frame: frame}
+}
+
+func (c *NativeFollowerRegisterContext) importFrame() {
+	if c.Frame != nil {
+		c.D4, c.D5 = c.Frame.D[4], c.Frame.D[5]
+	}
+}
+
+func (c *NativeFollowerRegisterContext) exportFrame() {
+	if c.Frame != nil {
+		c.Frame.D[4], c.Frame.D[5] = c.D4, c.D5
+	}
+}
+
+type nativeFollowerSavedContext struct {
+	Context NativeFollowerRegisterContext
+	D       [8]uint32
+}
+
+func (c *NativeFollowerRegisterContext) saveContext() nativeFollowerSavedContext {
+	c.importFrame()
+	s := nativeFollowerSavedContext{Context: *c}
+	if c.Frame != nil {
+		s.D = c.Frame.D
+	}
+	return s
+}
+
+func (c *NativeFollowerRegisterContext) restoreContext(saved nativeFollowerSavedContext) {
+	*c = saved.Context
+	if c.Frame != nil {
+		c.Frame.D = saved.D
+	}
 }
 
 func (c NativeFollowerRegisterContext) RecordAddress(ref NativeRecordReference) uint32 {
@@ -18,30 +59,53 @@ func (c NativeFollowerRegisterContext) RecordAddress(ref NativeRecordReference) 
 }
 
 func (c *NativeFollowerRegisterContext) Byte4(value uint8) {
+	c.importFrame()
 	c.D4 = c.D4&0xffffff00 | uint32(value)
+	c.exportFrame()
 }
 func (c *NativeFollowerRegisterContext) Byte5(value uint8) {
+	c.importFrame()
 	c.D5 = c.D5&0xffffff00 | uint32(value)
+	c.exportFrame()
 }
 func (c *NativeFollowerRegisterContext) Word4(value uint16) {
+	c.importFrame()
 	c.D4 = c.D4&0xffff0000 | uint32(value)
+	c.exportFrame()
 }
 func (c *NativeFollowerRegisterContext) Word5(value uint16) {
+	c.importFrame()
 	c.D5 = c.D5&0xffff0000 | uint32(value)
+	c.exportFrame()
 }
-func (c *NativeFollowerRegisterContext) Long4(value uint32) { c.D4 = value }
-func (c *NativeFollowerRegisterContext) Long5(value uint32) { c.D5 = value }
+func (c *NativeFollowerRegisterContext) Long4(value uint32) {
+	c.importFrame()
+	c.D4 = value
+	c.exportFrame()
+}
+func (c *NativeFollowerRegisterContext) Long5(value uint32) {
+	c.importFrame()
+	c.D5 = value
+	c.exportFrame()
+}
 
 // RestoreWord4/5 are MOVEM.W loads, which sign-extend the restored word into
 // the entire data register. MOVE.W alone would leave the upper word intact.
 func (c *NativeFollowerRegisterContext) RestoreWord4(value uint16) {
+	c.importFrame()
 	c.D4 = uint32(int32(int16(value)))
+	c.exportFrame()
 }
 func (c *NativeFollowerRegisterContext) RestoreWord5(value uint16) {
+	c.importFrame()
 	c.D5 = uint32(int32(int16(value)))
+	c.exportFrame()
 }
 
 func (c NativeFollowerRegisterContext) AIContext() NativeAIRegisterContext {
+	if c.Frame != nil {
+		return NativeAIRegisterContext{D4: uint16(c.Frame.D[4]), D5: uint16(c.Frame.D[5])}
+	}
 	return NativeAIRegisterContext{D4: uint16(c.D4), D5: uint16(c.D5)}
 }
 
@@ -50,7 +114,8 @@ func (c NativeFollowerRegisterContext) AIContext() NativeAIRegisterContext {
 // Call before BeginLeg changes the source coordinates or invokes a callback.
 func (c *NativeFollowerRegisterContext) BeginLeg(source FollowerMotionActor, targetX, targetY int16) {
 	if source.X>>8 == targetX>>8 && source.Y>>8 == targetY>>8 {
-		c.D4, c.D5 = uint32(uint8(source.X)), uint32(uint8(source.Y))
+		c.Long4(uint32(uint8(source.X)))
+		c.Long5(uint32(uint8(source.Y)))
 	}
 }
 
@@ -79,7 +144,10 @@ func (c *NativeFollowerRegisterContext) TownEvaluation(savedD4 uint16, recompute
 
 // EntryScan begins only after nonzero map-head admission at $12778. Captive
 // and empty-head paths preserve both previous registers.
-func (c *NativeFollowerRegisterContext) EntryScan() { c.D4, c.D5 = 0, 0 }
+func (c *NativeFollowerRegisterContext) EntryScan() {
+	c.Long4(0)
+	c.Long5(0)
+}
 
 // EntryCandidate is $127dc/$127f8/$12806. nativeAddress is the actual bounded
 // native address convention used by the runtime image, never a Go pointer.
@@ -119,6 +187,7 @@ func (c *NativeFollowerRegisterContext) HeroFallback(dx, dy int16) {
 	c.Word5(uint16(-dy))
 }
 func (c *NativeFollowerRegisterContext) HeroAlternativeRestore() {
+	c.importFrame()
 	c.RestoreWord4(uint16(c.D4))
 	c.RestoreWord5(uint16(c.D5))
 }

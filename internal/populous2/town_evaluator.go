@@ -115,8 +115,8 @@ func (e *NativeTownEvaluator) ClearFarms(reference NativeRecordReference, replac
 		return fmt.Errorf("native settlement cleanup callbacks missing")
 	}
 	if callbacks.Context != nil {
-		saved := *callbacks.Context
-		defer func() { *callbacks.Context = saved }()
+		saved := callbacks.Context.saveContext()
+		defer callbacks.Context.restoreContext(saved)
 	}
 	record, err := nativeTownRecord(reference, callbacks)
 	if err != nil {
@@ -152,6 +152,7 @@ func (e *NativeTownEvaluator) Evaluate(reference NativeRecordReference, clock ui
 		return 0, fmt.Errorf("native settlement evaluator callbacks missing")
 	}
 	if callbacks.Context != nil {
+		callbacks.Context.importFrame()
 		saved := uint16(callbacks.Context.D4)
 		defer func() { callbacks.Context.RestoreWord4(saved) }()
 	}
