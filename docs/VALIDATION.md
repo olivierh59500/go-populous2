@@ -71,6 +71,9 @@ Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 | Native Storm | 710 original cases/1,705 samples, including actual local/script command-context aliases; World replays 546 runtime cases/1,541 updates against complete raw memory/RNG |
 | Native FireRain | 809 original cases with 1,450 runtime updates; real shared scorch/damage callbacks and original fall-layer offsets; World delay/link/impact/save tests pass |
 | Weather integration | Native cast admission/debit versus partial-pool creation, command alias preservation/bounds, normal-loop terminal release, delayed meteor visibility and old-save migration |
+| Native Hurricane | 47 original cases/586 updates match complete BSS, map, overlays and mixed actor pools; World repeats all cases with real move/cleanup callbacks and verifies saved continuation |
+| Native Tsunami | 914 original cases/1,328 updates cover adjacent-water starts, cloning, newborn skip, barriers, direct lowering and seven hero/Helen flood cases; World replays 40 ordered pool/shore cases over 800 updates, matching complete pool/map and 4,225 heights |
+| Wind/wave saves | Version 21 retains unlinked wind and linked wave controllers/direction words; full-pool debit, recycled art suppression, native wave layers, saved continuation and no-debit/RNG old-save migration checked |
 | Native actor graph | Mixed-pool signed references, full coordinates, linked heads and pressure; version 13 continuation and membership validation |
 | Native direct terrain | 66 cases/77 edits compare all 4,225 heights, map corners, Armageddon bypass and persistent Basalt shapes |
 | Scenario oracle | 648 native decision/init/attrition cases, including 400 mixed observer/victim-side checks |

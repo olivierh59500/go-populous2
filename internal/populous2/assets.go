@@ -45,6 +45,8 @@ type Bundle struct {
 	LavaRules         NativeLavaRules
 	StormRules        StormRules
 	FireRainRules     FireRainRules
+	HurricaneRules    HurricaneRules
+	TsunamiRules      TsunamiRules
 	Audio             *AudioBank
 	Actions           []NativeAction
 	GroundRules       GroundEffectRules
@@ -238,6 +240,14 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 		return nil, err
 	}
 	b.FireRainRules, err = DecodeFireRainRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.HurricaneRules, err = DecodeHurricaneRules(exe)
+	if err != nil {
+		return nil, err
+	}
+	b.TsunamiRules, err = DecodeTsunamiRules(exe)
 	if err != nil {
 		return nil, err
 	}

@@ -59,6 +59,8 @@ type World struct {
 	NativeCommandBytes       [0x78]byte // BSS $eb18..$eb90, including command aliases.
 	StormRules               StormRules
 	FireRainRules            FireRainRules
+	HurricaneRules           HurricaneRules
+	TsunamiRules             TsunamiRules
 	HeroArt                  HeroRules
 	FollowerWin              FollowerWinRules
 	NativeBirthBlocked       bool
@@ -174,6 +176,7 @@ func NewWorld(bundle *Bundle, levelIndex int, custom bool) (*World, error) {
 	w.VolcanoRules, w.LavaRules = bundle.VolcanoRules, bundle.LavaRules
 	w.StormRules = bundle.StormRules
 	w.FireRainRules = bundle.FireRainRules
+	w.HurricaneRules, w.TsunamiRules = bundle.HurricaneRules, bundle.TsunamiRules
 	w.TownEconomy, err = DecodeNativeTownEconomyRules(land)
 	if err != nil {
 		return nil, err
@@ -390,6 +393,9 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 	if target.Direction < 0 || target.Direction > 7 {
 		return false
 	}
+	if id == Wind && target.Direction&1 != 0 {
+		return false
+	}
 	if id.IsHero() {
 		created := false
 		err := w.runNativeFollowerCall(func() error {
@@ -466,16 +472,10 @@ func (w *World) Cast(player int, id SpellID, target Target) bool {
 		applied = w.castNativeStorm(player, target.X, target.Y)
 	case FireRain:
 		applied = w.castNativeFireRain(player, target.X, target.Y)
-	case Wind, Tsunami:
-		if id == Tsunami && !w.isWaterAt(target.X+target.Y*64) {
-			return false
-		}
-		dx, dy := direction(target.Direction)
-		life := 32
-		if id == Storm || id == FireRain {
-			life = 16
-		}
-		w.Effects = append(w.Effects, Effect{Spell: id, Player: player, X: target.X, Y: target.Y, DX: dx, DY: dy, Life: life})
+	case Wind:
+		applied = w.castNativeHurricane(player, target.X, target.Y, uint16(target.Direction))
+	case Tsunami:
+		w.castNativeTsunami(player, target.X, target.Y)
 		applied = true
 	}
 	if !applied {

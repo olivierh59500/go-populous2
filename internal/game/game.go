@@ -182,14 +182,14 @@ func (g *Game) Update() error {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
 		step := 1
-		if g.Selected == populous2.Basalt {
+		if g.Selected == populous2.Basalt || g.Selected == populous2.Wind {
 			step = 2
 		}
 		g.Direction = (g.Direction + 8 - step) % 8
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyE) {
 		step := 1
-		if g.Selected == populous2.Basalt {
+		if g.Selected == populous2.Basalt || g.Selected == populous2.Wind {
 			step = 2
 		}
 		g.Direction = (g.Direction + step) % 8
@@ -247,11 +247,14 @@ func (g *Game) Update() error {
 	if g.audioReplay != nil && g.lastNativeEffectSoundTurn != g.World.Core.GameTurn {
 		g.lastNativeEffectSoundTurn = g.World.Core.GameTurn
 		var played [133]bool
-		for _, actor := range g.World.NativeEffects {
+		for index, actor := range g.World.NativeEffects {
 			if !actor.Active {
 				continue
 			}
 			frame, ok := g.Bundle.NativeEffectFrame(actor)
+			if g.World.NativeEnvironment[index] != populous2.NativeEnvironmentNone {
+				frame, ok = g.World.EnvironmentalEffectFrame(index)
+			}
 			if !ok {
 				continue
 			}
@@ -522,7 +525,7 @@ func (g *Game) selectSpell(id populous2.SpellID) {
 		return
 	}
 	g.Selected = id
-	if id == populous2.Basalt {
+	if id == populous2.Basalt || id == populous2.Wind {
 		g.Direction &^= 1
 	}
 	g.notify(spell.Help)
@@ -664,7 +667,7 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 			}
 		}
 	}
-	for _, actor := range g.World.Scenery {
+	for index, actor := range g.World.Scenery {
 		if !actor.Active {
 			continue
 		}
@@ -674,7 +677,8 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		}
 		cell := g.World.TerrainCell(actor.X, actor.Y)
 		px, py := project(x, y, cell.BaseAltitude)
-		ox, oy := cell.ActorOffset(128, 128)
+		graph := g.World.Occupancy.Scenery[index].Record
+		ox, oy := cell.ActorOffset(uint8(graph.X), uint8(graph.Y))
 		frames := g.Bundle.Scenery.Frames[actor.Animation]
 		if len(frames) == 0 {
 			continue
@@ -684,7 +688,7 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
 		}
 	}
-	for _, actor := range g.World.Walls.Actors {
+	for index, actor := range g.World.Walls.Actors {
 		if !actor.Active {
 			continue
 		}
@@ -694,7 +698,8 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		}
 		cell := g.World.TerrainCell(actor.X, actor.Y)
 		px, py := project(x, y, cell.BaseAltitude)
-		ox, oy := cell.ActorOffset(128, 128)
+		graph := g.World.Occupancy.Walls[index].Record
+		ox, oy := cell.ActorOffset(uint8(graph.X), uint8(graph.Y))
 		for _, layer := range g.World.WallRules.Layers(actor) {
 			g.drawSprite(view, layer.Sprite, px+32+(ox+layer.X)*2, py+16+(oy+layer.Y)*2)
 		}
@@ -778,9 +783,6 @@ func (g *Game) drawGame(screen *ebiten.Image) {
 		g.drawSprite(view, sprite, px+32, py+32)
 	}
 	for index, a := range g.World.NativeEffects {
-		if g.World.NativeEnvironment[index] != populous2.NativeEnvironmentNone && g.World.NativeEnvironment[index] != populous2.NativeEnvironmentLava && g.World.NativeEnvironment[index] != populous2.NativeEnvironmentStorm && g.World.NativeEnvironment[index] != populous2.NativeEnvironmentFireRain {
-			continue
-		}
 		if !a.Active {
 			continue
 		}

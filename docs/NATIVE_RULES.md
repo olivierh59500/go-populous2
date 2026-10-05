@@ -840,5 +840,42 @@ The 809 original cases include 1,450 runtime updates and exact primitive order.
 World tests cover command admission/cost, preserved partial clouds, bounded
 command aliases, delayed meteor visibility, normal-loop terminal release and
 byte-identical save continuation. Earlier generic weather effects migrate to
-native records without replaying the old area-damage logic. Native wind, tsunami,
-scenario scripts and all command scheduling still need their complete mappings.
+native records without replaying the old area-damage logic. Scenario scripts
+and all command scheduling still need their complete mappings.
+
+## Native wind and tidal waves
+
+Wind command 76 invokes `$172a4`, allocating an owner-free slot, clearing its
+coordinates and retaining its old kind. It sets state `$3c`, life 100, speed 16
+and the original direction word. No RNG or map insertion occurs. A full pool
+rejects the command without its sound/debit. Runtime `$15916` clears overlays
+and pushes every linked class with `$12518`. Its four scan orders and reads of
+the actor's next link after movement are preserved: rightward cell crossings
+can cause another push in the same scan. Boundary removal stops that cell's
+remaining list; followers use full cleanup mode 0 and other actors clear owner
+and unlink. `$15a94` compares actual relocated pointers with the value stored
+at deity 0, preserved through a deterministic BSS pointer basis. All 47 original
+cases/586 updates match the complete World BSS, map, overlays and actor pools.
+
+Tidal-wave command 56 calls `$16af4` and always reaches the debit, including an
+empty or full pool. Up to four cardinal fronts start on adjacent water-property
+tiles; the picked origin need not be water and no direction or RNG is used.
+Native kind `$32` waves move in steps of 32 fractional units, retaining the
+unused life word 200. `$1547a` lowers shallow shores and clones sideways. Higher
+base altitude and exact tile `$e0` stop a front. Later-slot children use state
+`$28` for one birth-pass skip before `$2a`; earlier slots wait naturally for the
+next pass. Original image banks supply their rendering. Followers are neither
+directly pushed nor damaged by the wave: flooding acts through the common water
+prepass, including Helen's immunity.
+
+914 complete original cases/1,328 runtime updates verify creation, linked
+pool traversal, primitive order, terrain and drowning. World replays 40 ordered
+pool/shore cases over 800 updates, matching all 250 records, the full map and
+4,225 heights through actual terrain lowering. Native scratch/dirty counters
+remain separate from that World adapter proof. Save version 21 retains controller
+tags and raw direction words. Older generic wind/wave saves migrate one existing
+effect at a time without recasting, spending mana or consuming RNG.
+Wind-displaced scenery and walls retain full fractional graph coordinates in
+saves and use those fractions for rendering. Their scalar tile positions remain
+the map-index bridge. A mixed world test runs 50 updates, saves, and compares
+another 150 updates with live followers and environmental controllers.

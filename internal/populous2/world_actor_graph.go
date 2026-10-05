@@ -292,13 +292,21 @@ func validateSavedActorGraph(snapshot Snapshot) error {
 	}
 	for index, entry := range snapshot.Occupancy.Scenery {
 		actor := snapshot.Scenery[index]
-		if entry.Linked != actor.Active || actor.Active && (entry.Record.X != uint16(actor.X*256+128) || entry.Record.Y != uint16(actor.Y*256+128)) {
+		position := int(entry.Record.X>>8) == actor.X && int(entry.Record.Y>>8) == actor.Y
+		if snapshot.Version < 21 {
+			position = entry.Record.X == uint16(actor.X*256+128) && entry.Record.Y == uint16(actor.Y*256+128)
+		}
+		if entry.Linked != actor.Active || actor.Active && !position {
 			return fmt.Errorf("saved scenery graph differs at slot %d", index)
 		}
 	}
 	for index, entry := range snapshot.Occupancy.Walls {
 		actor := snapshot.Walls.Actors[index]
-		if entry.Linked != actor.Active || actor.Active && (entry.Record.X != uint16(actor.X*256+128) || entry.Record.Y != uint16(actor.Y*256+128)) {
+		position := int(entry.Record.X>>8) == actor.X && int(entry.Record.Y>>8) == actor.Y
+		if snapshot.Version < 21 {
+			position = entry.Record.X == uint16(actor.X*256+128) && entry.Record.Y == uint16(actor.Y*256+128)
+		}
+		if entry.Linked != actor.Active || actor.Active && !position {
 			return fmt.Errorf("saved wall graph differs at slot %d", index)
 		}
 	}

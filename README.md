@@ -11,6 +11,9 @@ work, mana costs, ordinary fractional walking, complete leader-to-hero
 conversion and persistent ground effects. Hero creation retains native leg
 and target fields, relocates the magnet, clears town farms and uses original
 speed, population and sound rules.
+Wind now pushes linked occupants using the original parcel scan order;
+tidal waves start from adjacent water, branch sideways and lower shallow shores.
+Their native controllers and directions survive Go saves.
 
 **The complete original feature set is still being converted.** Several
 powers, hero movement, native combat, campaign progression and
@@ -103,7 +106,7 @@ through the Go audio reader. Hardware timing and all sound-event bindings
 still need verification.
 
 Saves use `go-populous2.sav`; `POPULOUS2_SAVE_PATH` selects another path.
-Version 20 preserves retained native actor, deity and marker bytes, town structure overlays,
+Version 21 preserves retained native actor, deity and marker bytes, town structure overlays,
 lightning markers, bolt chains, managed victim states,
 the mixed actor graph and movement-pressure bytes, native
 Basalt/Whirlpool controllers and ordinary walkers' fractional positions, animation clocks
@@ -127,9 +130,9 @@ retains unidentified deity fields. Earlier saves initialize those records from
 their existing player state. Version 17 also retains native direct-raising and
 allocation-inhibition latches. The World loop uses native contact, combat and
 retained aftermath controllers, complete terrain prepass, water/conversion/
-burning states, magnet/captive routes and native crossing admission. Hero
-creation/art boundaries and the complete campaign/environment still remain
-under integration. Version 18 includes native town production/emigration,
+burning states, magnet/captive routes and native crossing admission. Combined
+hero/environment interactions and the complete campaign still remain under
+integration. Version 18 includes native town production/emigration,
 rare-birth neutral records, their separate owner and effect creator state,
 and the original rare-creation deadline. Version 19 retains environmental
 controller ownership independently of stale kind bytes, including directed
@@ -140,6 +143,8 @@ Version 20 adds native Storm clouds/thunder, FireRain meteors and the retained
 command context affected by their original writes. Delayed meteors remain
 unlinked and hidden until activation; falling height comes from the decoded
 sprite layers. Older generic weather saves migrate into native records.
+Version 21 adds wind/wave controllers with original directions, pool order
+and saved continuation. Older provisional effects migrate without a new cast.
 
 Lightning uses the original marker/activation interaction. Placing or moving
 the marker does not debit mana; activation uses the native power price and can

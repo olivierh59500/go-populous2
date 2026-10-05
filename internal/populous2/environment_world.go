@@ -11,10 +11,12 @@ const (
 	NativeEnvironmentLava
 	NativeEnvironmentStorm
 	NativeEnvironmentFireRain
+	NativeEnvironmentHurricane
+	NativeEnvironmentTsunami
 )
 
 func environmentalActorMapped(controller NativeEnvironmentController, state uint8) bool {
-	return controller == NativeEnvironmentLava || controller == NativeEnvironmentStorm || controller == NativeEnvironmentFireRain && state != 0x1c
+	return controller == NativeEnvironmentLava || controller == NativeEnvironmentStorm || controller == NativeEnvironmentTsunami || controller == NativeEnvironmentFireRain && state != 0x1c
 }
 
 func (w *World) EnvironmentalEffectFrame(index int) (AnimationFrame, bool) {
@@ -22,6 +24,10 @@ func (w *World) EnvironmentalEffectFrame(index int) (AnimationFrame, bool) {
 		return AnimationFrame{}, false
 	}
 	a := w.NativeEffects[index]
+	if w.NativeEnvironment[index] == NativeEnvironmentTsunami {
+		frame, ok := w.TsunamiRules.Frames[a.Animation]
+		return frame, ok
+	}
 	if w.NativeEnvironment[index] == NativeEnvironmentLava {
 		frame, ok := w.LavaRules.Frames[a.Animation]
 		return frame, ok
@@ -132,6 +138,14 @@ func (w *World) tickNativeEnvironment(index int) error {
 			}
 		case NativeEnvironmentFireRain:
 			if _, err := w.FireRainRules.Tick(ref, w.fireRainCallbacks()); err != nil {
+				return err
+			}
+		case NativeEnvironmentHurricane:
+			if _, err := w.HurricaneRules.Tick(ref, w.hurricaneCallbacks()); err != nil {
+				return err
+			}
+		case NativeEnvironmentTsunami:
+			if _, err := w.TsunamiRules.Tick(ref, w.tsunamiCallbacks()); err != nil {
 				return err
 			}
 		default:

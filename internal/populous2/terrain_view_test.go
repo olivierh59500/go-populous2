@@ -45,8 +45,17 @@ func TestLowFlatLandIsNotWater(t *testing.T) {
 	if cell.BaseAltitude != 0 || cell.IsWater() {
 		t.Fatal("first-height land mistaken for water")
 	}
-	if w.Cast(0, Whirlpool, Target{X: 32, Y: 32}) || w.Cast(0, Tsunami, Target{X: 32, Y: 32}) {
+	if w.Cast(0, Whirlpool, Target{X: 32, Y: 32}) {
 		t.Fatal("water-only disaster accepted on low flat land")
+	}
+	before := w.Core.Magnets[0].Mana
+	if !w.Cast(0, Tsunami, Target{X: 32, Y: 32}) || w.Core.Magnets[0].Mana != before-w.ManaCost(0, Tsunami) {
+		t.Fatal("native tidal wave command did not consume its empty cast")
+	}
+	for _, a := range w.NativeEffects {
+		if a.Active && a.Kind == 0x32 {
+			t.Fatal("tidal wave started on nonwater neighbors")
+		}
 	}
 	if !w.Cast(0, Trees, Target{X: 32, Y: 32}) {
 		t.Fatal("vegetation rejected on low flat land")

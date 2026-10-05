@@ -65,7 +65,7 @@ func TestOlderWaterPowerSaveMigration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if restored.Heroes[i].Spell != Helen || restored.LastSpell != Helen || restored.Effects[0].Spell != Tsunami {
+	if restored.Heroes[i].Spell != Helen || restored.LastSpell != Helen || len(restored.Effects) != 0 || restored.NativeEnvironment[0] != NativeEnvironmentTsunami || restored.NativeEffects[0].Kind != 0x32 {
 		t.Fatal("older numeric water IDs not migrated")
 	}
 	if s.Effects[0].Spell != 33 {

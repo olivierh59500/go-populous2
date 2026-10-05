@@ -103,7 +103,7 @@ var spellDefinitions = []Spell{
 	{ID: Whirlpool, Name: "TOURBILLON", Aim: AimPoint, Help: "Cree un tourbillon mortel dans la mer."},
 	{ID: Baptism, Name: "BAPTEME", Aim: AimPoint, Help: "Convertit des adorateurs ennemis a ton camp."},
 	{ID: Helen, Name: "HELENE", Aim: AimLeader, Help: "Convertit le chef en une heroine qui attire les ennemis."},
-	{ID: Tsunami, Name: "TSUNAMI", Aim: AimDirection, Help: "Envoie une vague de la mer vers la terre."},
+	{ID: Tsunami, Name: "TSUNAMI", Aim: AimPoint, Help: "Envoie des vagues depuis les cases d'eau voisines."},
 }
 
 // DecodeSpells gets base mana costs from the actual unsigned-word table at

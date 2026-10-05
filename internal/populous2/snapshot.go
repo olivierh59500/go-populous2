@@ -8,7 +8,7 @@ import (
 	legacy "go-populous2/internal/legacy"
 )
 
-const SaveVersion = 20
+const SaveVersion = 21
 
 type Snapshot struct {
 	Version                                        int
@@ -220,6 +220,9 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		if snapshot.Version >= 20 && (effect.Spell == Storm || effect.Spell == FireRain) {
 			return nil, fmt.Errorf("saved weather requires native environmental records")
 		}
+		if snapshot.Version >= 21 && (effect.Spell == Wind || effect.Spell == Tsunami) {
+			return nil, fmt.Errorf("saved wind/waves require native environmental records")
+		}
 	}
 	var sceneryTiles [4096]bool
 	for _, actor := range snapshot.Scenery {
@@ -239,7 +242,7 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 	}
 	for index, a := range snapshot.NativeEffects {
 		if controller := snapshot.NativeEnvironment[index]; controller != NativeEnvironmentNone {
-			if snapshot.Version < 19 || controller > NativeEnvironmentFireRain || controller >= NativeEnvironmentStorm && snapshot.Version < 20 {
+			if snapshot.Version < 19 || controller > NativeEnvironmentTsunami || controller >= NativeEnvironmentStorm && snapshot.Version < 20 || controller >= NativeEnvironmentHurricane && snapshot.Version < 21 {
 				return nil, fmt.Errorf("invalid saved environment controller")
 			}
 			ref := nativeActorReference(NativeEffectPool, index)
@@ -247,9 +250,18 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 			state, _ := snapshot.RecordImage.Read8(ref, 22)
 			x, _ := snapshot.RecordImage.Read8(ref, 6)
 			y, _ := snapshot.RecordImage.Read8(ref, 8)
-			validState := controller == NativeEnvironmentQuake && (state == 0x22 || state == 0x24 || state == 0x26) || controller == NativeEnvironmentVolcano && (state == 0x30 || state == 0x32) || controller == NativeEnvironmentLava && (state == 0x34 || state == 0x36) || controller == NativeEnvironmentStorm && (state == 0x2c || state == 0x2e) || controller == NativeEnvironmentFireRain && (state == 0x1c || state == 0x1e || state == 0x20)
+			validState := controller == NativeEnvironmentQuake && (state == 0x22 || state == 0x24 || state == 0x26) || controller == NativeEnvironmentVolcano && (state == 0x30 || state == 0x32) || controller == NativeEnvironmentLava && (state == 0x34 || state == 0x36) || controller == NativeEnvironmentStorm && (state == 0x2c || state == 0x2e) || controller == NativeEnvironmentFireRain && (state == 0x1c || state == 0x1e || state == 0x20) || controller == NativeEnvironmentHurricane && state == 0x3c || controller == NativeEnvironmentTsunami && (state == 0x28 || state == 0x2a)
 			if owner == 0 || owner > 3 || !validState || x >= 64 || y >= 64 || !a.Active || a.Player+1 != owner || a.State != state {
 				return nil, fmt.Errorf("invalid saved environmental state/owner")
+			}
+			direction, _ := snapshot.RecordImage.Read16(ref, 26)
+			if controller == NativeEnvironmentHurricane && (direction > 6 || direction&1 != 0) || controller == NativeEnvironmentTsunami && (direction > 12 || direction%4 != 0) {
+				return nil, fmt.Errorf("invalid saved wind/wave direction")
+			}
+			if controller == NativeEnvironmentTsunami {
+				if _, ok := bundle.TsunamiRules.Frames[a.Animation]; !ok {
+					return nil, fmt.Errorf("invalid saved wave animation")
+				}
 			}
 			continue
 		}
@@ -553,6 +565,11 @@ func Restore(bundle *Bundle, snapshot Snapshot) (*World, error) {
 		}
 		w.Effects = live
 		w.refreshNativeRecordImage()
+	}
+	if snapshot.Version < 21 {
+		if err := w.migrateLegacyWindWaves(); err != nil {
+			return nil, err
+		}
 	}
 	w.Demo, w.LastSpell, w.LastPlayer, w.SpellSerial = snapshot.Demo, snapshot.LastSpell, snapshot.LastPlayer, snapshot.SpellSerial
 	w.HazardSerial, w.LastHazardCue = snapshot.HazardSerial, snapshot.LastHazardCue
