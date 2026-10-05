@@ -350,3 +350,24 @@ has its separate complete proof above; movement and remaining actor register
 bodies still require composition before the live strategy/frame loop can use
 this pass. Missing active bodies, map drawing and result continuations return
 explicit errors; no silent successful placeholder is installed in Game.
+
+## Retained aftermath bodies in the complete follower pass
+
+NativeFollowerAftermathFrameRules translates all fourteen retained aftermath
+states at $1199e/$11ce8/$11e00/$11ece/$12074 directly from raw memory. It
+preserves animation-word aliases, signed timer flags, cleanup/leader register
+outputs, four-cell neighbor scans, town destruction, ruin retention and the
+exact $123b4/$12462 return boundary. The 603 independently executed source
+cases contain 6,729 supported body frames; all eight data registers, map,
+overlays, complete actor/deity banks and RNG match both standalone Go and World.
+The other 78 captured exits hand control to ordinary search and are outside
+this body family; they are not treated as successful aftermath calls.
+
+The World follower dispatcher now binds these bodies and the independently
+verified Whirlwind transport body. For aftermath, 112 complete original $11252
+passes over all 400 slots compare the composed real Go prepass, actor body,
+cleanup/leader/graph/neighbor operations, counters and full data-register/BSS
+output. These passes use native mode8 to suppress result dialogs and view0
+to omit minimap pixel drawing. No actor/prepass callback output is replayed
+from a fixture in this composed proof. Other follower families and live Game
+frame/presentation routing remain required work; a missing body still errors.

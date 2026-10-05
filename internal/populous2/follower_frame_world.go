@@ -29,3 +29,18 @@ func (w *World) nativeCommonPrepassFrameCallbacks(frame *NativeFrameRegisterCont
 	}
 	return cb
 }
+
+func (w *World) nativeAftermathFrameCallbacks(frame *NativeFrameRegisterContext) NativeFollowerAftermathFrameCallbacks {
+	memory := w.nativeCleanupMemory()
+	return NativeFollowerAftermathFrameCallbacks{Memory: memory, Frame: frame,
+		Cleanup: func(ref NativeRecordReference, context *NativeFrameRegisterContext) error {
+			_, err := CleanupFollowerWithFrame(ref, context, FollowerCleanupCallbacks{Memory: memory, Unlink: w.nativeRuntimeUnlink, Insert: w.nativeRuntimeInsert, ClearFarms: w.clearNativeFarms})
+			return err
+		},
+		ClearLeader: func(ref NativeRecordReference, context *NativeFrameRegisterContext) error {
+			_, err := ClearFollowerLeaderWithFrame(ref, context, FollowerLeaderCallbacks{Memory: memory, Unlink: w.nativeRuntimeUnlink, Insert: w.nativeRuntimeInsert})
+			return err
+		},
+		Unlink: w.nativeRuntimeUnlink, DestroyTown: w.nativeDestroyTown,
+	}
+}

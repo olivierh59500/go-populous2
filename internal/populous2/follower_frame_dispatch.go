@@ -1,0 +1,55 @@
+package populous2
+
+import "fmt"
+
+type NativeFollowerFrameBindings struct {
+	Aftermath *NativeFollowerAftermathFrameRules
+	// Other owns state families whose complete register-bearing controller
+	// has not yet been attached. Missing active bodies are explicit errors.
+	Other    func(NativeRecordReference, uint16, *NativeFrameRegisterContext, *NativeFollowerPassState) (NativeFollowerPassFlow, error)
+	MapPoint func(uint16, *NativeFrameRegisterContext) error
+	Result   func(uint16, *NativeFrameRegisterContext) error
+}
+
+func (w *World) nativeFollowerFrameCallbacks(frame *NativeFrameRegisterContext, state *NativeFollowerPassState, bindings NativeFollowerFrameBindings) NativeFollowerPassCallbacks {
+	return NativeFollowerPassCallbacks{Memory: w.nativeCleanupMemory(), Frame: frame, State: state,
+		Prepass: func(ref NativeRecordReference, frame *NativeFrameRegisterContext, _ *NativeFollowerPassState) error {
+			_, err := w.CommonPrepass.Tick(ref, w.nativeCommonPrepassFrameCallbacks(frame))
+			return err
+		},
+		Body: func(ref NativeRecordReference, target uint16, frame *NativeFrameRegisterContext, state *NativeFollowerPassState) (NativeFollowerPassFlow, error) {
+			actorState, err := w.nativeCleanupMemory().Read8(cleanupRecordAddress(ref) + 22)
+			if err != nil {
+				return NativeFollowerNext, err
+			}
+			if aftermathHandler(actorState) != 0 {
+				if bindings.Aftermath == nil {
+					return NativeFollowerNext, fmt.Errorf("native follower aftermath frame rules missing")
+				}
+				return bindings.Aftermath.Tick(ref, w.nativeAftermathFrameCallbacks(frame))
+			}
+			if actorState == 0x14 {
+				cb := w.nativeWhirlwindCallbacks()
+				cb.Frame = frame
+				cb.SourceD2 = uint16(frame.D[2])
+				_, err := w.NativeWhirlwind.TickFollower(ref, cb)
+				return NativeFollowerCount, err
+			}
+			if bindings.Other != nil {
+				return bindings.Other(ref, target, frame, state)
+			}
+			return NativeFollowerNext, fmt.Errorf("native follower state%02x full frame controller missing", actorState)
+		},
+		MapPoint: bindings.MapPoint, Result: bindings.Result,
+	}
+}
+
+// tickNativeFollowerFrame borrows the already authoritative raw session for
+// the ordered native pass. Its parent must hydrate typed views after all
+// physics stages, rather than flush them between actors or reset the frame.
+func (w *World) tickNativeFollowerFrame(rules *NativeFollowerPassRules, frame *NativeFrameRegisterContext, state *NativeFollowerPassState, bindings NativeFollowerFrameBindings) error {
+	if w == nil || rules == nil || frame == nil || state == nil {
+		return fmt.Errorf("native follower frame context missing")
+	}
+	return rules.Tick(w.nativeFollowerFrameCallbacks(frame, state, bindings))
+}
