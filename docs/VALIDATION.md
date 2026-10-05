@@ -948,3 +948,19 @@ verifies physical queue reads, exact authority changes and survival of the
 late UI sound write. Session and runtime race checks pass. These tests prove
 the shared ownership contract; host streaming serialization and live Game
 activation remain required.
+
+## Complete custom-startup runtime composition
+
+RestoreStartupPanel binds the full address-register panel body to actual
+prepared sprite RAM, live scalar/logical CODE views and shared image state.
+An integration test executes the complete custom10AD8 startup after real
+allocation, loading, Copper and audio-device initialization. Original world
+creators, graphics, minimap, panel and18474 resume all run their translated
+bodies before the controller returns its real terminal zero flag. The resulting
+raw records enter BeginRaw without typed regeneration.
+
+A separate suspended-audio case verifies that completed panel/world work is
+not replayed. Ownership callbacks deliberately clobber caller registers in that
+test, exercising the source panel's full save/restore contract. These are
+runtime-composition checks; full in-game visual/interaction validation and the
+initial menu/campaign startup paths remain outstanding.
