@@ -121,7 +121,11 @@ func DecodeNativeInGameRequesterRules(exe *amiga.Executable) (*NativeInGameReque
 		if half != 16 || height <= 0 || int(source)+int(half*2/8*5*height) > len(exe.Hunks[3].Data) {
 			return nil, fmt.Errorf("native world icon pixels missing")
 		}
-		r.icons[i] = nativeWorldIcon{Descriptor: uint32(at), SourceOffset: uint16(source), HalfWidth: half, Height: height, planes: append([]byte(nil), exe.Hunks[3].Data[int(source):int(source)+int(half*2/8*5*height)]...)}
+		prepared, err := PrepareNativeMaskedPlanes(exe.Hunks[3].Data[int(source):int(source)+int(half*2/8*5*height)], int(half)*2, int(height))
+		if err != nil {
+			return nil, err
+		}
+		r.icons[i] = nativeWorldIcon{Descriptor: uint32(at), SourceOffset: uint16(source), HalfWidth: half, Height: height, planes: prepared}
 	}
 	return r, nil
 }

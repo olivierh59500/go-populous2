@@ -19,6 +19,10 @@ func (g *Game) initializeNativePresentation() error {
 	}
 	g.nativePresentation = p
 	g.startupImage = ebiten.NewImageFromImage(startup)
+	g.worldRequesters, err = populous2.DecodeNativeInGameRequesterRules(g.Bundle.Executable)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -34,7 +38,7 @@ func (g *Game) updateNativeStartup() error {
 		g.LevelIndex = min(len(g.Bundle.Levels)-1, g.LevelIndex+1)
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		return g.start(g.LevelIndex, false, false)
+		return g.openWorldRequester()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
 		return g.start(g.LevelIndex, false, true)
@@ -51,7 +55,7 @@ func (g *Game) updateNativeStartup() error {
 	case 2:
 		g.OpenDeity()
 	case 4:
-		return g.start(g.LevelIndex, false, false)
+		return g.openWorldRequester()
 	case 6:
 		return g.start(g.LevelIndex, true, false)
 	case 8:

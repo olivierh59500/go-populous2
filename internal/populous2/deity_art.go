@@ -30,7 +30,11 @@ func DecodeDeityArt(exe *amiga.Executable, faces []byte, palette [16]color.RGBA)
 			if width != 32 || height < 1 || height > 64 || offset < 0 || offset+length > len(faces) {
 				return nil, fmt.Errorf("invalid deity part %d variant %d", part, variant)
 			}
-			img, err := DecodeNativeMaskedPlanes(faces[offset:offset+length], width, height, palette)
+			prepared, err := PrepareNativeMaskedPlanes(faces[offset:offset+length], width, height)
+			if err != nil {
+				return nil, err
+			}
+			img, err := DecodeNativeMaskedPlanes(prepared, width, height, palette)
 			if err != nil {
 				return nil, err
 			}

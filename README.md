@@ -27,7 +27,8 @@ step after a campaign victory. Winning the final world plays the supplied Zeus
 animation and original scrolltext at its native PAL cadence. Original result
 requester is displayed after 101 PAL VBlanks. The deity screen and game options
 use their original layouts, masked artwork, experience strips and controls;
-in-game/file/world/serial menu binding remains under conversion.
+The original file and Conquest world requesters are connected to the game;
+in-game/serial routing and power-help preview animation remain under conversion.
 Whirlwinds now lift, transport and release native followers, collapse town farms
 and create original water children. Their complete retained controllers replace
 the former motion-only World handler.
@@ -250,3 +251,12 @@ the implementation and its remaining limits.
 
 The reused Go code retains GPL-3.0 licensing. Original game resources have
 separate provenance and rights; see [PROVENANCE.md](docs/PROVENANCE.md).
+
+## Conquest world selection
+
+Choose Conquest from the original startup menu, then select a world by its
+code before proceeding. The requester displays the live scenario rules and
+available powers; click the opponent name for the original biography and face,
+or a power icon for its original help text. World codes load the original
+250-byte campaign record without clearing the retained session. The power-help
+preview animations and source-exact text-input timing are still being integrated.

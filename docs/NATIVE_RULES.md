@@ -339,7 +339,11 @@ Walls are no longer substituted with RockBlock.
 exactly one to the selected unsigned experience byte, rejecting 255 or an
 empty balance. Face parts at deity `$4e-$50` wrap through eight variants.
 The creation-screen artwork is decoded from the three FACES.PAK descriptor
-banks at `$212ba` and composed with the original strip positions.
+banks at `$212ba` and composed with the original strip positions. The resource
+loader first runs `$1069c`: five interleaved words per sixteen pixels become
+contiguous planes, with the raw transparent mask complemented for `$f3a0`.
+Startup applies the same preparation to the embedded world-icon table at
+`$214b2`; decoding unprepared bytes as contiguous planes corrupts both images.
 
 The sixteen-letter profile password uses `$1047c/$10564`: eight packed bytes,
 bit transposition, fixed XOR words, multiplication by three, base-26 digits

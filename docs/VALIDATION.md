@@ -225,9 +225,11 @@ has not been reproduced by that guard.
 
 The full deity screen now uses CODE760e requester fields, native bolt symbols,
 its own CODE33844 palette, twelve XP strips, face backing and all three masked
-parts at the original coordinates/order. FACES.PAK is stored in five contiguous
-plane blocks with an opaque-mask bit, unlike the ordinary interleaved sprites.
-A private CPU harness with register-driven block blits verifies all 512 face
+parts at the original coordinates/order. Raw FACES.PAK interleaves five
+sixteen-bit words with a transparent-mask bit. The actual resource loader
+executes $1069c, complementing the mask and rearranging contiguous planes before
+$f3a0 draws them. The CPU harness now executes that preparation before its
+register-driven block blits and verifies all 512 face
 combinations: prepared text, display password and complete RGBA framebuffer agree,
 including bolt balances beyond the password import range. Hardware logic follows
 [AmigaOS's documented minterm truth table](https://wiki.amigaos.net/wiki/Graphics_Minterms);
@@ -262,11 +264,37 @@ state lies outside the original GAM transfer block and does not change it.
 
 ## Native world icon planes
 
-The world-selection icons also call $f3a0 and use five contiguous planes with
-an opaque-mask bit. They now share that decoder with deity face parts rather
-than the moving-sprite decoder. A private original-CPU harness executes all
+The world-selection icons also call $f3a0 after startup $10a28 has executed
+$1069c. Raw HUNK3 word groups first become five contiguous planes with a
+complemented opaque-mask bit. They share this preparation and draw decoder
+with deity face parts. A private original-CPU harness executes preparation and all
 36 relocated HUNK3 descriptors over both blank and patterned backgrounds at
 three positions, including top/left and bottom/right clipping. All 216 complete
 RGBA framebuffer hashes match Go compositing. The 512 original deity-screen
 comparisons guard the shared decoder. This establishes icon pixels; the World
 requester application routing remains a separate binding step.
+
+## World requester application binding
+
+The Conquest startup action now opens the original world requester before
+play begins. Its complete font/icon framebuffer matches 144 original-CPU
+references. The opponent sheet matches 512 complete native text/face frames,
+covering all 32 deity biographies, both selected sides, signed reaction labels,
+unsigned aggression/clamping and both background patterns. These captures run
+the real $1069c resource preparation before the native masked blits.
+
+The world-code continuation performs $11044 template/script/landscape/RNG writes
+on the retained session. All 1,000 world loads compare complete retained BSS
+and all eight data registers against the original CPU, including modes 2/4/6.
+Unlike scene initialization, this call does not compile policy lists or replace
+actors, the clock, the saved seed or queued commands. Native profile switching
+is an explicit $111ae call before displaying the selected side. Proceed starts
+the scene; Cancel returns to startup.
+
+World-code entry, invalid-code acknowledgment, the opponent sheet and admitted
+power help use the native requester actions and geometry in Game. All 144
+spell-help base/admission cases reproduce the original $517a..$5278 framebuffer
+from font, icon and description data. Per-power preview animation starts at the
+next source boundary and remains open. Game text editing remains provisional
+until the verified keyboard/VBlank modal is bound; interactive GPU validation
+and full in-game/native frame routing are also still required.

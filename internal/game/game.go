@@ -94,6 +94,15 @@ type Game struct {
 	fileImage                 *ebiten.Image
 	fileBackground            *ebiten.Image
 	fileEdit                  []byte
+	worldRequesters           *populous2.NativeInGameRequesterRules
+	worldMenu                 bool
+	worldMenuChild            bool
+	worldMenuEditing          bool
+	worldMenuCode             []byte
+	worldMenuState            populous2.NativeWorldRequesterState
+	worldMenuRequester        *populous2.NativeRequester
+	worldMenuImage            *ebiten.Image
+	requesterContext          populous2.NativeCommandRegisterContext
 }
 
 func New(bundle *populous2.Bundle, level int, demo, custom bool) (*Game, error) {
@@ -140,6 +149,9 @@ func (g *Game) Update() error {
 	}
 	if g.fileRequester != nil {
 		return g.updateFileRequester()
+	}
+	if g.worldMenu {
+		return g.updateWorldRequester()
 	}
 	if !g.DeityScreen && inpututil.IsKeyJustPressed(ebiten.KeyF) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
@@ -560,6 +572,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.DrawImage(g.background, op)
 	if g.ending != nil {
 		screen.DrawImage(g.endingImage, op)
+	} else if g.worldMenu {
+		g.drawWorldRequester(screen)
 	} else if g.ScenarioScreen {
 		g.drawScenarioRules(screen)
 	} else if g.DeityScreen {

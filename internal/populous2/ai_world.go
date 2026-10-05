@@ -86,6 +86,12 @@ func (w *World) initializeNativeAIControls() error {
 // The returned actual XP bytes+$52..$57 let the caller hydrate its views before
 // any bridge runs; raw bytes122/123 also change the original bolt word58/59.
 func (w *World) loadNativeAITemplates(rules *NativeAIRules, level Level) ([2][6]uint8, error) {
+	return w.copyNativeAITemplates(rules, level, true)
+}
+
+// copyNativeAITemplates keeps $10df2 separate from $10e90. Scene startup
+// compiles policy lists afterward; the $11044 world requester does not.
+func (w *World) copyNativeAITemplates(rules *NativeAIRules, level Level, compile bool) ([2][6]uint8, error) {
 	var experience [2][6]uint8
 	if w == nil || w.Core == nil || rules == nil {
 		return experience, fmt.Errorf("native World AI template rules missing")
@@ -127,8 +133,10 @@ func (w *World) loadNativeAITemplates(rules *NativeAIRules, level Level) ([2][6]
 	}
 	for side := 0; side < 2; side++ {
 		god := 0xe8a4 + side*314
-		if err := rules.CompileChoices(god, m); err != nil {
-			return experience, err
+		if compile {
+			if err := rules.CompileChoices(god, m); err != nil {
+				return experience, err
+			}
 		}
 		for i := range experience[side] {
 			value, err := m.Read8(god + 0x52 + i)
