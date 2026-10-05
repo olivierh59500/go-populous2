@@ -44,3 +44,15 @@ func (w *World) nativeAftermathFrameCallbacks(frame *NativeFrameRegisterContext)
 		Unlink: w.nativeRuntimeUnlink, DestroyTown: w.nativeDestroyTown,
 	}
 }
+
+func (w *World) nativeWinnerFrameCallbacks() NativeFollowerWinFrameCallbacks {
+	memory := w.nativeCleanupMemory()
+	return NativeFollowerWinFrameCallbacks{Memory: memory,
+		Cleanup: func(ref NativeRecordReference, context *NativeFrameRegisterContext) error {
+			_, err := CleanupFollowerWithFrame(ref, context, FollowerCleanupCallbacks{Memory: memory, Unlink: w.nativeRuntimeUnlink, Insert: w.nativeRuntimeInsert, ClearFarms: w.clearNativeFarms})
+			return err
+		},
+		ClearFarms: w.clearNativeFarms, ReformTown: w.nativeReformTown, DestroyTown: w.nativeDestroyTown,
+		PoolBlocked: func() bool { return w.nativeBirthBlockWord() != 0 }, Insert: w.nativeRuntimeInsert,
+	}
+}

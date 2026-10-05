@@ -389,3 +389,22 @@ and byte transfer on 127.0.0.1. The desktop endpoint UI, full physics/frame
 scheduler and save/reload policy for pending live connections remain separate
 required integration; these protocol tests do not establish complete two-player
 Game behavior.
+
+## Full winner register and address continuation
+
+WinWithFrame composes the complete existing $1298c winner-resolution body
+with its actual data-register outputs and returned A3 reference. The native
+corpus executes 87 leader/hero/town/Adonis scenarios across all four decoded
+LAND banks and three incoming register seeds: 1,044 comparisons match all
+eight data registers, actual returned A3 and the complete retained BSS image
+for both isolated Go and World. LAND resources are installed at the original
+resource-table destination $3365a before capturing reward data.
+
+The proof includes unsigned reward wrapping, victory counters, mana clamping,
+ordinary celebrations, hero deaths, town reform/destruction, original A0
+context, Adonis population halving, exhausted slots and the $dc2 birth gate.
+Farm/reform/town/Adonis saved-register boundaries remain distinct from the
+$12a98 cleanup, whose real D0-D2 outputs survive into the combat caller. The
+World adapter borrows raw bytes and does not flush typed records mid-call.
+This establishes the winner body; the full combat caller/physics/frame/UI
+composition still requires its separate integration and comparison.
