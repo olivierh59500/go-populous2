@@ -14,21 +14,26 @@ const (
 	NativeFrameSessionClock
 	NativeFrameSessionRender
 	NativeFrameSessionPhysics
+	NativeFrameSessionMenu
 )
 
 // NativeFrameSession retains one original frame across clock, render, serial
 // and modal waits. It owns the raw World until the entire frame completes;
 // typed views are hydrated once at completion, never before a resumed child.
 type NativeFrameSession struct {
-	Presentation *NativeFramePresentationState
-	Frame        NativeFrameRegisterContext
-	Phase        NativeFrameSessionPhase
-	Pass         NativeFramePassState
-	Deferred     NativeDeferredFrameState
-	Followers    NativeFollowerFrameState
-	Image        NativeImageRenderState
-	Audio        NativeFrameAudioState
-	RenderPhase  uint32
+	Presentation  *NativeFramePresentationState
+	Frame         NativeFrameRegisterContext
+	Phase         NativeFrameSessionPhase
+	Pass          NativeFramePassState
+	Deferred      NativeDeferredFrameState
+	Followers     NativeFollowerFrameState
+	Image         NativeImageRenderState
+	Audio         NativeFrameAudioState
+	RenderPhase   uint32
+	MenuPhase     uint32
+	ExitRequested bool
+	entryChecked  bool
+	exitChecked   bool
 
 	followerRules        *NativeFollowerFrameRules
 	wallRules            NativeWallRules
@@ -67,6 +72,9 @@ type NativeFrameSessionCallbacks struct {
 	// CommandChild owns real modal/startup/resource children that remain
 	// inside the original17500 command. Completion and CCR.Z stay separate.
 	CommandChild func(NativeCommandFrameCall, *uint32) (NativeCommandFrameResult, error)
+	// Menu is the real446A call before the source786 VBlank gate. It may
+	// wait without replaying the DCE clear or releasing raw World ownership.
+	Menu func(FollowerCleanupMemory, *NativeFrameRegisterContext, *NativeImageRenderState, *uint32) (bool, error)
 }
 
 func NewNativeFrameSession(bundle *Bundle, landIndex int, chipBase, pointerBase uint32) (*NativeFrameSession, error) {
@@ -169,6 +177,10 @@ func (s *NativeFrameSession) Begin(w *World, input NativeFrameRegisterContext) e
 	s.commandStates = [2]NativeCommandFrameState{}
 	s.commandPalettes = [2]*NativeFramePaletteState{}
 	s.RenderPhase = 0
+	s.MenuPhase = 0
+	s.ExitRequested = false
+	s.entryChecked = false
+	s.exitChecked = false
 	s.palette = nil
 	s.Phase = NativeFrameSessionVBlank
 	return nil
@@ -205,6 +217,19 @@ func (s *NativeFrameSession) Advance(cb NativeFrameSessionCallbacks) (bool, erro
 	s.directSound = cb.DirectSound
 	memory := s.Presentation.Memory(w.nativeCleanupMemory())
 	fail := func(err error) (bool, error) { s.finish(err); return false, err }
+	ready, exit, err := s.advanceFrameEntry(memory, cb)
+	if err != nil {
+		return fail(err)
+	}
+	if exit {
+		s.ExitRequested = true
+		s.finish(nil)
+		return true, nil
+	}
+	if !ready {
+		return false, nil
+	}
+
 	if s.Phase == NativeFrameSessionVBlank {
 		if s.Presentation.Input.word(0xa) == 0 {
 			return false, nil

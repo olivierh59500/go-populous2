@@ -121,14 +121,17 @@ func TestNativeInGameHostComposedAgainstOriginalCPU(t *testing.T) {
 					return NativeCommandFrameResult{Complete: true, Zero: f.Input.ResumeZero}, nil
 				},
 			}, Image: &image, Sprite: sprites.Paint, Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }}
+			session := NativeFrameSession{Presentation: presentation}
+			menuPhase := uint32(0)
+			menu := session.MenuFrame(&rules, &host, cb)
 			check := func() {
-				step, err := host.Advance(&rules, cb)
+				done, err := menu(memory, &frame, &image, &menuPhase)
 				if err != nil {
 					t.Fatalf("frame%d: %v", expected, err)
 				}
 				want := f.Frames[expected]
-				pc := step.PC
-				if step.Complete {
+				pc := host.Menu.PC
+				if done {
 					pc = 0
 				} else if host.ChildRoutine == 0x471c {
 					pc = host.Options.PC
@@ -201,6 +204,9 @@ func TestNativeInGameHostComposedAgainstOriginalCPU(t *testing.T) {
 			}
 			if !host.Menu.Finished {
 				t.Fatal("original composed menu did not return")
+			}
+			if menuPhase != 2 {
+				t.Fatal("concrete session menu did not finish its retained invocation")
 			}
 		})
 	}

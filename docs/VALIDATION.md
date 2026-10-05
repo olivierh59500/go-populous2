@@ -781,3 +781,24 @@ transport-resume result is an explicit register-preserving boundary in this
 proof, not a claimed connection. Initialized audio-device behavior and serial
 protocol have separate proofs. Live menu/frame entry and host transport binding
 remain integration work.
+
+## Source menu and exit gates in the frame session
+
+NativeFrameSession now executes the actual $e76..$e94 entry prefix: test and
+clear BSS $dce once, retain the genuine $446a call, then test BSS $3aa before
+the $786 VBlank wait. A requested exit completes this session without rendering
+or physics and exposes ExitRequested to the host. Typed World hydration still
+occurs only after raw ownership is released.
+
+Thirty original CPU entry envelopes match full D/BSS and exact menu-entry
+registers, each with immediate and suspended declared menu returns. Separate
+tests prove that the clear is not repeated, exit waits for the menu return and
+the entry flags are not repolled from within an already admitted video wait.
+The concrete MenuFrame adapter also runs all 24 composed menu references and
+78 snapshots through the same retained session callback. It requires initialized
+shared CODE and real host audio/transport bindings; it supplies the borrowed
+World, current presentation, image bank and physical bitmap resolver.
+
+This connects the source entry to the verified menu and rendering APIs. Initial
+$10a10/$10a8c startup, physical resource loading, complete transport return
+semantics and live Ebitengine loop activation are still required.
