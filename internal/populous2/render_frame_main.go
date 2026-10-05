@@ -28,6 +28,8 @@ func (s *NativeMainRenderState) Begin() error {
 type NativeMainRenderCallbacks struct {
 	World    NativeWorldRenderCallbacks
 	Selected NativeRenderFrameChildren
+	// CODE is distinct from BSS: $2e3a is the debug formatter's mutable target.
+	Code FollowerCleanupMemory
 	// Alternate optionally replaces the concrete C826/C204 composition.
 	Alternate    func(uint16, *NativeFrameRegisterContext) error
 	DebugOverlay func(*NativeFrameRegisterContext) error // Actual2AE2 editor overlay.
@@ -121,7 +123,10 @@ func (r *NativeActorRenderRules) MainFrame(cb NativeMainRenderCallbacks, state *
 			if err != nil {
 				return err
 			}
-			if err := m.Write32(0x2e3a, pointer); err != nil {
+			if cb.Code.Write32 == nil {
+				return fmt.Errorf("native main debug CODE backing missing")
+			}
+			if err := cb.Code.Write32(0x2e3a, pointer); err != nil {
 				return err
 			}
 			clock, err := m.Read32(0xf40)

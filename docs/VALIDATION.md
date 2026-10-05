@@ -674,3 +674,17 @@ These captures use the actual base sprite bank; separate bank decoding tests
 cover the other three sprite resources. Actual editor/debug children and
 wait-safe modal composition remain distinct requirements before live Game
 activation. This proves source rendering order, not the completed game loop.
+
+The retained session can now bind this concrete renderer using cached sprite
+and BLOCK banks. Its background resolver follows BSS $22; the drawing target
+follows $1e and its tile sink borrows the actual surrounding HUNK4 allocation.
+An external RAM window must own the same bitmap slice, preventing detached
+padding from hiding writes. Integration checks execute normal/alternate/normal
+frames through real swaps, preserve the background and shared rendering state,
+and retain the drawn prefix while releasing raw World ownership on a missing
+editor child. This synchronous adapter does not make pending modal callbacks
+safe; a resumable renderer remains required for the full interactive loop.
+The editor-mode diagnostic target at $2e3a uses separate mutable CODE backing,
+not the equal numeric BSS address inside terrain. A targeted integration check
+verifies the original draw-buffer pointer and clock register at the diagnostic
+child while the terrain word remains unchanged.
