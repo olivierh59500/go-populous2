@@ -59,4 +59,7 @@ func (p *effectPool) free(id int) {
 func (w *World) allocateEffect(kind EffectKind, owner uint8) int {
 	return w.effects.allocate(kind, owner)
 }
-func (w *World) releaseEffect(id int) { w.effects.free(id) }
+func (w *World) releaseEffect(id int) {
+	w.Actors.Unlink(ActorRef{Kind: ActorEffect, Index: uint16(id)})
+	w.effects.free(id)
+}

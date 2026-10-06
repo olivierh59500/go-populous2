@@ -97,12 +97,14 @@ func (s *AirEffects) CreateStorm(owner uint8, x, y int, h AirHabitat) bool {
 			life += int(h.AirExperience(owner))
 		}
 		s.Storms[id] = StormEffect{Active: true, Owner: owner, X: nx*256 + 128, Y: ny*256 + 128, Life: life, Frame: int(bits&12) / 4}
+		syncAirActor(h, id)
 		admitted = true
 	}
 	return admitted
 }
 
 func (s *AirEffects) TickStorm(id int, h AirHabitat) {
+	defer syncAirActor(h, id)
 	e := &s.Storms[id]
 	if !e.Active {
 		return
@@ -288,6 +290,7 @@ func (s *AirEffects) PlaceLightning(owner uint8, x, y int, h AirHabitat) bool {
 	if reference := s.MarkerSlots[owner]; reference != 0 {
 		marker := &s.Markers[reference-1]
 		marker.X, marker.Y = x*256+128, y*256+128
+		syncAirActor(h, reference-1)
 		return true
 	}
 	id := h.Reserve(EffectLightning, owner)
@@ -296,6 +299,7 @@ func (s *AirEffects) PlaceLightning(owner uint8, x, y int, h AirHabitat) bool {
 	}
 	s.Markers[id] = LightningMarker{Active: true, Owner: owner, X: x*256 + 128, Y: y*256 + 128, Life: 200}
 	s.MarkerSlots[owner] = id + 1
+	syncAirActor(h, id)
 	return true
 }
 
@@ -328,6 +332,7 @@ func (s *AirEffects) ActivateLightning(owner uint8, h AirHabitat) int {
 		}
 		s.Bolts[id] = LightningBolt{Active: true, Owner: owner, X: nx*256 + 128, Y: ny*256 + 128, Marker: markerID + 1, Next: marker.FirstBolt}
 		marker.FirstBolt = id + 1
+		syncAirActor(h, id)
 		created++
 	}
 	return created
@@ -352,6 +357,7 @@ func (s *AirEffects) DismissLightning(owner uint8, h AirHabitat) {
 }
 
 func (s *AirEffects) TickLightning(id int, h AirHabitat) {
+	defer syncAirActor(h, id)
 	if bolt := &s.Bolts[id]; bolt.Active {
 		bolt.Random = h.Random()
 		bolt.X = bolt.X&^255 | int(uint8(bolt.Random>>2))
@@ -403,11 +409,13 @@ func (s *AirEffects) CreateWhirlwind(owner uint8, x, y int, h AirHabitat) bool {
 	if owner < 2 {
 		life += int(h.AirExperience(owner))
 	}
+	defer syncAirActor(h, id)
 	s.Whirlwinds[id] = WhirlwindEffect{Active: true, Owner: owner, X: x*256 + 128, Y: y*256 + 128, VX: previous.VX, VY: previous.VY, Life: life, Timer: 1}
 	return true
 }
 
 func (s *AirEffects) TickWhirlwind(id int, h AirHabitat) {
+	defer syncAirActor(h, id)
 	e := &s.Whirlwinds[id]
 	if !e.Active {
 		return
@@ -490,4 +498,10 @@ func (s *AirEffects) routeWhirlwind(e *WhirlwindEffect, h AirHabitat) {
 	d := fireNeighbors[selected]
 	e.VX, e.VY = d[0]*24, d[1]*24
 	e.Timer = int(h.Random() & 0x78)
+}
+
+func syncAirActor(h AirHabitat, id int) {
+	if lifecycle, ok := h.(interface{ SyncEffect(int) }); ok {
+		lifecycle.SyncEffect(id)
+	}
 }

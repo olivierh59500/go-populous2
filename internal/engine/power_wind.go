@@ -25,7 +25,6 @@ func (w *World) CastWind(owner, x, y, direction int) error {
 		y = 0
 	}
 	w.Wind[id] = WindEffect{Active: true, Owner: uint8(owner), X: x, Y: y, Direction: direction, Life: 100}
-	w.syncActorRegistry()
 	return nil
 }
 
@@ -42,7 +41,6 @@ func (w *World) tickWind(id int) {
 		return
 	}
 	d := [4][2]int{{0, -16}, {16, 0}, {0, 16}, {-16, 0}}[e.Direction]
-	w.syncActorRegistry()
 	cell := func(x, y int) { w.Pressure[x+y*MapSize] = 0; w.pushActorParcel(x, y, d[0], d[1]) }
 	switch e.Direction {
 	case 0:

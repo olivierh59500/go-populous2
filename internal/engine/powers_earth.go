@@ -202,6 +202,7 @@ func (w *World) CastWall(owner, x, y int) error {
 	}
 	variant := wallVariants[connections]
 	w.Earth.Walls[id] = WallActor{Active: true, Owner: uint8(owner), X: x, Y: y, Connections: connections, Variant: variant, Next: next}
+	w.syncWallActor(id)
 	for _, neighbor := range neighbors {
 		if neighbor < 0 || variant == 0 {
 			continue
@@ -238,6 +239,7 @@ func (w *World) tickWalls() {
 				w.Earth.WallHeads[a.Owner] = a.Next
 			}
 			a.Active = false
+			w.syncWallActor(id)
 			continue
 		}
 		limit := uint8(2)

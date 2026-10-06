@@ -219,6 +219,7 @@ func (w *World) plantTrees(x, y, experienceAttempts int) error {
 			selected = 0
 		}
 		w.Nature.Scenery[free] = SceneryActor{Kind: SceneryTree, X: uint8(nx), Y: uint8(ny), Age: 24, Variant: selected}
+		w.syncSceneryActor(free)
 		planted++
 	}
 	if planted == 0 {
@@ -328,6 +329,7 @@ func (w *World) tickNatureScenery() {
 				magnitude++
 				if magnitude == 24 {
 					*a = SceneryActor{}
+					w.syncSceneryActor(id)
 					continue
 				}
 				a.Age = -int8(magnitude)
@@ -353,6 +355,7 @@ func (w *World) tickNatureScenery() {
 			a.Age--
 			if a.Age == -24 {
 				*a = SceneryActor{}
+				w.syncSceneryActor(id)
 				continue
 			}
 			if !hazard {

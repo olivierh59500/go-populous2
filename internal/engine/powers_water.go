@@ -93,6 +93,7 @@ func (w *World) tickWaterEffects() {
 }
 
 func (w *World) tickWaterEffect(id int) {
+	defer w.syncEffectActor(id)
 	switch w.effects.Slots[id].Kind {
 	case EffectBasalt:
 		w.tickBasalt(id)
@@ -259,6 +260,7 @@ func (w *World) CastTsunami(owner, x, y int) error {
 			fixedY += 255
 		}
 		w.Water.Waves[id] = TidalEffect{Active: true, Owner: uint8(owner), X: fixedX, Y: fixedY, Direction: direction}
+		w.syncEffectActor(id)
 	}
 	return nil
 }
@@ -327,5 +329,6 @@ func (w *World) tickTidalWave(id int) {
 			continue
 		}
 		w.Water.Waves[child] = TidalEffect{Active: true, Newborn: child >= id, Owner: e.Owner, X: nx*256 + (e.X & 255), Y: ny*256 + (e.Y & 255), Direction: e.Direction, Frame: (e.Frame + 1) % 8}
+		w.syncEffectActor(child)
 	}
 }

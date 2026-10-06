@@ -92,6 +92,7 @@ func (s *FireEffects) createColumn(owner uint8, x, y int, experience bool, h Fir
 	if experience && owner < 2 {
 		life += int(h.FireExperience(owner))
 	}
+	defer syncFireActor(h, id)
 	s.Columns[id] = FireEffect{Active: true, Owner: owner, X: x*256 + 128, Y: y*256 + 128, VX: old.VX, VY: old.VY, Phase: FireEmerging, Timer: 1, Life: life}
 	return true
 }
@@ -100,6 +101,7 @@ func (s *FireEffects) createColumn(owner uint8, x, y int, experience bool, h Fir
 // Transition into movement falls through in the same pass, as does expiry
 // into the ending sequence. Water is inspected before moving to the next cell.
 func (s *FireEffects) TickColumn(id int, h FireHabitat) {
+	defer syncFireActor(h, id)
 	e := &s.Columns[id]
 	if !e.Active {
 		return
@@ -213,6 +215,7 @@ func (s *FireEffects) CreateRain(owner uint8, x, y int, h FireHabitat) bool {
 }
 
 func (s *FireEffects) TickRain(id int, h FireHabitat) {
+	defer syncFireActor(h, id)
 	e := &s.Rain[id]
 	if !e.Active {
 		return
@@ -276,6 +279,7 @@ func (s *FireEffects) CreateVolcano(owner uint8, x, y int, h FireHabitat) bool {
 // cumulative center changes and painting slopes. The last stage emits fire
 // and lava; the controller itself stays outside the parcel occupancy graph.
 func (s *FireEffects) TickVolcano(id int, h FireHabitat) {
+	defer syncFireActor(h, id)
 	e := &s.Volcano[id]
 	if !e.Active {
 		return
@@ -379,6 +383,7 @@ func (s *FireEffects) CreateLava(owner uint8, x, y, direction int, h FireHabitat
 		return -1
 	}
 	delay := int(h.Random()%9) + 1
+	defer syncFireActor(h, id)
 	s.Lava[id] = FireEffect{Active: true, Owner: owner, X: x * 256, Y: y * 256, Phase: LavaFlowing, Direction: direction, Timer: delay, Life: delay}
 	return 1
 }
@@ -393,6 +398,7 @@ func (s *FireEffects) lavaAt(x, y int) bool {
 }
 
 func (s *FireEffects) TickLava(id int, clock uint64, h FireHabitat) {
+	defer syncFireActor(h, id)
 	e := &s.Lava[id]
 	if !e.Active {
 		return
@@ -429,4 +435,10 @@ func (s *FireEffects) TickLava(id int, clock uint64, h FireHabitat) {
 		}
 	}
 	h.PushByLava(x, y, d[0]*20, d[1]*20)
+}
+
+func syncFireActor(h FireHabitat, id int) {
+	if lifecycle, ok := h.(interface{ SyncEffect(int) }); ok {
+		lifecycle.SyncEffect(id)
+	}
 }

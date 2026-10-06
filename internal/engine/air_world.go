@@ -114,6 +114,7 @@ func (w *World) DismissLightning(owner int) bool {
 	return true
 }
 func (w *World) tickAirEffect(id int) {
+	defer w.syncEffectActor(id)
 	if w.effects.Slots[id].Kind == EffectLightning {
 		w.Air.TickLightning(id, worldAirHabitat{w})
 	} else if w.effects.Slots[id].Kind == EffectWhirlwind {
@@ -292,3 +293,5 @@ func (w *World) CastStorm(owner, x, y int) error {
 	}
 	return nil
 }
+
+func (h worldAirHabitat) SyncEffect(id int) { h.world.syncEffectActor(id) }

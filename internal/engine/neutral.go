@@ -114,6 +114,7 @@ func (w *World) tickNeutral(id int) {
 			for slot := range w.Nature.Scenery {
 				if w.Nature.Scenery[slot].Kind == SceneryNone {
 					w.Nature.Scenery[slot] = SceneryActor{Kind: SceneryTree, X: uint8(nx), Y: uint8(ny), Age: 24}
+					w.syncSceneryActor(slot)
 					break
 				}
 			}
