@@ -52,6 +52,8 @@ type NativeGame struct {
 	FileRules      populous2.NativeRuntimeFileBrowserRules
 	DeityEditor    populous2.NativeRuntimeDeity
 	Result         populous2.NativeRuntimeResultHost
+
+	interruptsInstalled bool
 }
 
 func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {
@@ -83,6 +85,12 @@ func (g *NativeGame) boot() error {
 	if _, err := h.InitializePresentation(populous2.NativeMouseSample{}); err != nil {
 		return err
 	}
+	// This software host starts with no other enabled Amiga interrupts.
+	//39E installs the original IRQ and divide-exception vectors in low RAM.
+	if _, err := h.InterruptVectors(0x39e, &g.Registers, func(uint32) (uint16, error) { return 0, nil }, func(populous2.NativeFrameHardwareWrite) error { return nil }); err != nil {
+		return err
+	}
+	g.interruptsInstalled = true
 	complete, err := h.AdvanceAllocations(0x1a43e, &g.Registers, populous2.NativeErrorFrameCallbacks{})
 	if err != nil {
 		return err
@@ -293,6 +301,13 @@ func (g *NativeGame) Close() {
 	}
 	if g.Files != nil {
 		g.Files.Close()
+	}
+	if g.interruptsInstalled {
+		_ = g.Host.Access.Execute(func() error {
+			_, err := g.Host.InterruptVectors(0x370, &g.Registers, nil, nil)
+			return err
+		})
+		g.interruptsInstalled = false
 	}
 	g.Host.Close()
 }
