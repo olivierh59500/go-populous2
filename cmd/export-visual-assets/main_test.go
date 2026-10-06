@@ -2,10 +2,12 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"go-populous2/internal/populous2"
@@ -93,6 +95,18 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 		for variant, want := range variants {
 			if got := portable.PortraitParts[part][variant]; got.Bounds() != want.Bounds() || !bytes.Equal(got.Pix, want.Pix) {
 				t.Fatalf("portrait strip %d/%d changed", part, variant)
+			}
+		}
+	}
+	for side := range source.FollowerMotion.VariantBases {
+		for variant := range source.FollowerMotion.VariantBases[side] {
+			for _, direction := range compass {
+				index := source.FollowerMotion.Angle(int16(direction.delta.X*20), int16(direction.delta.Y*20)) >> 5
+				name := fmt.Sprintf("follower/%d/%d/%s", side, variant, direction.name)
+				want := portable.Animations[fmt.Sprintf("follower/%d/%d/%d", side, variant, index)]
+				if got := portable.Animations[name]; !reflect.DeepEqual(got, want) || len(got.Frames) == 0 {
+					t.Fatalf("wrong named compass animation %s", name)
+				}
 			}
 		}
 	}

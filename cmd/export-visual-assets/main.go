@@ -18,6 +18,16 @@ import (
 	"go-populous2/internal/visualassets"
 )
 
+var compass = [...]struct {
+	name  string
+	delta image.Point
+}{
+	{"north", image.Pt(0, -1)}, {"northeast", image.Pt(1, -1)},
+	{"east", image.Pt(1, 0)}, {"southeast", image.Pt(1, 1)},
+	{"south", image.Pt(0, 1)}, {"southwest", image.Pt(-1, 1)},
+	{"west", image.Pt(-1, 0)}, {"northwest", image.Pt(-1, -1)},
+}
+
 func main() {
 	input := flag.String("input", "", "private imported original files (defaults to POPULOUS2_DATA_DIR or embedded installation)")
 	output := flag.String("output", "assets/generated", "portable artwork output directory")
@@ -144,6 +154,10 @@ func export(files fs.FS, output string) error {
 				}
 				catalog.Animations[fmt.Sprintf("follower/%d/%d/%d", side, variant, direction)] = animation(frames, true)
 			}
+			for _, direction := range compass {
+				index := source.FollowerMotion.Angle(int16(direction.delta.X*20), int16(direction.delta.Y*20)) >> 5
+				catalog.Animations[fmt.Sprintf("follower/%d/%d/%s", side, variant, direction.name)] = catalog.Animations[fmt.Sprintf("follower/%d/%d/%d", side, variant, index)]
+			}
 		}
 	}
 	heroes := [...]string{"perseus", "adonis", "heracles", "odysseus", "achilles", "helen"}
@@ -154,6 +168,10 @@ func export(files fs.FS, output string) error {
 				frames[index].Layers = layers
 			}
 			catalog.Animations[fmt.Sprintf("hero/%s/%d", heroes[hero], direction)] = animation(frames, true)
+		}
+		for _, direction := range compass {
+			index := source.FollowerMotion.Angle(int16(direction.delta.X*20), int16(direction.delta.Y*20)) >> 5
+			catalog.Animations[fmt.Sprintf("hero/%s/%s", heroes[hero], direction.name)] = catalog.Animations[fmt.Sprintf("hero/%s/%d", heroes[hero], index)]
 		}
 	}
 	for kind, rules := range map[string]populous2.SceneryRules{"tree": source.Scenery.Trees, "boulder": source.Scenery.Boulders} {
