@@ -258,3 +258,68 @@ func TestHeroReachesEnemyAndBecomesAggressor(t *testing.T) {
 		t.Fatal("contact retained chase claim")
 	}
 }
+
+func TestHelenCapturesSeveralEnemiesWithoutChangingFaith(t *testing.T) {
+	w := testFlatWorld()
+	hero := addFollower(w, 20, 20, 0, 100, Walking)
+	a := addFollower(w, 21, 20, 1, 100, Town)
+	b := addFollower(w, 22, 20, 1, 200, Walking)
+	w.Followers[hero].Hero.Kind = HeroHelen
+	if !w.CaptureByHelen(hero, a) || !w.CaptureByHelen(hero, b) {
+		t.Fatal("capture failed")
+	}
+	for _, id := range []int{a, b} {
+		f := w.Followers[id]
+		if f.Owner != 1 || f.Hero.CaptiveOf != hero || f.State == Town {
+			t.Fatal("capture converted faith or released earlier captive")
+		}
+	}
+	if w.Followers[a].Population != 100 || w.Followers[b].Population != 200 {
+		t.Fatal("capture changed population")
+	}
+	w.remove(hero)
+	for _, id := range []int{a, b} {
+		f := w.Followers[id]
+		if f.Owner != 1 || f.Hero.CaptiveOf != 0 || f.State != Walking {
+			t.Fatal("Helen death did not release captives")
+		}
+	}
+}
+
+func TestAdonisSplitHalvesOddPopulationAndKeepsTypedMotion(t *testing.T) {
+	w := testFlatWorld()
+	hero := addFollower(w, 20, 20, 0, 101, Walking)
+	w.Followers[hero].Hero.Kind = HeroAdonis
+	w.Followers[hero].velocityX = 7
+	w.Followers[hero].legRemaining = 11
+	child := w.SplitAdonis(hero)
+	if child == 0 || w.Followers[hero].Population != 50 || w.Followers[child].Population != 50 || w.Followers[child].Hero.Kind != HeroAdonis || w.Followers[child].velocityX != 7 || w.Followers[child].legRemaining != 11 {
+		t.Fatal("Adonis clone differs")
+	}
+	w.Followers[hero].Population = 20
+	if w.SplitAdonis(hero) != 0 || w.Followers[hero].Population != 20 {
+		t.Fatal("small Adonis split")
+	}
+	for id := 1; id < FollowerCapacity; id++ {
+		if w.Followers[id].State == Inactive {
+			w.Followers[id] = Follower{State: Walking, Population: 1}
+		}
+	}
+	w.Followers[hero].Population = 101
+	if w.SplitAdonis(hero) != 0 || w.Followers[hero].Population != 50 {
+		t.Fatal("full-pool Adonis did not retain source halving")
+	}
+}
+
+func TestHelenContactUsesCaptureInsteadOfBattle(t *testing.T) {
+	w := testFlatWorld()
+	hero := addFollower(w, 20, 20, 0, 1000, Walking)
+	enemy := addFollower(w, 21, 20, 1, 100, Town)
+	w.Followers[hero].Hero.Kind = HeroHelen
+	for pass := 0; pass < 30 && w.Followers[enemy].Hero.CaptiveOf == 0; pass++ {
+		w.stepFollower(hero)
+	}
+	if w.Followers[enemy].Hero.CaptiveOf != hero || w.Followers[hero].State == Fighting || w.Followers[enemy].Owner != 1 {
+		t.Fatal("Helen contact entered ordinary combat")
+	}
+}

@@ -237,7 +237,11 @@ func (w *World) stepHero(id int) {
 	target := w.Followers[f.Hero.Target]
 	dx, dy := sign(int(target.X)-int(f.X)), sign(int(target.Y)-int(f.Y))
 	if dx == 0 && dy == 0 {
-		w.beginBattle(id, f.Hero.Target)
+		if f.Hero.Kind == HeroHelen {
+			w.CaptureByHelen(id, f.Hero.Target)
+		} else {
+			w.beginBattle(id, f.Hero.Target)
+		}
 		return
 	}
 	if !w.heroCanEnter(id, int(f.X)+dx, int(f.Y)+dy) {
@@ -297,7 +301,7 @@ func (w *World) heroCanEnter(id, x, y int) bool {
 
 // clearHeroLinks keeps typed reciprocal references consistent on death or
 // conversion. Captives retain their faith and resume ordinary walking.
-func (w *World) clearHeroLinks(id int) {
+func (w *World) clearHeroClaim(id int) {
 	if id <= 0 || id >= FollowerCapacity {
 		return
 	}
@@ -308,6 +312,16 @@ func (w *World) clearHeroLinks(id int) {
 	if claimant := source.Hero.ClaimedBy; claimant > 0 && claimant < FollowerCapacity && w.Followers[claimant].Hero.Target == id {
 		w.Followers[claimant].Hero.Target = 0
 	}
+	source.Hero.Target = 0
+	source.Hero.ClaimedBy = 0
+}
+func (w *World) clearHeroLinks(id int) {
+	if id <= 0 || id >= FollowerCapacity {
+		return
+	}
+	w.clearHeroClaim(id)
+	source := &w.Followers[id]
+
 	for other := 1; other < FollowerCapacity; other++ {
 		if w.Followers[other].Hero.CaptiveOf == id {
 			w.Followers[other].Hero.CaptiveOf = 0
@@ -317,4 +331,83 @@ func (w *World) clearHeroLinks(id int) {
 	}
 	source.Hero.Target = 0
 	source.Hero.ClaimedBy = 0
+}
+
+// CaptureByHelen changes neither owner nor population. Captives remain linked
+// to their captor and are released when that hero dies, rather than converted
+// to the captor's faith as the Baptism power would do.
+func (w *World) CaptureByHelen(hero, victim int) bool {
+	if hero <= 0 || hero >= FollowerCapacity || victim <= 0 || victim >= FollowerCapacity || hero == victim {
+		return false
+	}
+	h, v := &w.Followers[hero], &w.Followers[victim]
+	if h.Hero.Kind != HeroHelen || v.State == Inactive || h.Owner == v.Owner {
+		return false
+	}
+	w.clearHeroClaim(hero)
+	w.clearHeroLinks(victim)
+	wasTown := v.State == Town
+	v.State = Walking
+	v.Hero.CaptiveOf = hero
+	v.Hero.Phase = HeroCaptive
+	v.moving = false
+	v.Frame = 0
+	v.BattleWith = 0
+	h.Hero.Phase = HeroFindTarget
+	h.moving = false
+	h.Frame = 0
+	if wasTown {
+		w.repaintFarms()
+	}
+	return true
+}
+
+func (w *World) stepCaptive(id int) {
+	f := &w.Followers[id]
+	captor := f.Hero.CaptiveOf
+	if captor <= 0 || captor >= FollowerCapacity || w.Followers[captor].State == Inactive || w.Followers[captor].Hero.Kind != HeroHelen {
+		f.Hero.CaptiveOf = 0
+		f.Hero.Phase = HeroFindTarget
+		f.moving = false
+		return
+	}
+	if f.moving {
+		w.advanceLeg(id)
+		return
+	}
+	f.Population -= w.Level.Players[f.Owner].Attrition
+	if f.Population <= 0 {
+		w.remove(id)
+		return
+	}
+	h := w.Followers[captor]
+	if int(f.X) == int(h.X) && int(f.Y) == int(h.Y) {
+		return
+	}
+	x := int(f.X) + sign(int(h.X)-int(f.X))
+	y := int(f.Y) + sign(int(h.Y)-int(f.Y))
+	if !inside(x, y) || w.Cell(x, y).IsWater() {
+		return
+	}
+	w.beginLeg(id, x, y)
+	w.advanceLeg(id)
+}
+
+// SplitAdonis halves the surviving population before attempting a single
+// clone. A full pool retains that halved parent, matching original admission.
+func (w *World) SplitAdonis(id int) int {
+	if id <= 0 || id >= FollowerCapacity || w.Followers[id].Hero.Kind != HeroAdonis || w.Followers[id].Population <= 20 {
+		return 0
+	}
+	f := &w.Followers[id]
+	f.Population = int(uint32(f.Population) >> 1)
+	child := *f
+	child.Hero.Target = 0
+	child.Hero.ClaimedBy = 0
+	child.Hero.Phase = HeroFindTarget
+	child.Frame = 0
+	child.State = Walking
+	child.BattleWith = 0
+	child.BattleAggressor = false
+	return w.allocate(child)
 }

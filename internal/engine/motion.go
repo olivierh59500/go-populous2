@@ -71,8 +71,18 @@ func (w *World) advanceLeg(id int) {
 		other := int(w.Occupants[x+y*MapSize])
 		if other != 0 && other != id {
 			target := &w.Followers[other]
+			if f.Hero.CaptiveOf != 0 {
+				f.moving = false
+				return
+			}
 			if target.Owner != f.Owner {
-				w.beginBattle(id, other)
+				if f.Hero.Kind == HeroHelen {
+					w.CaptureByHelen(id, other)
+				} else if target.Hero.Kind == HeroHelen {
+					w.CaptureByHelen(other, id)
+				} else {
+					w.beginBattle(id, other)
+				}
 			} else if target.State == Town || w.Players[f.Owner].Mode == Join {
 				target.Population += f.Population
 				w.remove(id)

@@ -157,6 +157,9 @@ func (w *World) Cell(x, y int) Cell {
 	if code, ok := w.FireTileCode(x, y); ok {
 		cell.Code = code
 	}
+	if code, ok := w.Water.TileCode(x, y); ok {
+		cell.Code = code
+	}
 	if code, ok := w.Nature.TileCode(x, y); ok {
 		cell.Code = code
 	}

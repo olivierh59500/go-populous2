@@ -67,6 +67,7 @@ type World struct {
 	Nature               NatureState
 	Fire                 FireEffects
 	FireDamage           FireDamageState
+	Water                WaterEffects
 	Heights              [CornerSize * CornerSize]uint8
 	Tiles                [MapSize * MapSize]Cell
 	Farms                [MapSize * MapSize]uint8 // Zero, blue, or red cultivation.
@@ -164,6 +165,7 @@ func (w *World) Step() {
 	w.Tick++
 	w.tickNature()
 	w.tickFireEffects()
+	w.tickWaterEffects()
 	for owner := range w.Players {
 		if w.Tick&1 == 0 && w.Players[owner].Mana < 32767 {
 			w.Players[owner].Mana++
@@ -209,6 +211,10 @@ func (w *World) stepFollower(id int) {
 	tile := int(f.X) + int(f.Y)*MapSize
 	if f.State == Fighting {
 		w.stepBattle(id)
+		return
+	}
+	if f.Hero.CaptiveOf != 0 {
+		w.stepCaptive(id)
 		return
 	}
 	if f.IsHero() {
@@ -312,6 +318,13 @@ func (w *World) remove(id int) {
 	at := int(f.X) + int(f.Y)*MapSize
 	if w.Occupants[at] == uint16(id) {
 		w.Occupants[at] = 0
+		for other := 1; other < FollowerCapacity; other++ {
+			g := w.Followers[other]
+			if other != id && g.State != Inactive && int(g.X)+int(g.Y)*MapSize == at {
+				w.Occupants[at] = uint16(other)
+				break
+			}
+		}
 	}
 	if f.State != Inactive && w.Players[f.Owner].Leader == id {
 		w.Players[f.Owner].Leader = 0
