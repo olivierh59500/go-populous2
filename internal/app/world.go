@@ -233,170 +233,23 @@ func (g *Game) drawWorld() {
 	w := g.World
 	draw.Draw(g.framebuffer, g.framebuffer.Bounds(), g.Assets.Visual.Background, image.Point{}, draw.Src)
 	land := w.Level.Landscape
-	clear(g.visibleFollowers[:])
-	clear(g.visibleNext[:])
-	for id := 1; id < len(w.Followers); id++ {
-		f := w.Followers[id]
-		dx, dy := int(f.X)-g.CameraX, int(f.Y)-g.CameraY
-		if f.State == engine.Inactive || dx < 0 || dy < 0 || dx >= viewSize || dy >= viewSize {
+	var commands [viewSize*viewSize + engine.FollowerCapacity + engine.EffectCapacity + engine.SceneryCapacity + engine.WallCapacity + 2]RenderCommand
+	for _, command := range sourceRenderPlan(w, g.CameraX, g.CameraY, commands[:0]) {
+		if command.Actor.Kind != engine.ActorNone {
+			g.drawRegisteredActor(command.Actor, land)
 			continue
 		}
-		at := dx + dy*viewSize
-		g.visibleNext[id] = g.visibleFollowers[at]
-		g.visibleFollowers[at] = id
-	}
-	// Draw back-to-front isometric rows, including actors on each surface.
-	for sum := 0; sum < viewSize*2-1; sum++ {
-		for dx := 0; dx < viewSize; dx++ {
-			dy := sum - dx
-			if dy < 0 || dy >= viewSize {
-				continue
-			}
-			x, y := g.CameraX+dx, g.CameraY+dy
-			cell := w.Cell(x, y)
-			sx := 192 + 16*(dx-dy) - 16
-			sy := 64 + 8*(dx+dy) - int(cell.BaseAltitude)*8
-			index := cell.TileIndex(int(w.Tick), dx, dy)
-			if index >= 0 && index < len(g.Assets.Visual.Tiles[land]) {
-				tile := g.Assets.Visual.Tiles[land][index]
-				draw.Draw(g.framebuffer, image.Rect(sx, sy, sx+tile.Bounds().Dx(), sy+tile.Bounds().Dy()), tile, image.Point{}, draw.Over)
-			}
-			g.drawTownSurroundingsAt(x, y, land)
-			for _, scenery := range w.Nature.Scenery {
-				if scenery.Kind == engine.SceneryNone || int(scenery.X) != x || int(scenery.Y) != y {
-					continue
-				}
-				name := "tree"
-				if scenery.Kind == engine.SceneryBoulder {
-					name = "boulder"
-				}
-				ax, ay := g.projectActor(x*256+128, y*256+128)
-				key := fmt.Sprintf("scenery/%s/%d", name, scenery.Variant)
-				if scenery.Kind == engine.SceneryBurningTree {
-					key = "scenery/burning-tree"
-				}
-				g.animationCropped(key, int(scenery.Frame), ax, ay+8, land, int(scenery.Age))
-			}
-			g.fireAtCell(x, y, land)
-			g.drawAirAtCell(x, y, land)
-			g.drawStormAtCell(x, y, land)
-			g.drawLavaAtCell(x, y, land)
-			g.drawMagnetAtCell(x, y, land)
-			for _, wall := range w.Earth.Walls {
-				if !wall.Active || int(wall.X) != x || int(wall.Y) != y {
-					continue
-				}
-				key := fmt.Sprintf("wall/connection/%d", wall.Connections)
-				if wall.Gate {
-					key = "wall/gate-horizontal"
-					if wall.GateVertical {
-						key = "wall/gate-vertical"
-					}
-				}
-				if wall.Broken {
-					key = fmt.Sprintf("wall/broken/%d", wall.Variant)
-				}
-				ax, ay := g.projectActor(x*256+128, y*256+128)
-				g.animation(key, int(wall.Frame), ax, ay+8, land)
-			}
-			for id := g.visibleFollowers[dx+dy*viewSize]; id != 0; id = g.visibleNext[id] {
-				f := w.Followers[id]
-				ax, ay := g.followerRenderAnchor(f)
-				if state := f.CombatAftermath; state.Kind != engine.CombatAftermathNone {
-					key := "combat/death"
-					switch state.Kind {
-					case engine.CombatHeroDefeated:
-						key = "combat/hero-death"
-					case engine.CombatVictorious:
-						key = "combat/victory-blue"
-						if f.Owner != 0 {
-							key = "combat/victory-red"
-						}
-					case engine.CombatTownCollapse, engine.CombatTownRuin:
-						key = fmt.Sprintf("ruin/town/%d", f.Stage)
-					case engine.CombatCollateralDeath:
-						key = "death/fire"
-					}
-					g.animation(key, int(state.Frame), ax, ay, land)
-					continue
-				}
-				if f.TerrainDeath.Active || f.State == engine.Drowning {
-					key := "swimming/follower"
-					frame := int(f.Frame)
-					if f.TerrainDeath.Active {
-						key, frame = "death/water", int(f.TerrainDeath.Frame)
-					}
-					if f.IsHero() {
-						key += "/" + heroNames[f.Hero.Kind]
-					}
-					g.animation(key, frame, ax, ay, land)
-					continue
-				}
-				if f.Neutral.Kind != engine.NeutralNone || f.Neutral.VictimTime > 0 {
-					name := "neutral/monster-victim"
-					if f.Neutral.Kind != engine.NeutralNone {
-						name = "neutral/" + neutralNames[f.Neutral.Kind]
-						if f.Neutral.Paired && f.Neutral.Kind == engine.NeutralLandLowerer {
-							name = "neutral/land-lowerer-paired"
-						}
-					}
-					g.animation(name, int(f.Frame), ax, ay, land)
-					continue
-				}
-				if f.Conversion.Active {
-					key := "conversion/blue"
-					if f.Conversion.SourceOwner != 0 {
-						key = "conversion/red"
-					}
-					if f.Conversion.Hero {
-						key = "conversion/hero"
-					}
-					g.animation(key, int(f.Conversion.Frame), ax, ay, land)
-					continue
-				}
-				if g.drawAirborne(id, land, ax, ay) || g.lightningVictim(id, land, ax, ay) {
-					continue
-				}
-				if g.drawActiveBattle(id, ax, ay, land) {
-					continue
-				}
-				if victim := w.FireDamage.Deaths[id]; victim.Mode != engine.FireVictimAlive {
-					name := "death/fire"
-					if victim.Mode == engine.FireVictimBurning {
-						name = "death/burning"
-					}
-					if victim.Mode == engine.FireVictimTownRuin {
-						name = fmt.Sprintf("ruin/town/%d", victim.TownStage)
-					} else if f.IsHero() {
-						name += "/" + heroNames[f.Hero.Kind]
-					}
-					g.animation(name, victim.Frame, ax, ay, land)
-				} else if f.State == engine.Town {
-					g.drawTownCenter(f, ax, ay, land)
-				} else if death := w.Nature.Deaths[id]; death != engine.NatureAlive {
-					name := "swamp"
-					if death == engine.NatureFungusDeath {
-						name = "fungus"
-					}
-					key := "death/" + name
-					if f.IsHero() {
-						key += "/" + heroNames[f.Hero.Kind]
-					}
-					g.animation(key, int(w.Nature.DeathFrames[id]), ax, ay, land)
-				} else {
-					ax, ay = g.followerRenderAnchor(f)
-					name := fmt.Sprintf("follower/%d/0/%s", f.Owner, compassNames[f.Direction&7])
-					if f.IsHero() {
-						name = fmt.Sprintf("hero/%s/%s", heroNames[f.Hero.Kind], compassNames[f.Direction&7])
-					}
-					g.animation(name, int(f.Frame), ax, ay, land)
-					g.drawLeaderMarker(id, ax, ay, land, name, int(f.Frame))
-				}
-				if f.Disease.Infected {
-					g.animation("plague", int(f.Disease.Frame), ax, ay, land)
-				}
-			}
+		x, y := command.X, command.Y
+		dx, dy := x-g.CameraX, y-g.CameraY
+		cell := w.Cell(x, y)
+		sx := 192 + 16*(dx-dy) - 16
+		sy := 64 + 8*(dx+dy) - int(cell.BaseAltitude)*8
+		index := cell.TileIndex(int(w.Tick), dx, dy)
+		if index >= 0 && index < len(g.Assets.Visual.Tiles[land]) {
+			tile := g.Assets.Visual.Tiles[land][index]
+			draw.Draw(g.framebuffer, image.Rect(sx, sy, sx+tile.Bounds().Dx(), sy+tile.Bounds().Dy()), tile, image.Point{}, draw.Over)
 		}
+		g.drawTownSurroundingsAt(x, y, land)
 	}
 	g.drawLightningBeams(land)
 	g.minimap(land)
@@ -445,46 +298,6 @@ func (g *Game) drawPowerMenu() {
 
 var heroNames = [7]string{"", "perseus", "adonis", "heracles", "odysseus", "achilles", "helen"}
 var neutralNames = [7]string{"", "road-maker", "land-lowerer", "whirlwind-maker", "tree-planter", "fire-maker", "monster"}
-
-func (g *Game) fireAtCell(x, y, land int) {
-	for _, effect := range g.World.Water.Basalt {
-		if effect.Active && effect.X == x && effect.Y == y {
-			ax, ay := g.projectActor(x*256+128, y*256+128)
-			g.animation("fire-impact/water", effect.Frame, ax, ay, land)
-		}
-	}
-	for id := 0; id < engine.EffectCapacity; id++ {
-		for bank, effects := range [2]*[engine.EffectCapacity]engine.FireEffect{&g.World.Fire.Columns, &g.World.Fire.Rain} {
-			effect := effects[id]
-			if !effect.Active || effect.X/256 != x || effect.Y/256 != y {
-				continue
-			}
-			ax, ay := g.projectActor(effect.X, effect.Y)
-			name := "fire-column/active"
-			if bank == 0 {
-				switch effect.Phase {
-				case engine.FireEmerging:
-					name = "fire-column/emerging"
-				case engine.FireEnding:
-					name = "fire-column/ending"
-				}
-			} else {
-				switch effect.Phase {
-				case engine.MeteorWaiting:
-					continue
-				case engine.MeteorFalling:
-					name = "meteor/falling"
-				default:
-					name = "fire-impact/land"
-					if effect.WaterImpact {
-						name = "fire-impact/water"
-					}
-				}
-			}
-			g.animation(name, effect.Frame, ax, ay, land)
-		}
-	}
-}
 
 func (g *Game) animation(name string, frame, x, y, land int) {
 	g.animationCropped(name, frame, x, y, land, 0)
@@ -539,19 +352,18 @@ func (g *Game) minimap(land int) {
 			cell := g.World.Cell(x, y)
 			sx, sy := 68+x-y, 4+(x+y)/2
 			c := g.Assets.Visual.MapColors[land][cell.Code]
-			if id := g.World.Occupants[x+y*engine.MapSize]; id > 0 {
-				f := g.World.Followers[id]
-				if g.World.FollowerVisibleOnMap(g.playerSide(), int(f.Owner)) {
-					if f.Owner == 0 {
-						c = color.RGBA{255, 225, 30, 255}
-					} else {
-						c = color.RGBA{220, 50, 30, 255}
-					}
+			if f, visible := visibleOverviewFollower(g.World, g.playerSide(), x, y); visible {
+				if f.Owner == 0 {
+					c = color.RGBA{255, 225, 30, 255}
+				} else {
+					c = color.RGBA{220, 50, 30, 255}
 				}
 			}
+
 			g.framebuffer.SetRGBA(sx, sy, c)
 		}
 	}
+	g.drawOverviewEffects(land)
 	x, y := g.CameraX+3, g.CameraY+3
 	sx, sy := 68+x-y, 4+(x+y)/2
 	for d := -3; d <= 3; d++ {

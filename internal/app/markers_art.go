@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"go-populous2/internal/engine"
 	"image"
 	"image/draw"
@@ -32,21 +31,6 @@ func (g *Game) drawActiveBattle(id, x, y, land int) bool {
 		g.drawTownCenter(f, x, y, land)
 	}
 	return true
-}
-
-func (g *Game) drawMagnetAtCell(x, y, land int) {
-	for owner, p := range g.World.Magnets {
-		if p.X/256 != x || p.Y/256 != y {
-			continue
-		}
-		name := fmt.Sprintf("magnet/%d", owner)
-		animation, ok := g.Assets.Visual.Animations[name]
-		if !ok || len(animation.Frames) == 0 {
-			continue
-		}
-		ax, ay := g.projectActor(p.X, p.Y)
-		g.animation(name, int(g.World.Tick)%len(animation.Frames), ax, ay, land)
-	}
 }
 
 // drawLeaderMarker uses the faction's original pointer art above the group's

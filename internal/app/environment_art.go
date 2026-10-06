@@ -52,26 +52,6 @@ func lavaAnimation(shape uint8, direction int) string {
 	return ""
 }
 
-func (g *Game) environmentAnchor(fixedX, fixedY int) (int, int) {
-	return g.projectActor(fixedX, fixedY)
-}
-
-func (g *Game) drawStormAtCell(x, y, land int) {
-	for _, e := range g.World.Air.Storms {
-		if !e.Active || e.X/256 != x || e.Y/256 != y {
-			continue
-		}
-		ax, ay := g.environmentAnchor(e.X, e.Y)
-		for _, d := range stormDraws(e, ax, ay) {
-			if d.Strike {
-				g.drawStormStrike(d, ay, land)
-			} else {
-				g.animation(d.Animation, d.Frame, d.X, d.Y, land)
-			}
-		}
-	}
-}
-
 func (g *Game) drawStormStrike(d EnvironmentalDraw, groundY, land int) {
 	animation, ok := g.Assets.Visual.Animations[d.Animation]
 	if !ok || len(animation.Frames) == 0 {
@@ -96,20 +76,6 @@ func (g *Game) drawStormStrike(d EnvironmentalDraw, groundY, land int) {
 			continue
 		}
 		draw.Draw(g.framebuffer, image.Rect(left, top, left+img.Bounds().Dx(), top+height), img, image.Point{}, draw.Over)
-	}
-}
-
-func (g *Game) drawLavaAtCell(x, y, land int) {
-	for _, e := range g.World.Fire.Lava {
-		if !e.Active || e.X/256 != x || e.Y/256 != y {
-			continue
-		}
-		name := lavaAnimation(g.World.Cell(x, y).Shape, e.Direction)
-		if name == "" {
-			continue
-		}
-		ax, ay := g.environmentAnchor(e.X, e.Y)
-		g.animation(name, e.Frame, ax, ay+8, land)
 	}
 }
 

@@ -80,8 +80,6 @@ type Game struct {
 	SaveBrowser                  *SaveBrowser
 	AutoStart                    bool
 	framebuffer                  *image.RGBA
-	visibleFollowers             [viewSize * viewSize]int
-	visibleNext                  [engine.FollowerCapacity]int
 	image                        *ebiten.Image
 	music                        *music.Player
 	audio                        *audio.Player

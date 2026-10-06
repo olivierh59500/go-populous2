@@ -6,41 +6,6 @@ import (
 	"image/color"
 )
 
-func (g *Game) drawAirAtCell(x, y, land int) {
-	for id := 0; id < engine.EffectCapacity; id++ {
-		marker := g.World.Air.Markers[id]
-		if marker.Active && marker.X/256 == x && marker.Y/256 == y {
-			ax, ay := g.projectActor(marker.X, marker.Y)
-			name := "lightning/active"
-			if marker.Phase == engine.LightningAppearing {
-				name = "lightning/appearing"
-			}
-			if marker.Phase == engine.LightningDisappearing {
-				name = "lightning/ending"
-			}
-			g.animation(name, marker.Frame, ax, ay+8, land)
-		}
-		effect := g.World.Air.Whirlwinds[id]
-		if effect.Active && effect.X/256 == x && effect.Y/256 == y {
-			ax, ay := g.projectActor(effect.X, effect.Y)
-			name := "whirlwind/active"
-			if effect.Phase == engine.WhirlwindAppearing {
-				name = "whirlwind/appearing"
-			}
-			if effect.Phase == engine.WhirlwindDisappearing {
-				name = "whirlwind/ending"
-			}
-			g.animation(name, effect.Frame, ax, ay, land)
-		}
-		wave := g.World.Water.Waves[id]
-		if wave.Active && wave.X/256 == x && wave.Y/256 == y {
-			ax, ay := g.projectActor(wave.X, wave.Y)
-			name := [4]string{"north", "east", "south", "west"}[wave.Direction&3]
-			g.animation("tidal/"+name, wave.Frame, ax, ay, land)
-		}
-	}
-}
-
 func (g *Game) drawLightningBeams(land int) {
 	for _, bolt := range g.World.Air.Bolts {
 		if !bolt.Active || bolt.Marker < 1 || bolt.Marker > engine.EffectCapacity {
