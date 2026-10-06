@@ -303,6 +303,27 @@ func export(files fs.FS, output string) error {
 		}
 		catalog.Animations["tidal/"+name] = animation(frames, true)
 	}
+	for connection, art := range source.WallRules.Art {
+		frames, err := populous2.DecodeAnimation(source.Executable, art.Animation)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[fmt.Sprintf("wall/connection/%d", connection)] = animation(frames, false)
+	}
+	for name, start := range map[string]int{"wall/post": 0x5bc, "wall/gate-horizontal": 0xb44, "wall/gate-vertical": 0xb54, "wall/attack-blue": 0x7cc, "wall/attack-red": 0x7d4} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[name] = animation(frames, false)
+	}
+	for variant, start := range source.WallRules.BreakAnimations {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[fmt.Sprintf("wall/broken/%d", variant*2)] = animation(frames, false)
+	}
 	data, err := json.MarshalIndent(catalog, "", "  ")
 	if err != nil {
 		return err
