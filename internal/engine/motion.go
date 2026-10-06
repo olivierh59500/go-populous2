@@ -69,36 +69,19 @@ func (w *World) advanceLeg(id int) {
 	oldX, oldY := int(f.X), int(f.Y)
 	if x != oldX || y != oldY {
 		other := int(w.Occupants[x+y*MapSize])
-		if other != 0 && other != id {
-			target := &w.Followers[other]
+		if other == id {
+			other = w.Followers[other].NextFollower
+		}
+		w.moveFollowerCell(id, x, y)
+		f.positionX, f.positionY = nx, ny
+		if other != 0 {
 			if f.Hero.CaptiveOf != 0 {
-				f.moving = false
 				return
 			}
-			if target.Owner != f.Owner {
-				if f.Hero.Kind == HeroHelen {
-					w.CaptureByHelen(id, other)
-				} else if target.Hero.Kind == HeroHelen {
-					w.CaptureByHelen(other, id)
-				} else {
-					w.beginBattle(id, other)
-				}
-			} else if target.State == Town || w.Players[f.Owner].Mode == Join {
-				target.Population += f.Population
-				w.remove(id)
-			} else {
-				f.moving = false
-			}
+			w.prepareContact(id, other)
 			return
 		}
-		at := oldX + oldY*MapSize
-		if w.Occupants[at] == uint16(id) {
-			w.Occupants[at] = 0
-		}
-		f.X, f.Y = uint8(x), uint8(y)
-		w.Occupants[x+y*MapSize] = uint16(id)
-		w.Footsteps[x+y*MapSize]++
-		w.Pressure[x+y*MapSize] += 8
+
 	}
 	f.positionX, f.positionY = nx, ny
 	// This field remains available for UI consumers; Position is authoritative.

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -321,5 +322,66 @@ func TestHelenContactUsesCaptureInsteadOfBattle(t *testing.T) {
 	}
 	if w.Followers[enemy].Hero.CaptiveOf != hero || w.Followers[hero].State == Fighting || w.Followers[enemy].Owner != 1 {
 		t.Fatal("Helen contact entered ordinary combat")
+	}
+}
+
+func TestHeroTargetSelectionOriginalNumericalCorpus(t *testing.T) {
+	data, err := os.ReadFile("testdata/hero_target_numbers.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var corpus struct {
+		Cases []struct {
+			Name   string
+			Actors []struct {
+				Slot, Owner, X, Y, Population, Claimed int
+				Captive                                bool
+			}
+			Target int
+		}
+	}
+	if err := json.Unmarshal(data, &corpus); err != nil {
+		t.Fatal(err)
+	}
+	if len(corpus.Cases) != 60 {
+		t.Fatalf("selector corpus %d", len(corpus.Cases))
+	}
+	for _, test := range corpus.Cases {
+		t.Run(test.Name, func(t *testing.T) {
+			w := testFlatWorld()
+			for _, actor := range test.Actors {
+				w.Followers[actor.Slot] = Follower{Owner: uint8(actor.Owner), X: uint8(actor.X), Y: uint8(actor.Y), State: Walking, Population: actor.Population, Hero: HeroState{ClaimedBy: actor.Claimed}}
+				if actor.Captive {
+					w.Followers[actor.Slot].Hero.CaptiveOf = 1
+				}
+			}
+			w.Followers[1].Hero.Kind = HeroPerseus
+			if got := w.SelectHeroTarget(1); got != test.Target {
+				t.Fatalf("target %d; source %d", got, test.Target)
+			}
+		})
+	}
+}
+
+func TestAllSixHeroesPursueWithTheirDistinctContactBehaviour(t *testing.T) {
+	for kind := HeroPerseus; kind <= HeroHelen; kind++ {
+		t.Run(fmt.Sprint(kind), func(t *testing.T) {
+			w := testFlatWorld()
+			hero := addFollower(w, 20, 20, 0, 1000, Walking)
+			enemy := addFollower(w, 22, 20, 1, 100, Town)
+			w.Followers[hero].Hero.Kind = kind
+			for pass := 0; pass < 60 && w.Followers[hero].State != Fighting && w.Followers[enemy].Hero.CaptiveOf == 0; pass++ {
+				w.stepFollower(hero)
+			}
+			if kind == HeroHelen {
+				if w.Followers[enemy].Hero.CaptiveOf != hero {
+					t.Fatal("Helen capture")
+				}
+			} else {
+				if w.Followers[hero].State != Fighting || !w.Followers[hero].BattleAggressor {
+					t.Fatal("hero combat contact")
+				}
+			}
+		})
 	}
 }

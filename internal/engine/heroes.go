@@ -409,5 +409,10 @@ func (w *World) SplitAdonis(id int) int {
 	child.State = Walking
 	child.BattleWith = 0
 	child.BattleAggressor = false
-	return w.allocate(child)
+	child.NextFollower, child.PreviousFollower = 0, 0
+	next := w.allocate(child)
+	if next != 0 {
+		w.linkFollower(next)
+	}
+	return next
 }

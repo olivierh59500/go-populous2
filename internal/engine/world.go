@@ -23,28 +23,31 @@ const (
 )
 
 type Follower struct {
-	Owner                       uint8
-	Hero                        HeroState
-	Consecrated                 bool
-	X, Y                        uint8
-	State                       FollowerState
-	Population, Weapons, Search int
-	MovementSpeed               uint8
-	Direction                   uint8
-	Frame                       uint16
-	Stage                       uint8
-	Work                        uint16
-	FoundedAt                   uint64
-	SettleAfter                 uint64
-	PreviousX, PreviousY        uint8
-	MoveProgress                uint8
-	Target                      int
-	positionX, positionY        int
-	velocityX, velocityY        int
-	legRemaining                int
-	positionSet, moving         bool
-	BattleWith                  int
-	BattleAggressor             bool
+	Owner                          uint8
+	Hero                           HeroState
+	Consecrated                    bool
+	X, Y                           uint8
+	State                          FollowerState
+	Population, Weapons, Search    int
+	MovementSpeed                  uint8
+	Direction                      uint8
+	Frame                          uint16
+	Stage                          uint8
+	Work                           uint16
+	FoundedAt                      uint64
+	SettleAfter                    uint64
+	PreviousX, PreviousY           uint8
+	MoveProgress                   uint8
+	Target                         int
+	positionX, positionY           int
+	velocityX, velocityY           int
+	legRemaining                   int
+	positionSet, moving            bool
+	NextFollower, PreviousFollower int
+	ContactWith                    int
+	ContactFriendly                bool
+	BattleWith                     int
+	BattleAggressor                bool
 }
 
 type Player struct {
@@ -68,6 +71,8 @@ type World struct {
 	Fire                 FireEffects
 	FireDamage           FireDamageState
 	Water                WaterEffects
+	Air                  AirEffects
+	AirVictims           [FollowerCapacity]LightningVictimState
 	Heights              [CornerSize * CornerSize]uint8
 	Tiles                [MapSize * MapSize]Cell
 	Farms                [MapSize * MapSize]uint8 // Zero, blue, or red cultivation.
@@ -115,7 +120,7 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 				if id == 0 {
 					break
 				}
-				w.Occupants[at] = uint16(id)
+				w.linkFollower(id)
 				if placed == 0 {
 					w.Players[owner].Leader = id
 					w.Players[owner].RallyX = at % MapSize
@@ -187,7 +192,9 @@ func (w *World) Step() {
 			w.tickNatureEffect(id)
 		case EffectFireColumn, EffectFireRain, EffectVolcano, EffectLava:
 			w.tickFireEffect(id)
-		case EffectBasalt, EffectWhirlpool:
+		case EffectLightning:
+			w.tickAirEffect(id)
+		case EffectBasalt, EffectWhirlpool, EffectTidalWave:
 			w.tickWaterEffect(id)
 		}
 	}
@@ -206,6 +213,12 @@ func (w *World) Step() {
 
 func (w *World) stepFollower(id int) {
 	f := &w.Followers[id]
+	if f.Owner > 1 {
+		return
+	}
+	if w.AdvanceLightningVictim(id) {
+		return
+	}
 	if w.AdvanceFireDeath(id) {
 		return
 	}
@@ -219,6 +232,10 @@ func (w *World) stepFollower(id int) {
 	tile := int(f.X) + int(f.Y)*MapSize
 	if f.State == Fighting {
 		w.stepBattle(id)
+		return
+	}
+	if f.ContactWith != 0 {
+		w.stepContact(id)
 		return
 	}
 	if f.Hero.CaptiveOf != 0 {
@@ -266,7 +283,7 @@ func (w *World) stepFollower(id int) {
 			return
 		}
 		f.Population -= emigrant
-		w.Occupants[x+y*MapSize] = uint16(next)
+		w.linkFollower(next)
 		if w.Players[f.Owner].Leader == id {
 			w.Players[f.Owner].Leader = next
 		}
@@ -323,20 +340,11 @@ func (w *World) emptyNeighbour(x, y int) (int, int, bool) {
 func (w *World) remove(id int) {
 	w.clearHeroLinks(id)
 	f := w.Followers[id]
-	at := int(f.X) + int(f.Y)*MapSize
-	if w.Occupants[at] == uint16(id) {
-		w.Occupants[at] = 0
-		for other := 1; other < FollowerCapacity; other++ {
-			g := w.Followers[other]
-			if other != id && g.State != Inactive && int(g.X)+int(g.Y)*MapSize == at {
-				w.Occupants[at] = uint16(other)
-				break
-			}
-		}
-	}
-	if f.State != Inactive && w.Players[f.Owner].Leader == id {
+	w.unlinkFollower(id)
+	if f.State != Inactive && f.Owner < 2 && w.Players[f.Owner].Leader == id {
 		w.Players[f.Owner].Leader = 0
 	}
+	w.AirVictims[id] = LightningVictimState{}
 	w.FireDamage.Deaths[id] = FireVictimDeath{}
 	w.Nature.Deaths[id] = NatureAlive
 	w.Nature.DeathFrames[id] = 0
@@ -349,7 +357,7 @@ func (w *World) summarize() {
 		w.Players[owner].Towns = 0
 	}
 	for _, f := range w.Followers[1:] {
-		if f.State != Inactive {
+		if f.State != Inactive && f.Owner < 2 {
 			w.Players[f.Owner].Population += max(0, f.Population)
 			if f.State == Town {
 				w.Players[f.Owner].Towns++
@@ -363,7 +371,7 @@ func (w *World) Summaries() [2]Summary {
 		result[owner] = Summary{Population: p.Population, Towns: p.Towns, BattlesWon: p.BattlesWon, Mana: p.Mana}
 	}
 	for _, f := range w.Followers[1:] {
-		if f.State != Inactive {
+		if f.State != Inactive && f.Owner < 2 {
 			result[f.Owner].Groups++
 		}
 	}
@@ -395,13 +403,12 @@ func (w *World) Evacuate(id int) bool {
 	if !ok {
 		return true
 	}
-	at := int(f.X) + int(f.Y)*MapSize
-	w.Occupants[at] = 0
+	w.unlinkFollower(id)
 	f.PreviousX, f.PreviousY = f.X, f.Y
 	f.X, f.Y = uint8(x), uint8(y)
 	f.positionSet = false
 	f.initialisePosition()
-	w.Occupants[x+y*MapSize] = uint16(id)
+	w.linkFollower(id)
 	w.repaintFarms()
 	w.summarize()
 	return true

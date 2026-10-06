@@ -165,8 +165,8 @@ func TestCampaignTypedDecodingAndSubworldSeeds(t *testing.T) {
 func TestUnavailablePowersAreHonestAndDoNotConsumeMana(t *testing.T) {
 	w := testFlatWorld()
 	w.Players[0].Mana = 60000
-	w.Level.Players[0].Powers[Perseus] = true
-	if err := w.Cast(0, Perseus, PowerTarget{}); !errors.Is(err, ErrPowerUnavailable) || w.Players[0].Mana != 60000 {
+	w.Level.Players[0].Powers[Wind] = true
+	if err := w.Cast(0, Wind, PowerTarget{}); !errors.Is(err, ErrPowerUnavailable) || w.Players[0].Mana != 60000 {
 		t.Fatal("unimplemented power appeared successful")
 	}
 	if len(Powers) != 29 {
