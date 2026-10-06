@@ -3,9 +3,6 @@ package app
 import (
 	"fmt"
 	"go-populous2/internal/engine"
-	"image"
-	"image/color"
-	"image/draw"
 )
 
 func (g *Game) applyCampaignResult() error {
@@ -64,28 +61,7 @@ func (g *Game) finishWorld() {
 
 func (g *Game) drawCampaignResult() {
 	g.drawWorld()
-	draw.Draw(g.framebuffer, image.Rect(24, 21, 296, 181), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
-	title := "CONQUEST WON"
-	side := g.playerSide()
-	if g.World.Result != side+1 {
-		title = "CONQUEST LOST"
-	}
-	g.text(title, 104, 29)
-	if g.ResultScoreError != "" {
-		g.text("SCORE UNAVAILABLE", 88, 140)
-	}
-	local, opponent := g.World.Players[side].Statistics, g.World.Players[1-side].Statistics
-	for index, line := range []string{
-		fmt.Sprintf("YOUR PEAK PEOPLE %d", local.PeakPopulation),
-		fmt.Sprintf("ENEMY PEAK PEOPLE %d", opponent.PeakPopulation),
-		fmt.Sprintf("YOUR PEAK MANA %d", local.PeakMana),
-		fmt.Sprintf("BATTLES WON %d", local.BattleWins),
-		fmt.Sprintf("SCORE %d", g.ResultScore.Value),
-		fmt.Sprintf("BOLT REWARD %d", min(g.ResultScore.Value/13007, uint16(5))),
-	} {
-		g.text(line, 40, 52+index*15)
-	}
-	g.button("CONTINUE", 112, 150, 104)
+	g.drawOriginalCampaignResult()
 	if g.Updates < g.messageUntil {
 		g.drawMessage(181)
 	}

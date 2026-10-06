@@ -1,9 +1,11 @@
 package app
 
 import (
+	"image"
 	"testing"
 
 	"go-populous2/internal/engine"
+	"go-populous2/internal/visualassets"
 )
 
 func menuTestGame(t *testing.T) *Game {
@@ -146,46 +148,126 @@ func TestOptionsAndEditorRejectMultiplayerMutation(t *testing.T) {
 	}
 }
 
+func originalOptionsTestArt() *visualassets.OptionsArt {
+	return &visualassets.OptionsArt{ReactionPosition: image.Pt(152, 128), Layout: visualassets.RequesterLayout{Actions: []visualassets.RequesterAction{
+		{Name: "side", X: 16, Y: 24, Width: 304, Height: 8},
+		{Name: "rule-3", X: 16, Y: 64, Width: 304, Height: 8},
+		{Name: "special-codes", X: 152, Y: 144, Width: 136, Height: 8},
+		{Name: "proceed", X: 120, Y: 168, Width: 56, Height: 8},
+	}}}
+}
+
 func TestOptionsReactionButtonsRespectOriginalZeroToFifteenRange(t *testing.T) {
 	g := menuTestGame(t)
+	g.CustomGame = true
+	g.Assets.OptionsArt = originalOptionsTestArt()
 	if err := g.openOptions(); err != nil {
 		t.Fatal(err)
 	}
-	g.Options.Page = 2
 	g.Options.Draft.Players[0].ReactionDelay = 15
-	if err := g.updateOptions(200, 116, true); err != nil {
+	if err := g.updateOptions(272, 132, true); err != nil {
 		t.Fatal(err)
 	}
 	if g.Options.Draft.Players[0].ReactionDelay != 15 {
 		t.Fatal("reaction exceeded the original maximum")
 	}
 	g.Options.Draft.Players[0].ReactionDelay = 0
-	if err := g.updateOptions(24, 116, true); err != nil {
+	if err := g.updateOptions(144, 132, true); err != nil {
 		t.Fatal(err)
 	}
 	if g.Options.Draft.Players[0].ReactionDelay != 0 {
 		t.Fatal("reaction went below original minimum")
 	}
+	g.Options.Draft.Players[0].ReactionDelay = 7
+	if err := g.updateOptions(152, 132, true); err != nil {
+		t.Fatal(err)
+	}
+	if g.Options.Draft.Players[0].ReactionDelay != 6 {
+		t.Fatal("left of the reaction thumb did not decrease its value")
+	}
+	if err := g.updateOptions(200, 132, true); err != nil {
+		t.Fatal(err)
+	}
+	if g.Options.Draft.Players[0].ReactionDelay != 7 {
+		t.Fatal("right of the reaction thumb did not increase its value")
+	}
 }
 
-func TestOptionsEditorEntryDiscardsDraftAndKeepsLiveWorld(t *testing.T) {
+func TestOriginalOptionsHasNoInventedEditorButton(t *testing.T) {
 	g := menuTestGame(t)
+	g.Assets.OptionsArt = originalOptionsTestArt()
 	before := g.World.Snapshot()
 	if err := g.openOptions(); err != nil {
 		t.Fatal(err)
 	}
-	g.Options.Draft.Players[0].Population = 9999
 	if err := g.updateOptions(160, 34, true); err != nil {
 		t.Fatal(err)
 	}
-	if g.Screen != EditorScreen || g.Editor == nil || g.Options != nil || g.Editor.Return != Playing {
-		t.Fatal("visible editor entry did not transition coherently")
+	if g.Screen != OptionsScreen || g.Editor != nil || g.Options == nil || g.World.Snapshot() != before {
+		t.Fatal("blank original requester row triggered an unrelated editor transition")
 	}
-	if g.World.Snapshot() != before || g.Editor.Draft.Level.Players[0].Population != g.World.Level.Players[0].Population {
-		t.Fatal("editor entry applied an uncommitted options draft")
+}
+
+func TestCampaignOptionsDisplayButDoNotChangeRulesOrReaction(t *testing.T) {
+	g := menuTestGame(t)
+	g.Assets.OptionsArt = originalOptionsTestArt()
+	if err := g.openOptions(); err != nil {
+		t.Fatal(err)
 	}
-	g.cancelEditor()
-	if g.Screen != Playing || g.World.Snapshot() != before {
-		t.Fatal("editor return lost live world")
+	if !g.Options.RulesLocked {
+		t.Fatal("campaign rule controls were not protected")
+	}
+	before := g.Options.Draft
+	if err := g.updateOptions(40, 68, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.updateOptions(144, 132, true); err != nil {
+		t.Fatal(err)
+	}
+	if g.Options.Draft != before {
+		t.Fatal("protected campaign controls changed the world settings")
+	}
+	if err := g.updateOptions(40, 28, true); err != nil || g.Options.Owner != 1 {
+		t.Fatal("protected options did not allow viewing the other faction", err)
+	}
+}
+
+func TestCustomOptionsRuleAndMusicEditsRemainAtomicUntilOK(t *testing.T) {
+	g := menuTestGame(t)
+	g.CustomGame = true
+	g.Assets.OptionsArt = originalOptionsTestArt()
+	before := g.World.Snapshot()
+	if err := g.openOptions(); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.updateOptions(40, 68, true); err != nil {
+		t.Fatal(err)
+	}
+	if !g.Options.Draft.Players[0].Scenario.ForbidRaise {
+		t.Fatal("original rule row did not toggle its named setting")
+	}
+	if err := g.updateOptions(170, 148, true); err != nil || !g.Options.EditingSpecialCode {
+		t.Fatal("special codes field did not begin editing", err)
+	}
+	g.Options.SpecialCode = "MUSIC"
+	g.Options.acceptSpecialCode()
+	if g.Options.Music || g.Options.EditingSpecialCode {
+		t.Fatal("MUSIC did not toggle the draft soundtrack option")
+	}
+	if g.World.Snapshot() != before {
+		t.Fatal("editing options changed the live game before confirmation")
+	}
+	g.cancelOptions()
+	if g.World.Snapshot() != before || g.Screen != Playing {
+		t.Fatal("cancel changed the live continuation")
+	}
+	if err := g.openOptions(); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.updateOptions(40, 68, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.updateOptions(136, 172, true); err != nil || g.Screen != Playing || g.Options != nil || !g.World.Level.Players[0].Scenario.ForbidRaise {
+		t.Fatal("original OK row did not apply the draft", err)
 	}
 }

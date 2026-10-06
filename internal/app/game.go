@@ -31,6 +31,8 @@ const (
 	HelpScreen
 	PowerHelpScreen
 	SaveBrowserScreen
+	InGameMenuScreen
+	AboutScreen
 )
 
 // Game holds ordinary Go screen and input state. Original program counters,
@@ -66,9 +68,12 @@ type Game struct {
 	profileCodeInput             string
 	editingWorldCode             bool
 	worldCodeInput               string
+	briefingOpponent             bool
 	Selected                     engine.PowerID
 	SelectedFollower             int
 	Inspecting                   bool
+	selectionTransferTick        uint64
+	SelectionReturn              FollowerSelectionReturn
 	Category                     engine.Element
 	PickingPower                 bool
 	Paused                       bool
@@ -80,6 +85,7 @@ type Game struct {
 	Capture                      string
 	SavePath                     string
 	SaveBrowser                  *SaveBrowser
+	menuReturn                   Screen
 	AutoStart                    bool
 	framebuffer                  *image.RGBA
 	image                        *ebiten.Image
@@ -124,7 +130,11 @@ func (g *Game) Update() error {
 		g.Message, g.messageUntil = err.Error(), g.Updates+250
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		if g.Screen == SaveBrowserScreen {
+		if g.Screen == ConquestBriefing && (g.editingWorldCode || g.briefingOpponent) {
+			g.editingWorldCode, g.briefingOpponent = false, false
+		} else if g.Screen == InGameMenuScreen || g.Screen == AboutScreen {
+			g.Screen = Playing
+		} else if g.Screen == SaveBrowserScreen {
 			g.closeSaveBrowser()
 		} else if g.Screen == EditorScreen {
 			g.cancelEditor()
@@ -236,8 +246,11 @@ func (g *Game) Update() error {
 		if err := g.updateWorld(x, y, clicked); err != nil {
 			return err
 		}
+		if g.Updates%4 == 0 {
+			g.advanceSelectionPresentation()
+		}
 	case CampaignResult:
-		if g.Updates-g.resultAt >= 101 && (inpututil.IsKeyJustPressed(ebiten.KeyEnter) || clicked) {
+		if g.Updates-g.resultAt >= 101 && (inpututil.IsKeyJustPressed(ebiten.KeyEnter) || clicked && g.resultContinueHit(x, y)) {
 			if err := g.applyCampaignResult(); err != nil {
 				g.Message, g.messageUntil = err.Error(), g.Updates+150
 			}
@@ -268,6 +281,18 @@ func (g *Game) Update() error {
 		}
 	case SaveBrowserScreen:
 		g.updateSaveBrowser(x, y, clicked)
+	case InGameMenuScreen:
+		if clicked {
+			if g.Assets.InGameLayout != nil {
+				if err := g.applyInGameAction(g.Assets.InGameLayout.ActionAt(x, y)); err != nil {
+					g.Message, g.messageUntil = err.Error(), g.Updates+150
+				}
+			}
+		}
+	case AboutScreen:
+		if clicked || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			g.Screen = InGameMenuScreen
+		}
 	}
 	g.drawFrame()
 	g.updateSystemPointerVisibility()
@@ -336,15 +361,7 @@ func (g *Game) drawFrame() {
 	case DeityProfile:
 		g.drawProfile()
 	case ConquestBriefing:
-		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
-		g.text("CONQUEST", 128, 15)
-		for index, line := range g.briefingLines() {
-			g.text(line, 24, 42+index*14)
-		}
-		if g.Updates < g.messageUntil {
-			g.text(g.Message, 24, 146)
-		}
-		g.button("PROCEED", 115, 168, 100)
+		g.drawBriefing()
 	case Playing:
 		g.drawWorld()
 	case CampaignResult:
@@ -363,5 +380,9 @@ func (g *Game) drawFrame() {
 		g.drawPowerHelp()
 	case SaveBrowserScreen:
 		g.drawSaveBrowser()
+	case InGameMenuScreen:
+		g.drawInGameMenu()
+	case AboutScreen:
+		g.drawAbout()
 	}
 }

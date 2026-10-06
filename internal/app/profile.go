@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"strconv"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,27 +15,31 @@ import (
 
 func (g *Game) updateProfile(x, y int, clicked bool) {
 	if clicked {
-		if y >= 169 && y < 190 {
-			g.Screen = MainMenu
-			g.editingProfileCode = false
-			g.editingProfileName = false
-			return
-		}
-		if x >= 194 && x < 240 && y >= 36 && y < 84 {
-			g.Profile.CycleFace(min(2, (y-36)/16), 1)
-		}
-		if x >= 30 && x < 178 && y >= 49 && y < 65 {
-			g.editingProfileName = true
-			g.editingProfileCode = false
-		}
-		if x >= 20 && x < 300 && y >= 143 && y < 164 {
-			g.editingProfileCode = true
-			g.editingProfileName = false
-			g.profileCodeInput = ""
-		}
-		if y >= 98 && y < 132 && x >= 20 && x < 296 {
-			element := engine.Element(min(5, (x-20)/46))
-			g.Profile.AllocateBolt(element)
+		if g.Assets.DeityLayout != nil {
+			g.applyOriginalProfileAction(g.Assets.DeityLayout.ActionAt(x, y))
+		} else {
+			if y >= 169 && y < 190 {
+				g.Screen = MainMenu
+				g.editingProfileCode = false
+				g.editingProfileName = false
+				return
+			}
+			if x >= 194 && x < 240 && y >= 36 && y < 84 {
+				g.Profile.CycleFace(min(2, (y-36)/16), 1)
+			}
+			if x >= 30 && x < 178 && y >= 49 && y < 65 {
+				g.editingProfileName = true
+				g.editingProfileCode = false
+			}
+			if x >= 20 && x < 300 && y >= 143 && y < 164 {
+				g.editingProfileCode = true
+				g.editingProfileName = false
+				g.profileCodeInput = ""
+			}
+			if y >= 98 && y < 132 && x >= 20 && x < 296 {
+				element := engine.Element(min(5, (x-20)/46))
+				g.Profile.AllocateBolt(element)
+			}
 		}
 	}
 	if !g.editingProfileName && !g.editingProfileCode {
@@ -78,6 +83,9 @@ func (g *Game) updateProfile(x, y int, clicked bool) {
 }
 
 func (g *Game) drawProfile() {
+	if g.drawOriginalProfile() {
+		return
+	}
 	draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 	g.text("YOUR DEITY", 112, 15)
 	name := g.Profile.Name
@@ -107,4 +115,64 @@ func (g *Game) drawProfile() {
 		g.text(g.Message, 20, 158)
 	}
 	g.button("BACK", 120, 171, 80)
+}
+
+func (g *Game) applyOriginalProfileAction(action string) {
+	switch {
+	case action == "proceed":
+		g.Screen = MainMenu
+		g.editingProfileCode = false
+		g.editingProfileName = false
+	case action == "name":
+		g.editingProfileName = true
+		g.editingProfileCode = false
+	case action == "password":
+		g.editingProfileCode = true
+		g.editingProfileName = false
+		g.profileCodeInput = ""
+	case strings.HasPrefix(action, "experience-"):
+		index, err := strconv.Atoi(strings.TrimPrefix(action, "experience-"))
+		if err == nil && index >= 0 && index < 6 {
+			g.Profile.AllocateBolt(engine.Element(index))
+		}
+	case strings.HasPrefix(action, "face-"):
+		parts := strings.Split(action, "-")
+		if len(parts) != 3 {
+			return
+		}
+		index, err := strconv.Atoi(parts[1])
+		if err != nil {
+			return
+		}
+		direction := 1
+		if parts[2] == "prev" {
+			direction = -1
+		}
+		g.Profile.CycleFace(index, direction)
+	}
+}
+
+func (g *Game) drawOriginalProfile() bool {
+	layout, widgets := g.Assets.DeityLayout, g.Assets.DeityWidgets
+	if layout == nil || widgets == nil {
+		return false
+	}
+	draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(layout.Palette[0]), image.Point{}, draw.Src)
+	password, err := g.Profile.Password()
+	if err != nil {
+		password = "INVALID BOLT COUNT"
+	}
+	if g.editingProfileCode {
+		password = g.profileCodeInput
+	}
+	bolts := "NOTHING"
+	if g.Profile.Bolts != 0 {
+		bolts = strings.TrimSuffix(strings.Repeat("} ", min(8, int(g.Profile.Bolts))), " ")
+	}
+	layout.Draw(g.framebuffer, g.Assets.Visual.Font, map[string]string{"name": g.Profile.Name, "bolts": bolts, "password": password}, nil)
+	widgets.Draw(g.framebuffer, g.Profile.Experience, g.Profile.FaceParts, g.Assets.Visual.PortraitParts)
+	if g.Updates < g.messageUntil {
+		g.drawMessage(152)
+	}
+	return true
 }

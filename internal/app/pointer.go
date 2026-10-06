@@ -51,6 +51,12 @@ func (g *Game) drawGamePointer(mouseX, mouseY int) bool {
 		allowed = rights.BuildAnywhere || !rights.SeaLevelOnly || g.World.Heights[selectedX+selectedY*engine.CornerSize] > 0
 	}
 	interfaceZone := g.PickingPower || mouseX < 104 || mouseY < 45 || mouseY > 177
+	if g.Assets.HUD != nil {
+		kind, index := visualassets.HUDHit(mouseX, mouseY)
+		if kind == "category" || kind == "power" || (kind == "control" && g.Assets.HUD.Controls[index] != "") {
+			interfaceZone = true
+		}
+	}
 	if g.Assets.SelectionPanel != nil && image.Pt(mouseX, mouseY).In(g.Assets.SelectionPanel.HitRect()) {
 		interfaceZone = true
 	}

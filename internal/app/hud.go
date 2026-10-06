@@ -1,64 +1,93 @@
 package app
 
 import (
+	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
 	"go-populous2/internal/engine"
 	"go-populous2/internal/network"
+	"go-populous2/internal/visualassets"
 )
 
 var hudModes = [4]engine.Mode{engine.Settle, engine.Rally, engine.Join, engine.Fight}
 
-// handleHUDClick consumes controls before terrain picking. The same named
-// commands serve the mouse and keyboard, including the joining player's camp.
+// handleHUDClick uses the original slanted category, power and control grids.
+// The controls dispatch the same named game commands as keyboard and network.
 func (g *Game) handleHUDClick(x, y int) (bool, error) {
-	if x >= 4 && x < 104 && y >= 68 && y < 76 {
-		g.Inspecting = !g.Inspecting
-		return true, nil
-	}
-	if x < 4 || x >= 104 || y < 77 || y >= 174 {
+	if g.Assets == nil || g.Assets.HUD == nil || g.World == nil {
 		return false, nil
 	}
-	if y < 96 {
-		g.PickingPower = true
+	kind, index := visualassets.HUDHit(x, y)
+	switch kind {
+	case "category":
+		g.Category = engine.Element(index)
+		g.PickingPower = false
 		return true, nil
-	}
-	if y < 138 {
-		index := (x-4)/50 + 2*((y-98)/20)
-		if y < 98 || index < 0 || index > 3 {
+	case "power":
+		id := engine.PowerID(int(g.Category)*6 + index)
+		power, ok := engine.PowerByID(id)
+		if !ok || !power.Implemented {
 			return true, nil
 		}
-		mode := hudModes[index]
-		if g.Network != nil {
-			return true, g.submitNetwork(network.Command{Kind: "mode", Mode: mode})
+		if !g.World.Level.Players[g.playerSide()].Powers[id] {
+			return true, fmt.Errorf("power is disabled in this world")
 		}
-		g.World.SetMode(g.playerSide(), mode)
+		g.Selected, g.Inspecting = id, false
+		g.PickingPower = false
+		return true, nil
+	case "control":
+		action := g.Assets.HUD.Controls[index]
+		switch action {
+		case "inspect":
+			g.Inspecting = true
+		case "menu":
+			return true, g.openInGameMenu()
+		case "settle", "rally", "join", "fight":
+			mode := map[string]engine.Mode{"settle": engine.Settle, "rally": engine.Rally, "join": engine.Join, "fight": engine.Fight}[action]
+			if g.Network != nil {
+				return true, g.submitNetwork(network.Command{Kind: "mode", Mode: mode})
+			}
+			g.World.SetMode(g.playerSide(), mode)
+		case "":
+			return false, nil
+		default:
+			return true, fmt.Errorf("unknown HUD action")
+		}
 		return true, nil
 	}
-	if y < 156 {
-		if x < 54 {
-			g.Selected = engine.PapalMagnet
-		} else {
-			g.helpReturn, g.Screen = Playing, HelpScreen
-		}
-		return true, nil
-	}
-	if x < 54 {
-		return true, g.openOptions()
-	}
-	return true, g.openSaveBrowser(true)
+	return false, nil
 }
 
+func (g *Game) hudState(mouseX, mouseY int) visualassets.HUDState {
+	w := g.World
+	side := g.playerSide()
+	s := visualassets.HUDState{Mana: uint32(max(0, w.Players[side].Mana)), Category: int(g.Category), Inspecting: g.Inspecting, Tick: w.Tick, MouseX: mouseX, MouseY: mouseY, Enabled: w.Level.Players[side].Powers}
+	for index, mode := range hudModes {
+		if mode == w.Players[side].Mode {
+			s.Mode = index
+		}
+	}
+	for slot := range s.Costs {
+		s.Costs[slot] = 65535
+	}
+	for _, power := range engine.Powers {
+		s.Costs[power.ID] = uint16(w.PowerCost(side, power.ID) / 4)
+	}
+	for owner := range s.Population {
+		s.Population[owner] = uint32(max(0, w.Players[owner].Population))
+	}
+	return s
+}
 func (g *Game) drawHUDControls() {
-	label := "INSPECT [I]"
-	if g.Inspecting {
-		label = "INSPECT ON"
+	if g.Assets == nil || g.Assets.HUD == nil || g.World == nil {
+		return
 	}
-	g.text(label, 8, 68)
-	g.button("POWERS", 4, 77, 100)
-	for i, name := range [4]string{"BUILD", "RALLY", "JOIN", "FIGHT"} {
-		g.button(name, 4+(i%2)*50, 98+(i/2)*20, 48)
-	}
-	g.button("FLAG", 4, 138, 48)
-	g.button("HELP", 54, 138, 48)
-	g.button("OPT", 4, 156, 48)
-	g.button("SAVE", 54, 156, 48)
+	x, y := ebiten.CursorPosition()
+	state := g.hudState(x, y)
+	art := g.Assets.HUD
+	land := g.World.Level.Landscape
+	palette := g.Assets.Visual.Palettes[land]
+	art.DrawIcons(g.framebuffer, state, palette)
+	art.DrawHighlights(g.framebuffer, state, palette)
+	art.DrawIndicators(g.framebuffer, state, g.Assets.Visual.Sprites[land], palette)
 }

@@ -3,21 +3,26 @@ package app
 import (
 	"fmt"
 	"image"
-	"image/color"
 	"image/draw"
 	"strings"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"go-populous2/internal/engine"
 )
 
 type OptionsState struct {
-	Draft         engine.Level
-	Computer      [2]bool
-	Owner, Page   int
-	Return        Screen
-	Music, Sound  bool
-	SelectedPower engine.PowerID
-	Live          bool
+	Draft              engine.Level
+	Computer           [2]bool
+	Owner, Page        int
+	Return             Screen
+	Music, Sound       bool
+	SelectedPower      engine.PowerID
+	Live               bool
+	RulesLocked        bool
+	SpecialCode        string
+	EditingSpecialCode bool
 }
 
 func (g *Game) openOptions() error {
@@ -26,7 +31,7 @@ func (g *Game) openOptions() error {
 	}
 	level := g.Assets.Levels[g.LevelIndex]
 	computer := [2]bool{false, true}
-	live := g.World != nil && g.Screen == Playing
+	live := g.World != nil && (g.Screen == Playing || g.Screen == InGameMenuScreen)
 	if !live && g.CustomLevel != nil {
 		level = *g.CustomLevel
 		computer = g.CustomComputer
@@ -42,7 +47,7 @@ func (g *Game) openOptions() error {
 		musicEnabled = g.music.IsMusicEnabled()
 		soundEnabled = g.music.IsSoundEnabled()
 	}
-	g.Options = &OptionsState{Draft: level, Computer: computer, Return: g.Screen, Music: musicEnabled, Sound: soundEnabled, Live: live}
+	g.Options = &OptionsState{Draft: level, Computer: computer, Return: g.Screen, Music: musicEnabled, Sound: soundEnabled, Live: live, Owner: g.playerSide(), RulesLocked: live && !g.CustomGame}
 	g.Screen = OptionsScreen
 	return nil
 }
@@ -152,91 +157,79 @@ func (g *Game) cancelOptions() {
 	}
 }
 
-var optionLabels = [10]string{"BUILD ANYWHERE", "SEA LEVEL BUILDING", "PROTECT ENEMY LAND", "FORBID RAISING", "FORBID LOWERING", "FATAL WATER", "HIDE ENEMY ON MAP", "DISABLE MANUAL SPROG", "HIDE DISASTERS", "SHALLOW SWAMPS"}
+// The original campaign requester displays rules without changing them.
+// Custom games expose the same controls as editable settings.
+func (g *Game) handleOptionsAction(action string) error {
+	if g.Options == nil {
+		return fmt.Errorf("options screen has no draft")
+	}
+	s := g.Options
+	switch action {
+	case "side":
+		s.Owner = 1 - s.Owner
+	case "reaction-decrease":
+		if !s.RulesLocked {
+			p := &s.Draft.Players[s.Owner]
+			p.ReactionDelay = max(0, p.ReactionDelay-1)
+		}
+	case "reaction-increase":
+		if !s.RulesLocked {
+			p := &s.Draft.Players[s.Owner]
+			p.ReactionDelay = min(15, p.ReactionDelay+1)
+		}
+	case "special-codes":
+		s.EditingSpecialCode = true
+		s.SpecialCode = ""
+	case "proceed":
+		return g.applyOptions()
+	default:
+		if !s.RulesLocked {
+			for i := 0; i < 10; i++ {
+				if action == fmt.Sprintf("rule-%d", i) {
+					s.toggleRule(i)
+					break
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (s *OptionsState) acceptSpecialCode() {
+	// The original music code recognizes the four-letter prefix MUSI.
+	if strings.HasPrefix(s.SpecialCode, "MUSI") {
+		s.Music = !s.Music
+	}
+	s.EditingSpecialCode = false
+}
 
 func (g *Game) updateOptions(x, y int, clicked bool) error {
 	if g.Options == nil {
 		return fmt.Errorf("options screen has no draft")
 	}
-	if !clicked {
-		return nil
-	}
 	s := g.Options
-	if y >= 171 && y < 190 {
-		if x >= 24 && x < 136 {
-			return g.applyOptions()
-		}
-		if x >= 176 && x < 296 {
-			g.cancelOptions()
-			return nil
-		}
-	}
-	if y >= 28 && y < 45 && x >= 144 && x < 176 {
-		// Editor opens the existing live world or committed custom setup;
-		// the unapplied options draft is discarded, as on Cancel.
-		if err := g.openEditor(); err != nil {
-			return err
-		}
-		g.Editor.Return = g.Options.Return
-		g.Options = nil
-		return nil
-	}
-	if y >= 28 && y < 45 {
-		if x >= 16 && x < 144 {
-			s.Owner = 0
-		}
-		if x >= 176 && x < 304 {
-			s.Owner = 1
-		}
-	}
-	if y >= 48 && y < 64 {
-		if x >= 16 && x < 108 {
-			s.Page = 0
-		}
-		if x >= 112 && x < 204 {
-			s.Page = 1
-		}
-		if x >= 208 && x < 304 {
-			s.Page = 2
-		}
-	}
-	if s.Page == 0 {
-		if y >= 67 && y < 167 {
-			row := (y - 67) / 10
-			s.toggleRule(row)
-		}
-	} else if s.Page == 1 {
-		for i, p := range engine.Powers {
-			col, row := i/10, i%10
-			if x >= 16+col*101 && x < 113+col*101 && y >= 67+row*10 && y < 77+row*10 {
-				s.Draft.Players[s.Owner].Powers[p.ID] = !s.Draft.Players[s.Owner].Powers[p.ID]
-				s.SelectedPower = p.ID
+	if s.EditingSpecialCode {
+		for _, r := range ebiten.AppendInputChars(nil) {
+			if r >= 'a' && r <= 'z' {
+				r -= 32
+			}
+			if r >= 32 && r <= 126 && len(s.SpecialCode) < 17 {
+				s.SpecialCode += string(r)
 			}
 		}
-	} else if y >= 67 && y < 163 {
-		p := &s.Draft.Players[s.Owner]
-		delta := -1
-		if x >= 160 {
-			delta = 1
+		if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) && len(s.SpecialCode) > 0 {
+			s.SpecialCode = s.SpecialCode[:len(s.SpecialCode)-1]
 		}
-		switch (y - 67) / 12 {
-		case 0:
-			s.Computer[s.Owner] = !s.Computer[s.Owner]
-		case 1:
-			p.Groups = max(0, min(engine.FollowerCapacity/2, p.Groups+delta))
-		case 2:
-			p.Population = max(1, min(1000000, p.Population+delta*100))
-		case 3:
-			p.Mana = max(0, min(1000000, p.Mana+delta*1000))
-		case 4:
-			p.ReactionDelay = max(0, min(15, p.ReactionDelay+delta))
-		case 5:
-			s.Draft.Landscape = (s.Draft.Landscape + delta + 4) % 4
-		case 6:
-			s.Music = !s.Music
-		case 7:
-			s.Sound = !s.Sound
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			s.acceptSpecialCode()
 		}
+		return nil
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		return g.handleOptionsAction("proceed")
+	}
+	if clicked && g.Assets.OptionsArt != nil {
+		return g.handleOptionsAction(g.Assets.OptionsArt.ActionAt(x, y, s.Draft.Players[s.Owner].ReactionDelay))
 	}
 	return nil
 }
@@ -246,65 +239,24 @@ func (g *Game) drawOptions() {
 		return
 	}
 	s := g.Options
-	draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
-	title := "GAME OPTIONS / BLUE"
-	if s.Owner == 1 {
-		title = "GAME OPTIONS / RED"
+	art := g.Assets.OptionsArt
+	if art == nil {
+		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), g.Assets.Visual.Startup, image.Point{}, draw.Src)
+		g.text("GAME OPTIONS", 112, 14)
+		g.text("PRESS ENTER TO APPLY", 80, 166)
+		return
 	}
-	g.text(title, 72, 10)
-	g.button("BLUE", 16, 29, 128)
-	g.button("RED", 176, 29, 128)
-	g.button("EDIT", 144, 29, 32)
-	g.button("RULES", 16, 49, 92)
-	g.button("POWERS", 112, 49, 92)
-	g.button("SETUP", 208, 49, 96)
-	if s.Page == 0 {
-		for i, label := range optionLabels {
-			mark := "[ ]"
-			if s.rule(i) {
-				mark = "[X]"
-			}
-			g.text(mark+" "+label, 24, 68+i*10)
-		}
-	} else if s.Page == 1 {
-		for i, p := range engine.Powers {
-			col, row := i/10, i%10
-			label := strings.ToUpper(p.Name)
-			if len(label) > 9 {
-				label = label[:9]
-			}
-			mark := "-"
-			if s.Draft.Players[s.Owner].Powers[p.ID] {
-				mark = "+"
-			}
-			g.text(mark+label, 16+col*101, 68+row*10)
-		}
-	} else {
-		p := s.Draft.Players[s.Owner]
-		controller := "HUMAN"
-		if s.Computer[s.Owner] {
-			controller = "COMPUTER"
-		}
-		music := "OFF"
-		if s.Music {
-			music = "ON"
-		}
-		sound := "OFF"
-		if s.Sound {
-			sound = "ON"
-		}
-		for i, label := range []string{controller, fmt.Sprintf("START GROUPS %d", p.Groups), fmt.Sprintf("GROUP PEOPLE %d", p.Population), fmt.Sprintf("START MANA %d", p.Mana), fmt.Sprintf("AI REACTION %d", p.ReactionDelay), fmt.Sprintf("LANDSCAPE %d", s.Draft.Landscape), "MUSIC " + music, "SOUND " + sound} {
-			g.text("- "+label+" +", 24, 68+i*12)
-		}
+	palette := art.Layout.Palette
+	draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(palette[0]), image.Point{}, draw.Src)
+	code := s.SpecialCode
+	if s.EditingSpecialCode {
+		code += "_"
 	}
-	if s.Page == 2 {
-		g.text("START VALUES: NEXT GAME", 48, 163)
+	values := map[string]string{"side": art.SideNames[s.Owner], "special-codes": code}
+	flags := map[string]bool{}
+	for i := 0; i < 10; i++ {
+		flags[fmt.Sprintf("rule-%d", i)] = s.rule(i)
 	}
-	if s.Page == 1 {
-		if power, ok := engine.PowerByID(s.SelectedPower); ok {
-			g.text(strings.ToUpper(power.Name), 24, 163)
-		}
-	}
-	g.button("APPLY", 24, 172, 112)
-	g.button("CANCEL", 176, 172, 120)
+	art.Layout.Draw(g.framebuffer, g.Assets.Visual.Font, values, flags)
+	art.DrawReaction(g.framebuffer, g.Assets.Visual.Font, s.Draft.Players[s.Owner].ReactionDelay)
 }

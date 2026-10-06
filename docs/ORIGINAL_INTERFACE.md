@@ -61,3 +61,12 @@ hit-region checks, and a test that its actions operate on independent Go state.
 Dynamic values, checkbox/selection marks, disabled actions and input fields must
 retain their original layout and palette. Gameplay controls must use the same
 validated simulation commands as keyboard and network input.
+
+## Result numeric fields
+
+The result requester retains the original English labels, numeric positions and
+OK action region. Pixel comparisons cover ordinary and high values up to seven
+decimal digits in peak fields, both winners, and the maximum 16-bit score.
+The original eight-byte text buffers lose their terminator at eight digits;
+later fields can then merge and overwrite the window border. The independent
+requester keeps fields bounded and does not reproduce that buffer corruption.

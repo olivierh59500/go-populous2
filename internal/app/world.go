@@ -44,7 +44,9 @@ func (g *Game) startConquest() error {
 	g.Paused = false
 	g.AnimationSounds = AnimationSoundGate{}
 	g.resultApplied = false
-	g.SelectedFollower, g.Inspecting = world.Players[g.playerSide()].Leader, false
+	g.SelectedFollower, g.Inspecting = 0, false
+	g.selectionTransferTick = world.Tick
+	g.SelectionReturn = FollowerSelectionReturn{}
 	leader := world.Players[0].Leader
 	if leader > 0 {
 		f := world.Followers[leader]
@@ -64,6 +66,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 		g.advanceNetwork()
 	} else if !g.Paused && g.Updates%4 == 0 {
 		w.Step()
+		g.consumeSelectionTransfers()
 		if w.Scenario.Err != "" {
 			g.Message, g.messageUntil = "WORLD EVENT: "+w.Scenario.Err, g.Updates+200
 		}
@@ -76,7 +79,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if g.handleSelectionPanelClick(mouseX, mouseY, clicked) {
 		return nil
 	}
-	if g.PickingPower {
+	if g.PickingPower && g.Assets.HUD == nil {
 		if clicked {
 			if mouseY >= 47 && mouseY < 63 && mouseX >= 24 && mouseX < 296 {
 				g.Category = engine.Element(min(5, (mouseX-24)/45))
@@ -121,22 +124,27 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
 		g.Selected = engine.PapalMagnet
+		g.Category = engine.People
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF1) {
 		g.Selected = engine.RaiseLower
+		g.Category = engine.People
 	}
 	for index, key := range []ebiten.Key{ebiten.KeyF2, ebiten.KeyF3, ebiten.KeyF4, ebiten.KeyF5} {
 		if inpututil.IsKeyJustPressed(key) {
 			g.Selected = []engine.PowerID{engine.Trees, engine.Flowers, engine.Swamp, engine.Fungus}[index]
+			g.Category = engine.Plants
 		}
 	}
 	for index, key := range []ebiten.Key{ebiten.KeyF6, ebiten.KeyF7} {
 		if inpututil.IsKeyJustPressed(key) {
 			g.Selected = []engine.PowerID{engine.FireColumn, engine.FireRain}[index]
+			g.Category = engine.Fire
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyF8) {
 		g.Selected = engine.Basalt
+		g.Category = engine.Water
 	}
 	if g.Selected == engine.Lightning && inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		var err error
@@ -269,19 +277,15 @@ func (g *Game) drawWorld() {
 	g.minimap(land)
 	g.drawHUDControls()
 	g.drawSelectionPanel()
-	summary := w.Summaries()[g.playerSide()]
-	g.text(fmt.Sprintf("POP %d", summary.Population), 8, 181)
-	g.text(fmt.Sprintf("MANA %d", summary.Mana), 8, 191)
-	if power, ok := engine.PowerByID(g.Selected); ok {
-		g.text(strings.ToUpper(power.Name), 144, 181)
-	}
-	if g.Selected == engine.Basalt || g.Selected == engine.Earthquake || g.Selected == engine.Wind {
-		g.text("DIRECTION "+[4]string{"NORTH", "EAST", "SOUTH", "WEST"}[g.Direction&3], 144, 191)
+	if g.Assets.HUD == nil {
+		summary := w.Summaries()[g.playerSide()]
+		g.text(fmt.Sprintf("POP %d", summary.Population), 8, 181)
+		g.text(fmt.Sprintf("MANA %d", summary.Mana), 8, 191)
 	}
 	if g.Updates < g.messageUntil {
 		g.drawMessage(178)
 	}
-	if g.PickingPower {
+	if g.PickingPower && g.Assets.HUD == nil {
 		g.drawPowerMenu()
 	}
 	if g.Paused {

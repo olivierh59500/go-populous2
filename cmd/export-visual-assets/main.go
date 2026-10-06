@@ -165,6 +165,27 @@ func export(files fs.FS, output string) error {
 	if err := exportSelectedPanel(source, output); err != nil {
 		return err
 	}
+	if err := exportDeityWidgets(output, source); err != nil {
+		return err
+	}
+	if err := exportHUD(source, output); err != nil {
+		return err
+	}
+	if err := exportInGameLayout(source, output); err != nil {
+		return err
+	}
+	if err := exportConquest(source, output); err != nil {
+		return err
+	}
+	if err := exportOptions(source, output); err != nil {
+		return err
+	}
+	if err := exportResult(source, output); err != nil {
+		return err
+	}
+	if err := exportFileLayouts(source, output); err != nil {
+		return err
+	}
 	if err := exportStartupMenu(output, presentation); err != nil {
 		return err
 	}

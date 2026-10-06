@@ -25,6 +25,7 @@ type savedSession struct {
 	LocalSide        int
 	SelectedFollower int
 	Inspecting       bool
+	SelectionReturn  FollowerSelectionReturn
 	OriginalGAM      []byte `json:"original_gam,omitempty"`
 }
 
@@ -41,6 +42,7 @@ func (g *Game) saveGame() error {
 	session := savedSession{Version: 1, World: g.World.Snapshot(), Profile: g.Profile, CameraX: g.CameraX, CameraY: g.CameraY, LevelIndex: g.LevelIndex, Selected: g.Selected, Direction: g.Direction, CustomGame: g.CustomGame, Paused: g.Paused}
 	session.LocalSide = g.playerSide()
 	session.SelectedFollower, session.Inspecting = g.SelectedFollower, g.Inspecting
+	session.SelectionReturn = g.SelectionReturn
 	if g.OriginalSave != nil {
 		session.OriginalGAM = append([]byte(nil), g.OriginalSave.Metadata.Original...)
 	}
@@ -108,6 +110,9 @@ func (g *Game) loadGame() error {
 	if session.Version != 1 || session.LevelIndex < 0 || session.LevelIndex >= len(g.Assets.Levels) || session.CameraX < 0 || session.CameraX > 56 || session.CameraY < 0 || session.CameraY > 56 || session.Direction > 3 || session.LocalSide < 0 || session.LocalSide > 1 || session.SelectedFollower < 0 || session.SelectedFollower >= engine.FollowerCapacity {
 		return fmt.Errorf("unsupported or invalid saved session")
 	}
+	if session.SelectionReturn.BackupFollower < 0 || session.SelectionReturn.BackupFollower >= engine.FollowerCapacity || session.SelectionReturn.FramesLeft > 100 {
+		return fmt.Errorf("invalid saved selection return")
+	}
 	if len(session.Profile.Name) > 16 {
 		return fmt.Errorf("invalid saved deity name")
 	}
@@ -136,6 +141,8 @@ func (g *Game) loadGame() error {
 	g.CustomGame, g.Paused = session.CustomGame, session.Paused
 	g.LocalSide, g.OriginalSave = session.LocalSide, original
 	g.SelectedFollower, g.Inspecting = session.SelectedFollower, session.Inspecting
+	g.SelectionReturn = session.SelectionReturn
+	g.selectionTransferTick = world.Tick
 	g.refreshSelectedFollower()
 	g.restoreCustomSetup()
 	g.AnimationSounds = AnimationSoundGate{}

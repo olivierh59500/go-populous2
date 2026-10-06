@@ -275,9 +275,11 @@ func (g *Game) pollNetwork() error {
 	if world != nil {
 		first := g.World == nil || g.Screen == MainMenu || g.Screen == NetworkSetup || g.Screen == ConquestBriefing
 		g.World, g.Screen = world, Playing
+		g.consumeSelectionTransfers()
 		if first {
 			leader := world.Players[status.Side].Leader
-			g.SelectedFollower, g.Inspecting = leader, false
+			g.SelectedFollower, g.Inspecting = 0, false
+			g.selectionTransferTick = world.Tick
 			if leader > 0 {
 				f := world.Followers[leader]
 				g.CameraX = max(0, min(56, int(f.X)-3))

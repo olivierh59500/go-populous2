@@ -16,14 +16,22 @@ import (
 // Assets contains presentation data and decoded campaign/landscape records.
 // It has no original executable, instructions, relocated memory or registers.
 type Assets struct {
-	Visual         *visualassets.Bundle
-	StartupMenu    *visualassets.StartupMenu
-	Pointers       *visualassets.PointerArt
-	SelectionPanel *visualassets.SelectionPanel
-	Levels         []engine.Level
-	Landscapes     [4]engine.Landscape
-	Music          *music.Bank
-	RulesID        string
+	Visual                                       *visualassets.Bundle
+	StartupMenu                                  *visualassets.StartupMenu
+	Pointers                                     *visualassets.PointerArt
+	SelectionPanel                               *visualassets.SelectionPanel
+	DeityLayout                                  *visualassets.RequesterLayout
+	DeityWidgets                                 *visualassets.DeityWidgets
+	HUD                                          *visualassets.HUDArt
+	Conquest                                     *visualassets.ConquestArt
+	OptionsArt                                   *visualassets.OptionsArt
+	Result                                       *visualassets.ResultDescriptor
+	FileLayout, OverwriteLayout, FileErrorLayout *visualassets.RequesterLayout
+	InGameLayout                                 *visualassets.RequesterLayout
+	Levels                                       []engine.Level
+	Landscapes                                   [4]engine.Landscape
+	Music                                        *music.Bank
+	RulesID                                      string
 }
 
 func LoadAssets(files fs.FS) (*Assets, error) {
@@ -53,6 +61,40 @@ func LoadAssets(files fs.FS) (*Assets, error) {
 		return nil, fmt.Errorf("selected group panel: %w", err)
 	}
 	bundle.SelectionPanel = panel
+	bundle.DeityLayout, err = visualassets.LoadRequesterLayout(files, "deity-layout.json")
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("deity layout: %w", err)
+	}
+	bundle.DeityWidgets, err = visualassets.LoadDeityWidgets(files)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("deity artwork: %w", err)
+	}
+	bundle.HUD, err = visualassets.LoadHUD(files)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("game HUD: %w", err)
+	}
+	bundle.InGameLayout, err = visualassets.LoadRequesterLayout(files, "in-game-layout.json")
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("in-game menu: %w", err)
+	}
+	bundle.Conquest, err = visualassets.LoadConquestArt(files)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("conquest interface: %w", err)
+	}
+	bundle.OptionsArt, err = visualassets.LoadOptionsArt(files)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("game options: %w", err)
+	}
+	bundle.Result, err = visualassets.LoadResult(files)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("campaign result: %w", err)
+	}
+	for name, target := range map[string]**visualassets.RequesterLayout{"files-layout.json": &bundle.FileLayout, "overwrite-layout.json": &bundle.OverwriteLayout, "file-error-layout.json": &bundle.FileErrorLayout} {
+		*target, err = visualassets.LoadRequesterLayout(files, name)
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return nil, fmt.Errorf("file interface: %w", err)
+		}
+	}
 	for index := range bundle.Landscapes {
 		data, err := fs.ReadFile(files, fmt.Sprintf("land%d.dat", index))
 		if err != nil {
