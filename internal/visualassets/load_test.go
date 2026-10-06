@@ -168,3 +168,27 @@ func TestRejectInvalidCatalogAndUnboundedImages(t *testing.T) {
 		t.Fatal("nil filesystem accepted")
 	}
 }
+
+func TestSaveCompatibilityKeepsAliasesAndValidatesArtwork(t *testing.T) {
+	files, catalog := fixture(t)
+	catalog.FileCompatibility = &FileCompatibility{AnimationTokens: []SaveAnimationToken{{Token: 100, Animation: "follower/0/0/0", Frame: 0}, {Token: 100, Animation: "follower/0/0/0", Frame: 0}}}
+	putCatalog(t, files, catalog)
+	bundle, err := LoadFS(files)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(bundle.FileCompatibility.AnimationTokens) != 2 {
+		t.Fatal("duplicate save token aliases were silently discarded")
+	}
+	catalog.FileCompatibility.AnimationTokens[0].Frame = 1
+	putCatalog(t, files, catalog)
+	if _, err := LoadFS(files); err == nil {
+		t.Fatal("file token referenced an absent animation frame")
+	}
+	catalog.FileCompatibility.AnimationTokens[0].Frame = 0
+	catalog.FileCompatibility.AnimationTokens[0].Animation = "unknown"
+	putCatalog(t, files, catalog)
+	if _, err := LoadFS(files); err == nil {
+		t.Fatal("file token referenced an absent animation")
+	}
+}

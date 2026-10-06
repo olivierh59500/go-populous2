@@ -13,6 +13,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	embedded "go-populous2/assets"
@@ -364,6 +365,7 @@ func export(files fs.FS, output string) error {
 		}
 		catalog.Animations[name] = animation(frames, true)
 	}
+	catalog.FileCompatibility = exportSaveCompatibility(source, catalog)
 	data, err := json.MarshalIndent(catalog, "", "  ")
 	if err != nil {
 		return err
@@ -374,6 +376,61 @@ func export(files fs.FS, output string) error {
 	// Re-load the emitted files through the independent runtime decoder.
 	_, err = visualassets.LoadFS(os.DirFS(output))
 	return err
+}
+
+func exportSaveCompatibility(source *populous2.Bundle, catalog visualassets.Catalog) *visualassets.FileCompatibility {
+	result := &visualassets.FileCompatibility{}
+	add := func(name string, start int) {
+		for frame := range catalog.Animations[name].Frames {
+			result.AnimationTokens = append(result.AnimationTokens, visualassets.SaveAnimationToken{Token: uint16(start + frame*4), Animation: name, Frame: frame})
+		}
+	}
+	for connection, art := range source.WallRules.Art {
+		add(fmt.Sprintf("wall/connection/%d", connection), art.Animation)
+	}
+	for variant, start := range source.WallRules.BreakAnimations {
+		add(fmt.Sprintf("wall/broken/%d", variant*2), start)
+	}
+	add("wall/post", 0x5bc)
+	add("wall/gate-horizontal", 0xb44)
+	add("wall/gate-vertical", 0xb54)
+	for kind, rules := range map[string]populous2.SceneryRules{"tree": source.Scenery.Trees, "boulder": source.Scenery.Boulders} {
+		for variant, start := range rules.Animations {
+			add(fmt.Sprintf("scenery/%s/%d", kind, variant), start)
+		}
+	}
+	add("scenery/burning-tree", 0xf10)
+	add("scenery/removal-start", source.Scenery.RemovalStart)
+	add("scenery/removal-end", source.Scenery.RemovalEnd)
+	for side, variants := range source.FollowerMotion.VariantBases {
+		for variant, start := range variants {
+			for direction, offset := range source.FollowerMotion.DirectionOffsets {
+				add(fmt.Sprintf("follower/%d/%d/%d", side, variant, direction), start+offset)
+			}
+		}
+	}
+	heroes := [6]string{"perseus", "adonis", "heracles", "odysseus", "achilles", "helen"}
+	for hero, start := range source.HeroRules.Variants {
+		offset := int(start)
+		for direction, frames := range source.HeroRules.Art[hero].Directions {
+			add(fmt.Sprintf("hero/%s/%d", heroes[hero], direction), offset)
+			offset += (len(frames) + 1) * 4
+		}
+	}
+	for name, start := range map[string]int{"neutral/road-maker": 0x2cc, "neutral/land-lowerer": 0x53c, "neutral/land-lowerer-paired": 0x550, "neutral/whirlwind-maker": 0xa98, "neutral/tree-planter": 0xab4, "neutral/fire-maker": 0x2bfc, "neutral/monster": 0x2c18, "neutral/monster-victim": 0x2c34, "conversion/blue": 0xbd8, "conversion/red": 0xc0c, "conversion/hero": 0xc0c, "death/swamp": 0x7dc, "death/fungus": 0x7dc, "plague": 0xddc} {
+		add(name, start)
+	}
+	sort.Slice(result.AnimationTokens, func(i, j int) bool {
+		a, b := result.AnimationTokens[i], result.AnimationTokens[j]
+		if a.Token != b.Token {
+			return a.Token < b.Token
+		}
+		if a.Animation != b.Animation {
+			return a.Animation < b.Animation
+		}
+		return a.Frame < b.Frame
+	})
+	return result
 }
 
 func exportEndingFrames(output string, art []byte, text string) (*visualassets.EndingDescriptor, error) {

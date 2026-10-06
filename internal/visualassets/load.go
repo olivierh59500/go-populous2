@@ -256,6 +256,18 @@ func loadFS(files fs.FS) (*Bundle, error) {
 			}
 		}
 	}
+	b.FileCompatibility = catalog.FileCompatibility
+	if b.FileCompatibility != nil {
+		if len(b.FileCompatibility.AnimationTokens) > 65536 {
+			return nil, fmt.Errorf("too many save animation aliases")
+		}
+		for _, entry := range b.FileCompatibility.AnimationTokens {
+			animation, ok := b.Animations[entry.Animation]
+			if !ok || entry.Frame < 0 || entry.Frame >= len(animation.Frames) {
+				return nil, fmt.Errorf("save artwork token references an absent animation/frame")
+			}
+		}
+	}
 	return b, nil
 }
 

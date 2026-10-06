@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"go-populous2/internal/populous2"
@@ -141,6 +142,45 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 	}
 	if portable.TileRasters != source.RenewNative.Raster {
 		t.Fatal("tile surface metadata changed during import")
+	}
+	if portable.FileCompatibility == nil || len(portable.FileCompatibility.AnimationTokens) == 0 {
+		t.Fatal("save artwork compatibility aliases missing")
+	}
+	for _, entry := range portable.FileCompatibility.AnimationTokens {
+		// Each token is a record value from the historical save-file format.
+		// Its referenced image/cue entry is art metadata, not executable code.
+		if strings.HasPrefix(entry.Animation, "hero/") {
+			// Hero walking uses its own validated artwork decoder; a shipped
+			// cue in this bank lies beyond the generic effect cue catalogue.
+			parts := strings.Split(entry.Animation, "/")
+			direction := 0
+			if _, err := fmt.Sscan(parts[2], &direction); err != nil {
+				t.Fatal(err)
+			}
+			heroNames := [6]string{"perseus", "adonis", "heracles", "odysseus", "achilles", "helen"}
+			hero := -1
+			for i, name := range heroNames {
+				if name == parts[1] {
+					hero = i
+				}
+			}
+			if hero < 0 || direction < 0 || direction > 7 {
+				t.Fatal("bad hero file alias")
+			}
+			want := animation([]populous2.AnimationFrame{{Layers: source.HeroRules.Art[hero].Directions[direction][entry.Frame]}}, false).Frames[0]
+			if !reflect.DeepEqual(portable.Animations[entry.Animation].Frames[entry.Frame], want) {
+				t.Fatal("hero save artwork alias differs", entry)
+			}
+			continue
+		}
+		frames, err := populous2.DecodeAnimation(source.Executable, int(entry.Token)-entry.Frame*4)
+		if err != nil || entry.Frame >= len(frames) {
+			t.Fatal("save artwork token outside original sequence", entry)
+		}
+		want := animation(frames, false).Frames[entry.Frame]
+		if !reflect.DeepEqual(portable.Animations[entry.Animation].Frames[entry.Frame], want) {
+			t.Fatal("save artwork alias differs from source frame", entry)
+		}
 	}
 	for name, start := range map[string]int{"neutral/road-maker": 0x2cc, "neutral/land-lowerer": 0x53c, "neutral/land-lowerer-paired": 0x550, "neutral/whirlwind-maker": 0xa98, "neutral/tree-planter": 0xab4, "neutral/fire-maker": 0x2bfc, "neutral/monster": 0x2c18, "neutral/monster-victim": 0x2c34} {
 		frames, err := populous2.DecodeAnimation(source.Executable, start)
