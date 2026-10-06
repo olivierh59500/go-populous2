@@ -126,6 +126,54 @@ func TestSnapshotContinuesAirborneAndRetainedDeathState(t *testing.T) {
 	}
 }
 
+func TestSnapshotMixedActorRegistryRejectsMalformedRelations(t *testing.T) {
+	var valid ActorRegistry
+	for _, ref := range []ActorRef{{Kind: ActorMagnet, Index: 0}, {Kind: ActorFollower, Index: 1}, {Kind: ActorEffect, Index: 0}, {Kind: ActorScenery, Index: 0}, {Kind: ActorWall, Index: 0}} {
+		if !valid.Link(ref, 32*256+128, 32*256+128) {
+			t.Fatal("mixed registry setup failed")
+		}
+	}
+	if err := validateActorRegistry(&valid); err != nil {
+		t.Fatal(err)
+	}
+	for name, corrupt := range map[string]func(*ActorRegistry){
+		"cycle":            func(r *ActorRegistry) { r.Walls[0].Next = ActorRef{Kind: ActorWall, Index: 0} },
+		"wrong-pool":       func(r *ActorRegistry) { r.Walls[0].Next = ActorRef{Kind: ActorFollower, Index: 999} },
+		"detached-head":    func(r *ActorRegistry) { r.Walls[0].Linked = false },
+		"wrong-cell":       func(r *ActorRegistry) { r.Walls[0].X = 12 * 256 },
+		"broken-back-link": func(r *ActorRegistry) { r.Scenery[0].Previous = ActorRef{} },
+	} {
+		t.Run(name, func(t *testing.T) {
+			r := valid
+			corrupt(&r)
+			if err := validateActorRegistry(&r); err == nil {
+				t.Fatal("malformed mixed registry was accepted")
+			}
+		})
+	}
+}
+
+func TestSnapshotPreservesMixedActorRegistryAndMagnetFractions(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+	id := addFollower(w, 32, 32, 0, 100, Walking)
+	w.Magnets[0] = MagnetActor{Owner: 0, X: 32*256 + 211, Y: 32*256 + 17}
+	w.Actors.Link(ActorRef{Kind: ActorMagnet, Index: 0}, w.Magnets[0].X, w.Magnets[0].Y)
+	w.Actors.Link(ActorRef{Kind: ActorFollower, Index: uint16(id)}, w.Followers[id].positionX, w.Followers[id].positionY)
+	var output bytes.Buffer
+	if err := WriteSnapshot(&output, w); err != nil {
+		t.Fatal(err)
+	}
+	restored, err := ReadSnapshot(bytes.NewReader(output.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(w.Actors, restored.Actors) || w.Magnets != restored.Magnets {
+		t.Fatal("save lost mixed actor order or fractional magnet coordinates")
+	}
+}
+
 func TestSnapshotStrictJSONAndWriterErrors(t *testing.T) {
 	w := testFlatWorld()
 	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32

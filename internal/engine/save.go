@@ -111,6 +111,9 @@ func (s Snapshot) Restore() (*World, error) {
 }
 
 func validateSnapshotWorld(w *World) error {
+	if err := validateActorRegistry(&w.Actors); err != nil {
+		return err
+	}
 	if w.Result < 0 || w.Result > 2 || w.Level.Number < 0 || w.Level.Number >= 1000 || w.Level.Landscape < 0 || w.Level.Landscape > 3 {
 		return fmt.Errorf("snapshot campaign state is invalid")
 	}
@@ -275,6 +278,57 @@ func validateSnapshotWorld(w *World) error {
 		death := w.FireDamage.Deaths[id]
 		if death.Mode > FireVictimBurning || death.Mode != FireVictimAlive && (death.Frames < 1 || death.Frame < 0 || death.Frame >= death.Frames || death.TownStage >= TownStages) {
 			return fmt.Errorf("snapshot fire victim %d is invalid", id)
+		}
+	}
+	return nil
+}
+
+// validateActorRegistry verifies every typed chain and reciprocal link. The
+// total visit bound comes from semantic pool capacities, not record lengths.
+func validateActorRegistry(registry *ActorRegistry) error {
+	if registry == nil {
+		return fmt.Errorf("snapshot actor registry is missing")
+	}
+	seen := make(map[ActorRef]bool, FollowerCapacity+EffectCapacity+SceneryCapacity+WallCapacity+2)
+	const maximumActors = FollowerCapacity + EffectCapacity + SceneryCapacity + WallCapacity + 2
+	validEmpty := func(ref ActorRef) bool { return ref.Kind == ActorNone && ref.Index == 0 }
+	for at, head := range registry.Heads {
+		previous := ActorRef{}
+		for current, visits := head, 0; current.Kind != ActorNone; visits++ {
+			if visits >= maximumActors || seen[current] {
+				return fmt.Errorf("snapshot actor chain at parcel %d is cyclic", at)
+			}
+			node := registry.node(current)
+			if node == nil || !node.Linked || node.Previous != previous {
+				return fmt.Errorf("snapshot actor reference or reciprocal link is invalid")
+			}
+			cell, inside := actorCell(node.X, node.Y)
+			if !inside || cell != at {
+				return fmt.Errorf("snapshot actor is linked to the wrong parcel")
+			}
+			if node.Next.Kind == ActorNone && !validEmpty(node.Next) {
+				return fmt.Errorf("snapshot actor chain has an invalid terminal reference")
+			}
+			seen[current] = true
+			previous, current = current, node.Next
+		}
+		if head.Kind == ActorNone && !validEmpty(head) {
+			return fmt.Errorf("snapshot null actor reference has a nonzero index")
+		}
+	}
+	for kind, size := range map[ActorKind]int{ActorFollower: FollowerCapacity, ActorEffect: EffectCapacity, ActorScenery: SceneryCapacity, ActorWall: WallCapacity, ActorMagnet: 2} {
+		for index := 0; index < size; index++ {
+			if kind == ActorFollower && index == 0 {
+				continue
+			}
+			ref := ActorRef{Kind: kind, Index: uint16(index)}
+			node := registry.node(ref)
+			if node.Linked && !seen[ref] {
+				return fmt.Errorf("snapshot linked actor is absent from its parcel chain")
+			}
+			if !node.Linked && (!validEmpty(node.Next) || !validEmpty(node.Previous)) {
+				return fmt.Errorf("snapshot detached actor retains occupancy links")
+			}
 		}
 	}
 	return nil
