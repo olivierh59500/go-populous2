@@ -182,6 +182,9 @@ func validateCommands(commands []Command, side int) error {
 	for _, command := range commands {
 		switch command.Kind {
 		case "power":
+			if command.Power == engine.RaiseLower {
+				return fmt.Errorf("terrain clicks require their displayed viewport")
+			}
 			if _, ok := engine.PowerByID(command.Power); !ok {
 				return fmt.Errorf("unknown network power")
 			}
@@ -192,9 +195,13 @@ func validateCommands(commands []Command, side int) error {
 			if command.Mode > engine.Fight {
 				return fmt.Errorf("invalid network follower mode")
 			}
-		case "rally", "terrain-secondary":
+		case "rally":
 			if command.Target.X < 0 || command.Target.X >= 64 || command.Target.Y < 0 || command.Target.Y >= 64 {
 				return fmt.Errorf("invalid network rally target")
+			}
+		case "terrain-click", "terrain-secondary":
+			if !command.View.Valid() || !command.View.ContainsCorner(command.Target.X, command.Target.Y) {
+				return fmt.Errorf("invalid network terrain viewport or target")
 			}
 		case "evacuate":
 			if command.Follower <= 0 || command.Follower >= engine.FollowerCapacity {
@@ -210,6 +217,9 @@ func validateCommands(commands []Command, side int) error {
 func applyCommand(world *engine.World, side int, command Command) error {
 	switch command.Kind {
 	case "power":
+		if command.Power == engine.RaiseLower {
+			return fmt.Errorf("terrain clicks require their displayed viewport")
+		}
 		return world.Cast(side, command.Power, command.Target)
 	case "mode":
 		if !world.SetMode(side, command.Mode) {
@@ -226,12 +236,16 @@ func applyCommand(world *engine.World, side int, command Command) error {
 		if !world.Evacuate(command.Follower) {
 			return fmt.Errorf("town evacuation was rejected")
 		}
-	case "terrain-secondary":
-		if !world.Sprog(side, command.Target.X, command.Target.Y) {
-			target := command.Target
-			target.Lower = true
-			return world.Cast(side, engine.RaiseLower, target)
+	case "terrain-click", "terrain-secondary":
+		if !command.View.Valid() || !command.View.ContainsCorner(command.Target.X, command.Target.Y) {
+			return fmt.Errorf("invalid network terrain viewport or target")
 		}
+		if command.Kind == "terrain-secondary" && world.Sprog(side, command.Target.X, command.Target.Y) {
+			return nil
+		}
+		target := command.Target
+		target.Lower = command.Kind == "terrain-secondary"
+		return world.CastFromViewport(side, engine.RaiseLower, target, command.View)
 	case "lightning-activate":
 		return world.ActivateLightning(side)
 	case "lightning-dismiss":

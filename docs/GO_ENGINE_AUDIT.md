@@ -78,8 +78,13 @@ Android launcher/build target for this independent game is included in this
 refactor. A later mobile adapter must preserve input, asset, audio and lifecycle
 semantics and be benchmarked on the target device.
 
-The new interface uses maintainable Go widgets over the original art. Its
-capabilities are present, but its menu layouts are not claimed pixel-identical
-to the original requesters. Full audible-event coverage and broader simultaneous
+The startup menu now reproduces the original five-slot layout in Go, with
+pixel and hit-region comparisons. The other interface screens use Go widgets
+over the original art. These
+are functional replacements; the original menus and interface have not yet
+been faithfully recreated in the independent runtime. The remaining work
+includes original requester layouts, HUD icons and meters, cursor/selection
+presentation, deity experience strips and world/help/options/file panels.
+Full audible-event coverage and broader simultaneous
 effect combinations can extend the existing checks without changing the
 independent runtime boundary.

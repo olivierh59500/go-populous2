@@ -66,6 +66,19 @@ The gameplay panel also offers mouse controls. The options/editor operate on
 validated detached drafts; Cancel preserves the live game. Power help creates
 an isolated, paced demonstration using the real effect controllers.
 
+Human terrain clicks also check the displayed eight-by-eight parcel view.
+An owned town in that view grants full-height editing; an eligible owned
+walker grants sea-level editing. Actors outside the view, enemies, waiting
+contacts and retained death states do not supply these rights. Campaign
+rules can explicitly grant broader editing, and their prohibitions still
+apply. This is a view-wide rule, not a distance around the mouse pointer.
+Network terrain commands include the same checked viewport; AI and direct
+effects retain their separate original admission policies.
+
+The original startup menu is restored with asset-only layout metadata. Other
+original-interface work is listed in [ORIGINAL_INTERFACE.md](ORIGINAL_INTERFACE.md).
+M opens multiplayer setup and H opens help from that five-entry menu.
+
 ## Persistence and multiplayer
 
 The save browser lists JSON/GAM files and requires confirmation before replacing

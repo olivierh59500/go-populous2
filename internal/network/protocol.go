@@ -16,7 +16,7 @@ import (
 	"go-populous2/internal/engine"
 )
 
-const ProtocolVersion = 1
+const ProtocolVersion = 2
 const maximumFrameBytes = 16 << 20
 const maximumCommands = 64
 
@@ -26,6 +26,7 @@ type Command struct {
 	Target   engine.PowerTarget `json:"target,omitempty"`
 	Mode     engine.Mode        `json:"mode,omitempty"`
 	Follower int                `json:"follower,omitempty"`
+	View     engine.Viewport    `json:"view,omitempty"`
 }
 
 type message struct {

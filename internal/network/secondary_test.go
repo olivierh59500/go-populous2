@@ -26,10 +26,11 @@ func TestTerrainSecondaryNetworkCommandMatchesLocalLowering(t *testing.T) {
 		t.Fatal("test target unexpectedly contains a releasable town")
 	}
 	target.Lower = true
-	if err := local.Cast(1, engine.RaiseLower, target); err != nil {
+	view := engine.Viewport{X: 16, Y: 16, Size: 8}
+	if err := local.CastFromViewport(1, engine.RaiseLower, target, view); err != nil {
 		t.Fatal(err)
 	}
-	command := Command{Kind: "terrain-secondary", Target: engine.PowerTarget{X: 20, Y: 20}}
+	command := Command{Kind: "terrain-secondary", Target: engine.PowerTarget{X: 20, Y: 20}, View: view}
 	if err := validateCommands([]Command{command}, 1); err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +60,8 @@ func TestTerrainSecondaryReleasesTownBeforeLoweringProhibition(t *testing.T) {
 	w.Level.Players[1].Scenario.ForbidLower = true
 	f := w.Followers[town]
 	mana, heights := w.Players[1].Mana, w.Heights
-	if err := applyCommand(w, 1, Command{Kind: "terrain-secondary", Target: engine.PowerTarget{X: int(f.X), Y: int(f.Y)}}); err != nil {
+	view := engine.Viewport{X: min(int(f.X), 56), Y: min(int(f.Y), 56), Size: 8}
+	if err := applyCommand(w, 1, Command{Kind: "terrain-secondary", Target: engine.PowerTarget{X: int(f.X), Y: int(f.Y)}, View: view}); err != nil {
 		t.Fatal(err)
 	}
 	if !w.Followers[town].ForceEmigration || w.Players[1].Mana != mana || w.Heights != heights {

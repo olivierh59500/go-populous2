@@ -163,6 +163,14 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if clicked || right {
 		x, y, ok := g.pickCorner(mouseX, mouseY)
 		if ok {
+			if g.Selected == engine.RaiseLower {
+				if err := g.applyTerrainClick(x, y, right); err != nil {
+					g.Message, g.messageUntil = err.Error(), g.Updates+100
+				} else {
+					g.music.TriggerCue(78)
+				}
+				return nil
+			}
 			if right && g.Selected == engine.Lightning {
 				if g.Network != nil {
 					if err := g.submitNetwork(network.Command{Kind: "lightning-dismiss"}); err != nil {
@@ -173,17 +181,10 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 				}
 				return nil
 			}
-			if right && g.Selected == engine.RaiseLower && g.Network == nil && w.Sprog(g.playerSide(), x, y) {
-				return nil
-			}
 			target := engine.PowerTarget{X: x, Y: y, Lower: right, Direction: g.Direction}
 			var err error
 			if g.Network != nil {
-				kind := "power"
-				if right && g.Selected == engine.RaiseLower {
-					kind = "terrain-secondary"
-				}
-				err = g.submitNetwork(network.Command{Kind: kind, Power: g.Selected, Target: target})
+				err = g.submitNetwork(network.Command{Kind: "power", Power: g.Selected, Target: target})
 			} else {
 				err = w.Cast(g.playerSide(), g.Selected, target)
 			}
