@@ -285,6 +285,9 @@ func (w *World) heroCanEnter(id, x, y int) bool {
 	if !inside(x, y) || w.Nature.BlocksWalking(x, y) {
 		return false
 	}
+	if wall := w.WallAt(x, y); wall >= 0 && w.DecideWallCrossing(id, wall) == WallBlocked {
+		return false
+	}
 	if w.Cell(x, y).IsWater() && !w.Followers[id].ImmuneToDrowning() {
 		return false
 	}

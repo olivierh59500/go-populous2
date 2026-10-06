@@ -68,6 +68,18 @@ func (w *World) advanceLeg(id int) {
 	}
 	oldX, oldY := int(f.X), int(f.Y)
 	if x != oldX || y != oldY {
+		if wall := w.WallAt(x, y); wall >= 0 {
+			switch w.DecideWallCrossing(id, wall) {
+			case WallBlocked:
+				f.moving = false
+				return
+			case WallBreak:
+				w.BreakWall(wall)
+				f.moving = false
+				f.Frame = 0
+				return
+			}
+		}
 		other := int(w.Occupants[x+y*MapSize])
 		if other == id {
 			other = w.Followers[other].NextFollower

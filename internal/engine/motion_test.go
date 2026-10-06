@@ -1,6 +1,9 @@
 package engine
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestWalkingLegUsesSourceSubcellUnitsAndCrossingAdmission(t *testing.T) {
 	w := testFlatWorld()
@@ -73,5 +76,28 @@ func TestCellEntryWrapsPressureWithoutLoweringSourcePressure(t *testing.T) {
 	}
 	if w.Pressure[20+20*MapSize] != 16 || w.Pressure[21+20*MapSize] != 0 {
 		t.Fatal("pressure did not retain source and wrap destination byte")
+	}
+}
+
+func TestHostileWallCrossingUsesStrengthAndBreaksBeforeMoving(t *testing.T) {
+	for _, test := range []struct {
+		population      int
+		crosses, broken bool
+	}{{2999, false, false}, {3000, true, false}, {20000, true, false}, {20001, false, true}} {
+		t.Run(fmt.Sprint(test.population), func(t *testing.T) {
+			w := testFlatWorld()
+			id := addFollower(w, 20, 20, 0, test.population, Walking)
+			w.Earth.Walls[0] = WallActor{Active: true, Owner: 1, X: 21, Y: 20}
+			w.beginLeg(id, 21, 20)
+			for range 7 {
+				w.advanceLeg(id)
+			}
+			if (w.Followers[id].X == 21) != test.crosses || w.Earth.Walls[0].Broken != test.broken {
+				t.Fatal("wall admission or break order")
+			}
+			if test.broken && w.Followers[id].positionX != 20*256+248 {
+				t.Fatal("breaking update committed crossing")
+			}
+		})
 	}
 }
