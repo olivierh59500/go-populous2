@@ -76,6 +76,21 @@ go run ./cmd/populous2 -custom -rules
 go build -o bin/populous2 ./cmd/populous2
 ```
 
+The original register-bearing runtime is also available as an integration
+target:
+
+```sh
+go run ./cmd/populous2-native
+go run ./cmd/populous2-native -auto-start -frames 500
+```
+
+This target uses the original320×200 screen, initial menu/world constructor,
+native simulation/render/input and four-channel audio. Deity/file/result and
+transport integration are still in progress; required missing source operations
+return explicit errors. The normal command remains available while these paths
+are completed. Diagnostic `-auto-start` clicks the original custom-game button;
+it does not substitute an automatically generated World.
+
 The default window is 960 × 720, with a 640 × 480 logical display and doubled
 Amiga artwork. Input updates at 60 Hz; the simulation uses the nominal PAL
 VBlank cadence of 50 updates per second. `-simulation-rate` selects a diagnostic

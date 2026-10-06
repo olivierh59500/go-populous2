@@ -55,6 +55,9 @@ func (s *NativeRuntimeInputChildren) Call(call NativeStartupResetFrameCall, phas
 	switch call.Routine {
 	case 0xd2b4, 0xd91a, 0x2914:
 		return NativeGameplayTerrainChild(&s.Render, base, call)
+	case 0xd962, 0xd97e, 0xd80c, 0xd81e, 0x29d2:
+		step, err := RunNativeGameplayEditorInput(call.Routine, NativeGameplayEditorInputCallbacks{NativeStartupResetFrameCallbacks: base, Bitmap: h.Bitmap}, call.A)
+		return NativeCommandFrameResult{Complete: step.Complete}, err
 	case 0x23ee, 0x2472, 0x147e0:
 		return s.HUD.Call(h, &s.HUDRules, &s.ChildRules, s.Supplied, call, phase)
 	case 0x184f6:

@@ -1084,3 +1084,20 @@ property/minimap state without repeating the common prepass. Sixteen direct
 CPU town-tail references match full D/BSS and mutable state, alongside the
 existing64 full town-pass references. Further interactive result, save,
 transport and complete campaign validation remain outstanding.
+
+## Native desktop integration target
+
+The separate populous2-native command drives actual startup/menu/frame/input
+at50updates/s and streams four-channel PCM through the runtime's shared access
+owner. It decodes active Copper/bitplanes and the attached hardware cursor into
+reusable320×200 RGBA pixels. Modern keys feed original raw-key interrupts;
+mouse movement feeds wrapping device counters.
+
+Three bounded macOS runs completed with exit0 using graphical-session access:
+the initial menu, a real custom-menu click through terrain startup, and the
+source protection requester reached during simulation. Application framebuffer
+captures were visually inspected for those screens. Initial sandboxed runs
+remained blocked at macOS services and are not counted as graphical success.
+The native target remains an explicit integration command while required
+deity/file/result/transport operations are completed; it has not replaced the
+default inherited Game loop.

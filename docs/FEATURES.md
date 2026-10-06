@@ -10,8 +10,8 @@ power is not sufficient evidence that its original behavior has been ported.
 | Area | Current implementation | Remaining work |
 |---|---|---|
 | Resources | Original compression, tile fragments, masks, sprite differences and relocated descriptors; prepared bitmap banks and real adjacent-RAM tile sink | Full retained resource load/reload and startup host binding |
-| Native rendering | Complete normal/alternate main rendering, HUD, selected panel, cursors, editor/debug text and retained protection waits; original CPU/DMA pixel comparisons; real shared physical screen/input/CODE/BSS owners | Remaining startup UI children and live Game activation |
-| Campaign | 1,000 worlds, passwords, raw campaign-record loading, retained original world chooser, native constructor controls/world creators, complete two-side templates/compiled choices, template mana/attrition, opponent XP/bolts and scripted events | Chooser help/opponent child composition, complete startup/policy/command frame binding and end-to-end pacing |
+| Native rendering | Complete normal/alternate rendering, HUD, selected panel, hardware cursor, editor/debug text and retained protection waits; active-table CPU/DMA comparisons; shared physical owners; native desktop integration target runs original menu and terrain | Full interactive comparison, remaining UI/result children and default-loop replacement |
+| Campaign | 1,000 worlds, passwords, actual raw campaign loads/chooser/help/opponent, initial-menu→conquest/custom startup composition, world creators/templates and scripted events | Native result/experience/ending composition and end-to-end conquest pacing |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
 | Followers | 399 usable records; all 35 active native state families in the register-bearing World dispatcher; 452 native follower passes and 168 composed main-physics/session comparisons, including filled pools | Replacement of the live inherited Game scheduler; full cross-effect/campaign behavior |
@@ -19,7 +19,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
 | Audio | 31 samples, 133 patterns, native four-channel device/CIA replay, raster DMA sample starvation, register-aware menu pause/resume and cast cue bindings; controlled CPU/PCM references | Live Game backend activation, original beam/CIA phase and analog/PWM fidelity, all animation-triggered cue integration |
 | Saving | Native Amiga GAM import/export, original file requester with overwrite/error dialogs and F5/F9/CLI access, saved graph/templates/profile/geometry/camera/RNG and atomic replacement; Go JSON APIs remain available | Native text-input timing, interactive desktop checks and broader two-player/cross-effect interoperability |
-| Interface | Original startup/result/deity/world/help/file/Zeus components; complete raw in-game/options/serial requester, profile/panel and keyboard modal bodies; composed menu/render continuations, real encoded resource retries and source frame-entry/exit gates verified | Full panel address context, initial menu/startup child composition, live menu/frame activation, spell-help preview animation and interactive desktop validation |
+| Interface | Original raw initial menu/chooser/in-game/options/serial/profile/panel/input/editor/protection bodies, retained waits and real resource retries; raw deity codecs/XP drawing; native desktop menu/terrain/protection captures | Complete deity/file/result/ending controllers, transport UI composition and interactive validation |
 | Multiplayer | Native raw command/serial protocol, retained complete handshake/resume source ABI and scheduler; paired TCP byte/state tests pass | Live connection/menu/frame binding, remaining reset UI children and save policy |
 | Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, original result text/layout/wait, saved one-time application and final Zeus animation | Visual transition validation and full conquest pacing/script/AI parity |
 
@@ -74,12 +74,13 @@ complete Amiga gameplay parity.
 
 ## Live runtime integration
 
-The executable still uses the inherited playable Game loop. The native
-register-bearing session, physical resource host and original screen renderer
-are tested components whose composition is underway; they have not yet
-replaced that live loop. Remaining startup UI children, shared image/audio
-state and host input/audio/transport wiring must be complete before native
-interactive behavior can be assessed end to end.
+The default command still uses the inherited playable Game loop. The separate
+`cmd/populous2-native` target runs the assembled register-bearing session,
+physical resource host, original screen/input and four-channel audio. Bounded
+desktop captures verify its initial menu, terrain and protection requester.
+The source deity/file/result/ending and transport paths still need complete
+composition before this target replaces the default and before full original
+interactive/campaign fidelity can be established.
 
 The [original instruction manual](https://ts.popre.net/Archive/Downloads/Docs/populous2.pdf)
 provides the player-facing behavior; the supplied executable determines the
