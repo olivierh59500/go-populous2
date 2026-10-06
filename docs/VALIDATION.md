@@ -1042,3 +1042,16 @@ Only required portable hardware/ownership operations are supplied by the host;
 all menu/palette/resource/world/panel/audio bodies execute their translations.
 These composition checks do not replace the individual full-register CPU
 proofs or complete interactive campaign/play validation.
+
+## Loaded-world rule caches and host mouse counters
+
+After completed source startup, the director refreshes only decoded host rules
+for the actual world and loaded LAND bank. Terrain, actors, deity records,
+commands and CODE remain unchanged. Cache refresh requires idle ownership and
+verified loaded bytes; it cannot disguise an unperformed resource load.
+
+Tests switch all four LAND banks, retain exact BSS/CODE before and after refresh,
+and verify matching follower/economy/win rules and rejection during a borrowed
+frame. NativeHostMouse supplies wrapping device counters to the original input
+routine, with bounded signed deltas and click coordinates after reaching the
+target. Cursor/button mutation remains owned by NativeInputState.

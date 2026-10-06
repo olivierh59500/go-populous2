@@ -14,6 +14,7 @@ type NativeRuntimeDirector struct {
 	Blitter   NativeCampaignBlitterState
 	started   bool
 	failed    error
+	ready     bool
 }
 
 type NativeRuntimeDirectorCallbacks struct {
@@ -88,5 +89,12 @@ func (s *NativeRuntimeDirector) Advance(h *NativeRuntimeHost, r *NativeStartupCa
 	if err != nil {
 		return out, err
 	}
-	return s.Startup.Advance(&r.Startup, cb)
+	out, failure = s.Startup.Advance(&r.Startup, cb)
+	if failure == nil && out.Complete && !s.ready {
+		if err := h.RefreshWorldCaches(); err != nil {
+			return out, err
+		}
+		s.ready = true
+	}
+	return out, failure
 }
