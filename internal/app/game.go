@@ -35,12 +35,15 @@ type Game struct {
 	PortraitParts                [3]uint8
 	DeityName                    string
 	Selected                     engine.PowerID
+	Direction                    uint8
 	Message                      string
 	messageUntil                 int
 	Updates, Limit, CaptureAfter int
 	Capture                      string
 	AutoStart                    bool
 	framebuffer                  *image.RGBA
+	visibleFollowers             [viewSize * viewSize]int
+	visibleNext                  [engine.FollowerCapacity]int
 	image                        *ebiten.Image
 	music                        *music.Player
 	audio                        *audio.Player

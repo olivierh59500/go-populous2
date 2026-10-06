@@ -69,11 +69,11 @@ var ErrPowerUnavailable = errors.New("power is not implemented by this engine ye
 
 var Powers = []Power{
 	{RaiseLower, "Raise / lower", People, 5, true}, {PapalMagnet, "Papal magnet", People, 25, true}, {Perseus, "Perseus", People, 10750, false}, {Plague, "Plague", People, 30000, false}, {Armageddon, "Armageddon", People, 65524, false},
-	{Trees, "Trees", Plants, 250, false}, {Flowers, "Flowers", Plants, 500, false}, {Swamp, "Swamp", Plants, 1750, false}, {Fungus, "Fungus", Plants, 2000, false}, {Adonis, "Adonis", Plants, 11000, false},
+	{Trees, "Trees", Plants, 250, true}, {Flowers, "Flowers", Plants, 500, true}, {Swamp, "Swamp", Plants, 1750, true}, {Fungus, "Fungus", Plants, 2000, true}, {Adonis, "Adonis", Plants, 11000, false},
 	{Road, "Road", Earth, 25, false}, {Wall, "Wall", Earth, 62, false}, {Earthquake, "Earthquake", Earth, 10000, false}, {Batholith, "Batholith", Earth, 11250, false}, {Heracles, "Heracles", Earth, 11000, false},
 	{Lightning, "Lightning", Air, 50, false}, {Whirlwind, "Whirlwind", Air, 2750, false}, {Storm, "Storm", Air, 5250, false}, {Odysseus, "Odysseus", Air, 11000, false}, {Wind, "Wind", Air, 23000, false},
-	{FireColumn, "Fire column", Fire, 5625, false}, {FireRain, "Fire rain", Fire, 7500, false}, {Volcano, "Volcano", Fire, 10000, false}, {Achilles, "Achilles", Fire, 20000, false},
-	{Basalt, "Basalt", Water, 250, false}, {Whirlpool, "Whirlpool", Water, 1000, false}, {Baptism, "Baptism", Water, 6250, false}, {Helen, "Helen", Water, 7500, false}, {Tsunami, "Tsunami", Water, 25000, false},
+	{FireColumn, "Fire column", Fire, 5625, true}, {FireRain, "Fire rain", Fire, 7500, true}, {Volcano, "Volcano", Fire, 10000, false}, {Achilles, "Achilles", Fire, 20000, false},
+	{Basalt, "Basalt", Water, 250, true}, {Whirlpool, "Whirlpool", Water, 1000, false}, {Baptism, "Baptism", Water, 6250, false}, {Helen, "Helen", Water, 7500, false}, {Tsunami, "Tsunami", Water, 25000, false},
 }
 
 func PowerByID(id PowerID) (Power, bool) {
@@ -132,6 +132,41 @@ func (w *World) Cast(owner int, id PowerID, target PowerTarget) error {
 	case PapalMagnet:
 		if !w.PlaceMagnet(owner, target.X, target.Y) {
 			return errors.New("invalid rally target")
+		}
+		w.Players[owner].Mana -= w.PowerCost(owner, id)
+	case Trees, Flowers, Swamp, Fungus:
+		var err error
+		switch id {
+		case Trees:
+			err = w.CastTrees(owner, target.X, target.Y)
+		case Flowers:
+			err = w.CastFlowers(owner, target.X, target.Y)
+		case Swamp:
+			err = w.CastSwamp(owner, target.X, target.Y)
+		case Fungus:
+			err = w.CastFungus(owner, target.X, target.Y)
+		}
+		if errors.Is(err, ErrNatureNoChange) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		w.Players[owner].Mana -= w.PowerCost(owner, id)
+	case FireColumn, FireRain:
+		var err error
+		if id == FireColumn {
+			err = w.CastFireColumn(owner, target.X, target.Y)
+		} else {
+			err = w.CastFireRain(owner, target.X, target.Y)
+		}
+		if err != nil {
+			return err
+		}
+		w.Players[owner].Mana -= w.PowerCost(owner, id)
+	case Basalt:
+		if err := w.CastBasalt(owner, target.X, target.Y, int(target.Direction)); err != nil {
+			return err
 		}
 		w.Players[owner].Mana -= w.PowerCost(owner, id)
 	}

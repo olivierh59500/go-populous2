@@ -88,9 +88,9 @@ digests and sample-replay comparisons establish specific migrated behavior.
 Further follower decisions, effects, rendering layers and campaign presentation
 still require migration and fidelity checks.
 
-Only terrain shaping and the rally magnet are admitted by the new power
-dispatcher. Other powers return an explicit unavailable error without consuming
-mana. Heroes, complete scenarios/progression, ending, original GAM codec and
+Terrain shaping, the rally magnet, Trees, Flowers, Swamp, Fungus, Fire Column
+Fire Rain and Basalt are admitted by the independent dispatcher. Other powers return
+an explicit unavailable error without consuming mana. Heroes, complete scenarios/progression, ending, original GAM codec and
 multiplayer are not yet implemented in this target. The default `cmd/populous2`
 therefore remains the reference translation until the independent target meets
 the completion checks above.

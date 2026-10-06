@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"image/draw"
 	"math"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -59,6 +60,25 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyF1) {
 		g.Selected = engine.RaiseLower
 	}
+	for index, key := range []ebiten.Key{ebiten.KeyF2, ebiten.KeyF3, ebiten.KeyF4, ebiten.KeyF5} {
+		if inpututil.IsKeyJustPressed(key) {
+			g.Selected = []engine.PowerID{engine.Trees, engine.Flowers, engine.Swamp, engine.Fungus}[index]
+		}
+	}
+	for index, key := range []ebiten.Key{ebiten.KeyF6, ebiten.KeyF7} {
+		if inpututil.IsKeyJustPressed(key) {
+			g.Selected = []engine.PowerID{engine.FireColumn, engine.FireRain}[index]
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyF8) {
+		g.Selected = engine.Basalt
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
+		g.Direction = (g.Direction + 3) % 4
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyE) {
+		g.Direction = (g.Direction + 1) % 4
+	}
 	for i, key := range []ebiten.Key{ebiten.Key1, ebiten.Key2, ebiten.Key3, ebiten.Key4} {
 		if inpututil.IsKeyJustPressed(key) {
 			w.SetMode(0, []engine.Mode{engine.Settle, engine.Rally, engine.Join, engine.Fight}[i])
@@ -75,7 +95,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if clicked || right {
 		x, y, ok := g.pickCorner(mouseX, mouseY)
 		if ok {
-			err := w.Cast(0, g.Selected, engine.PowerTarget{X: x, Y: y, Lower: right})
+			err := w.Cast(0, g.Selected, engine.PowerTarget{X: x, Y: y, Lower: right, Direction: g.Direction})
 			if err == nil {
 				g.music.TriggerCue(78)
 			} else {
@@ -122,6 +142,18 @@ func (g *Game) drawWorld() {
 	w := g.World
 	draw.Draw(g.framebuffer, g.framebuffer.Bounds(), g.Assets.Visual.Background, image.Point{}, draw.Src)
 	land := w.Level.Landscape
+	clear(g.visibleFollowers[:])
+	clear(g.visibleNext[:])
+	for id := 1; id < len(w.Followers); id++ {
+		f := w.Followers[id]
+		dx, dy := int(f.X)-g.CameraX, int(f.Y)-g.CameraY
+		if f.State == engine.Inactive || dx < 0 || dy < 0 || dx >= viewSize || dy >= viewSize {
+			continue
+		}
+		at := dx + dy*viewSize
+		g.visibleNext[id] = g.visibleFollowers[at]
+		g.visibleFollowers[at] = id
+	}
 	// Draw back-to-front isometric rows, including actors on each surface.
 	for sum := 0; sum < viewSize*2-1; sum++ {
 		for dx := 0; dx < viewSize; dx++ {
@@ -138,20 +170,58 @@ func (g *Game) drawWorld() {
 				tile := g.Assets.Visual.Tiles[land][index]
 				draw.Draw(g.framebuffer, image.Rect(sx, sy, sx+tile.Bounds().Dx(), sy+tile.Bounds().Dy()), tile, image.Point{}, draw.Over)
 			}
-			for id := 1; id < len(w.Followers); id++ {
-				f := w.Followers[id]
-				if f.State == engine.Inactive || int(f.X) != x || int(f.Y) != y {
+			for _, scenery := range w.Nature.Scenery {
+				if scenery.Kind == engine.SceneryNone || int(scenery.X) != x || int(scenery.Y) != y {
 					continue
 				}
+				name := "tree"
+				if scenery.Kind == engine.SceneryBoulder {
+					name = "boulder"
+				}
+				ax, ay := g.projectCorner(x, y)
+				key := fmt.Sprintf("scenery/%s/%d", name, scenery.Variant)
+				if scenery.Kind == engine.SceneryBurningTree {
+					key = "scenery/burning-tree"
+				}
+				g.animationCropped(key, int(scenery.Frame), ax, ay+8, land, int(scenery.Age))
+			}
+			g.fireAtCell(x, y, land)
+			for id := g.visibleFollowers[dx+dy*viewSize]; id != 0; id = g.visibleNext[id] {
+				f := w.Followers[id]
 				ax, ay := g.projectCorner(x, y)
 				ay += 8
-				if f.State == engine.Town {
+				if victim := w.FireDamage.Deaths[id]; victim.Mode != engine.FireVictimAlive {
+					name := "death/fire"
+					if victim.Mode == engine.FireVictimBurning {
+						name = "death/burning"
+					}
+					if victim.Mode == engine.FireVictimTownRuin {
+						name = fmt.Sprintf("ruin/town/%d", victim.TownStage)
+					} else if f.IsHero() {
+						name += "/" + heroNames[f.Hero.Kind]
+					}
+					g.animation(name, victim.Frame, ax, ay, land)
+				} else if f.State == engine.Town {
 					g.animation(fmt.Sprintf("town/%d/%d", f.Owner, f.Stage), 0, ax, ay, land)
+				} else if death := w.Nature.Deaths[id]; death != engine.NatureAlive {
+					name := "swamp"
+					if death == engine.NatureFungusDeath {
+						name = "fungus"
+					}
+					key := "death/" + name
+					if f.IsHero() {
+						key += "/" + heroNames[f.Hero.Kind]
+					}
+					g.animation(key, int(w.Nature.DeathFrames[id]), ax, ay, land)
 				} else {
 					mapX, mapY := f.Position()
 					ax = int(math.Round(192 + 16*(mapX-float64(g.CameraX)-mapY+float64(g.CameraY))))
 					ay = int(math.Round(72+8*(mapX-float64(g.CameraX)+mapY-float64(g.CameraY)))) - int(w.Heights[x+y*engine.CornerSize])*8
-					g.animation(fmt.Sprintf("follower/%d/0/%s", f.Owner, compassNames[f.Direction&7]), int(f.Frame), ax, ay, land)
+					name := fmt.Sprintf("follower/%d/0/%s", f.Owner, compassNames[f.Direction&7])
+					if f.IsHero() {
+						name = fmt.Sprintf("hero/%s/%s", heroNames[f.Hero.Kind], compassNames[f.Direction&7])
+					}
+					g.animation(name, int(f.Frame), ax, ay, land)
 				}
 			}
 		}
@@ -160,18 +230,76 @@ func (g *Game) drawWorld() {
 	summary := w.Summaries()
 	g.text(fmt.Sprintf("POP %d", summary[0].Population), 8, 181)
 	g.text(fmt.Sprintf("MANA %d", summary[0].Mana), 8, 191)
+	if power, ok := engine.PowerByID(g.Selected); ok {
+		g.text(strings.ToUpper(power.Name), 144, 181)
+	}
 	if g.Updates < g.messageUntil {
 		g.text("ACTION UNAVAILABLE", 144, 191)
 	}
 }
 
+var heroNames = [7]string{"", "perseus", "adonis", "heracles", "odysseus", "achilles", "helen"}
+
+func (g *Game) fireAtCell(x, y, land int) {
+	for _, effect := range g.World.Water.Basalt {
+		if effect.Active && effect.X == x && effect.Y == y {
+			ax, ay := g.projectCorner(x, y)
+			g.animation("fire-impact/water", effect.Frame, ax, ay+8, land)
+		}
+	}
+	for id := 0; id < engine.EffectCapacity; id++ {
+		for bank, effects := range [2]*[engine.EffectCapacity]engine.FireEffect{&g.World.Fire.Columns, &g.World.Fire.Rain} {
+			effect := effects[id]
+			if !effect.Active || effect.X/256 != x || effect.Y/256 != y {
+				continue
+			}
+			mapX, mapY := float64(effect.X)/256, float64(effect.Y)/256
+			ax := int(math.Round(192 + 16*(mapX-float64(g.CameraX)-mapY+float64(g.CameraY))))
+			ay := int(math.Round(72+8*(mapX-float64(g.CameraX)+mapY-float64(g.CameraY)))) - int(g.World.Heights[x+y*engine.CornerSize])*8
+			name := "fire-column/active"
+			if bank == 0 {
+				switch effect.Phase {
+				case engine.FireEmerging:
+					name = "fire-column/emerging"
+				case engine.FireEnding:
+					name = "fire-column/ending"
+				}
+			} else {
+				switch effect.Phase {
+				case engine.MeteorWaiting:
+					continue
+				case engine.MeteorFalling:
+					name = "meteor/falling"
+				default:
+					name = "fire-impact/land"
+					if effect.WaterImpact {
+						name = "fire-impact/water"
+					}
+				}
+			}
+			g.animation(name, effect.Frame, ax, ay, land)
+		}
+	}
+}
+
 func (g *Game) animation(name string, frame, x, y, land int) {
+	g.animationCropped(name, frame, x, y, land, 0)
+}
+
+func (g *Game) animationCropped(name string, frame, x, y, land, age int) {
 	animation, ok := g.Assets.Visual.Animations[name]
 	if !ok || len(animation.Frames) == 0 {
 		return
 	}
-	frame %= len(animation.Frames)
-	for _, layer := range animation.Frames[frame].Layers {
+	if animation.Loop {
+		frame %= len(animation.Frames)
+	} else {
+		frame = min(frame, len(animation.Frames)-1)
+	}
+	for index, layer := range animation.Frames[frame].Layers {
+		if age != 0 && index > 0 {
+			break
+		}
 		if layer.Sprite < 0 || layer.Sprite >= len(g.Assets.Visual.Sprites[land]) {
 			continue
 		}
@@ -179,9 +307,25 @@ func (g *Game) animation(name string, frame, x, y, land int) {
 		if sprite.Image == nil {
 			continue
 		}
-		left, top := x+layer.X-sprite.AnchorX, y+layer.Y-sprite.AnchorY
-		draw.Draw(g.framebuffer, image.Rect(left, top, left+sprite.Image.Bounds().Dx(), top+sprite.Image.Bounds().Dy()), sprite.Image, image.Point{}, draw.Over)
+		height := sprite.Image.Bounds().Dy()
+		anchor := sprite.AnchorY
+		if age != 0 {
+			height -= absInt(age)
+			anchor -= 8 + absInt(age)
+		}
+		if height <= 0 {
+			continue
+		}
+		left, top := x+layer.X-sprite.AnchorX, y+layer.Y-anchor
+		draw.Draw(g.framebuffer, image.Rect(left, top, left+sprite.Image.Bounds().Dx(), top+height), sprite.Image, image.Point{}, draw.Over)
 	}
+}
+
+func absInt(value int) int {
+	if value < 0 {
+		return -value
+	}
+	return value
 }
 
 func (g *Game) minimap(land int) {
