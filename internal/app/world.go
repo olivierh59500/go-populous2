@@ -83,6 +83,14 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 		}
 		return nil
 	}
+	if clicked {
+		if handled, err := g.handleHUDClick(mouseX, mouseY); handled {
+			if err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+150
+			}
+			return nil
+		}
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
 		g.CameraX = max(0, g.CameraX-1)
 	}
@@ -385,6 +393,7 @@ func (g *Game) drawWorld() {
 	}
 	g.drawLightningBeams(land)
 	g.minimap(land)
+	g.drawHUDControls()
 	summary := w.Summaries()[g.playerSide()]
 	g.text(fmt.Sprintf("POP %d", summary.Population), 8, 181)
 	g.text(fmt.Sprintf("MANA %d", summary.Mana), 8, 191)
