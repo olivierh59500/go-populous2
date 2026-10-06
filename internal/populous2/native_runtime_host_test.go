@@ -126,6 +126,39 @@ func TestNativeRuntimeHostAllocationsUseRealLoaderAndLiveBSS(t *testing.T) {
 	}
 }
 
+func TestNativeRuntimeHostFollowerCodeSharesLiveStateAndOtherAliases(t *testing.T) {
+	h := nativeRuntimeHostTest(t)
+	if h.FollowerCode == nil || h.FollowerCode.State != &h.Session.Followers {
+		t.Fatal("runtime omitted the live follower CODE owner")
+	}
+	h.Session.Followers.Pass.MinimapVariant = 4
+	h.Session.Followers.Town.Scratch136E8[49] = 0xbeef
+	if got, err := h.Memory.RAM.Read16(int(h.Memory.CodeBase) + 0x124a0); err != nil || got != 4 {
+		t.Fatal("physical follower marker detached", got, err)
+	}
+	logical, err := h.LogicalCode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, err := logical.Read16(0x1374a); err != nil || got != 0xbeef {
+		t.Fatal("logical follower scratch detached", got, err)
+	}
+	if err := h.Memory.Code.Write16(0x13350, 0x1234); err != nil {
+		t.Fatal(err)
+	}
+	if h.Session.Followers.Pass.TownCacheFlag != 0x1234 || h.Session.Followers.Town.OuterFlag13350 != 0x1234 {
+		t.Fatal("runtime child write detached from the town call bridge")
+	}
+	// The outer follower view must still pass cursor writes to the existing
+	// presentation owner rather than hiding the lower aliases.
+	if err := h.Memory.RAM.Write16(int(h.Memory.CodeBase)+0xa30, 0x4321); err != nil {
+		t.Fatal(err)
+	}
+	if h.Session.Presentation.Input.Mouse.PositionX != 0x4321 {
+		t.Fatal("follower alias hid the original input owner")
+	}
+}
+
 func TestNativeRuntimeHostRequiresOriginalLayoutAndExplicitAllocationRange(t *testing.T) {
 	if _, err := NewNativeRuntimeHost(nil, nil, NativeRuntimeHostConfig{}); err == nil {
 		t.Fatal("missing source layout accepted")

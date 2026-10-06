@@ -29,6 +29,7 @@ type NativeRuntimeHost struct {
 	Code               *NativeSharedCode
 	PresentationCode   *NativePresentationCodeAlias
 	ImageAudioCode     *NativeImageAudioCodeAlias
+	FollowerCode       *NativeFollowerCodeAlias
 	World              *World
 	Session            *NativeFrameSession
 	Allocator          *NativeHostAllocator
@@ -99,12 +100,17 @@ func NewNativeRuntimeHost(bundle *Bundle, files fs.FS, config NativeRuntimeHostC
 	}
 	memory.RAM, memory.Code = imageAudioCode.RAM, imageAudioCode.Code
 	session.imageAudioCode = imageAudioCode
+	followerCode, err := NewNativeFollowerCodeAlias(&session.Followers, memory.RAM, config.HunkBases[0])
+	if err != nil {
+		return fail(err)
+	}
+	memory.RAM, memory.Code = followerCode.RAM, followerCode.Code
 	session.requireInput = true
 	rules, err := DecodeNativeResourceFrameRules(bundle.Executable)
 	if err != nil {
 		return fail(err)
 	}
-	return &NativeRuntimeHost{Bundle: bundle, Host: host, Memory: memory, Code: code, PresentationCode: presentationCode, ImageAudioCode: imageAudioCode, World: world, Session: session, Allocator: allocator, Files: disk, ResourceRules: rules}, nil
+	return &NativeRuntimeHost{Bundle: bundle, Host: host, Memory: memory, Code: code, PresentationCode: presentationCode, ImageAudioCode: imageAudioCode, FollowerCode: followerCode, World: world, Session: session, Allocator: allocator, Files: disk, ResourceRules: rules}, nil
 }
 
 func (h *NativeRuntimeHost) Close() error {
