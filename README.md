@@ -67,37 +67,40 @@ build or run the game.
 
 ```sh
 go run ./cmd/populous2
-go run ./cmd/populous2 -play
-go run ./cmd/populous2 -custom
-go run ./cmd/populous2 -demo -world 0
-go run ./cmd/populous2 -play -code DOEGAC
-go run ./cmd/populous2 -deity
-go run ./cmd/populous2 -fire-columns
-go run ./cmd/populous2 -whirlwinds
-go run ./cmd/populous2 -fungus
-go run ./cmd/populous2 -custom -rules
+go run ./cmd/populous2 -save-root /path/to/existing/save-directory
+go run ./cmd/populous2 -listen 127.0.0.1:2468
+go run ./cmd/populous2 -connect 127.0.0.1:2468
+go run ./cmd/populous2 -export-root /path/to/existing/export-directory
 go build -o bin/populous2 ./cmd/populous2
 ```
 
-The original register-bearing runtime is also available as an integration
-target:
+The main command runs the original320×200 register-bearing runtime at50
+updates/s: actual startup/menu/world construction, native render/input/
+simulation, raw GAM dialogs, four-channel audio and retained result/award/
+deity/ending/reset controllers. `cmd/populous2-native` is an alias of the same
+launcher. Native gameplay is compared with original CPU execution; the
+remaining fidelity audit is documented in docs/FEATURES.md.
+
+The file requester uses the current working directory unless `-save-root`
+selects another existing directory. It writes only in response to the
+original Save action. Existing original requester overwrite/error behavior
+remains available. Diagnostic `-auto-start` clicks the real custom-game button,
+and `-frames`, `-capture-update` and `-screenshot` provide bounded framebuffer
+captures without substituting a generated World.
+
+The inherited higher-resolution diagnostic engine is retained separately:
 
 ```sh
-go run ./cmd/populous2-native
-go run ./cmd/populous2-native -auto-start -frames 500
-go run ./cmd/populous2-native -listen 127.0.0.1:2468
-go run ./cmd/populous2-native -connect 127.0.0.1:2468
-go run ./cmd/populous2-native -save-root /path/to/existing/save-directory
-go run ./cmd/populous2-native -export-root /path/to/existing/export-directory
+go run ./cmd/populous2-legacy -play
+go run ./cmd/populous2-legacy -custom
+go run ./cmd/populous2-legacy -demo -world 0
+go run ./cmd/populous2-legacy -play -code DOEGAC
+go run ./cmd/populous2-legacy -deity
+go run ./cmd/populous2-legacy -fire-columns
+go run ./cmd/populous2-legacy -whirlwinds
+go run ./cmd/populous2-legacy -fungus
+go run ./cmd/populous2-legacy -custom -rules
 ```
-
-This target uses the original320×200 screen, initial menu/world constructor,
-native simulation/render/input, raw GAM file dialogs and four-channel audio.
-Native results now include actual award/deity/ending and reset controllers.
-Long campaign and complete paired interactive validation remain in progress;
-required missing source operations return explicit errors. The normal command
-remains available while these paths are completed. Diagnostic `-auto-start` clicks the original custom-game button;
-it does not substitute an automatically generated World.
 
 `-listen` and `-connect` configure the host byte stream for the original serial
 requester. They preserve its profile, connect, handshake and command behavior.
@@ -105,7 +108,7 @@ Full paired interactive gameplay is still under validation.
 
 `-save-root` binds the original file requester's native paths to an existing
 directory. Saving/loading uses raw GAM bytes and the original overwrite/error
-dialogs; no default directory or automatic export is chosen.
+dialogs; the working directory is used when no directory is selected.
 
 `-export-root` enables the original editor screen-export command and writes
 numbered `.SCR` files with the native ILBM palette and planar rows. The
@@ -131,7 +134,7 @@ diagnostic overrides.
 For a bounded application-buffer capture:
 
 ```sh
-go run ./cmd/populous2 -whirlwinds -frames 180 -capture-update 12 -screenshot /tmp/populous2-whirlwinds.png
+go run ./cmd/populous2-legacy -whirlwinds -frames 180 -capture-update 12 -screenshot /tmp/populous2-whirlwinds.png
 ```
 
 The screenshot path must not exist. Native pickup/release, town collapse and
@@ -179,8 +182,8 @@ graph, templates, profile, landscape, camera and random state. The explicit
 conversion-specific pending campaign results; the native browser lists `.GAM` files.
 
 ```sh
-go run ./cmd/populous2 -load-game /path/to/PARTIE.GAM
-go run ./cmd/populous2 -play -save-file go-populous2.sav
+go run ./cmd/populous2-legacy -load-game /path/to/PARTIE.GAM
+go run ./cmd/populous2-legacy -play -save-file go-populous2.sav
 ```
 
 The Go JSON format preserves retained native actor, deity and marker bytes, town structure overlays,
