@@ -230,31 +230,36 @@ comparison tests. Background music is connected to the Ebitengine audio
 player. The current application triggers cue 78 when starting a game and after
 a successful click.
 
-Full game audio still needs an event boundary for actual effects, heroes,
-movement, combat, conversions, menus, results and the ending. Artwork-frame
-`SoundCue` metadata is currently not consumed by the app. Repeated Draw calls
-must not emit repeated sounds; simulation or presentation transitions should
-deliver each cue once at its intended time. Cue priority, shared channels and
-companion sounds need complete integration checks, not just PCM decoder tests.
+Artwork-frame `SoundCue` metadata now feeds a gate that admits a cue once per
+simulation pass. Repeated display frames do not restart it. The soundtrack
+and foreground effects have separate mute controls. Complete audible-event
+coverage and shared-channel priority still need assembled-game comparison;
+PCM decoder parity alone does not establish every gameplay trigger.
 
 ## Persistence, multiplayer and Android
 
 `internal/engine/save.go` has a versioned semantic snapshot, validates detached
 candidates and includes private motion, RNG and effect reservation state.
-That establishes an independent engine codec, but not a usable save/load flow.
-The app does not yet expose saving or loading, and its profile/camera/UI state
-is not part of the engine snapshot.
+An app-level session wraps it with profile, camera, local camp, campaign
+position, selected power, direction, custom-game mode and pause state. The
+save browser lists JSON/GAM files, confirms replacement, and validates detached
+candidates before replacing the current game.
 
-Original GAM interchange remains a separate missing codec for the independent
-world. It must translate legitimate original save data into named Go state
-without loading executable segments or retaining a BSS image as the world.
+Original GAM interchange uses the separate `internal/gamcodec` file boundary.
+It translates original user-save fields to named state and preserves reserved
+file fields outside the world. New files can be created from Go state. Tests
+cover original byte round trips, metadata edits, ordinary play, AI, combat,
+retained cleanup, transport and lightning continuation. Pending AI commands
+outside the original saved span and unsupported file phases are rejected.
 
 `internal/network` now synchronizes two semantic Go worlds with validated
 initial snapshots and ordered lockstep input rounds. Its TCP tests cover
 framing, mismatched rules/digests and disconnected rounds before mutation.
-The reviewed application does not import or expose that session yet. Complete
-multiplayer still needs menu/setup integration, local-side input and rendering,
-live disconnect/recovery UI and app-level matching save/resume state.
+The application exposes host/join setup and an asynchronous controller, with
+local-side controls/results and visible disconnect errors. Displayed worlds
+remain detached from in-flight TCP work. A failed round pauses the session;
+automatic reconnection/resynchronization is not implemented. Saves and live
+rule editing require leaving the two-player session.
 
 No Android launcher or build target for this independent runtime was present
 at review. After the desktop engine is complete, its lifecycle/input/audio
