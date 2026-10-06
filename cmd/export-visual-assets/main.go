@@ -3,6 +3,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -143,6 +144,10 @@ func export(files fs.FS, output string) error {
 		return err
 	}
 	if err := writePNG(output, catalog.Ending, ending); err != nil {
+		return err
+	}
+	catalog.EndingSequence, err = exportEndingFrames(output, source.Raw["end.pak"], string(presentation.EndingText))
+	if err != nil {
 		return err
 	}
 	catalog.Font = visualassets.FontDescriptor{Atlas: "font.png", FirstCode: populous2.NativeGlyphFirst, Count: populous2.NativeGlyphCount, GlyphWidth: 8, GlyphHeight: 8, Columns: 16}
@@ -358,6 +363,46 @@ func export(files fs.FS, output string) error {
 	// Re-load the emitted files through the independent runtime decoder.
 	_, err = visualassets.LoadFS(os.DirFS(output))
 	return err
+}
+
+func exportEndingFrames(output string, art []byte, text string) (*visualassets.EndingDescriptor, error) {
+	// The ending caller prepares its two drawing buffers before the first
+	// visible update. Export that caller's exact artwork, not the standalone
+	// animation resource reader's different initial swap convention.
+	presentation := &populous2.NativePresentation{Font: &populous2.NativeMenuFont{}, EndingText: []byte{' '}}
+	ending, err := populous2.NewNativeEnding(art, presentation, 0)
+	if err != nil {
+		return nil, err
+	}
+	desc := &visualassets.EndingDescriptor{Text: text, IntroWait: 1, FrameWait: 4, TextStepFrames: 2}
+	seen := make(map[string]int)
+	if err := os.MkdirAll(filepath.Join(output, "ending"), 0755); err != nil {
+		return nil, err
+	}
+	for frame := 0; frame < 256; frame++ {
+		a := ending.Animation
+		// State is used only to find the artwork's complete repeating cycle;
+		// exported metadata contains frame indices and ordinary PNG paths.
+		key := fmt.Sprintf("%d/%d/%x", a.Code, a.Cursor, sha256.Sum256(a.Planes[:]))
+		if start, exists := seen[key]; exists {
+			desc.LoopStart = start
+			return desc, nil
+		}
+		seen[key] = frame
+		img, err := a.Image()
+		if err != nil {
+			return nil, err
+		}
+		name := fmt.Sprintf("ending/frame-%03d.png", frame)
+		if err := writePNG(output, name, img); err != nil {
+			return nil, err
+		}
+		desc.Frames = append(desc.Frames, name)
+		if err := ending.Advance(); err != nil {
+			return nil, err
+		}
+	}
+	return nil, fmt.Errorf("ending artwork does not loop within supported frame limit")
 }
 
 func animation(frames []populous2.AnimationFrame, loop bool) visualassets.Animation {

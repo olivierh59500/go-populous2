@@ -179,6 +179,9 @@ func loadFS(files fs.FS) (*Bundle, error) {
 	if b.Font, err = loader.font(catalog.Font); err != nil {
 		return nil, err
 	}
+	if b.EndingSequence, err = loader.ending(catalog.EndingSequence); err != nil {
+		return nil, err
+	}
 	b.Towns = catalog.Towns
 	if b.Towns != nil {
 		if b.Towns.FlagHeight < 1 || b.Towns.FlagHeight > 128 {

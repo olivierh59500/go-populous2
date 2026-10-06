@@ -144,8 +144,8 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			for _, population := range []uint32{0, 1, 100, 4000, 1 << 24} {
 				for tick := range uint16(2) {
 					want, ok := source.TownCenterArt.Frame(stage, uint8(owner+1), population, tick)
-					if !ok || !reflect.DeepEqual(portable.Towns.CenterLayers(stage, owner, population, uint64(tick)), want.Layers) {
-						t.Fatal("town population artwork differs", stage, owner, population, tick)
+					if !ok || !reflect.DeepEqual(portable.Towns.CenterLayers(stage, owner, population, uint64(tick)), animation([]populous2.AnimationFrame{want}, false).Frames[0].Layers) {
+						t.Fatal("town population artwork differs", stage, owner, population, tick, portable.Towns.CenterLayers(stage, owner, population, uint64(tick)), want.Layers)
 					}
 				}
 			}
@@ -158,6 +158,29 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			if !reflect.DeepEqual(portable.Towns.Surroundings[stage][neighbor], want) {
 				t.Fatal("town adjacent artwork differs", stage, neighbor)
 			}
+		}
+	}
+	if portable.EndingSequence == nil || len(portable.EndingSequence.Frames) != 28 || portable.EndingSequence.LoopStart != 12 {
+		t.Fatal("complete ending artwork sequence missing")
+	}
+	ending, err := populous2.NewNativeEnding(source.Raw["end.pak"], &populous2.NativePresentation{Font: &populous2.NativeMenuFont{}, EndingText: []byte{' '}}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for update := 0; update < 50; update++ {
+		frame := update
+		if frame >= 28 {
+			frame = 12 + (frame-12)%16
+		}
+		original, err := ending.Image()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(original.Pix, portable.EndingSequence.Frames[frame].Pix) {
+			t.Fatal("ending frame pixels differ", update)
+		}
+		if err := ending.Advance(); err != nil {
+			t.Fatal(err)
 		}
 	}
 	for _, path := range []string{"populous.ii", "POPULOUS.II", "code.bin"} {

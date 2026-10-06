@@ -80,6 +80,7 @@ type Catalog struct {
 	Font           FontDescriptor            `json:"font"`
 	Animations     map[string]Animation      `json:"animations,omitempty"`
 	Towns          *TownArt                  `json:"towns,omitempty"`
+	EndingSequence *EndingDescriptor         `json:"ending_sequence,omitempty"`
 }
 
 type Bundle struct {
@@ -93,6 +94,7 @@ type Bundle struct {
 	Font                        *Font
 	Animations                  map[string]Animation
 	Towns                       *TownArt
+	EndingSequence              *EndingSequence
 }
 
 // Portrait assembles independently selectable headpiece, eyes and mouth.
