@@ -85,14 +85,15 @@ go run ./cmd/populous2-native -auto-start -frames 500
 go run ./cmd/populous2-native -listen 127.0.0.1:2468
 go run ./cmd/populous2-native -connect 127.0.0.1:2468
 go run ./cmd/populous2-native -save-root /path/to/existing/save-directory
+go run ./cmd/populous2-native -export-root /path/to/existing/export-directory
 ```
 
 This target uses the original320×200 screen, initial menu/world constructor,
 native simulation/render/input, raw GAM file dialogs and four-channel audio.
 Native results now include actual award/deity/ending and reset controllers.
 Long campaign and complete paired interactive validation remain in progress;
-required missing source operations return explicit errors. The normal command remains available while these paths
-are completed. Diagnostic `-auto-start` clicks the original custom-game button;
+required missing source operations return explicit errors. The normal command
+remains available while these paths are completed. Diagnostic `-auto-start` clicks the original custom-game button;
 it does not substitute an automatically generated World.
 
 `-listen` and `-connect` configure the host byte stream for the original serial
@@ -102,6 +103,10 @@ Full paired interactive gameplay is still under validation.
 `-save-root` binds the original file requester's native paths to an existing
 directory. Saving/loading uses raw GAM bytes and the original overwrite/error
 dialogs; no default directory or automatic export is chosen.
+
+`-export-root` enables the original editor screen-export command and writes
+numbered `.SCR` files with the native ILBM palette and planar rows. The
+directory must already exist; existing files are preserved.
 
 The native deity editor preserves original portrait parts, experience/bolt
 controls and password format, including raw name/password text editing.
