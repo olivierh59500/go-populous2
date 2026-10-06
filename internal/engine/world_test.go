@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/binary"
 	"errors"
+	"reflect"
 	"testing"
 )
 
@@ -187,7 +188,7 @@ func TestDeterministicTwoMinuteSimulation(t *testing.T) {
 		a.Step()
 		b.Step()
 	}
-	if *a != *b {
+	if !reflect.DeepEqual(*a, *b) {
 		t.Fatal("simulation is not deterministic")
 	}
 	for owner, summary := range a.Summaries() {

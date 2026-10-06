@@ -154,6 +154,9 @@ func (w *World) Cell(x, y int) Cell {
 		return Cell{}
 	}
 	cell := w.Tiles[x+y*MapSize]
+	if code, ok := w.FireTileCode(x, y); ok {
+		cell.Code = code
+	}
 	if code, ok := w.Nature.TileCode(x, y); ok {
 		cell.Code = code
 	}
@@ -191,6 +194,7 @@ func (w *World) changeHeight(player, x, y int, raise bool) bool {
 			if before[at] != w.Heights[at] || before[at+1] != w.Heights[at+1] || before[at+CornerSize] != w.Heights[at+CornerSize] || before[at+CornerSize+1] != w.Heights[at+CornerSize+1] {
 				w.Pressure[cx+cy*MapSize] = 0
 				w.Nature.Ground[cx+cy*MapSize] = GroundParcel{}
+				w.ClearFireTerrain(cx, cy)
 			}
 		}
 	}

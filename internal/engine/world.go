@@ -24,6 +24,7 @@ const (
 
 type Follower struct {
 	Owner                       uint8
+	Hero                        HeroState
 	X, Y                        uint8
 	State                       FollowerState
 	Population, Weapons, Search int
@@ -63,6 +64,8 @@ type World struct {
 	Level                Level
 	Landscape            Landscape
 	Nature               NatureState
+	Fire                 FireEffects
+	FireDamage           FireDamageState
 	Heights              [CornerSize * CornerSize]uint8
 	Tiles                [MapSize * MapSize]Cell
 	Farms                [MapSize * MapSize]uint8 // Zero, blue, or red cultivation.
@@ -159,6 +162,7 @@ func (w *World) Step() {
 	}
 	w.Tick++
 	w.tickNature()
+	w.tickFireEffects()
 	for owner := range w.Players {
 		if w.Tick&1 == 0 && w.Players[owner].Mana < 32767 {
 			w.Players[owner].Mana++
@@ -191,6 +195,9 @@ func (w *World) Step() {
 
 func (w *World) stepFollower(id int) {
 	f := &w.Followers[id]
+	if w.AdvanceFireDeath(id) {
+		return
+	}
 	if w.EnterNatureHazard(id) {
 		return
 	}
@@ -303,6 +310,7 @@ func (w *World) remove(id int) {
 	if f.State != Inactive && w.Players[f.Owner].Leader == id {
 		w.Players[f.Owner].Leader = 0
 	}
+	w.FireDamage.Deaths[id] = FireVictimDeath{}
 	w.Nature.Deaths[id] = NatureAlive
 	w.Nature.DeathFrames[id] = 0
 	w.Followers[id] = Follower{}

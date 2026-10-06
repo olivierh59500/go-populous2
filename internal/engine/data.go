@@ -20,6 +20,7 @@ const (
 // PlayerOptions gives names to the campaign fields needed by the simulation.
 // Remaining options are retained as data for subsequent scenario features.
 type PlayerOptions struct {
+	Scenario                                     ScenarioOptions
 	Groups, Population, Weapons, Mana, Attrition int
 	MovementSpeed                                uint8
 	Powers                                       [36]bool
@@ -89,6 +90,7 @@ func DecodeCampaign(data []byte) ([]Level, error) {
 			options.Weapons = int(uint8(binary.BigEndian.Uint16(p[6:])))
 			options.Mana = int(binary.BigEndian.Uint16(p[8:]))
 			options.Attrition = int(binary.BigEndian.Uint16(p[10:]))
+			options.Scenario = decodeScenario(binary.BigEndian.Uint16(p[12:]))
 			for j := range options.Extra {
 				options.Extra[j] = binary.BigEndian.Uint16(p[12+j*2:])
 			}
@@ -145,4 +147,15 @@ func DecodeLandscape(data []byte) (Landscape, error) {
 	}
 	land.LastWord = binary.BigEndian.Uint16(data[offset:])
 	return land, nil
+}
+
+// ScenarioOptions controls the campaign's construction, visibility and
+// terrain hazards. These booleans replace the resource's packed option word.
+type ScenarioOptions struct {
+	BuildAnywhere, SeaLevelOnly, ForbidEnemyTerrain, ForbidRaise, ForbidLower bool
+	FatalWater, HideEnemy, DisableEmigration, HideDisasters, ShallowSwamps    bool
+}
+
+func decodeScenario(word uint16) ScenarioOptions {
+	return ScenarioOptions{BuildAnywhere: word&1 != 0, SeaLevelOnly: word&2 != 0, ForbidEnemyTerrain: word&4 != 0, ForbidRaise: word&8 != 0, ForbidLower: word&16 != 0, FatalWater: word&32 != 0, HideEnemy: word&64 != 0, DisableEmigration: word&128 != 0, HideDisasters: word&256 != 0, ShallowSwamps: word&512 != 0}
 }
