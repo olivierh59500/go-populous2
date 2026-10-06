@@ -171,9 +171,21 @@ func (w *World) CastTrees(owner, x, y int) error {
 	if err := w.validNatureTarget(owner, x, y); err != nil {
 		return err
 	}
+	return w.plantTrees(x, y, int(w.Players[owner].Experience[Plants]>>4))
+}
+
+// CastNeutralTrees uses the same scenery creator without a faction ledger.
+func (w *World) CastNeutralTrees(x, y int) error {
+	if !inside(x, y) {
+		return fmt.Errorf("invalid neutral forest target")
+	}
+	return w.plantTrees(x, y, 0)
+}
+
+func (w *World) plantTrees(x, y, experienceAttempts int) error {
 	bits := int(w.random.next())
 	variant := uint8((bits % 8) / 2)
-	count := bits%14 + int(w.Players[owner].Experience[Plants]>>4)
+	count := bits%14 + experienceAttempts
 	planted := 0
 	for attempt := 0; attempt <= count; attempt++ {
 		nx, ny, ok := w.natureSample(x, y)

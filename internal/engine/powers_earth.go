@@ -419,6 +419,12 @@ func (w *World) CastEarthquake(owner, x, y, direction int) error {
 	return nil
 }
 
+// CreateEarthquake is the unpriced environmental creator. Direction identifies
+// one of the sixteen named crack branch shapes, not a procedure selector.
+func (w *World) CreateEarthquake(owner uint8, x, y, direction, strength int) bool {
+	return w.createEarthquake(owner, x, y, direction, strength) >= 0
+}
+
 func (w *World) tickEarthquake(id int) {
 	e := &w.Earth.Quakes[id]
 	if !e.Active {
