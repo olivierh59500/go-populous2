@@ -57,7 +57,7 @@ func LoadAssets(files fs.FS) (*Assets, error) {
 		Levels     []engine.Level
 		Landscapes [4]engine.Landscape
 		Powers     []engine.Power
-	}{fmt.Sprintf("go-engine-2-snapshot-%d", engine.SnapshotVersion), bundle.Levels, bundle.Landscapes, engine.Powers})
+	}{fmt.Sprintf("go-engine-3-snapshot-%d", engine.SnapshotVersion), bundle.Levels, bundle.Landscapes, engine.Powers})
 	if err != nil {
 		return nil, err
 	}
