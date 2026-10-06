@@ -105,7 +105,21 @@ func (c *NetworkController) handshake(world *engine.World) {
 			listener.Close()
 		}
 	} else {
-		connection, err = (&net.Dialer{Timeout: 10 * time.Second}).DialContext(c.ctx, "tcp", c.connect)
+		dialContext, cancel := context.WithTimeout(c.ctx, 10*time.Second)
+		defer cancel()
+		for {
+			connection, err = (&net.Dialer{Timeout: 200 * time.Millisecond}).DialContext(dialContext, "tcp", c.connect)
+			if err == nil {
+				break
+			}
+			select {
+			case <-dialContext.Done():
+				err = dialContext.Err()
+			case <-time.After(100 * time.Millisecond):
+				continue
+			}
+			break
+		}
 	}
 	if err != nil {
 		c.publish(networkUpdate{err: err})
@@ -292,4 +306,14 @@ func (g *Game) submitNetwork(command network.Command) error {
 		return fmt.Errorf("network connection is missing")
 	}
 	return g.Network.Submit(command)
+}
+
+func (g *Game) playerSide() int {
+	if g.Network != nil {
+		side := g.Network.Status().Side
+		if side >= 0 && side < 2 {
+			return side
+		}
+	}
+	return 0
 }

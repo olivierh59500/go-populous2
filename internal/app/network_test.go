@@ -166,3 +166,45 @@ func TestNetworkControllerRejectsAmbiguousAndInvalidAddresses(t *testing.T) {
 		}
 	}
 }
+
+func TestNetworkControllerJoinCanBeginBeforeHostListens(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	address := listener.Addr().String()
+	listener.Close()
+	join, err := NewNetworkController("", address, "rules-test-v1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer join.Close()
+	if err := join.Start(nil); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(150 * time.Millisecond)
+	if status := join.Status(); status.Failure != nil {
+		t.Fatal("joining failed before the host could begin")
+	}
+	host, err := NewNetworkController(address, "", "rules-test-v1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer host.Close()
+	if err := host.Start(controllerWorld(t)); err != nil {
+		t.Fatal(err)
+	}
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		host.Poll()
+		world, _, status := join.Poll()
+		if status.Failure != nil {
+			t.Fatal(status.Failure)
+		}
+		if world != nil && status.Ready && status.Side == 1 {
+			return
+		}
+		time.Sleep(time.Millisecond)
+	}
+	t.Fatal("joining did not retry until the host became available")
+}
