@@ -119,11 +119,19 @@ func (g *Game) applyOptions() error {
 	}
 	if g.Options.Live && g.World != nil {
 		// Changing the landscape changes its real economy and artwork together.
-		g.World.Level = d
-		g.World.Landscape = g.Assets.Landscapes[d.Landscape]
-		for owner := range g.World.Players {
-			g.World.Players[owner].Computer = g.Options.Computer[owner]
+		candidate, err := g.World.Snapshot().Restore()
+		if err != nil {
+			return err
 		}
+		candidate.Level = d
+		candidate.Landscape = g.Assets.Landscapes[d.Landscape]
+		for owner := range candidate.Players {
+			candidate.Players[owner].Computer = g.Options.Computer[owner]
+		}
+		if _, err := candidate.Snapshot().Restore(); err != nil {
+			return fmt.Errorf("changed game rules: %w", err)
+		}
+		g.World = candidate
 	}
 	g.CustomLevel = &d
 	g.CustomComputer = g.Options.Computer

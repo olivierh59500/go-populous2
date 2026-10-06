@@ -87,6 +87,20 @@ func TestOptionsKeyboardBoundaryRowsDoNotMutateSetup(t *testing.T) {
 	}
 }
 
+func TestInvalidLandscapeEconomyDoesNotPartiallyApplyOptions(t *testing.T) {
+	g := menuTestGame(t)
+	if err := g.openOptions(); err != nil {
+		t.Fatal(err)
+	}
+	before := g.World.Snapshot()
+	g.Options.Draft.Landscape = 2
+	g.Options.Computer[1] = false
+	g.Assets.Landscapes[2].WorkTicks[4] = 0
+	if err := g.applyOptions(); err == nil || g.World.Snapshot() != before || g.Screen != OptionsScreen {
+		t.Fatal("invalid landscape partially changed live rules")
+	}
+}
+
 func TestMenuOptionsEditCustomSetupWithoutMutatingPausedWorld(t *testing.T) {
 	g := menuTestGame(t)
 	g.Screen = MainMenu
