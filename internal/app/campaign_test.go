@@ -21,10 +21,10 @@ func TestCampaignResultAwardsOnceAndRoutesExperienceAllocation(t *testing.T) {
 
 func TestFinalCampaignResultReturnsToMainMenu(t *testing.T) {
 	g := &Game{World: &engine.World{Result: 1}, Profile: engine.NewDeity("PLAYER"), ResultScore: engine.CampaignScore{Value: 65035}, LevelIndex: 999}
-	if err := g.applyCampaignResult(); err != nil {
-		t.Fatal(err)
+	if err := g.applyCampaignResult(); err == nil {
+		t.Fatal("final campaign accepted missing ending artwork")
 	}
-	if !g.ResultProgress.Complete || g.LevelIndex != 0 || g.Screen != MainMenu {
+	if !g.ResultProgress.Complete || g.LevelIndex != 0 {
 		t.Fatal("final campaign transition differs", g.ResultProgress, g.Screen)
 	}
 }

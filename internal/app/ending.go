@@ -69,6 +69,9 @@ func (p *EndingPlayback) Draw(dst *image.RGBA, font *visualassets.Font) {
 }
 
 func (g *Game) startEnding() error {
+	if g.Assets == nil || g.Assets.Visual == nil {
+		return fmt.Errorf("ending artwork is missing")
+	}
 	playback, err := NewEndingPlayback(g.Assets.Visual.EndingSequence)
 	if err != nil {
 		return err

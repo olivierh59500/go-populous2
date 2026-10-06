@@ -88,14 +88,17 @@ digests and sample-replay comparisons establish specific migrated behavior.
 Further follower decisions, effects, rendering layers and campaign presentation
 still require migration and fidelity checks.
 
-Terrain shaping, the rally magnet, Trees, Flowers, Swamp, Fungus, Fire Column,
-Fire Rain and Basalt are admitted by the independent dispatcher. Other powers
-return an explicit unavailable error without consuming mana. All six hero
-commands are admitted with typed pursuit and contacts. Complete scenarios,
-progression, ending, original GAM codec and multiplayer remain unfinished.
-The default `cmd/populous2`
-therefore remains the reference translation until the independent target meets
-the completion checks above.
+All 29 power commands are admitted by the independent dispatcher, including
+six hero conversions. This describes their migrated command paths, not full
+game completion: interactions, simulation and presentation remain subject to
+the concrete gaps in [GO_ENGINE_AUDIT.md](GO_ENGINE_AUDIT.md).
+
+The application now has deity profiles and passwords, campaign scores and
+progression, original ending playback, options, a detached map editor, semantic
+JSON saves and asynchronous two-player TCP sessions. Original GAM
+interoperability is being added as a separate file codec. The default
+`cmd/populous2` still uses the reference translation until the independent
+application passes all completion checks.
 
 Generated artwork and audio remain local and excluded from Git. Import tools
 may inspect the original executable to recover its actual art/music data; the
@@ -124,3 +127,23 @@ rendering and full casting path have been bound and checked.
 The early independent menu intentionally exposes the migrated conquest path;
 missing editor, results, network or other modes are not simulated by acknowledging
 unimplemented actions.
+
+## Independent controls
+
+| Action | Input |
+|---|---|
+| Sculpt land / release a town group | Left / right click |
+| Choose a power | Tab, then category and power |
+| Settlement / rally / join / fight | 1 / 2 / 3 / 4 |
+| Direction for directional powers | Q / E |
+| Activate the lightning marker | Enter |
+| Move the viewport | Arrows or click the overview |
+| Deity profile / world / multiplayer | Main menu |
+| Options / detached map editor | O / P |
+| Load / save the independent session | F9 / F10 |
+| Help / return to menu | H / Escape |
+
+Desktop two-player sessions can also be started with `-listen address:port`
+and `-connect address:port`. A waiting or interrupted connection keeps the
+window responsive and pauses simulation. Cosmetic audio/framebuffer state is
+separate from the synchronized world.

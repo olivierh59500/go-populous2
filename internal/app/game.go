@@ -23,6 +23,11 @@ const (
 	ConquestBriefing
 	Playing
 	CampaignResult
+	EndingScreen
+	NetworkSetup
+	OptionsScreen
+	EditorScreen
+	HelpScreen
 )
 
 // Game holds ordinary Go screen and input state. Original program counters,
@@ -30,13 +35,24 @@ const (
 type Game struct {
 	Assets                       *Assets
 	World                        *engine.World
+	Network                      *NetworkController
+	Options                      *OptionsState
+	Editor                       *EditorState
+	CustomLevel                  *engine.Level
+	CustomComputer               [2]bool
+	CustomGame                   bool
+	connectionAddress            string
+	networkHosting               bool
+	editingConnection            bool
 	Screen                       Screen
 	LevelIndex                   int
 	CameraX, CameraY             int
 	Profile                      engine.Deity
+	AnimationSounds              AnimationSoundGate
 	ResultScore                  engine.CampaignScore
 	ResultScoreError             string
 	ResultProgress               engine.CampaignProgress
+	Ending                       *EndingPlayback
 	resultApplied                bool
 	resultAt                     int
 	editingProfileName           bool
@@ -45,11 +61,13 @@ type Game struct {
 	Selected                     engine.PowerID
 	Category                     engine.Element
 	PickingPower                 bool
+	helpReturn                   Screen
 	Direction                    uint8
 	Message                      string
 	messageUntil                 int
 	Updates, Limit, CaptureAfter int
 	Capture                      string
+	SavePath                     string
 	AutoStart                    bool
 	framebuffer                  *image.RGBA
 	visibleFollowers             [viewSize * viewSize]int
@@ -92,8 +110,21 @@ func (g *Game) Update() error {
 		g.audio = player
 		g.audio.Play()
 	}
+	if err := g.pollNetwork(); err != nil {
+		g.Message, g.messageUntil = err.Error(), g.Updates+250
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		g.Screen = MainMenu
+		if g.Screen == EditorScreen {
+			g.cancelEditor()
+		} else if g.Screen == OptionsScreen {
+			g.cancelOptions()
+		} else {
+			if g.Network != nil {
+				g.Network.Close()
+				g.Network = nil
+			}
+			g.Screen = MainMenu
+		}
 	}
 	if g.AutoStart && g.World == nil && g.Updates == 125 {
 		if err := g.startConquest(); err != nil {
@@ -102,6 +133,9 @@ func (g *Game) Update() error {
 	}
 	x, y := ebiten.CursorPosition()
 	clicked := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) && g.Screen != HelpScreen {
+		g.helpReturn, g.Screen = g.Screen, HelpScreen
+	}
 	switch g.Screen {
 	case MainMenu:
 		if clicked && x >= 78 && x < 245 {
@@ -109,7 +143,17 @@ func (g *Game) Update() error {
 			case y >= 86 && y < 101:
 				g.Screen = DeityProfile
 			case y >= 102 && y < 117:
+				g.CustomGame = false
 				g.Screen = ConquestBriefing
+			case y >= 120 && y < 137:
+				g.openNetworkSetup()
+			case y >= 138 && y < 155:
+				g.CustomGame = true
+				if err := g.openOptions(); err != nil {
+					g.Message, g.messageUntil = err.Error(), g.Updates+100
+				} else {
+					g.Options.Return = ConquestBriefing
+				}
 			}
 		}
 	case DeityProfile:
@@ -127,6 +171,26 @@ func (g *Game) Update() error {
 			}
 		}
 	case Playing:
+		if inpututil.IsKeyJustPressed(ebiten.KeyO) {
+			if err := g.openOptions(); err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+100
+			}
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+			if err := g.openEditor(); err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+100
+			}
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyF9) {
+			if err := g.loadGame(); err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+200
+			}
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyF10) {
+			if err := g.saveGame(); err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+200
+			}
+		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 			g.PickingPower = !g.PickingPower
 		}
@@ -138,6 +202,22 @@ func (g *Game) Update() error {
 			if err := g.applyCampaignResult(); err != nil {
 				return err
 			}
+		}
+	case EndingScreen:
+		g.Ending.Update()
+	case NetworkSetup:
+		g.updateNetworkSetup(x, y, clicked)
+	case OptionsScreen:
+		if err := g.updateOptions(x, y, clicked); err != nil {
+			g.Message, g.messageUntil = err.Error(), g.Updates+100
+		}
+	case EditorScreen:
+		if err := g.updateEditor(x, y, clicked); err != nil {
+			g.Message, g.messageUntil = err.Error(), g.Updates+100
+		}
+	case HelpScreen:
+		if clicked || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			g.Screen = g.helpReturn
 		}
 	}
 	g.drawFrame()
@@ -167,6 +247,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 func (g *Game) Layout(int, int) (int, int) { return 320, 200 }
 func (g *Game) Close() {
+	if g.Network != nil {
+		g.Network.Close()
+	}
 	if g.audio != nil {
 		_ = g.audio.Close()
 	}
@@ -189,6 +272,8 @@ func (g *Game) drawFrame() {
 		draw.Draw(g.framebuffer, image.Rect(73, 80, 249, 147), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 		g.button("CREATE YOUR DEITY", 78, 85, 168)
 		g.button("CONQUEST", 78, 102, 168)
+		g.button("MULTIPLAYER", 78, 120, 168)
+		g.button("CUSTOM GAME", 78, 138, 168)
 	case DeityProfile:
 		g.drawProfile()
 	case ConquestBriefing:
@@ -202,5 +287,15 @@ func (g *Game) drawFrame() {
 		g.drawWorld()
 	case CampaignResult:
 		g.drawCampaignResult()
+	case EndingScreen:
+		g.drawEnding()
+	case NetworkSetup:
+		g.drawNetworkSetup()
+	case OptionsScreen:
+		g.drawOptions()
+	case EditorScreen:
+		g.drawEditor()
+	case HelpScreen:
+		g.drawHelp()
 	}
 }

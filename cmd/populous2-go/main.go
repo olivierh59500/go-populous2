@@ -16,6 +16,9 @@ func main() {
 	screenshot := flag.String("screenshot", "", "write a new application framebuffer PNG")
 	captureAfter := flag.Int("capture-update", 100, "PAL update to capture")
 	autoStart := flag.Bool("auto-start", false, "start the first conquest after presenting the menu")
+	listen := flag.String("listen", "", "host a two-player session on this TCP address")
+	connect := flag.String("connect", "", "join a two-player session at this TCP address")
+	savePath := flag.String("save", "go-populous2-go.json", "save/load path for the independent Go game")
 	flag.Parse()
 	if *frames < 0 || *captureAfter < 0 || (*frames > 0 && *screenshot != "" && *captureAfter >= *frames) {
 		log.Fatal("invalid update or capture limit")
@@ -29,10 +32,14 @@ func main() {
 		log.Fatal(err)
 	}
 	defer game.Close()
+	if err := game.ConfigureNetwork(*listen, *connect); err != nil {
+		log.Fatal(err)
+	}
 	game.Limit = *frames
 	game.Capture = *screenshot
 	game.CaptureAfter = *captureAfter
 	game.AutoStart = *autoStart
+	game.SavePath = *savePath
 	ebiten.SetTPS(50)
 	ebiten.SetWindowSize(960, 600)
 	ebiten.SetWindowTitle("Populous II - Independent Go Engine")

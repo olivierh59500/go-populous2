@@ -11,6 +11,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"go-populous2/internal/engine"
+	"go-populous2/internal/network"
 )
 
 const viewSize = 8
@@ -19,13 +20,26 @@ var compassNames = [8]string{"north", "northeast", "east", "southeast", "south",
 
 func (g *Game) startConquest() error {
 	level := g.Assets.Levels[g.LevelIndex]
+	if g.CustomGame && g.CustomLevel != nil {
+		level = *g.CustomLevel
+	}
 	world, err := engine.NewWorld(level, g.Assets.Landscapes[level.Landscape])
 	if err != nil {
 		return err
 	}
 	g.World, g.Screen = world, Playing
+	g.AnimationSounds = AnimationSoundGate{}
 	g.resultApplied = false
 	world.Players[0].Experience = g.Profile.Experience
+	if g.CustomGame && g.CustomLevel != nil {
+		world.Players[0].Computer, world.Players[1].Computer = g.CustomComputer[0], g.CustomComputer[1]
+	}
+	if g.Network != nil {
+		world.Players[0].Computer, world.Players[1].Computer = false, false
+		if err := g.Network.Start(world); err != nil {
+			return err
+		}
+	}
 	leader := world.Players[0].Leader
 	if leader > 0 {
 		f := world.Followers[leader]
@@ -41,7 +55,9 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 		return fmt.Errorf("playing screen has no world")
 	}
 	w := g.World
-	if g.Updates%4 == 0 {
+	if g.Network != nil {
+		g.advanceNetwork()
+	} else if g.Updates%4 == 0 {
 		w.Step()
 		if w.Result != 0 {
 			var scoreError error
@@ -100,6 +116,17 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyF8) {
 		g.Selected = engine.Basalt
 	}
+	if g.Selected == engine.Lightning && inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		var err error
+		if g.Network != nil {
+			err = g.submitNetwork(network.Command{Kind: "lightning-activate"})
+		} else {
+			err = w.ActivateLightning(0)
+		}
+		if err != nil {
+			g.Message, g.messageUntil = err.Error(), g.Updates+100
+		}
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
 		g.Direction = (g.Direction + 3) % 4
 	}
@@ -108,7 +135,12 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	}
 	for i, key := range []ebiten.Key{ebiten.Key1, ebiten.Key2, ebiten.Key3, ebiten.Key4} {
 		if inpututil.IsKeyJustPressed(key) {
-			w.SetMode(0, []engine.Mode{engine.Settle, engine.Rally, engine.Join, engine.Fight}[i])
+			mode := []engine.Mode{engine.Settle, engine.Rally, engine.Join, engine.Fight}[i]
+			if g.Network != nil {
+				_ = g.submitNetwork(network.Command{Kind: "mode", Mode: mode})
+			} else {
+				w.SetMode(0, mode)
+			}
 		}
 	}
 	right := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)
@@ -122,7 +154,16 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if clicked || right {
 		x, y, ok := g.pickCorner(mouseX, mouseY)
 		if ok {
-			err := w.Cast(0, g.Selected, engine.PowerTarget{X: x, Y: y, Lower: right, Direction: g.Direction})
+			if right && g.Selected == engine.RaiseLower && g.Network == nil && w.Sprog(g.playerSide(), x, y) {
+				return nil
+			}
+			target := engine.PowerTarget{X: x, Y: y, Lower: right, Direction: g.Direction}
+			var err error
+			if g.Network != nil {
+				err = g.submitNetwork(network.Command{Kind: "power", Power: g.Selected, Target: target})
+			} else {
+				err = w.Cast(0, g.Selected, target)
+			}
 			if err == nil {
 				g.music.TriggerCue(78)
 			} else {
@@ -197,6 +238,7 @@ func (g *Game) drawWorld() {
 				tile := g.Assets.Visual.Tiles[land][index]
 				draw.Draw(g.framebuffer, image.Rect(sx, sy, sx+tile.Bounds().Dx(), sy+tile.Bounds().Dy()), tile, image.Point{}, draw.Over)
 			}
+			g.drawTownSurroundingsAt(x, y, land)
 			for _, scenery := range w.Nature.Scenery {
 				if scenery.Kind == engine.SceneryNone || int(scenery.X) != x || int(scenery.Y) != y {
 					continue
@@ -213,10 +255,42 @@ func (g *Game) drawWorld() {
 				g.animationCropped(key, int(scenery.Frame), ax, ay+8, land, int(scenery.Age))
 			}
 			g.fireAtCell(x, y, land)
+			g.drawAirAtCell(x, y, land)
+			for _, wall := range w.Earth.Walls {
+				if !wall.Active || int(wall.X) != x || int(wall.Y) != y {
+					continue
+				}
+				key := fmt.Sprintf("wall/connection/%d", wall.Connections)
+				if wall.Gate {
+					key = "wall/gate-horizontal"
+					if wall.GateVertical {
+						key = "wall/gate-vertical"
+					}
+				}
+				if wall.Broken {
+					key = fmt.Sprintf("wall/broken/%d", wall.Variant)
+				}
+				ax, ay := g.projectCorner(x, y)
+				g.animation(key, int(wall.Frame), ax, ay+8, land)
+			}
 			for id := g.visibleFollowers[dx+dy*viewSize]; id != 0; id = g.visibleNext[id] {
 				f := w.Followers[id]
 				ax, ay := g.projectCorner(x, y)
 				ay += 8
+				if f.Conversion.Active {
+					key := "conversion/blue"
+					if f.Conversion.SourceOwner != 0 {
+						key = "conversion/red"
+					}
+					if f.Conversion.Hero {
+						key = "conversion/hero"
+					}
+					g.animation(key, int(f.Conversion.Frame), ax, ay, land)
+					continue
+				}
+				if g.drawAirborne(id, land, ax, ay) || g.lightningVictim(id, land, ax, ay) {
+					continue
+				}
 				if victim := w.FireDamage.Deaths[id]; victim.Mode != engine.FireVictimAlive {
 					name := "death/fire"
 					if victim.Mode == engine.FireVictimBurning {
@@ -229,7 +303,7 @@ func (g *Game) drawWorld() {
 					}
 					g.animation(name, victim.Frame, ax, ay, land)
 				} else if f.State == engine.Town {
-					g.animation(fmt.Sprintf("town/%d/%d", f.Owner, f.Stage), 0, ax, ay, land)
+					g.drawTownCenter(f, ax, ay, land)
 				} else if death := w.Nature.Deaths[id]; death != engine.NatureAlive {
 					name := "swamp"
 					if death == engine.NatureFungusDeath {
@@ -250,13 +324,17 @@ func (g *Game) drawWorld() {
 					}
 					g.animation(name, int(f.Frame), ax, ay, land)
 				}
+				if f.Disease.Infected {
+					g.animation("plague", int(f.Disease.Frame), ax, ay, land)
+				}
 			}
 		}
 	}
+	g.drawLightningBeams(land)
 	g.minimap(land)
-	summary := w.Summaries()
-	g.text(fmt.Sprintf("POP %d", summary[0].Population), 8, 181)
-	g.text(fmt.Sprintf("MANA %d", summary[0].Mana), 8, 191)
+	summary := w.Summaries()[g.playerSide()]
+	g.text(fmt.Sprintf("POP %d", summary.Population), 8, 181)
+	g.text(fmt.Sprintf("MANA %d", summary.Mana), 8, 191)
 	if power, ok := engine.PowerByID(g.Selected); ok {
 		g.text(strings.ToUpper(power.Name), 144, 181)
 	}
@@ -346,6 +424,7 @@ func (g *Game) animationCropped(name string, frame, x, y, land, age int) {
 	} else {
 		frame = min(frame, len(animation.Frames)-1)
 	}
+	g.playAnimationCue(name, frame, 0)
 	for index, layer := range animation.Frames[frame].Layers {
 		if age != 0 && index > 0 {
 			break
@@ -385,10 +464,13 @@ func (g *Game) minimap(land int) {
 			sx, sy := 68+x-y, 4+(x+y)/2
 			c := g.Assets.Visual.MapColors[land][cell.Code]
 			if id := g.World.Occupants[x+y*engine.MapSize]; id > 0 {
-				if g.World.Followers[id].Owner == 0 {
-					c = color.RGBA{255, 225, 30, 255}
-				} else {
-					c = color.RGBA{220, 50, 30, 255}
+				f := g.World.Followers[id]
+				if g.World.FollowerVisibleOnMap(g.playerSide(), int(f.Owner)) {
+					if f.Owner == 0 {
+						c = color.RGBA{255, 225, 30, 255}
+					} else {
+						c = color.RGBA{220, 50, 30, 255}
+					}
 				}
 			}
 			g.framebuffer.SetRGBA(sx, sy, c)

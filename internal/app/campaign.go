@@ -15,6 +15,10 @@ func (g *Game) applyCampaignResult() error {
 	if g.resultApplied {
 		return nil
 	}
+	if g.CustomGame {
+		g.resultApplied, g.Screen = true, MainMenu
+		return nil
+	}
 	progress, err := engine.AdvanceCampaign(g.LevelIndex, g.World.Result == 1, g.ResultScore.Value, &g.Profile)
 	if err != nil {
 		return err
@@ -30,7 +34,7 @@ func (g *Game) applyCampaignResult() error {
 	if progress.Complete {
 		g.Message = "CAMPAIGN COMPLETE"
 		g.messageUntil = g.Updates + 500
-		g.Screen = MainMenu
+		return g.startEnding()
 	}
 	return nil
 }

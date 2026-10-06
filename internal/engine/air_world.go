@@ -43,7 +43,7 @@ func (h worldAirHabitat) StrikeLightning(bolt, x, y int) bool {
 			continue
 		}
 		victim := &h.world.AirVictims[id]
-		victim.Bind(bolt, f.State == Town, f.Consecrated, f.Hero.Kind)
+		victim.Bind(bolt, f.State == Town, f.Consecrated || f.Conversion.Active, f.Hero.Kind)
 		if victim.Phase == LightningVictimWalkingHit || victim.Phase == LightningVictimTownHit {
 			f.Frame = uint16(victim.Frame)
 			f.moving = false
@@ -186,7 +186,7 @@ func (w *World) liftAirFollowers(effect, x, y int) {
 	count := w.FollowersAt(x, y, followers[:])
 	for _, id := range followers[:count] {
 		f := &w.Followers[id]
-		if f.State == Inactive || f.State == Ruin || f.Consecrated || f.Hero.Kind == HeroOdysseus || w.Air.Carry[id].Phase == AirCarryFlying {
+		if f.State == Inactive || f.State == Ruin || f.Consecrated || f.Conversion.Active || f.Hero.Kind == HeroOdysseus || w.Air.Carry[id].Phase == AirCarryFlying {
 			continue
 		}
 		if f.State == Town {

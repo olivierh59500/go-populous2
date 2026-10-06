@@ -2,6 +2,8 @@
 package app
 
 import (
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 
@@ -17,6 +19,7 @@ type Assets struct {
 	Levels     []engine.Level
 	Landscapes [4]engine.Landscape
 	Music      *music.Bank
+	RulesID    string
 }
 
 func LoadAssets(files fs.FS) (*Assets, error) {
@@ -49,5 +52,15 @@ func LoadAssets(files fs.FS) (*Assets, error) {
 		return nil, fmt.Errorf("audio assets: %w", err)
 	}
 	bundle.Music = bank
+	rules, err := json.Marshal(struct {
+		Version    string
+		Levels     []engine.Level
+		Landscapes [4]engine.Landscape
+		Powers     []engine.Power
+	}{fmt.Sprintf("go-engine-2-snapshot-%d", engine.SnapshotVersion), bundle.Levels, bundle.Landscapes, engine.Powers})
+	if err != nil {
+		return nil, err
+	}
+	bundle.RulesID = fmt.Sprintf("%x", sha256.Sum256(rules))
 	return bundle, nil
 }

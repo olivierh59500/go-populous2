@@ -202,7 +202,7 @@ func (w *World) damageFireParcel(x, y int, treeSpread bool) int {
 		if f.State == Inactive || f.State == Ruin || int(f.X) != x || int(f.Y) != y {
 			continue
 		}
-		if f.State != Town && (f.Consecrated || f.ImmuneToBurning() || treeSpread && f.IsHero()) {
+		if f.State != Town && (f.Consecrated || f.Conversion.Active || f.ImmuneToBurning() || treeSpread && f.IsHero()) {
 			continue
 		}
 		death := FireVictimDeath{Mode: FireVictimDying, Frames: 9}
@@ -280,7 +280,7 @@ func (w *World) AdvanceFireDeath(id int) bool {
 func (w *World) pushFireParcel(x, y, dx, dy int) {
 	for id := 1; id < FollowerCapacity; id++ {
 		f := &w.Followers[id]
-		if f.State == Inactive || int(f.X) != x || int(f.Y) != y || f.Consecrated || f.ImmuneToBurning() {
+		if f.State == Inactive || int(f.X) != x || int(f.Y) != y || f.Consecrated || f.Conversion.Active || f.ImmuneToBurning() {
 			continue
 		}
 		if f.State == Town {
