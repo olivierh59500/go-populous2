@@ -92,6 +92,24 @@ Normal play skips the original manual-based statue challenge. To inspect its
 historical behavior, launch with `-original-protection`. The diagnostic
 `-unpaced` option disables the host work gates without changing the PAL clock.
 
+### Gameplay presentation
+
+The presentation command records the native framebuffer and its actual
+four-channel soundtrack to a 960×600 H.264/AAC MP4. FFmpeg must be available
+on PATH. The input pilot starts an ordinary conquest, develops settlement
+land and spends earned mana through the original mouse and keyboard controls.
+It preserves the normal gameplay cadence and opponent rules.
+
+```sh
+go run ./cmd/presentation -seconds 900 -output recordings/populous2-gameplay.mp4
+```
+
+Existing output files are preserved. `-inspect` runs the same input sequence
+without encoding; `-checkpoints /path/to/directory` saves periodic framebuffer
+PNGs for review. Recording ends ten seconds after the actual result appears,
+or at the requested duration. Generated recordings and capture checkpoints
+stay local.
+
 The file requester uses the current working directory unless `-save-root`
 selects another existing directory. It writes only in response to the
 original Save action. Existing original requester overwrite/error behavior
