@@ -99,6 +99,7 @@ func NewNativeRuntimeHost(bundle *Bundle, files fs.FS, config NativeRuntimeHostC
 	}
 	memory.RAM, memory.Code = imageAudioCode.RAM, imageAudioCode.Code
 	session.imageAudioCode = imageAudioCode
+	session.requireInput = true
 	rules, err := DecodeNativeResourceFrameRules(bundle.Executable)
 	if err != nil {
 		return fail(err)

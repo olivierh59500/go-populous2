@@ -15,6 +15,7 @@ const (
 	NativeFrameSessionRender
 	NativeFrameSessionPhysics
 	NativeFrameSessionMenu
+	NativeFrameSessionInput
 )
 
 // NativeFrameSession retains one original frame across clock, render, serial
@@ -51,6 +52,8 @@ type NativeFrameSession struct {
 	commandStates        [2]NativeCommandFrameState
 	commandPalettes      [2]*NativeFramePaletteState
 	imageAudioCode       *NativeImageAudioCodeAlias
+	inputPhase           uint32
+	requireInput         bool
 }
 
 type NativeFrameSessionCallbacks struct {
@@ -76,6 +79,9 @@ type NativeFrameSessionCallbacks struct {
 	// Menu is the real446A call before the source786 VBlank gate. It may
 	// wait without replaying the DCE clear or releasing raw World ownership.
 	Menu func(FollowerCleanupMemory, *NativeFrameRegisterContext, *NativeImageRenderState, *uint32) (bool, error)
+	// Input runs the original110E suffix after commands. It may retain a
+	// real child wait; the raw World is borrowed until this suffix returns.
+	Input func(FollowerCleanupMemory, *NativeFrameRegisterContext, *uint32) (bool, error)
 }
 
 func NewNativeFrameSession(bundle *Bundle, landIndex int, chipBase, pointerBase uint32) (*NativeFrameSession, error) {
@@ -189,6 +195,7 @@ func (s *NativeFrameSession) begin(w *World, input NativeFrameRegisterContext, r
 	s.commandStates = [2]NativeCommandFrameState{}
 	s.commandPalettes = [2]*NativeFramePaletteState{}
 	s.RenderPhase = 0
+	s.inputPhase = 0
 	s.MenuPhase = 0
 	s.ExitRequested = false
 	s.entryChecked = false
@@ -293,12 +300,28 @@ func (s *NativeFrameSession) Advance(cb NativeFrameSessionCallbacks) (bool, erro
 			return fail(err)
 		}
 	}
-	done, err := s.Pass.TickFramePass(&s.Frame, s.physicsCallbacks(cb, bitmap))
+	done := true
+	if s.Phase != NativeFrameSessionInput {
+		done, err = s.Pass.TickFramePass(&s.Frame, s.physicsCallbacks(cb, bitmap))
+	}
 	if err != nil {
 		return fail(err)
 	}
 	if !done {
 		return false, nil
+	}
+	if s.requireInput && cb.Input == nil {
+		return fail(fmt.Errorf("native runtime gameplay input suffix missing"))
+	}
+	if cb.Input != nil {
+		s.Phase = NativeFrameSessionInput
+		done, err = cb.Input(memory, &s.Frame, &s.inputPhase)
+		if err != nil {
+			return fail(err)
+		}
+		if !done {
+			return false, nil
+		}
 	}
 	s.finish(nil)
 	return true, nil

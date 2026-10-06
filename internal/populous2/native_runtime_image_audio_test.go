@@ -55,6 +55,33 @@ func TestNativeRuntimeImageAudioOwnerChangesAtSourceBoundaries(t *testing.T) {
 		}
 		return true, nil
 	}}
+	if err := h.Memory.BSS.Write16(0xf0c, 23); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.Memory.BSS.Write16(0x138, 319); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.Memory.BSS.Write16(0x13a, 199); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.Memory.Code.Write32(0xe458, 0x00c00048); err != nil {
+		t.Fatal(err)
+	}
+	input := NativeGameplayInputState{}
+	rules, err := DecodeNativeRenderFrameRules(h.Bundle.Executable)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cb.Input, err = h.GameplayInput(&input, NativeStartupResetFrameCallbacks{Call: func(call NativeStartupResetFrameCall, _ *uint32) (NativeCommandFrameResult, error) {
+		if call.Routine != 0xd2b4 {
+			t.Fatalf("unexpected input child%x", call.Routine)
+		}
+		err := rules.TerrainHeight(h.Memory.BSS, call.Frame)
+		return NativeCommandFrameResult{Complete: err == nil}, err
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
 	s.Presentation.Input.setWord(0xa, 1)
 	if done, err := s.Advance(cb); err != nil || done || s.Phase != NativeFrameSessionRender {
 		t.Fatal("render wait did not retain source frame", done, err)

@@ -1013,3 +1013,17 @@ preserve their completed prefix and fail explicitly.
 The input suffix still needs concrete child composition and attachment after
 the native session's deferred stage. These tests do not establish live Game
 input or full interactive gameplay.
+
+## Session gameplay input boundary
+
+The physical runtime now requires its input suffix after deferred commands.
+Standalone partial-session APIs retain their prior behavior for existing
+component comparisons. The suffix holds the raw World borrow across modal
+waits; resumption does not repeat physics, rendering, audio or the screen swap.
+Commands produced there remain pending for the following frame.
+
+Tests verify retained register/phase ownership, one screen swap, next-frame
+command persistence and rejection of an omitted runtime input callback. The
+shared image/audio authority regression now also traverses the actual input
+suffix and its real terrain-height child. Concrete HUD/modal children and the
+live application loop remain integration work.
