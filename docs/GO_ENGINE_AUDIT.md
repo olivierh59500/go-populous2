@@ -1,9 +1,39 @@
 # Independent engine implementation audit
 
-Review date: 6 October 2026. The reviewed runtime entry point is
+Initial review date: 6 October 2026. The reviewed runtime entry point is
 `cmd/populous2-go`; the regular `cmd/populous2` launcher still uses the earlier
 translation. This document distinguishes working Go subsystems, available
-player actions, and original-game features that still need integration.
+player actions, and original-game features that still need integration. The
+detailed review below records the earlier migration snapshot; the current
+status section supersedes items that have since been completed.
+
+## Current integration status
+
+Subsequent work on 6 October added all 29 admitted power commands and their
+presentation, typed mixed-actor membership, the original world-script executor
+and neutral inventions, construction/visibility/hazard scenario handling,
+campaign results/profile progression and the full animated ending.
+
+The independent menu now includes options, a detached map editor, custom game
+configuration, save/load actions and TCP multiplayer setup. The options/editor
+tests verify atomic Apply/Cancel and reject modification during a network
+session. Independent saves preserve validated continuation state; the original
+GAM codec is being extended with file-only artwork-token compatibility.
+
+Town art now includes neighboring structures and dynamic population/faction
+flags. The complete ending has compact indexed frames and an exact 150-PAL
+framebuffer comparison. Neutral sprites and the source startup scenery sampler
+are imported or implemented through named asset/game fields. Animation cues are
+connected through a transition gate, and music and sound effects can be muted
+separately.
+
+The remaining user-visible checks are more specific than the original broad
+list: interactive world-code entry and opponent briefing, animated power-help
+previews, complete original GAM continuation/export coverage, and final visual,
+audio, interaction and mobile validation of the assembled application. The
+default launcher switch and release packaging still require the assembled
+independent target to pass those checks. A catalogue flag or isolated test is
+not a substitute for those final integration checks.
 
 ## Architecture
 
