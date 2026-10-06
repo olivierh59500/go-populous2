@@ -29,8 +29,8 @@ requester is displayed after 101 PAL VBlanks. The deity screen and game options
 use their original layouts, masked artwork, experience strips and controls;
 The native integration target connects the original file and Conquest
 requesters, in-game/options/serial routing and power-help preview children.
-Their complete interactive combinations and longer gameplay remain under
-validation.
+Their original retained bodies and recorded complete gameplay combinations
+have source-reference coverage.
 Whirlwinds now lift, transport and release native followers, collapse town farms
 and create original water children. Their complete retained controllers replace
 the former motion-only World handler.
@@ -39,10 +39,11 @@ rocks use original age-dependent emergence/burial rectangles when drawn.
 The ten-record native scenario script now creates its original disasters,
 plantings and neutral inventions, one due event per simulation update.
 
-**The complete original feature set is still being converted.** Translated
-native controllers now cover all29 power handlers and the follower/combat/
-result state families. Full campaign pacing, broader combined interactions
-and complete multiplayer/interactive fidelity remain under validation. [The feature inventory](docs/FEATURES.md)
+**The supplied two-disk Amiga feature set is implemented in the default native
+runtime.** Original-controller and full-main comparisons cover powers, heroes,
+simulation, menus, audio, campaign results and networking. The decoder and
+portable-machine boundaries are documented; further scenarios can extend the
+recorded fidelity coverage. [The feature inventory](docs/FEATURES.md)
 distinguishes native translations from provisional behavior.
 
 ![Go Populous II](screenshots/game.png)
@@ -79,7 +80,7 @@ updates/s: actual startup/menu/world construction, native render/input/
 simulation, raw GAM dialogs, four-channel audio and retained result/award/
 deity/ending/reset controllers. `cmd/populous2-native` is an alias of the same
 launcher. Native gameplay is compared with original CPU execution; the
-remaining fidelity audit is documented in docs/FEATURES.md.
+fidelity evidence and machine boundaries are documented in docs/FEATURES.md.
 
 The file requester uses the current working directory unless `-save-root`
 selects another existing directory. It writes only in response to the
@@ -104,7 +105,8 @@ go run ./cmd/populous2-legacy -custom -rules
 
 `-listen` and `-connect` configure the host byte stream for the original serial
 requester. They preserve its profile, connect, handshake and command behavior.
-Full paired interactive gameplay is still under validation.
+Healthy paired gameplay, connection failures and native GAM save/load have
+real TCP/controller comparisons; physical serial baud is a host boundary.
 
 `-save-root` binds the original file requester's native paths to an existing
 directory. Saving/loading uses raw GAM bytes and the original overwrite/error

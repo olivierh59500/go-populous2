@@ -49,19 +49,21 @@ documented compositions. These proofs establish their explicit inputs and
 boundaries; deterministic saves or repeatable demonstration runs alone do
 not establish full original-game fidelity.
 
-## Remaining conversion work
+## Fidelity boundaries and further coverage
 
-- Complete stock and campaign end-to-end comparisons across every landscape,
-  including rare linked occupancy, combat, inventions and environmental states.
-- Broader mixed disaster, wall and hero interactions beyond the documented
-  configured simulation corpora.
-- Complete winning result/award/deity/reset continuation and long campaign
-  scoring, pacing, scenario and opponent behavior.
-- Interactive native terrain/picking, menus, statistics and final-sequence
-  transitions in the default native runtime.
-- Animation-triggered audio timing and remaining hardware/analog fidelity.
-- Interactive original GAM save/load and longer paired serial/TCP gameplay,
-  including connection failure and save interoperability.
+The main two-disk feature set is implemented in the default native runtime.
+Source-controller and full-main comparisons establish the recorded scenarios;
+additional interaction cases can extend that evidence without implying absent
+native bodies.
+
+- The decoder targets the supplied French executable/resource layout; other
+  revisions require separately verified mappings.
+- Portable OS, raster-clock and TCP adapters expose their configured boundaries.
+  They do not emulate original68000 instruction timing or physical serial baud.
+- Paula/CIA/DMA and PCM output have independent references; the host audio path
+  does not reproduce the original analog Amiga circuitry.
+- Further long campaign, mixed effect and multi-window interactive sessions can
+  broaden coverage beyond the documented original/controller/TCP corpora.
 
 The separate Challenge executable is an additional scenario extension, outside
 the main two-disk game.
