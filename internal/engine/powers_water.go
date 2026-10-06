@@ -98,6 +98,8 @@ func (w *World) tickWaterEffect(id int) {
 		w.tickBasalt(id)
 	case EffectWhirlpool:
 		w.tickWhirlpool(id)
+	case EffectTidalWave:
+		w.tickTidalWave(id)
 	}
 }
 
@@ -228,5 +230,101 @@ func (w *World) tickWhirlpool(id int) {
 			w.paintWater(x, y, uint8(152+e.Frame*4+quadrant))
 		}
 		return
+	}
+}
+
+var tidalDirections = [4][2]int{{0, -1}, {1, 0}, {0, 1}, {-1, 0}}
+
+// CastTsunami starts a cardinal front on each adjacent water parcel. Its
+// center can be dry and the cast is admitted even when no front can spawn.
+func (w *World) CastTsunami(owner, x, y int) error {
+	if owner < 0 || owner > 1 || !inside(x, y) {
+		return fmt.Errorf("invalid tidal-wave target")
+	}
+	for direction, d := range tidalDirections {
+		nx, ny := x+d[0], y+d[1]
+		if !inside(nx, ny) || !waterParcel(w.Cell(nx, ny).Code) {
+			continue
+		}
+		id := w.allocateEffect(EffectTidalWave, uint8(owner))
+		if id < 0 {
+			break
+		}
+		fixedX, fixedY := nx*256, ny*256
+		if d[0] < 0 {
+			fixedX += 255
+		}
+		if d[1] < 0 {
+			fixedY += 255
+		}
+		w.Water.Waves[id] = TidalEffect{Active: true, Owner: uint8(owner), X: fixedX, Y: fixedY, Direction: direction}
+	}
+	return nil
+}
+
+func (w *World) tidalAt(x, y int) bool {
+	for _, wave := range w.Water.Waves {
+		if wave.Active && wave.X>>8 == x && wave.Y>>8 == y {
+			return true
+		}
+	}
+	return false
+}
+
+// Tidal fronts lower shallow shore vertices through the ordinary geometry
+// propagation. They add no direct push, damage or special hero interaction.
+// Life is not decremented: fronts finish when blocked or leaving the map.
+func (w *World) tickTidalWave(id int) {
+	e := &w.Water.Waves[id]
+	if !e.Active {
+		return
+	}
+	if e.Newborn {
+		e.Newborn = false
+		return
+	}
+	e.Frame = (e.Frame + 1) % 8
+	d := tidalDirections[e.Direction]
+	oldX, oldY := e.X>>8, e.Y>>8
+	e.X += d[0] * 32
+	e.Y += d[1] * 32
+	finish := func() { e.Active = false; w.releaseEffect(id) }
+	if e.X < 0 || e.Y < 0 || e.X >= MapSize*256 || e.Y >= MapSize*256 {
+		finish()
+		return
+	}
+	x, y := e.X>>8, e.Y>>8
+	farX, farY := x+d[0]*2, y+d[1]*2
+	if inside(farX, farY) {
+		c := w.Cell(farX, farY)
+		if c.Code == 224 || c.BaseAltitude&7 != 0 {
+			finish()
+			return
+		}
+	}
+	frontX, frontY := x+d[0], y+d[1]
+	if inside(frontX, frontY) && !waterParcel(w.Cell(frontX, frontY).Code) {
+		w.directFireTerrain(frontX, frontY, false)
+		if !waterParcel(w.Cell(x, y).Code) {
+			w.directFireTerrain(x, y, false)
+		}
+	}
+	if oldX != x || oldY != y {
+		return
+	}
+	sides := [2][2]int{{-1, 0}, {1, 0}}
+	if e.Direction == 1 || e.Direction == 3 {
+		sides = [2][2]int{{0, -1}, {0, 1}}
+	}
+	for _, side := range sides {
+		nx, ny := x+side[0], y+side[1]
+		if !inside(nx, ny) || !waterParcel(w.Cell(nx, ny).Code) || w.tidalAt(nx, ny) {
+			continue
+		}
+		child := w.allocateEffect(EffectTidalWave, e.Owner)
+		if child < 0 {
+			continue
+		}
+		w.Water.Waves[child] = TidalEffect{Active: true, Newborn: child >= id, Owner: e.Owner, X: nx*256 + (e.X & 255), Y: ny*256 + (e.Y & 255), Direction: e.Direction, Frame: (e.Frame + 1) % 8}
 	}
 }

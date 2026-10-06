@@ -148,6 +148,96 @@ func TestWhirlpoolLowersFirstCoastQuadrantWithoutSpendingMana(t *testing.T) {
 	}
 }
 
+func TestTsunamiStartsFourCardinalFrontsWithoutRandomness(t *testing.T) {
+	w := &World{random: 4311}
+	w.Players[0].Experience[Water] = 255
+	w.Tiles[32+32*MapSize] = Cell{Code: 15, Corners: [4]uint8{1, 1, 1, 1}, Shape: 15}
+	if err := w.CastTsunami(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	if w.random != 4311 {
+		t.Fatal("tidal creator consumed random input")
+	}
+	for id, d := range tidalDirections {
+		e := w.Water.Waves[id]
+		if !e.Active || e.Direction != id || e.X>>8 != 32+d[0] || e.Y>>8 != 32+d[1] {
+			t.Fatal("tidal cardinal front differs")
+		}
+		if d[0] < 0 && e.X&255 != 255 || d[1] < 0 && e.Y&255 != 255 {
+			t.Fatal("negative front lost its source boundary fraction")
+		}
+	}
+	land := testFlatWorld()
+	if err := land.CastTsunami(0, 32, 32); err != nil {
+		t.Fatal("empty tidal cast was not admitted")
+	}
+	for _, e := range land.Water.Waves {
+		if e.Active {
+			t.Fatal("dry neighbours created waves")
+		}
+	}
+}
+
+func TestTidalChildSkipsSamePassButKeepsParentFraction(t *testing.T) {
+	w := &World{}
+	id := w.allocateEffect(EffectTidalWave, 0)
+	w.Water.Waves[id] = TidalEffect{Active: true, X: 32*256 + 128, Y: 32*256 + 128, Direction: 0}
+	w.tickWaterEffects()
+	parent := w.Water.Waves[id]
+	if parent.Y != 32*256+96 {
+		t.Fatal("wave movement lost 32-unit speed")
+	}
+	for _, child := range w.Water.Waves[1:3] {
+		if !child.Active || child.Newborn || child.Y != parent.Y || child.Frame != (parent.Frame+1)%8 {
+			t.Fatal("later newborn advanced instead of admission-only update")
+		}
+	}
+	w.tickWaterEffects()
+	if w.Water.Waves[1].Y != parent.Y-32 {
+		t.Fatal("child did not move on its next pass")
+	}
+}
+
+func TestTidalBarriersFinishWithoutDirectFollowerDamage(t *testing.T) {
+	w := &World{}
+	id := w.allocateEffect(EffectTidalWave, 0)
+	w.Water.Waves[id] = TidalEffect{Active: true, X: 32*256 + 128, Y: 32*256 + 128, Direction: 0}
+	deity := addFollower(w, 32, 32, 0, 100, Walking)
+	w.Followers[deity].Hero.Kind = HeroHelen
+	w.paintWater(32, 30, 224)
+	w.tickWaterEffects()
+	if w.Water.Waves[id].Active || w.effects.Slots[id].Kind != EffectNone {
+		t.Fatal("basalt failed to stop the wave")
+	}
+	if w.Followers[deity].Population != 100 || w.Followers[deity].State != Walking {
+		t.Fatal("wave introduced direct damage beyond ordinary terrain hazards")
+	}
+}
+
+func TestTidalShallowShoreLoweringIsFreeAndFinite(t *testing.T) {
+	w := &World{}
+	for _, p := range [4][2]int{{32, 31}, {33, 31}, {32, 32}, {33, 32}} {
+		w.Heights[p[0]+p[1]*CornerSize] = 1
+	}
+	w.rebuildCells()
+	id := w.allocateEffect(EffectTidalWave, 0)
+	w.Water.Waves[id] = TidalEffect{Active: true, X: 32*256 + 128, Y: 32*256 + 128, Direction: 0}
+	w.Players[0].Mana = 500
+	before := w.Heights[32+31*CornerSize]
+	w.tickWaterEffects()
+	if w.Heights[32+31*CornerSize] >= before || w.Players[0].Mana != 500 {
+		t.Fatal("tidal shore lowering failed or charged mana")
+	}
+	for range 600 {
+		w.tickWaterEffects()
+	}
+	for _, e := range w.Water.Waves {
+		if e.Active {
+			t.Fatal("wave survived leaving finite map")
+		}
+	}
+}
+
 func TestPrivateBasaltReferenceTraces(t *testing.T) {
 	path := os.Getenv("POPULOUS2_BASALT_TRACE")
 	if path == "" {
@@ -379,5 +469,139 @@ func TestPrivateWhirlpoolWaterTraces(t *testing.T) {
 	}
 	if checked == 0 {
 		t.Fatal("whirlpool reference catalog supplied no normal cases")
+	}
+}
+
+func TestPrivateTidalCreationAndSingleTick(t *testing.T) {
+	path := os.Getenv("POPULOUS2_TIDAL_TRACE")
+	if path == "" {
+		t.Skip("set POPULOUS2_TIDAL_TRACE for private tidal comparison")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type patch struct {
+		Address, Width int
+		Value          uint32
+	}
+	var catalog struct {
+		Cases []struct {
+			Input struct {
+				Name, Mode                   string
+				Owner                        uint16
+				X, Y                         uint8
+				Parent, FreeStart, FreeCount int
+				Direction                    uint16
+				Alt                          []uint8
+				Initial                      []patch
+				Links                        []uint16
+				Ticks                        int
+				Prepass                      uint16
+			}
+			Changes []struct {
+				Address int
+				Value   uint8
+			}
+			Trace []struct{ Update int }
+		}
+	}
+	if err = json.Unmarshal(data, &catalog); err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, reference := range catalog.Cases {
+		i := reference.Input
+		if i.Owner < 1 || i.Owner > 2 || i.Prepass != 0 || len(i.Links) > 0 || i.Mode == "pass" || len(i.Alt) != CornerSize*CornerSize {
+			continue
+		}
+		// Only normal actor fields and cells are translated by this test.
+		unsupported := false
+		for _, p := range i.Initial {
+			if p.Address < 0xc800 || p.Address >= 0xe740 {
+				unsupported = true
+			}
+		}
+		if unsupported {
+			continue
+		}
+		t.Run(i.Name, func(t *testing.T) {
+			w := &World{}
+			copy(w.Heights[:], i.Alt)
+			w.rebuildCells()
+			var raw [EffectCapacity][32]byte
+			for id := range raw {
+				for off := range raw[id] {
+					raw[id][off] = uint8(id*32 + off + 7)
+				}
+				available := id >= i.FreeStart && id < i.FreeStart+i.FreeCount
+				if available {
+					raw[id][12] = 0
+				} else {
+					raw[id][12] = 1
+					w.effects.Slots[id].Kind = EffectFireRain
+				}
+			}
+			if i.Mode != "create" {
+				clear(raw[i.Parent][:])
+				raw[i.Parent][0], raw[i.Parent][12], raw[i.Parent][22] = 0x32, uint8(i.Owner), 0x2a
+				raw[i.Parent][6], raw[i.Parent][7], raw[i.Parent][8], raw[i.Parent][9] = i.X, 128, i.Y, 128
+				binary.BigEndian.PutUint16(raw[i.Parent][10:], []uint16{0xc60, 0xc84, 0xca8, 0xc3c}[i.Direction/4])
+				binary.BigEndian.PutUint16(raw[i.Parent][26:], i.Direction)
+				d := tidalDirections[i.Direction/4]
+				binary.BigEndian.PutUint16(raw[i.Parent][14:], uint16(int16(d[0]*32)))
+				binary.BigEndian.PutUint16(raw[i.Parent][16:], uint16(int16(d[1]*32)))
+				w.effects.Slots[i.Parent].Kind = EffectTidalWave
+			}
+			for _, p := range i.Initial {
+				id, off := (p.Address-0xc800)/32, (p.Address-0xc800)%32
+				if off+p.Width > 32 {
+					t.Fatal("private patch spans actors")
+				}
+				switch p.Width {
+				case 1:
+					raw[id][off] = byte(p.Value)
+				case 2:
+					binary.BigEndian.PutUint16(raw[id][off:], uint16(p.Value))
+				case 4:
+					binary.BigEndian.PutUint32(raw[id][off:], p.Value)
+				}
+			}
+			before := raw
+			if i.Mode == "create" {
+				if err := w.CastTsunami(int(i.Owner-1), int(i.X), int(i.Y)); err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				p := raw[i.Parent]
+				w.Water.Waves[i.Parent] = TidalEffect{Active: true, Newborn: p[22] == 0x28, Owner: uint8(i.Owner - 1), X: int(binary.BigEndian.Uint16(p[6:])), Y: int(binary.BigEndian.Uint16(p[8:])), Direction: int(i.Direction / 4)}
+				w.tickTidalWave(i.Parent)
+			}
+			for _, change := range reference.Changes {
+				if change.Address >= 0xc800 && change.Address < 0xe740 {
+					raw[(change.Address-0xc800)/32][(change.Address-0xc800)%32] = change.Value
+				}
+			}
+			for id, expected := range raw {
+				changed := expected != before[id]
+				if !changed && id != i.Parent {
+					continue
+				}
+				e := w.Water.Waves[id]
+				if e.Active != (expected[12] != 0) {
+					t.Fatalf("wave slot%d active differs", id)
+				}
+				if !e.Active {
+					continue
+				}
+				if e.X != int(binary.BigEndian.Uint16(expected[6:])) || e.Y != int(binary.BigEndian.Uint16(expected[8:])) || e.Direction != int(binary.BigEndian.Uint16(expected[26:]))/4 {
+					t.Fatalf("wave slot%d position/direction differs: %+v", id, e)
+				}
+			}
+		})
+		checked++
+	}
+	if checked == 0 {
+		t.Fatal("tidal fixture supplied no normal cases")
 	}
 }
