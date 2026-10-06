@@ -422,7 +422,9 @@ func (r *NativeActorRenderRules) townBody(at int, cb NativeRenderFrameCallbacks,
 			}
 			c.Word(2, v)
 			cb.Image.LastY = uint16(c.D[1]) - uint16(c.D[2])
-			state.TownHitHeight = uint16(c.D[2])
+			if err := r.setTownHitHeight(state, uint16(c.D[2])); err != nil {
+				return p, err
+			}
 		}
 		if draw {
 			half, err := r.word(descriptor + 4)
@@ -463,7 +465,11 @@ func (r *NativeActorRenderRules) townBody(at int, cb NativeRenderFrameCallbacks,
 			c.Word(2, m.word(0x136)-uint16(c.D[1]))
 			if before <= int16(c.D[1]) {
 				c.Word(2, -uint16(c.D[2]))
-				if int16(c.D[2]) <= int16(state.TownHitHeight) {
+				height, err := r.townHitHeight(state)
+				if err != nil {
+					return p, err
+				}
+				if int16(c.D[2]) <= int16(height) {
 					m.putLong(0xf36, c.AddressBase+uint32(at))
 					m.putWord(0x140, 0)
 				}
