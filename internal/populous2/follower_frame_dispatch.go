@@ -137,18 +137,7 @@ func (w *World) nativeFollowerFrameCallbacks(frame *NativeFrameRegisterContext, 
 				return w.nativeFollowerFrameContinuation(ref, boundary, frame, state, bindings)
 			}
 			if actorState == 6 {
-				if bindings.Town == nil || bindings.TownState == nil {
-					return NativeFollowerNext, fmt.Errorf("native follower town frame rules/state missing")
-				}
-				bindings.TownState.OuterFlag13350 = state.TownCacheFlag
-				bindings.TownState.MinimapVariant = state.MinimapVariant
-				step, err := bindings.Town.Tick(ref, w.nativeTownFrameCallbacks(frame, bindings.TownState))
-				state.TownCacheFlag = bindings.TownState.OuterFlag13350
-				state.MinimapVariant = bindings.TownState.MinimapVariant
-				if err != nil {
-					return NativeFollowerNext, err
-				}
-				return w.nativeFollowerFrameContinuation(ref, step.Continuation, frame, state, bindings)
+				return w.nativeTownFrameBody(ref, frame, state, bindings)
 			}
 			if actorState == 0x0e || actorState == 0x10 {
 				return w.nativeCombatFrameBody(ref, actorState, frame, state, bindings)
@@ -218,6 +207,8 @@ func (w *World) nativeCombatFrameBody(ref NativeRecordReference, actorState uint
 
 func (w *World) nativeFollowerFrameContinuation(ref NativeRecordReference, boundary uint32, frame *NativeFrameRegisterContext, state *NativeFollowerPassState, bindings NativeFollowerFrameBindings) (NativeFollowerPassFlow, error) {
 	switch boundary {
+	case 0x11738:
+		return w.nativeTownFrameBody(ref, frame, state, bindings)
 	case 0x1131c:
 		if bindings.Decision == nil {
 			return NativeFollowerNext, fmt.Errorf("native follower search frame rules missing")
@@ -265,6 +256,23 @@ func (w *World) nativeFollowerFrameContinuation(ref NativeRecordReference, bound
 		}
 		return NativeFollowerNext, fmt.Errorf("native follower tail%x continuation missing", boundary)
 	}
+}
+
+// nativeTownFrameBody also receives the direct founder→11738 tail. That
+// source jump must not perform another common prepass or skip this town tick.
+func (w *World) nativeTownFrameBody(ref NativeRecordReference, frame *NativeFrameRegisterContext, state *NativeFollowerPassState, bindings NativeFollowerFrameBindings) (NativeFollowerPassFlow, error) {
+	if bindings.Town == nil || bindings.TownState == nil {
+		return NativeFollowerNext, fmt.Errorf("native follower town frame rules/state missing")
+	}
+	bindings.TownState.OuterFlag13350 = state.TownCacheFlag
+	bindings.TownState.MinimapVariant = state.MinimapVariant
+	step, err := bindings.Town.Tick(ref, w.nativeTownFrameCallbacks(frame, bindings.TownState))
+	state.TownCacheFlag = bindings.TownState.OuterFlag13350
+	state.MinimapVariant = bindings.TownState.MinimapVariant
+	if err != nil {
+		return NativeFollowerNext, err
+	}
+	return w.nativeFollowerFrameContinuation(ref, step.Continuation, frame, state, bindings)
 }
 
 // tickNativeFollowerFrame borrows the already authoritative raw session for

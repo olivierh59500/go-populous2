@@ -1069,3 +1069,18 @@ deity rule bits and mana admission, then verifies the raw delayed command and
 consumed click latch. It does not call World.Cast or execute the generated
 command in the same frame. The actual terrain wrappers separately match102
 complete CPU executions, including surviving address registers.
+
+## Concrete frame composition and founder-to-town continuation
+
+NewFrame composes live main rendering, retained protection/editor children,
+audio, menu, deferred commands and the complete input suffix over the same
+runtime. A multi-frame integration test starts through the actual initial menu
+and custom constructor, then advances120 VBlanks without calling World.Tick.
+It reaches and preserves the original protection requester's genuine user wait.
+
+This run exposed an omitted direct founder→11738 town continuation. The
+dispatcher now executes the already-proven town body immediately, sharing its
+property/minimap state without repeating the common prepass. Sixteen direct
+CPU town-tail references match full D/BSS and mutable state, alongside the
+existing64 full town-pass references. Further interactive result, save,
+transport and complete campaign validation remain outstanding.
