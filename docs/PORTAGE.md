@@ -1,10 +1,12 @@
 # Conversion and fidelity
 
-This is a conversion in progress. The native integration target executes Go
+This document describes the retained original-reference translation. The
+default independent game is documented in [GO_ENGINE.md](GO_ENGINE.md).
+The native integration target executes Go
 translations of the original register-bearing startup, rendering, input,
 simulation, menus, audio and result/progression controllers. The original-game
-runtime is the default command; the inherited diagnostic engine remains
-separately available as cmd/populous2-legacy.
+runtime is available as `cmd/populous2-native`; the inherited diagnostic
+engine remains separately available as `cmd/populous2-legacy`.
 [FEATURES.md](FEATURES.md) tracks the complete original feature inventory and
 all 29 powers. [NATIVE_RULES.md](NATIVE_RULES.md) records the newer translations.
 
@@ -51,7 +53,7 @@ not establish full original-game fidelity.
 
 ## Fidelity boundaries and further coverage
 
-The main two-disk feature set is implemented in the default native runtime.
+The main two-disk feature set is implemented in the retained native runtime.
 Source-controller and full-main comparisons establish the recorded scenarios;
 additional interaction cases can extend that evidence without implying absent
 native bodies.

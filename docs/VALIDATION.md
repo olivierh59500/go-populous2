@@ -1,5 +1,9 @@
 # Validation
 
+This is the retained original-reference translation's historical validation
+record. The default independent game has its current checks and limits in
+[GO_ENGINE_AUDIT.md](GO_ENGINE_AUDIT.md).
+
 Checks run on macOS ARM64 with Go 1.27.1 and Ebitengine 2.9.11.
 
 | Check | Result |

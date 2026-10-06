@@ -77,7 +77,7 @@ complete Amiga gameplay parity.
 
 ## Live runtime integration
 
-The default `cmd/populous2` command and its `cmd/populous2-native` alias run
+The retained `cmd/populous2-native` reference command runs
 the assembled register-bearing session,
 physical resource host, original screen/input and four-channel audio. Bounded
 desktop captures verify its initial menu, terrain and protection requester.
