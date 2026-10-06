@@ -285,3 +285,35 @@ func TestStormWorldUsesDirectFireVictimsWithoutReplacingItsRandomStrike(t *testi
 		t.Fatal("storm cooldown damage lost its separate direct-death lifecycle")
 	}
 }
+
+func TestLightningStrikeRecordsWeightedUseAtDebitOnly(t *testing.T) {
+	w := testFlatWorld()
+	w.Level.Players[0].Powers[Lightning] = true
+	w.Players[0].Mana = 1000
+	if err := w.PlaceLightning(0, 20, 20); err != nil {
+		t.Fatal(err)
+	}
+	if !w.DismissLightning(0) || w.Players[0].Mana != 1000 || w.Players[0].Statistics.WeightedPowerUse != 0 {
+		t.Fatal("marker or cancellation charged campaign use")
+	}
+	if err := w.ActivateLightning(0); err != nil {
+		t.Fatal(err)
+	}
+	if w.Players[0].Mana != 800 || w.Players[0].Statistics.WeightedPowerUse != 1 {
+		t.Fatal("admitted strike without a marker was not recorded")
+	}
+	w = testFlatWorld()
+	w.Level.Players[0].Powers[Lightning] = true
+	w.Players[0].Mana = 1000
+	if err := w.PlaceLightning(0, 20, 20); err != nil {
+		t.Fatal(err)
+	}
+	for w.allocateEffect(EffectFireColumn, 0) >= 0 {
+	}
+	if err := w.ActivateLightning(0); err != nil {
+		t.Fatal(err)
+	}
+	if w.Players[0].Mana != 800 || w.Players[0].Statistics.WeightedPowerUse != 1 {
+		t.Fatal("full bolt pool bypassed the strike debit and campaign metric")
+	}
+}

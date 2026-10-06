@@ -104,6 +104,7 @@ func (w *World) ActivateLightning(owner int) error {
 	}
 	w.Air.ActivateLightning(uint8(owner), worldAirHabitat{w})
 	w.Players[owner].Mana -= cost
+	w.RecordPowerUse(owner, Lightning)
 	return nil
 }
 func (w *World) DismissLightning(owner int) bool {
