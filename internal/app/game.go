@@ -22,6 +22,7 @@ const (
 	DeityProfile
 	ConquestBriefing
 	Playing
+	CampaignResult
 )
 
 // Game holds ordinary Go screen and input state. Original program counters,
@@ -33,6 +34,11 @@ type Game struct {
 	LevelIndex                   int
 	CameraX, CameraY             int
 	Profile                      engine.Deity
+	ResultScore                  engine.CampaignScore
+	ResultScoreError             string
+	ResultProgress               engine.CampaignProgress
+	resultApplied                bool
+	resultAt                     int
 	editingProfileName           bool
 	editingProfileCode           bool
 	profileCodeInput             string
@@ -127,6 +133,12 @@ func (g *Game) Update() error {
 		if err := g.updateWorld(x, y, clicked); err != nil {
 			return err
 		}
+	case CampaignResult:
+		if g.Updates-g.resultAt >= 101 && (inpututil.IsKeyJustPressed(ebiten.KeyEnter) || clicked) {
+			if err := g.applyCampaignResult(); err != nil {
+				return err
+			}
+		}
 	}
 	g.drawFrame()
 	g.image.WritePixels(g.framebuffer.Pix)
@@ -188,5 +200,7 @@ func (g *Game) drawFrame() {
 		g.button("PROCEED", 115, 168, 100)
 	case Playing:
 		g.drawWorld()
+	case CampaignResult:
+		g.drawCampaignResult()
 	}
 }

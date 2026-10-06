@@ -160,6 +160,9 @@ func (w *World) Cell(x, y int) Cell {
 	if code, ok := w.Water.TileCode(x, y); ok {
 		cell.Code = code
 	}
+	if code, ok := w.Earth.TileCode(x, y); ok {
+		cell.Code = code
+	}
 	if code, ok := w.Nature.TileCode(x, y); ok {
 		cell.Code = code
 	}
@@ -198,6 +201,7 @@ func (w *World) changeHeight(player, x, y int, raise bool) bool {
 				w.Pressure[cx+cy*MapSize] = 0
 				w.Nature.Ground[cx+cy*MapSize] = GroundParcel{}
 				w.ClearFireTerrain(cx, cy)
+				w.ClearEarthTerrain(cx, cy)
 			}
 		}
 	}

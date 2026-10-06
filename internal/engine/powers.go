@@ -176,5 +176,8 @@ func (w *World) Cast(owner int, id PowerID, target PowerTarget) error {
 		}
 		w.Players[owner].Mana -= w.PowerCost(owner, id)
 	}
+	if id != RaiseLower {
+		w.RecordPowerUse(owner, id)
+	}
 	return nil
 }

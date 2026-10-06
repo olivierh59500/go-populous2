@@ -24,6 +24,7 @@ func (g *Game) startConquest() error {
 		return err
 	}
 	g.World, g.Screen = world, Playing
+	g.resultApplied = false
 	world.Players[0].Experience = g.Profile.Experience
 	leader := world.Players[0].Leader
 	if leader > 0 {
@@ -42,6 +43,16 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	w := g.World
 	if g.Updates%4 == 0 {
 		w.Step()
+		if w.Result != 0 {
+			var scoreError error
+			g.ResultScore, scoreError = engine.ScoreCampaign(uint32(w.Tick), w.Players[0].Statistics, w.Players[1].Statistics)
+			g.ResultScoreError = ""
+			if scoreError != nil {
+				g.ResultScoreError = scoreError.Error()
+			}
+			g.resultAt, g.Screen = g.Updates, CampaignResult
+			return nil
+		}
 	}
 	if g.PickingPower {
 		if clicked {

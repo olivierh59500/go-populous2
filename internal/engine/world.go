@@ -20,6 +20,7 @@ const (
 	Fighting
 	Drowning
 	Ruin
+	Airborne
 )
 
 type Follower struct {
@@ -51,6 +52,7 @@ type Follower struct {
 }
 
 type Player struct {
+	Statistics                    CampaignStatistics
 	Experience                    [6]uint8
 	Mana                          int
 	Mode                          Mode
@@ -72,6 +74,7 @@ type World struct {
 	FireDamage           FireDamageState
 	Water                WaterEffects
 	Air                  AirEffects
+	Earth                EarthState
 	AirVictims           [FollowerCapacity]LightningVictimState
 	Heights              [CornerSize * CornerSize]uint8
 	Tiles                [MapSize * MapSize]Cell
@@ -192,15 +195,19 @@ func (w *World) Step() {
 			w.tickNatureEffect(id)
 		case EffectFireColumn, EffectFireRain, EffectVolcano, EffectLava:
 			w.tickFireEffect(id)
-		case EffectLightning:
+		case EffectEarthquake:
+			w.tickEarthEffect(id)
+		case EffectLightning, EffectWhirlwind:
 			w.tickAirEffect(id)
 		case EffectBasalt, EffectWhirlpool, EffectTidalWave:
 			w.tickWaterEffect(id)
 		}
 	}
+	w.tickWalls()
 	w.tickNatureScenery()
 	w.repaintFarms()
 	w.summarize()
+	w.RecordCampaignMetrics()
 	if w.Tick > 25 {
 		if w.Players[0].Population == 0 && w.Players[1].Population > 0 {
 			w.Result = 2
@@ -214,6 +221,9 @@ func (w *World) Step() {
 func (w *World) stepFollower(id int) {
 	f := &w.Followers[id]
 	if f.Owner > 1 {
+		return
+	}
+	if w.AdvanceAirCarry(id) {
 		return
 	}
 	if w.AdvanceLightningVictim(id) {
@@ -247,7 +257,7 @@ func (w *World) stepFollower(id int) {
 		return
 	}
 	if f.State == Town {
-		stage := w.TownStage(int(f.Owner), int(f.X), int(f.Y), id)
+		stage := w.EvaluateTown(id)
 		if stage == 0 || w.Players[f.Owner].Mode != Settle {
 			f.State = Walking
 			f.Stage = 0
@@ -300,7 +310,7 @@ func (w *World) stepFollower(id int) {
 	}
 	f.State = Walking
 	if w.Players[f.Owner].Mode == Settle && w.Tick >= f.SettleAfter {
-		if stage := w.TownStage(int(f.Owner), int(f.X), int(f.Y), id); stage > 0 {
+		if stage := w.EvaluateTown(id); stage > 0 {
 			f.State = Town
 			f.Stage = uint8(stage)
 			f.Work = 0
@@ -344,6 +354,7 @@ func (w *World) remove(id int) {
 	if f.State != Inactive && f.Owner < 2 && w.Players[f.Owner].Leader == id {
 		w.Players[f.Owner].Leader = 0
 	}
+	w.Air.Carry[id] = AirCarryState{}
 	w.AirVictims[id] = LightningVictimState{}
 	w.FireDamage.Deaths[id] = FireVictimDeath{}
 	w.Nature.Deaths[id] = NatureAlive

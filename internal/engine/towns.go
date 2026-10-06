@@ -10,74 +10,131 @@ var townFootprint = [49][2]int{
 	{-3, 3}, {-2, 3}, {-1, 3}, {0, 3}, {1, 3}, {2, 3}, {3, 3},
 }
 
-// TownStage evaluates the three settlement support rings. An adjacent town
-// cannot claim the same farmland; a complete outer ring unlocks stage eighteen.
+// settlementLand describes the six ground codes which support cultivation.
+// The geometry may be at different elevations; support is parcel based.
+func settlementLand(code uint8) bool {
+	switch code {
+	case 15, 31, 47, 63, 151, 245:
+		return true
+	}
+	return false
+}
+
+// TownStage is the read-only support preview. Actual settlement evaluation
+// also clears competing towns and claims farms in EvaluateTown.
 func (w *World) TownStage(owner, x, y, ignoreID int) int {
 	if owner < 0 || owner > 1 || !inside(x, y) {
 		return 0
 	}
-	support := func(d [2]int) bool {
+	return w.townSupport(owner, x, y, ignoreID, false)
+}
+
+func (w *World) townSupport(owner, x, y, ignoreID int, mutate bool) int {
+	pending := [49]int{}
+	pendingCount := 0
+	visit := func(d [2]int, claim bool) bool {
 		nx, ny := x+d[0], y+d[1]
-		if !inside(nx, ny) {
+		if !inside(nx, ny) || !settlementLand(w.Cell(nx, ny).Code) {
+			return false
+		}
+		// Only a boulder blocks the occupancy scan. Trees and ordinary walkers
+		// coexist with farms and are handled independently by scenery simulation.
+		if w.Nature.BlocksWalking(nx, ny) {
 			return false
 		}
 		at := nx + ny*MapSize
-		if !w.NatureTownAllowed(owner, nx, ny) {
-			return false
+		if mutate && claim {
+			var occupants [FollowerCapacity]int
+			count := w.FollowersAt(nx, ny, occupants[:])
+			for _, other := range occupants[:count] {
+				if other != ignoreID && w.Followers[other].State == Town {
+					w.clearTownFarms(other)
+					g := &w.Followers[other]
+					g.State = Walking
+					g.Stage = 0
+					g.Frame = 0
+				}
+			}
 		}
-		if !w.Tiles[at].IsFlat() || w.Tiles[at].Corners[0] != w.Tiles[x+y*MapSize].Corners[0] {
-			return false
-		}
-		other := int(w.Occupants[at])
-		if other != 0 && other != ignoreID && w.Followers[other].State == Town {
-			return false
-		}
-		if w.Farms[at] != 0 && w.Farms[at] != uint8(owner+1) {
-			return false
+		if claim && mutate {
+			pending[pendingCount] = at
+			pendingCount++
 		}
 		return true
 	}
-	if !support(townFootprint[0]) {
+	count := 0
+	if visit(townFootprint[0], true) {
+		count++
+	}
+	if count == 0 {
 		return 0
 	}
-	// Separate settlements need clearance, rather than endlessly founding and
-	// abandoning huts on land already supporting a neighbouring settlement.
-	for _, d := range townFootprint[1:25] {
-		nx, ny := x+d[0], y+d[1]
-		if !inside(nx, ny) {
-			continue
-		}
-		other := int(w.Occupants[nx+ny*MapSize])
-		if other != 0 && other != ignoreID && w.Followers[other].State == Town {
-			return 0
-		}
-	}
-	count := 1
 	for _, d := range townFootprint[1:9] {
-		if support(d) {
+		if visit(d, true) {
 			count++
 		}
 	}
 	if count == 9 {
 		for _, d := range townFootprint[9:25] {
-			if support(d) {
+			if visit(d, true) {
 				count++
 			}
 		}
 		if count == 25 {
 			clear := true
 			for _, d := range townFootprint[25:] {
-				if !support(d) {
+				if !visit(d, false) {
 					clear = false
 					break
 				}
 			}
 			if clear {
+				for _, d := range townFootprint[25:] {
+					visit(d, true)
+				}
 				count = 26
 			}
 		}
 	}
-	return int(supportStages[count])
+	stage := int(supportStages[count])
+	if mutate {
+		// Farm writes run in reverse visit order, preserving the evaluator's
+		// conflict precedence without storing addresses or register state.
+		for i := pendingCount - 1; i >= 0; i-- {
+			w.Farms[pending[i]] = uint8(owner + 1)
+		}
+		w.rebuildCells()
+	}
+	return stage
+}
+
+func (w *World) EvaluateTown(id int) int {
+	if id <= 0 || id >= FollowerCapacity || w.Followers[id].State == Inactive || w.Followers[id].Owner > 1 {
+		return 0
+	}
+	f := w.Followers[id]
+	if f.Stage != 0 && w.Tick&3 != uint64(id)&3 && settlementLand(w.Cell(int(f.X), int(f.Y)).Code) {
+		return int(f.Stage)
+	}
+	return w.townSupport(int(f.Owner), int(f.X), int(f.Y), id, true)
+}
+
+func (w *World) clearTownFarms(id int) {
+	f := w.Followers[id]
+	limit := 9
+	if f.Stage >= 10 {
+		limit = 25
+	}
+	if f.Stage == 18 {
+		limit = 49
+	}
+	for _, d := range townFootprint[:limit] {
+		x, y := int(f.X)+d[0], int(f.Y)+d[1]
+		if inside(x, y) && w.Farms[x+y*MapSize] == f.Owner+1 {
+			w.Farms[x+y*MapSize] = 0
+			w.Tiles[x+y*MapSize].Code = w.Tiles[x+y*MapSize].Shape
+		}
+	}
 }
 
 func (w *World) repaintFarms() {
@@ -87,6 +144,9 @@ func (w *World) repaintFarms() {
 			limit := 9
 			if f.Stage >= 10 {
 				limit = 25
+			}
+			if f.Stage == 18 {
+				limit = 49
 			}
 			for _, d := range townFootprint[:limit] {
 				x, y := int(f.X)+d[0], int(f.Y)+d[1]
