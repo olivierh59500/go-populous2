@@ -5,3 +5,4 @@ assets/amiga/*.dif export-ignore
 assets/amiga/*.pif export-ignore
 assets/amiga/populous.ii export-ignore
 assets/generated/** export-ignore
+assets/runtime/data/** export-ignore

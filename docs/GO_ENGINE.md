@@ -80,6 +80,20 @@ go run ./cmd/export-audio-assets -output assets/generated/audio
 go run ./cmd/populous2-go -data assets/generated
 ```
 
+For a self-contained desktop or mobile build, export the same assets into the
+dedicated runtime package before compiling:
+
+```sh
+go run ./cmd/export-visual-assets -output assets/runtime/data
+go run ./cmd/export-audio-assets -output assets/runtime/data/audio
+go build -o bin/populous2-go ./cmd/populous2-go
+```
+
+The built game embeds only the exported art, music and campaign files. It can
+run outside the repository. A clean source checkout contains a placeholder;
+original assets in this build directory are excluded locally and rejected by
+the repository's asset-protection hook.
+
 The independent slice currently has Go menus/profile/world selection,
 isometric rendering and picking, the 1,000 campaign records, four landscapes,
 propagated terrain changes, settlement founding/economy, ordinary followers,

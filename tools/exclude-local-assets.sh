@@ -5,6 +5,9 @@ exclude=$(git rev-parse --git-path info/exclude)
 if ! grep -Fqx '/assets/amiga/*' "$exclude"; then
     printf '\n/assets/amiga/*\n!/assets/amiga/GENERATED.txt\n' >> "$exclude"
 fi
+if ! grep -Fqx '/assets/runtime/data/*' "$exclude"; then
+    printf '\n/assets/runtime/data/*\n!/assets/runtime/data/GENERATED.txt\n' >> "$exclude"
+fi
 if ! grep -Fqx '/assets/generated/' "$exclude"; then
     printf '\n/assets/generated/\n' >> "$exclude"
 fi

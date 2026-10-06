@@ -1,0 +1,3 @@
+This directory contains locally exported graphics, audio and campaign assets.
+Original game data are not distributed with the source repository.
+Use cmd/export-visual-assets and cmd/export-audio-assets to prepare this build directory.

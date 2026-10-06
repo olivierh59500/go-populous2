@@ -3,15 +3,17 @@ package main
 
 import (
 	"flag"
+	"io/fs"
 	"log"
 	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	runtimeassets "go-populous2/assets/runtime"
 	"go-populous2/internal/app"
 )
 
 func main() {
-	data := flag.String("data", "assets/generated", "directory of imported presentation and campaign assets")
+	data := flag.String("data", "", "external asset directory (default: assets embedded by the local build)")
 	frames := flag.Int("frames", 0, "close after a bounded number of PAL updates")
 	screenshot := flag.String("screenshot", "", "write a new application framebuffer PNG")
 	captureAfter := flag.Int("capture-update", 100, "PAL update to capture")
@@ -23,7 +25,17 @@ func main() {
 	if *frames < 0 || *captureAfter < 0 || (*frames > 0 && *screenshot != "" && *captureAfter >= *frames) {
 		log.Fatal("invalid update or capture limit")
 	}
-	bundle, err := app.LoadAssets(os.DirFS(*data))
+	var files fs.FS
+	if *data != "" {
+		files = os.DirFS(*data)
+	} else {
+		var err error
+		files, err = runtimeassets.FS()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	bundle, err := app.LoadAssets(files)
 	if err != nil {
 		log.Fatal(err)
 	}
