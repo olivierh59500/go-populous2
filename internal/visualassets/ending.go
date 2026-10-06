@@ -6,6 +6,10 @@ import (
 	"image/color"
 )
 
+// EnglishEndingText supplies the game's presentation language independently
+// of the original disk edition. Artwork, PAL timing and font cells are reused.
+const EnglishEndingText = "THE BATTLE IS OVER. YOU RULE OVER ALL THE GODS ON MOUNT OLYMPUS. GOD OF ALL. YOU CONTROL THE WORLD WITHOUT CHALLENGE.......................THANK YOU FOR PLAYING POPULOUS II. YOU MUST BE A GREAT PLAYER TO HAVE COME THIS FAR........................................."
+
 type EndingDescriptor struct {
 	Frames         []string `json:"frames"`
 	LoopStart      int      `json:"loop_start"`
@@ -30,7 +34,7 @@ func (l *imageLoader) ending(desc *EndingDescriptor) (*EndingSequence, error) {
 	if len(desc.Frames) < 1 || len(desc.Frames) > 256 || desc.LoopStart < 0 || desc.LoopStart >= len(desc.Frames) || len(desc.Text) == 0 || len(desc.Text) > 8192 || desc.IntroWait < 1 || desc.IntroWait > 50 || desc.FrameWait < 1 || desc.FrameWait > 50 || desc.TextStepFrames < 1 || desc.TextStepFrames > 50 {
 		return nil, fmt.Errorf("invalid ending animation metadata")
 	}
-	s := &EndingSequence{Frames: make([]*image.Paletted, len(desc.Frames)), LoopStart: desc.LoopStart, Text: desc.Text, IntroWait: desc.IntroWait, FrameWait: desc.FrameWait, TextStepFrames: desc.TextStepFrames}
+	s := &EndingSequence{Frames: make([]*image.Paletted, len(desc.Frames)), LoopStart: desc.LoopStart, Text: EnglishEndingText, IntroWait: desc.IntroWait, FrameWait: desc.FrameWait, TextStepFrames: desc.TextStepFrames}
 	for i, path := range desc.Frames {
 		img, err := l.image(path)
 		if err != nil {

@@ -5,13 +5,14 @@ import (
 	"image"
 	"image/draw"
 	"os"
+	"strings"
 	"testing"
 
 	"go-populous2/internal/populous2"
 	"go-populous2/internal/visualassets"
 )
 
-func TestPrivateStartupLayoutMatchesOriginalPixelsAndHitRegions(t *testing.T) {
+func TestPrivateEnglishStartupPreservesOriginalGlyphsAndHitRegions(t *testing.T) {
 	input := os.Getenv("POPULOUS2_EXPORT_TEST_DIR")
 	if input == "" {
 		t.Skip("set private original data directory")
@@ -36,7 +37,20 @@ func TestPrivateStartupLayoutMatchesOriginalPixelsAndHitRegions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expected, err := presentation.StartupImage()
+	const english = "x CREATE YOUR DEITY\nx CONQUEST GAME    \nx CUSTOM GAME      \nx LOAD GAME        \nx QUIT             "
+	if menu.Text != english {
+		t.Fatal("exported startup labels are not English")
+	}
+	for i, row := range strings.Split(menu.Text, "\n") {
+		if len(row) != len(strings.Split(string(presentation.StartupRequester.Text), "\n")[i]) {
+			t.Fatal("translation changed the original row width")
+		}
+	}
+	// The English labels intentionally replace disk-edition prose. Compose
+	// them with the original font/layout to verify every resulting glyph pixel.
+	requester := *presentation.StartupRequester
+	requester.Text = []byte(english)
+	expected, err := presentation.Compose(presentation.StartupPixels, &requester, presentation.StartupPalette)
 	if err != nil {
 		t.Fatal(err)
 	}

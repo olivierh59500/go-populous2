@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -57,19 +56,12 @@ func (g *Game) briefingLines() []string {
 		code = g.worldCodeInput + "_"
 	}
 	lines := []string{fmt.Sprintf("WORLD %d", g.LevelIndex), code}
-	text := strings.ToUpper(level.OpponentText)
-	if len(text) > 0 {
-		for len(text) > 0 && len(lines) < 5 {
-			count := min(32, len(text))
-			if count < len(text) {
-				if space := strings.LastIndexByte(text[:count], ' '); space > 0 {
-					count = space
-				}
-			}
-			lines = append(lines, text[:count])
-			text = strings.TrimSpace(text[count:])
-		}
-	}
+	// Campaign author notes are not interface prose and may include editor tags
+	// or control bytes. Present the actual opponent's experience in English.
+	xp := level.OpponentExperience
+	lines = append(lines, fmt.Sprintf("XP PEOPLE %d PLANTS %d", xp[engine.People], xp[engine.Plants]))
+	lines = append(lines, fmt.Sprintf("XP EARTH %d AIR %d", xp[engine.Earth], xp[engine.Air]))
+	lines = append(lines, fmt.Sprintf("XP FIRE %d WATER %d", xp[engine.Fire], xp[engine.Water]))
 	foe := level.Players[1]
 	lines = append(lines, fmt.Sprintf("ENEMY GROUPS %d PEOPLE %d", foe.Groups, foe.Population))
 	lines = append(lines, fmt.Sprintf("SPEED %d WEAPONS %d", foe.MovementSpeed, foe.Weapons))

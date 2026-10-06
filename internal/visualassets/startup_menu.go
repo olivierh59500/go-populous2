@@ -8,6 +8,7 @@ import (
 	"image/color"
 	"io"
 	"io/fs"
+	"strings"
 )
 
 const StartupMenuFile = "startup-menu.json"
@@ -22,6 +23,25 @@ const (
 	StartupQuit     StartupAction = "quit"
 )
 
+// Label returns the English presentation text for a semantic startup action.
+// It is independent of the language of the locally supplied original disk.
+func (a StartupAction) Label() string {
+	switch a {
+	case StartupProfile:
+		return "CREATE YOUR DEITY"
+	case StartupConquest:
+		return "CONQUEST GAME"
+	case StartupCustom:
+		return "CUSTOM GAME"
+	case StartupLoad:
+		return "LOAD GAME"
+	case StartupQuit:
+		return "QUIT"
+	default:
+		return ""
+	}
+}
+
 type StartupHitRegion struct {
 	Action              StartupAction `json:"action"`
 	X, Y, Width, Height int
@@ -34,6 +54,32 @@ type StartupMenu struct {
 	Text    string             `json:"text"`
 	Palette [16]color.RGBA     `json:"palette"`
 	Regions []StartupHitRegion `json:"regions"`
+}
+
+// UseEnglishLabels replaces only the text cells belonging to the five actions.
+// The original eight-pixel font grid, decoration, spacing and hit regions stay
+// unchanged. Applying this while loading also updates older local exports.
+func (m *StartupMenu) UseEnglishLabels() error {
+	const cellSize = 8
+	rows := strings.Split(m.Text, "\n")
+	first := make(map[StartupAction]StartupHitRegion)
+	for _, r := range m.Regions {
+		previous, present := first[r.Action]
+		if !present || r.Y < previous.Y || (r.Y == previous.Y && r.X < previous.X) {
+			first[r.Action] = r
+		}
+	}
+	for action, r := range first {
+		label := "x " + action.Label()
+		row, column := (r.Y-m.Y)/cellSize, (r.X-m.X)/cellSize
+		width := r.Width / cellSize
+		if action.Label() == "" || r.Y < m.Y || r.X < m.X || (r.Y-m.Y)%cellSize != 0 || (r.X-m.X)%cellSize != 0 || r.Width%cellSize != 0 || row >= len(rows) || width < len(label) || column+width > len(rows[row]) {
+			return fmt.Errorf("startup action %s does not fit its glyph cells", action)
+		}
+		rows[row] = rows[row][:column] + label + strings.Repeat(" ", width-len(label)) + rows[row][column+width:]
+	}
+	m.Text = strings.Join(rows, "\n")
+	return nil
 }
 
 func (m *StartupMenu) ActionAt(x, y int) StartupAction {
@@ -89,6 +135,9 @@ func LoadStartupMenu(files fs.FS) (*StartupMenu, error) {
 	}
 	if len(seen) != 5 {
 		return nil, fmt.Errorf("startup menu does not expose its five actions")
+	}
+	if err := m.UseEnglishLabels(); err != nil {
+		return nil, err
 	}
 	return &m, nil
 }

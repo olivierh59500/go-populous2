@@ -53,7 +53,7 @@ func TestEndingClockAndLoopDoNotDependOnDrawing(t *testing.T) {
 	}
 }
 
-func TestPrivateEndingFramebufferAndPALClock(t *testing.T) {
+func TestPrivateEndingArtworkEnglishTextAndPALClock(t *testing.T) {
 	path := os.Getenv("POPULOUS2_ENDING_TEST_DIR")
 	if path == "" {
 		t.Skip("set POPULOUS2_ENDING_TEST_DIR for original ending playback comparison")
@@ -74,6 +74,9 @@ func TestPrivateEndingFramebufferAndPALClock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Presentation language is deliberately independent of the source disk.
+	// The source renderer still validates the translated glyphs and PAL clock.
+	presentation.EndingText = []byte(visualassets.EnglishEndingText)
 	reference, err := populous2.NewNativeEndingPlayback(source.Raw["end.pak"], presentation, 0)
 	if err != nil {
 		t.Fatal(err)

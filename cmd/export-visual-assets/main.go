@@ -549,7 +549,7 @@ func exportEndingFrames(output string, art []byte, text string) (*visualassets.E
 	if err != nil {
 		return nil, err
 	}
-	desc := &visualassets.EndingDescriptor{Text: text, IntroWait: 1, FrameWait: 4, TextStepFrames: 2}
+	desc := &visualassets.EndingDescriptor{Text: visualassets.EnglishEndingText, IntroWait: 1, FrameWait: 4, TextStepFrames: 2}
 	seen := make(map[string]int)
 	if err := os.MkdirAll(filepath.Join(output, "ending"), 0755); err != nil {
 		return nil, err

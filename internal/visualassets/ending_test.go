@@ -27,13 +27,16 @@ func TestEndingAssetsRemainIndexedAndRejectPaletteChanges(t *testing.T) {
 	add("frame-a.png", palette)
 	add("frame-b.png", palette)
 	loader := &imageLoader{files: files, images: map[string]image.Image{}}
-	desc := &EndingDescriptor{Frames: []string{"frame-a.png", "frame-b.png"}, LoopStart: 1, Text: "THE END", IntroWait: 1, FrameWait: 4, TextStepFrames: 2}
+	desc := &EndingDescriptor{Frames: []string{"frame-a.png", "frame-b.png"}, LoopStart: 1, Text: "LA BATAILLE EST TERMINEE", IntroWait: 1, FrameWait: 4, TextStepFrames: 2}
 	sequence, err := loader.ending(desc)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if sequence.Frames[0].Pix[27] != 5 || sequence.Palette[5].R != 85 {
 		t.Fatal("indexed ending pixel or palette changed")
+	}
+	if sequence.Text != EnglishEndingText || sequence.LoopStart != desc.LoopStart || sequence.IntroWait != desc.IntroWait || sequence.FrameWait != desc.FrameWait || sequence.TextStepFrames != desc.TextStepFrames {
+		t.Fatal("old ending metadata was not translated with its timing preserved")
 	}
 	bad := append(color.Palette(nil), palette...)
 	bad[0] = color.RGBA{G: 255, A: 255}

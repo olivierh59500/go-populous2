@@ -46,6 +46,9 @@ func exportStartupMenu(output string, p *populous2.NativePresentation) error {
 			}
 		}
 	}
+	if err := menu.UseEnglishLabels(); err != nil {
+		return err
+	}
 	data, err := json.MarshalIndent(menu, "", "  ")
 	if err != nil {
 		return err
