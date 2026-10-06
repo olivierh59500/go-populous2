@@ -1457,3 +1457,18 @@ The test explicitly chooses mode8 and advances F40 once per physics pass;
 main rendering/input and result UI are outside this continuation check.
 Original browser/DOS bodies have separate CPU references. Full tests, focused
 race tests and vet pass for this integration regression.
+
+## Natural stock result and new-world continuation
+
+The strict stock reference now continues through2,499 complete main frames,
+the natural381E entry and first wait, the remaining100 actual result IRQ
+waits, the original score7,500 requester and Continue button,10A8C custom
+reset, then10 complete main frames in the new world. The source input/poll
+stream remains exact; no gameplay defaults or outputs are patched.
+
+One hundred and eighty checked snapshots match all eight data registers,
+full BSS/live CODE, screen/Copper banks, cursor RAM, allocation heap and low
+vectors. The result host preserves the borrowed follower continuation and
+refreshes decoded LAND rules before the same-frame AI/effects resume. Full
+tests, focused stock race comparisons and vet pass. This is one original
+stock custom session, not full campaign or every interactive path coverage.
