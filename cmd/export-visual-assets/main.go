@@ -261,6 +261,13 @@ func export(files fs.FS, output string) error {
 		}
 		catalog.Animations[fmt.Sprintf("magnet/%d", side)] = animation(frames, true)
 	}
+	for direction, name := range [...]string{"north", "east", "south", "west"} {
+		frames, err := populous2.DecodeAnimation(source.Executable, int(source.TsunamiRules.Animations[direction]))
+		if err != nil {
+			return err
+		}
+		catalog.Animations["tidal/"+name] = animation(frames, true)
+	}
 	data, err := json.MarshalIndent(catalog, "", "  ")
 	if err != nil {
 		return err
