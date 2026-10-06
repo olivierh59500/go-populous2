@@ -1,5 +1,10 @@
 package populous2
 
+import (
+	"encoding/binary"
+	"fmt"
+)
+
 func (w *World) nativeFungusCallbacks() NativeFungusCallbacks {
 	m := w.nativeCleanupMemory()
 	write := m.Write8
@@ -12,7 +17,19 @@ func (w *World) nativeFungusCallbacks() NativeFungusCallbacks {
 		}
 		return nil
 	}
-	return NativeFungusCallbacks{Memory: m}
+	return NativeFungusCallbacks{Memory: m, WriteCode8: func(at int, value uint8) error {
+		if at < 0 || at >= len(w.NativeAI.Code) {
+			return fmt.Errorf("native Fungus CODE byte%x unavailable", at)
+		}
+		w.NativeAI.Code[at] = value
+		return nil
+	}, WriteCode16: func(at int, value uint16) error {
+		if at < 0 || at&1 != 0 || at+2 > len(w.NativeAI.Code) {
+			return fmt.Errorf("native Fungus CODE word%x unavailable", at)
+		}
+		binary.BigEndian.PutUint16(w.NativeAI.Code[at:], value)
+		return nil
+	}}
 }
 
 // castFungus uses the raw creator, including planting before pool admission

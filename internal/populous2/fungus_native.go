@@ -40,6 +40,10 @@ func DecodeNativeFungusRules(exe *amiga.Executable) (NativeFungusRules, error) {
 type NativeFungusCallbacks struct {
 	Memory FollowerCleanupMemory
 	Frame  *NativeFrameRegisterContext
+	// These optional CODE ports retain150BC..150C2 at the original
+	// generation writes. Nil keeps the standalone BSS/register-only ABI.
+	WriteCode8  func(int, uint8) error
+	WriteCode16 func(int, uint16) error
 }
 type NativeFungusCreation struct {
 	Reference                          NativeRecordReference
@@ -130,9 +134,11 @@ func (r *NativeFungusRules) Create(owner uint16, x, y uint8, cb NativeFungusCall
 }
 
 type nativeFungusSurface struct {
-	m     *nativeWhirlwindMemory
-	step  *NativeFungusStep
-	frame *NativeFrameRegisterContext
+	m           *nativeWhirlwindMemory
+	step        *NativeFungusStep
+	frame       *NativeFrameRegisterContext
+	writeCode8  func(int, uint8) error
+	writeCode16 func(int, uint16) error
 }
 
 func (s nativeFungusSurface) read(address int) uint8 {
@@ -196,6 +202,28 @@ func (r *NativeFungusRules) age(at int, s nativeFungusSurface) error {
 
 func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 	m := s.m
+	// 14EF0..14F08 initializes the native bounding-box scratch before
+	// the grid cursor and register-bearing generation loop are prepared.
+	if s.writeCode8 != nil {
+		if err := s.writeCode8(0x150bc, 255); err != nil {
+			return err
+		}
+	}
+	if s.writeCode16 != nil {
+		if err := s.writeCode16(0x150be, 0x4100); err != nil {
+			return err
+		}
+	}
+	if s.writeCode8 != nil {
+		if err := s.writeCode8(0x150bd, 0); err != nil {
+			return err
+		}
+	}
+	if s.writeCode16 != nil {
+		if err := s.writeCode16(0x150c0, 0xffff); err != nil {
+			return err
+		}
+	}
 	start := nativeWhirlwindGrid(m.word(at+8)&0xff00 | uint16(m.byte(at+6)))
 	if s.frame != nil {
 		s.frame.Word(0, uint16(start-0xf44))
@@ -256,20 +284,43 @@ func (r *NativeFungusRules) generation(at int, s nativeFungusSurface) error {
 			offset := uint16(address - 0xf44)
 			if s.frame != nil {
 				s.frame.D[0] = uint32(int32(address - 0xf44))
-				s.frame.Byte(0, 0)
 			}
 			x, y := uint8(offset), offset&0xff00
 			if x <= scratch.MinX {
 				scratch.MinX = x
+				if s.writeCode8 != nil {
+					if err := s.writeCode8(0x150bc, x); err != nil {
+						return err
+					}
+				}
 			}
 			if x > scratch.MaxX {
 				scratch.MaxX = x
+				if s.writeCode8 != nil {
+					if err := s.writeCode8(0x150bd, x); err != nil {
+						return err
+					}
+				}
+			}
+			if s.frame != nil {
+				// 14FC2 clears only the low byte after both X comparisons.
+				s.frame.Byte(0, 0)
 			}
 			if int16(y) < int16(scratch.MinY) {
 				scratch.MinY = y
+				if s.writeCode16 != nil {
+					if err := s.writeCode16(0x150be, y); err != nil {
+						return err
+					}
+				}
 			}
 			if int16(y) > int16(scratch.MaxY) {
 				scratch.MaxY = y
+				if s.writeCode16 != nil {
+					if err := s.writeCode16(0x150c0, y); err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
@@ -396,7 +447,7 @@ func (r *NativeFungusRules) Tick(ref NativeRecordReference, cb NativeFungusCallb
 	if m.err != nil {
 		return step, m.err
 	}
-	surface := nativeFungusSurface{m: &m, step: &step, frame: cb.Frame}
+	surface := nativeFungusSurface{m: &m, step: &step, frame: cb.Frame, writeCode8: cb.WriteCode8, writeCode16: cb.WriteCode16}
 	if int8(phase) <= 0 {
 		m.putByte(at+21, m.byte(at+18))
 		step.Generated = true
