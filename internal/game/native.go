@@ -51,6 +51,7 @@ type NativeGame struct {
 	FileBrowser    *populous2.NativeRuntimeFileBrowserState
 	FileRules      populous2.NativeRuntimeFileBrowserRules
 	DeityEditor    populous2.NativeRuntimeDeity
+	Result         populous2.NativeRuntimeResultHost
 }
 
 func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {
@@ -111,6 +112,7 @@ func (g *NativeGame) boot() error {
 	g.Startup = populous2.NativeRuntimeDirectorCallbacks{NativeStartupCampaignHostCallbacks: populous2.NativeStartupCampaignHostCallbacks{NativeStartupHostFrameCallbacks: populous2.NativeStartupHostFrameCallbacks{NativeStartupResetFrameCallbacks: populous2.NativeStartupResetFrameCallbacks{Hardware: func(populous2.NativeFrameHardwareWrite) error { return nil }}, Audio: &control}, Campaign: populous2.NativeCampaignSelectionChildrenCallbacks{NativeCampaignHelpFrameCallbacks: populous2.NativeCampaignHelpFrameCallbacks{AudioCommand: operations.Command, AudioControl: control, NativeCampaignFrameCallbacks: populous2.NativeCampaignFrameCallbacks{NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Sound: sound}}}}, Ownership: ownership}}
 	g.booted = true
 	g.Startup.MenuChild = g.initialChild
+	g.Result = populous2.NativeRuntimeResultHost{Rules: g.Rules, Startup: g.Startup, Callbacks: populous2.NativeRuntimeResultCallbacks{Audio: operations, Sound: sound, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }}}
 	return nil
 }
 
@@ -123,7 +125,7 @@ func (g *NativeGame) createFrame() error {
 		RenderChildren: populous2.NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return g.beam, nil }, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, Sound: sound},
 		InputChildren:  populous2.NativeGameplayHUDHostCallbacks{Campaign: g.Startup.Campaign, Ownership: g.Startup.Ownership, Audio: operations},
 		Menu:           populous2.NativeInGameHostCallbacks{Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Sound: sound, Call: g.menuChild}, SerialTransport: g.serialChild},
-		Session: populous2.NativeFrameSessionCallbacks{CommandChild: g.Commands.Call, Transport: func(caller int, mode uint8, c *populous2.NativeCommandRegisterContext, phase *uint32) (bool, error) {
+		Session: populous2.NativeFrameSessionCallbacks{CommandChild: g.Commands.Call, ResultAdvance: g.resultAdvance, Transport: func(caller int, mode uint8, c *populous2.NativeCommandRegisterContext, phase *uint32) (bool, error) {
 			if err := g.networkReady(); err != nil {
 				return false, err
 			}
