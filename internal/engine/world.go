@@ -55,6 +55,8 @@ type Follower struct {
 	NextFollower, PreviousFollower int
 	ContactWith                    int
 	ContactFriendly                bool
+	BattleWasTown                  bool
+	CombatAftermath                CombatAftermathState
 	BattleWith                     int
 	BattleAggressor                bool
 }
@@ -258,6 +260,9 @@ func (w *World) stepFollower(id int) {
 	f := &w.Followers[id]
 	if f.Owner > 1 {
 		w.tickNeutral(id)
+		return
+	}
+	if w.advanceCombatAftermath(id) {
 		return
 	}
 	if w.advanceNeutralVictim(id) {

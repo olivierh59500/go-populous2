@@ -8,6 +8,8 @@ func (w *World) beginBattle(attacker, defender int) {
 	}
 	w.clearHeroClaim(attacker)
 	a, d := &w.Followers[attacker], &w.Followers[defender]
+	a.BattleWasTown = a.State == Town
+	d.BattleWasTown = d.State == Town
 	a.State, d.State = Fighting, Fighting
 	a.BattleWith, d.BattleWith = defender, attacker
 	a.BattleAggressor, d.BattleAggressor = true, false
@@ -55,19 +57,75 @@ func (w *World) stepBattle(id int) {
 	}
 }
 func (w *World) finishBattle(winner, loser int) {
-	owner := w.Followers[winner].Owner
-	w.Players[owner].BattlesWon++
-	w.remove(loser)
-	f := &w.Followers[winner]
-	f.State = Walking
+	f, l := &w.Followers[winner], &w.Followers[loser]
+	owner, enemy := int(f.Owner), int(l.Owner)
+	reward := w.battleReward(loser)
+	if owner < 2 {
+		w.Players[owner].BattlesWon++
+		w.Players[owner].Mana = int(uint32(w.Players[owner].Mana) + uint32(reward))
+	}
+	if enemy < 2 {
+		remaining := uint32(0)
+		if int32(uint32(w.Players[enemy].Mana)) > int32(reward) {
+			remaining = uint32(w.Players[enemy].Mana) - uint32(reward)
+		}
+		w.Players[enemy].Mana = int(remaining)
+		if w.Players[enemy].Leader == loser {
+			w.Players[enemy].Statistics.LeaderLosses++
+			w.Players[enemy].Leader = 0
+		}
+	}
+	w.clearHeroLinks(loser)
+	l.Population = 0
+	l.State = Ruin
+	l.moving = false
+	l.BattleWith = 0
+	l.BattleAggressor = false
+	l.Frame = 0
+	frames := uint16(12)
+	kind := CombatDefeated
+	if l.IsHero() {
+		frames = 6
+		kind = CombatHeroDefeated
+	}
+	l.CombatAftermath = CombatAftermathState{Kind: kind, Frames: frames}
 	f.BattleWith = 0
 	f.BattleAggressor = false
 	f.Frame = 0
 	if f.IsHero() {
+		if l.BattleWasTown {
+			w.clearTownFarms(loser)
+		}
+		f.State = Walking
 		f.Hero.Phase = HeroFindTarget
-		if f.Hero.Kind == HeroAdonis {
+		if f.Hero.Kind == HeroAdonis && !w.BirthBlocked {
 			w.SplitAdonis(winner)
 		}
+	} else if l.BattleWasTown || f.BattleWasTown {
+		if l.BattleWasTown {
+			w.clearTownFarms(loser)
+		}
+		if f.BattleWasTown {
+			w.clearTownFarms(winner)
+		}
+		f.State = Town
+		f.Stage = 0
+		f.LastDevelopedStage = 0
+		f.FoundedAt = w.Tick
+		f.positionX = int(f.X)*256 + 128
+		f.positionY = int(f.Y)*256 + 128
+		f.positionSet = true
+		w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(winner)}, f.positionX, f.positionY)
+		if stage := w.EvaluateTown(winner); stage > 0 {
+			f.Stage = uint8(stage)
+			f.Frame = uint16(stage)
+		} else {
+			f.State = Walking
+			f.Stage = 0
+		}
+	} else {
+		f.State = Walking
+		f.CombatAftermath = CombatAftermathState{Kind: CombatVictorious, Frames: 14}
 	}
 }
 
@@ -80,4 +138,58 @@ func combatQuotient(population int) int {
 		return int(uint16(population))
 	}
 	return int(quotient)
+}
+
+type CombatAftermathKind uint8
+
+const (
+	CombatAftermathNone CombatAftermathKind = iota
+	CombatDefeated
+	CombatHeroDefeated
+	CombatVictorious
+)
+
+type CombatAftermathState struct {
+	Kind          CombatAftermathKind
+	Frame, Frames uint16
+}
+
+func (w *World) battleReward(loser int) uint16 {
+	f := w.Followers[loser]
+	reward := uint16(w.Landscape.Parameters[0])
+	next := 1
+	if f.Owner < 2 && w.Players[f.Owner].Leader == loser {
+		reward += uint16(w.Landscape.Parameters[next])
+		next++
+	}
+	if f.IsHero() {
+		reward += uint16(w.Landscape.Parameters[next])
+	}
+	if f.BattleWasTown {
+		reward += uint16(w.Landscape.Weapons[min(TownStages-1, int(f.Stage))])
+	}
+	return reward
+}
+
+func (w *World) advanceCombatAftermath(id int) bool {
+	f := &w.Followers[id]
+	a := &f.CombatAftermath
+	if a.Kind == CombatAftermathNone {
+		return false
+	}
+	a.Frame++
+	f.Frame = a.Frame
+	if a.Frame < a.Frames {
+		return true
+	}
+	kind := a.Kind
+	f.CombatAftermath = CombatAftermathState{}
+	if kind == CombatVictorious {
+		f.State = Walking
+		f.Frame = 0
+		f.moving = false
+	} else {
+		w.remove(id)
+	}
+	return true
 }
