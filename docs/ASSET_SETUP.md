@@ -7,6 +7,22 @@ before building the game.
 
 ## Import the two original disks
 
+### Identifying the disk images
+
+The [Planet Emu Amiga ADF catalogue, letter P](https://www.planetemu.net/roms/commodore-amiga-games-adf?page=P)
+is a useful reference for identifying the game. Search for **Populous II -
+Trials of the Olympian Gods** (Bullfrog, 1991), with **Disk 1 of 2** for the
+boot disk and **Disk 2 of 2** for the data disk. The catalogue also lists
+modified editions and the separate Challenge extension; select the main
+two-disk game.
+
+Extract the `.adf` files from their archives before passing them to the
+importer. Catalogue names alone do not guarantee compatibility: the importer
+checks the required file contents, and the disk SHA-256 fingerprints below
+identify the images used for validation. A different whole-disk fingerprint
+can still contain identical required files, but an unsupported executable or
+modified resource is rejected.
+
 The importer runs using only Go and the included AmigaDOS reader. It extracts
 only the 27 required game files, checks their SHA-256 fingerprints and leaves
 unrelated Amiga operating-system files on the disks.

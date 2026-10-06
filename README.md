@@ -68,6 +68,11 @@ your own disk images before building; the prepared files are then embedded
 locally. See [asset setup](docs/ASSET_SETUP.md) for supported revisions and the
 French executable alternative used by the original-reference tests.
 
+To identify the two disks, search the [Planet Emu Amiga ADF catalogue](https://www.planetemu.net/roms/commodore-amiga-games-adf?page=P)
+for **Populous II - Trials of the Olympian Gods**, **Disk 1 of 2** and
+**Disk 2 of 2**. The [setup guide](docs/ASSET_SETUP.md#identifying-the-disk-images)
+explains how to check the edition against the supported files.
+
 ```sh
 sh tools/exclude-local-assets.sh
 go run ./cmd/import-assets -adf "/path/to/disk A.adf" -adf "/path/to/disk B.adf"
