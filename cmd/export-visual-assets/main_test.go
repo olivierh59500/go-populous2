@@ -129,6 +129,16 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			t.Fatalf("town ruin artwork changed at stage %d", stage)
 		}
 	}
+	for connection, art := range source.WallRules.Art {
+		frames, err := populous2.DecodeAnimation(source.Executable, art.Animation)
+		if err != nil {
+			t.Fatal(err)
+		}
+		name := fmt.Sprintf("wall/connection/%d", connection)
+		if !reflect.DeepEqual(portable.Animations[name], animation(frames, false)) {
+			t.Fatal("wall artwork differs", name)
+		}
+	}
 	for _, path := range []string{"populous.ii", "POPULOUS.II", "code.bin"} {
 		if _, err := os.Stat(filepath.Join(output, path)); !os.IsNotExist(err) {
 			t.Fatalf("unexpected game program in portable installation: %s", path)
