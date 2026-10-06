@@ -250,6 +250,34 @@ func TestSnapshotVersionOneRetiredConstructionFieldsRemainReadable(t *testing.T)
 	}
 }
 
+func TestSnapshotPreservesRetainedTownRuinCountdown(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+	id := addFollower(w, 32, 32, 0, 0, Ruin)
+	w.Followers[id].CombatAftermath = CombatAftermathState{Kind: CombatTownRuin, RuinTime: 399}
+	var output bytes.Buffer
+	if err := WriteSnapshot(&output, w); err != nil {
+		t.Fatal(err)
+	}
+	restored, err := ReadSnapshot(bytes.NewReader(output.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for range 30 {
+		w.Step()
+		restored.Step()
+		if !reflect.DeepEqual(w, restored) {
+			t.Fatal("town ruin countdown changed after loading")
+		}
+	}
+	s := w.Snapshot()
+	s.World.Followers[id].CombatAftermath.RuinTime = 401
+	if _, err := s.Restore(); err == nil {
+		t.Fatal("invalid retained town ruin countdown accepted")
+	}
+}
+
 func TestSnapshotStrictJSONAndWriterErrors(t *testing.T) {
 	w := testFlatWorld()
 	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32

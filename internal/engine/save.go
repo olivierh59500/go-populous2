@@ -171,6 +171,17 @@ func validateSnapshotWorld(w *World) error {
 		if f.TerrainDeath.Active && (f.TerrainDeath.Frames < 1 || f.TerrainDeath.Frame >= f.TerrainDeath.Frames) {
 			return fmt.Errorf("snapshot terrain-death lifecycle is invalid")
 		}
+		aftermath := f.CombatAftermath
+		if aftermath.Kind > CombatCollateralDeath {
+			return fmt.Errorf("snapshot combat aftermath kind is invalid")
+		}
+		if aftermath.Kind == CombatTownRuin {
+			if aftermath.Frame != 0 || aftermath.Frames != 0 || aftermath.RuinTime < 1 || aftermath.RuinTime > 400 {
+				return fmt.Errorf("snapshot town ruin countdown is invalid")
+			}
+		} else if aftermath.Kind != CombatAftermathNone && (aftermath.Frames < 1 || aftermath.Frame >= aftermath.Frames || aftermath.RuinTime < 0 || aftermath.RuinTime > 400) {
+			return fmt.Errorf("snapshot combat aftermath animation is invalid")
+		}
 		if f.positionSet && (f.positionX < 0 || f.positionY < 0 || f.positionX >= MapSize*256 || f.positionY >= MapSize*256 || f.positionX>>8 != int(f.X) || f.positionY>>8 != int(f.Y)) || f.velocityX < -32768 || f.velocityX > 32767 || f.velocityY < -32768 || f.velocityY > 32767 || f.legRemaining < -32768 || f.legRemaining > 32767 {
 			return fmt.Errorf("snapshot follower %d contains invalid continuous motion", id)
 		}
