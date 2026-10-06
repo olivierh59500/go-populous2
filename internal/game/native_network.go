@@ -95,6 +95,12 @@ func (g *NativeGame) serialChild(call populous2.NativeSerialFrameCall, phase *ui
 			g.Network, g.Transport = g.NetworkSession.Endpoint, nil
 		}
 	}
+	if call.Routine == 0xab4 && phase != nil && *phase == 0 && g.Transport == nil && g.NetworkSession != nil {
+		if _, err := g.NetworkSession.Retry(); err != nil {
+			return populous2.NativeSerialFrameChildResult{}, err
+		}
+		g.Network = g.NetworkSession.Endpoint
+	}
 	if err := g.networkReady(); err != nil {
 		return populous2.NativeSerialFrameChildResult{}, err
 	}

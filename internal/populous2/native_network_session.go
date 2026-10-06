@@ -70,11 +70,18 @@ func (s *NativeNetworkSession) Retry() (bool, error) {
 	if s.Endpoint == nil {
 		return true, s.open()
 	}
-	if s.Serial == nil || s.Serial.TerminalError() == nil {
+	if s.Serial == nil {
+		_, ready, err := s.Endpoint.Poll()
+		if !ready || err == nil {
+			return false, nil
+		}
+	} else if s.Serial.TerminalError() == nil {
 		return false, nil
 	}
-	s.received, _, _ = s.Serial.NativeTransportReceiveImage()
-	s.retainReceived = true
+	if s.Serial != nil {
+		s.received, _, _ = s.Serial.NativeTransportReceiveImage()
+		s.retainReceived = true
+	}
 	if err := s.Endpoint.Close(); err != nil {
 		return false, err
 	}

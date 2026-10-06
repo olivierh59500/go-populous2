@@ -63,6 +63,7 @@ type NativeSerialConn struct {
 	mu         sync.Mutex
 	ring       nativeSerialRing
 	readError  error
+	writeError error
 	write      *nativeSerialConnWrite
 	baud       uint16
 	readerDone chan struct{}
@@ -156,6 +157,9 @@ func (c *NativeSerialConn) send(src []byte) (int, error) {
 	select {
 	case result := <-c.write.result:
 		c.write = nil
+		if result.err != nil {
+			c.writeError = result.err
+		}
 		return result.count, result.err
 	default:
 		return 0, ErrNativeSerialWait
@@ -172,7 +176,10 @@ func (c *NativeSerialConn) TerminalError() error {
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	return c.readError
+	if c.readError != nil {
+		return c.readError
+	}
+	return c.writeError
 }
 func (c *NativeSerialConn) NativeReceiveIndices() (uint16, uint16) {
 	c.mu.Lock()

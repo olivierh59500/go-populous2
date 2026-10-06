@@ -3,6 +3,7 @@ package populous2
 import (
 	"errors"
 	"io"
+	"net"
 	"syscall"
 	"testing"
 	"time"
@@ -117,5 +118,90 @@ func TestNativeNetworkSessionRetriesOnlyExplicitlyAfterActualEOF(t *testing.T) {
 			t.Fatal("explicit retry did not accept next peer")
 		}
 		time.Sleep(100 * time.Microsecond)
+	}
+}
+
+func TestNativeNetworkSessionRetriesInitialDialFailure(t *testing.T) {
+	listener, err := ListenNativeNetwork("127.0.0.1:0")
+	if errors.Is(err, syscall.EPERM) {
+		t.Skip("sandbox denied loopback bind")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	address := listener.Address()
+	if err := listener.Close(); err != nil {
+		t.Fatal(err)
+	}
+	client, err := NewNativeNetworkSession("", address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+	deadline := time.Now().Add(3 * time.Second)
+	for {
+		_, ready, err := client.Endpoint.Poll()
+		if ready && err != nil {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("failed dial was not observed")
+		}
+		time.Sleep(100 * time.Microsecond)
+	}
+	server, err := NewNativeNetworkSession(address, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer server.Close()
+	retried, err := client.Retry()
+	if err != nil || !retried {
+		t.Fatal("explicit failed-dial retry missing", retried, err)
+	}
+	deadline = time.Now().Add(3 * time.Second)
+	for {
+		_, a, ae := server.Poll()
+		_, b, be := client.Poll()
+		if ae != nil || be != nil {
+			t.Fatal(ae, be)
+		}
+		if a && b {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("dial retry did not reach the new peer")
+		}
+		time.Sleep(100 * time.Microsecond)
+	}
+}
+
+type nativeRetryWriteFailureConn struct{ net.Conn }
+
+func (c nativeRetryWriteFailureConn) Write([]byte) (int, error) { return 0, io.ErrClosedPipe }
+
+func TestNativeSerialTerminalErrorRetainsWriteFailure(t *testing.T) {
+	left, right := net.Pipe()
+	defer right.Close()
+	conn, err := NewNativeSerialConn(nativeRetryWriteFailureConn{left})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	deadline := time.Now().Add(time.Second)
+	for {
+		_, err := conn.Port().Write([]byte{1, 2, 3})
+		if errors.Is(err, io.ErrClosedPipe) {
+			break
+		}
+		if err != nil && !errors.Is(err, ErrNativeSerialWait) {
+			t.Fatal(err)
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("write failure did not return")
+		}
+		time.Sleep(100 * time.Microsecond)
+	}
+	if !errors.Is(conn.TerminalError(), io.ErrClosedPipe) {
+		t.Fatal("terminal observation ignored the write failure", conn.TerminalError())
 	}
 }
