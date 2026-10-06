@@ -405,3 +405,15 @@ func TestArmageddonHeroRequestsDirectTerrainWithoutManaCost(t *testing.T) {
 		t.Fatal("Armageddon hero did not raise blocking ground directly")
 	}
 }
+
+func TestNeutralInventionCannotBecomePlayerHero(t *testing.T) {
+	w := testFlatWorld()
+	id, err := w.CreateNeutral(NeutralMonster, 20, 20)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := w.Followers[id]
+	if err := w.ConvertHero(id, HeroPerseus); err == nil || w.Followers[id] != before {
+		t.Fatal("neutral conversion was accepted or changed source state")
+	}
+}

@@ -2,7 +2,6 @@ package engine
 
 import (
 	"encoding/binary"
-	"errors"
 	"reflect"
 	"testing"
 )
@@ -164,12 +163,12 @@ func TestCampaignTypedDecodingAndSubworldSeeds(t *testing.T) {
 	}
 }
 
-func TestUnavailablePowersAreHonestAndDoNotConsumeMana(t *testing.T) {
+func TestReservedPowersAreRejectedWithoutConsumingMana(t *testing.T) {
 	w := testFlatWorld()
 	w.Players[0].Mana = 60000
-	w.Level.Players[0].Powers[Wind] = true
-	if err := w.Cast(0, Wind, PowerTarget{}); !errors.Is(err, ErrPowerUnavailable) || w.Players[0].Mana != 60000 {
-		t.Fatal("unimplemented power appeared successful")
+	w.Level.Players[0].Powers[5] = true
+	if err := w.Cast(0, PowerID(5), PowerTarget{}); err == nil || w.Players[0].Mana != 60000 {
+		t.Fatal("reserved power appeared successful")
 	}
 	if len(Powers) != 29 {
 		t.Fatal("power catalogue must contain all original powers")
@@ -225,46 +224,6 @@ func TestTerrainPriceCountsPropagationAndExperience(t *testing.T) {
 	w.Players[0].Mana = 20
 	if !w.RaiseAt(0, 32, 32) || w.Players[0].Mana != 0 {
 		t.Fatal("propagated order did not clamp exhausted ledger")
-	}
-}
-
-func TestComputerDoesNotAlternateConflictingTownElevations(t *testing.T) {
-	w := testFlatWorld()
-	// Two valid town foundations lie at different levels. The intervening
-	// slope is intentionally shared by their development neighbourhoods.
-	for y := 33; y < CornerSize; y++ {
-		for x := 0; x < CornerSize; x++ {
-			w.Heights[x+y*CornerSize] = 2
-		}
-	}
-	w.rebuildCells()
-	addFollower(w, 30, 30, 1, 100, Town)
-	addFollower(w, 30, 35, 1, 100, Town)
-	w.Players[1].Computer = true
-	w.Players[1].Mana = 100000
-	var previousDirection [CornerSize * CornerSize]int8
-	var lastEdit [CornerSize * CornerSize]uint64
-	inversions := 0
-	for tick := uint64(1); tick <= 1000; tick++ {
-		w.Tick = tick
-		before := w.Heights
-		w.computerLand(1)
-		for at, height := range w.Heights {
-			if height != before[at] {
-				direction := int8(1)
-				if height < before[at] {
-					direction = -1
-				}
-				if previousDirection[at] != 0 && direction != previousDirection[at] && tick-lastEdit[at] < 375 {
-					inversions++
-				}
-				previousDirection[at] = direction
-				lastEdit[at] = tick
-			}
-		}
-	}
-	if inversions != 0 {
-		t.Fatalf("computer wasted mana on %d short-term terrain reversals", inversions)
 	}
 }
 

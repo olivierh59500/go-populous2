@@ -73,6 +73,10 @@ type Summary struct{ Population, Towns, Groups, BattlesWon, Mana int }
 // World owns simulation state. All arrays have a geometric or game meaning;
 // none represents CPU memory, a register bank, or a relocated executable.
 type World struct {
+	terrainTargets       [MapSize * MapSize]uint8
+	terrainTargetSet     [MapSize * MapSize]bool
+	developmentTarget    [CornerSize * CornerSize]uint8
+	developmentTargetSet [CornerSize * CornerSize]bool
 	Scenario             ScenarioState
 	Level                Level
 	Landscape            Landscape
@@ -100,10 +104,6 @@ type World struct {
 	Result               int // Zero ongoing, one blue victory, two red victory.
 	random               randomState
 	effects              effectPool
-	terrainTargets       [MapSize * MapSize]uint8
-	terrainTargetSet     [MapSize * MapSize]bool
-	developmentTarget    [CornerSize * CornerSize]uint8
-	developmentTargetSet [CornerSize * CornerSize]bool
 }
 
 func NewWorld(level Level, land Landscape) (*World, error) {

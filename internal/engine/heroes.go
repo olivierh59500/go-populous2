@@ -116,8 +116,8 @@ func (w *World) ConvertHero(id int, kind HeroKind) error {
 		return fmt.Errorf("invalid hero conversion")
 	}
 	f := &w.Followers[id]
-	if f.State == Inactive {
-		return fmt.Errorf("inactive follower")
+	if f.State == Inactive || f.Owner > 1 || f.Neutral.Kind != NeutralNone {
+		return fmt.Errorf("follower cannot be converted into a deity hero")
 	}
 	owner := int(f.Owner)
 	if w.Players[owner].Leader == id {
