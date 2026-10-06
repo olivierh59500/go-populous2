@@ -1,7 +1,6 @@
 package populous2
 
 import (
-	"encoding/binary"
 	"fmt"
 
 	"go-populous2/internal/amiga"
@@ -52,12 +51,7 @@ func (r *NativeActorRenderRules) Angle(c *NativeFrameRegisterContext) error {
 	if negativeY {
 		c.Word(1, -uint16(c.D[1]))
 	}
-	readByte := func(a int) (uint8, error) {
-		if a < 0 || a >= len(r.Frames.code) {
-			return 0, fmt.Errorf("native angle byte outside CODE")
-		}
-		return r.Frames.code[a], nil
-	}
+	readByte := r.Frames.byte
 	if int16(c.D[1]) <= int16(c.D[0]) {
 		c.Word(2, uint16(c.D[0])>>5)
 		c.D[3] = 0
@@ -355,14 +349,22 @@ func (r *NativeActorRenderRules) townBody(at int, cb NativeRenderFrameCallbacks,
 		c.Word(2, uint16(c.D[2])*2)
 		c.D[2] &= 0xffff
 		layer := 0x26956 + int(c.D[2])
-		if layer < 0 || layer+6 > len(r.Frames.code) {
+		if !r.Frames.view.bounds(r.Frames.code, layer, 6) {
 			return p, fmt.Errorf("native town layer outside CODE")
 		}
 		x, y := c.D[0], c.D[1]
-		c.Byte(2, r.Frames.code[layer])
+		layerX, err := r.Frames.byte(layer)
+		if err != nil {
+			return p, err
+		}
+		c.Byte(2, layerX)
 		c.ExtendWord(2)
 		c.Word(0, uint16(c.D[0])+uint16(c.D[2]))
-		c.Byte(2, r.Frames.code[layer+1])
+		layerY, err := r.Frames.byte(layer + 1)
+		if err != nil {
+			return p, err
+		}
+		c.Byte(2, layerY)
 		c.ExtendWord(2)
 		c.Word(1, uint16(c.D[1])+uint16(c.D[2]))
 		v, err := r.word(layer + 2)
@@ -439,7 +441,11 @@ func (r *NativeActorRenderRules) townBody(at int, cb NativeRenderFrameCallbacks,
 			}
 		}
 		c.D[0], c.D[1] = x, y
-		c.Word(2, binary.BigEndian.Uint16(r.Frames.code[layer+4:]))
+		nextLayer, err := r.word(layer + 4)
+		if err != nil {
+			return p, err
+		}
+		c.Word(2, nextLayer)
 		if uint16(c.D[2]) == 0 {
 			break
 		}

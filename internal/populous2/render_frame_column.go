@@ -39,12 +39,20 @@ func (r *NativeActorRenderRules) column(at int, cb NativeActorEffectsCallbacks, 
 			c.Word(2, uint16(c.D[2])*2)
 			c.D[2] &= 0xffff
 			layer := 0x26956 + int(c.D[2])
-			if layer < 0 || layer+6 > len(r.Frames.code) {
+			if !r.Frames.view.bounds(r.Frames.code, layer, 6) {
 				return fmt.Errorf("native column layer outside CODE")
 			}
-			c.Byte(0, r.Frames.code[layer])
+			layerX, e := r.Frames.byte(layer)
+			if e != nil {
+				return e
+			}
+			c.Byte(0, layerX)
 			c.ExtendWord(0)
-			c.Byte(1, r.Frames.code[layer+1])
+			layerY, e := r.Frames.byte(layer + 1)
+			if e != nil {
+				return e
+			}
+			c.Byte(1, layerY)
 			c.ExtendWord(1)
 			offset, e := r.word(layer + 2)
 			if e != nil {
@@ -76,7 +84,11 @@ func (r *NativeActorRenderRules) column(at int, cb NativeActorEffectsCallbacks, 
 			if draw {
 				visible := uint16(c.D[2])
 				saved6, saved7 := c.D[6], c.D[7]
-				s := NativePresentationSprite{Sprite: (descriptor - 0x21626) / 12, X: int16(c.D[0]), Y: int16(c.D[1]), HalfWidth: int16(half), Height: int16(visible), Routine: binary.BigEndian.Uint32(r.Frames.code[descriptor+8:])}
+				procedure, e := r.Frames.procedure(descriptor + 8)
+				if e != nil {
+					return e
+				}
+				s := NativePresentationSprite{Sprite: (descriptor - 0x21626) / 12, X: int16(c.D[0]), Y: int16(c.D[1]), HalfWidth: int16(half), Height: int16(visible), Routine: procedure}
 				if e := r.Frames.primitiveRegisters(s.Routine, c); e != nil {
 					return e
 				}

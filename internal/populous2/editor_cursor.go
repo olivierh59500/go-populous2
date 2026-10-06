@@ -15,7 +15,10 @@ type NativeImageRenderState struct {
 	AudioBank [0x532]byte // CODE $185a8, including untouched descriptor bytes.
 }
 
-type NativeEditorCursorRules struct{ code []byte }
+type NativeEditorCursorRules struct {
+	code []byte
+	view nativeRenderCodeView
+}
 
 func DecodeNativeEditorCursorRules(exe *amiga.Executable) (NativeEditorCursorRules, error) {
 	var r NativeEditorCursorRules
@@ -26,6 +29,8 @@ func DecodeNativeEditorCursorRules(exe *amiga.Executable) (NativeEditorCursorRul
 	return r, nil
 }
 
+// NewImageState is the legacy immutable startup initializer. A live runtime
+// retains its current Image owner across draws rather than recreating it here.
 func (r *NativeEditorCursorRules) NewImageState() NativeImageRenderState {
 	var s NativeImageRenderState
 	if r != nil && len(r.code) >= 0x185a8+len(s.AudioBank) {
@@ -36,10 +41,10 @@ func (r *NativeEditorCursorRules) NewImageState() NativeImageRenderState {
 }
 
 func (r *NativeEditorCursorRules) word(a int) (uint16, error) {
-	if r == nil || a < 0 || a&1 != 0 || a+2 > len(r.code) {
+	if r == nil {
 		return 0, fmt.Errorf("native cursor word outside CODE")
 	}
-	return binary.BigEndian.Uint16(r.code[a:]), nil
+	return r.view.word(r.code, a)
 }
 
 // Preview is the exact editor prefix of $1be8, ending before normal pointer
@@ -125,18 +130,41 @@ func (r *NativeEditorCursorRules) DrawImage(s *NativeImageRenderState, d *[8]uin
 		}
 		seen[image] = true
 		at := 0x26956 + int(uint16(image*2))
-		if at < 0 || at+6 > len(r.code) {
+		if !r.view.bounds(r.code, at, 6) {
 			return nil, fmt.Errorf("native image layer outside CODE")
 		}
-		descriptor := int(binary.BigEndian.Uint16(r.code[at+2:]))
+		descriptorWord, err := r.word(at + 2)
+		if err != nil {
+			return nil, err
+		}
+		descriptor := int(descriptorWord)
 		da := 0x21626 + descriptor
-		if descriptor%12 != 0 || descriptor/12 >= 830 || da+12 > len(r.code) {
+		if descriptor%12 != 0 || descriptor/12 >= 830 || !r.view.bounds(r.code, da, 12) {
 			return nil, fmt.Errorf("native image descriptor outside original bank")
 		}
-		half, height := int16(binary.BigEndian.Uint16(r.code[da+4:])), binary.BigEndian.Uint16(r.code[da+6:])
-		procedure := binary.BigEndian.Uint32(r.code[da+8:])
-		px := uint16(int16(int8(r.code[at]))) - uint16(half) + uint16(x)
-		py := uint16(int16(int8(r.code[at+1]))) - height + uint16(y)
+		halfWord, err := r.word(da + 4)
+		if err != nil {
+			return nil, err
+		}
+		height, err := r.word(da + 6)
+		if err != nil {
+			return nil, err
+		}
+		procedure, err := r.procedure(da + 8)
+		if err != nil {
+			return nil, err
+		}
+		layerX, err := r.byte(at)
+		if err != nil {
+			return nil, err
+		}
+		layerY, err := r.byte(at + 1)
+		if err != nil {
+			return nil, err
+		}
+		half := int16(halfWord)
+		px := uint16(int16(int8(layerX))) - uint16(half) + uint16(x)
+		py := uint16(int16(int8(layerY))) - height + uint16(y)
 		s.LastY = py
 		d[2] = hudWord(d[2], height)
 		if procedure == 0xf0ee || procedure == 0xf3a0 {
@@ -145,7 +173,10 @@ func (r *NativeEditorCursorRules) DrawImage(s *NativeImageRenderState, d *[8]uin
 		} else if procedure == 0xef5c {
 			return nil, fmt.Errorf("modified software sprite needs real bitmap/register execution")
 		}
-		image = binary.BigEndian.Uint16(r.code[at+4:])
+		image, err = r.word(at + 4)
+		if err != nil {
+			return nil, err
+		}
 		if image == 0 {
 			return plan, nil
 		}

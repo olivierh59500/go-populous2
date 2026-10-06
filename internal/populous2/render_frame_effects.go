@@ -1,7 +1,6 @@
 package populous2
 
 import (
-	"encoding/binary"
 	"fmt"
 )
 
@@ -20,12 +19,22 @@ type NativeActorEffectsPlan struct {
 func (r *NativeActorRenderRules) crop(descriptor int, cb NativeActorEffectsCallbacks, p *NativeActorEffectsPlan) error {
 	c := cb.Frame
 	code := r.Frames.code
-	if descriptor < 0 || descriptor+12 > len(code) {
+	if !r.Frames.view.bounds(code, descriptor, 12) {
 		return fmt.Errorf("native cropped descriptor outside CODE")
 	}
-	sourceHeight := binary.BigEndian.Uint16(code[descriptor+6:])
+	sourceHeight, err := r.word(descriptor + 6)
+	if err != nil {
+		return err
+	}
 	visibleHeight := uint16(c.D[2])
-	normal := binary.BigEndian.Uint32(code[descriptor+8:])
+	normal, err := r.Frames.procedure(descriptor + 8)
+	if err != nil {
+		return err
+	}
+	half, err := r.word(descriptor + 4)
+	if err != nil {
+		return err
+	}
 	routine := uint32(0xf0e8)
 	factor := uint16(2)
 	if normal == 0xf3a0 {
@@ -35,7 +44,7 @@ func (r *NativeActorRenderRules) crop(descriptor int, cb NativeActorEffectsCallb
 		return fmt.Errorf("native cropped descriptor procedure unavailable")
 	}
 	x, y := uint16(c.D[0]), uint16(c.D[1])
-	request := NativeCroppedSpriteRequest{Sprite: NativePresentationSprite{Sprite: (descriptor - 0x21626) / 12, X: int16(x), Y: int16(y), HalfWidth: int16(binary.BigEndian.Uint16(code[descriptor+4:])), Height: int16(visibleHeight), Routine: routine}, SourceHeight: int16(sourceHeight)}
+	request := NativeCroppedSpriteRequest{Sprite: NativePresentationSprite{Sprite: (descriptor - 0x21626) / 12, X: int16(x), Y: int16(y), HalfWidth: int16(half), Height: int16(visibleHeight), Routine: routine}, SourceHeight: int16(sourceHeight)}
 	d0, d1, table := c.D[0], c.D[1], 0
 	draw := true
 	if int16(y) < 0 {
@@ -88,10 +97,17 @@ func (r *NativeActorRenderRules) crop(descriptor int, cb NativeActorEffectsCallb
 	c.Word(7, sourceHeight*factor)
 	if draw {
 		a := table + int((x&15)*8)
-		if a < 0 || a+8 > len(code) {
+		if !r.Frames.view.bounds(code, a, 8) {
 			return fmt.Errorf("native cropped control outside CODE")
 		}
-		d0, d1 = binary.BigEndian.Uint32(code[a:]), binary.BigEndian.Uint32(code[a+4:])
+		d0, err = r.Frames.long(a)
+		if err != nil {
+			return err
+		}
+		d1, err = r.Frames.long(a + 4)
+		if err != nil {
+			return err
+		}
 	}
 	c.D[0], c.D[1] = d0, d1
 	p.Crops = append(p.Crops, request)
@@ -245,13 +261,21 @@ func (r *NativeActorRenderRules) actorBranch(at, target int, cb NativeActorEffec
 		c.Word(2, v*2)
 		c.D[2] &= 0xffff
 		layer := 0x26956 + int(c.D[2])
-		if layer < 0 || layer+6 > len(r.Frames.code) {
+		if !r.Frames.view.bounds(r.Frames.code, layer, 6) {
 			return p, fmt.Errorf("native scenery layer outside CODE")
 		}
-		c.Byte(2, r.Frames.code[layer])
+		layerX, e := r.Frames.byte(layer)
+		if e != nil {
+			return p, e
+		}
+		c.Byte(2, layerX)
 		c.ExtendWord(2)
 		c.Word(0, uint16(c.D[0])+uint16(c.D[2]))
-		c.Byte(2, r.Frames.code[layer+1])
+		layerY, e := r.Frames.byte(layer + 1)
+		if e != nil {
+			return p, e
+		}
+		c.Byte(2, layerY)
 		c.ExtendWord(2)
 		c.Word(1, uint16(c.D[1])+uint16(c.D[2]))
 		offset, e := r.word(layer + 2)

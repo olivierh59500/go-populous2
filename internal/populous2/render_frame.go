@@ -1,7 +1,6 @@
 package populous2
 
 import (
-	"encoding/binary"
 	"fmt"
 	"math/bits"
 
@@ -12,6 +11,7 @@ import (
 // counter bank belongs to the caller and is shared with the audio consumer.
 type NativeRenderFrameRules struct {
 	code     []byte
+	view     nativeRenderCodeView
 	Commands NativeCommandRules
 	Images   NativeEditorCursorRules
 }
@@ -49,10 +49,10 @@ func DecodeNativeRenderFrameRules(exe *amiga.Executable) (NativeRenderFrameRules
 }
 
 func (r *NativeRenderFrameRules) word(a int) (uint16, error) {
-	if r == nil || a < 0 || a&1 != 0 || a+2 > len(r.code) {
+	if r == nil {
 		return 0, fmt.Errorf("native rendering word outside/unaligned CODE %#x", a)
 	}
-	return binary.BigEndian.Uint16(r.code[a:]), nil
+	return r.view.word(r.code, a)
 }
 
 // renderFramePixel executes $e17a/$e196. Checked drawing returns without any
@@ -109,10 +109,11 @@ func (r *NativeRenderFrameRules) TerrainHeight(m FollowerCleanupMemory, c *Nativ
 	if err != nil {
 		return err
 	}
-	if 0x33512+int(tile) >= len(r.code) {
-		return fmt.Errorf("native corner raster unavailable")
+	raster, err := r.byte(0x33512 + int(tile))
+	if err != nil {
+		return err
 	}
-	if r.code[0x33512+int(tile)]&(1<<corner) != 0 {
+	if raster&(1<<corner) != 0 {
 		c.Word(2, uint16(c.D[2])+1)
 	}
 	return nil
@@ -159,12 +160,22 @@ func (r *NativeRenderFrameRules) descriptor(a int, cb NativeRenderFrameCallbacks
 }
 
 func (r *NativeRenderFrameRules) descriptorOwned(a int, cb NativeRenderFrameCallbacks, p *NativeRenderFramePlan, ownership func(bool, *NativeFrameRegisterContext) error) error {
-	if a < 0 || a+12 > len(r.code) || cb.Frame == nil {
+	if !r.view.bounds(r.code, a, 12) || cb.Frame == nil {
 		return fmt.Errorf("native direct rendering descriptor missing")
 	}
 	c := cb.Frame
-	height := binary.BigEndian.Uint16(r.code[a+6:])
-	routine := binary.BigEndian.Uint32(r.code[a+8:])
+	height, err := r.word(a + 6)
+	if err != nil {
+		return err
+	}
+	routine, err := r.procedure(a + 8)
+	if err != nil {
+		return err
+	}
+	half, err := r.word(a + 4)
+	if err != nil {
+		return err
+	}
 	if routine != 0xf0ee && routine != 0xf3a0 {
 		return fmt.Errorf("native direct sprite needs original procedure %#x", routine)
 	}
@@ -174,7 +185,7 @@ func (r *NativeRenderFrameRules) descriptorOwned(a int, cb NativeRenderFrameCall
 			return err
 		}
 	}
-	sprite := NativePresentationSprite{Sprite: (a - 0x21626) / 12, X: int16(c.D[0]), Y: int16(c.D[1]), HalfWidth: int16(binary.BigEndian.Uint16(r.code[a+4:])), Height: int16(height), Routine: routine}
+	sprite := NativePresentationSprite{Sprite: (a - 0x21626) / 12, X: int16(c.D[0]), Y: int16(c.D[1]), HalfWidth: int16(half), Height: int16(height), Routine: routine}
 	if err := r.primitiveRegisters(routine, c); err != nil {
 		return err
 	}
@@ -246,10 +257,18 @@ func (r *NativeRenderFrameRules) primitiveRegisters(routine uint32, c *NativeFra
 	r.Images.blitterRegisters(routine, uint16(c.D[0]), uint16(c.D[1]), &c.D)
 	if visible {
 		a := table + int((uint16(x)&15)*8)
-		if a < 0 || a+8 > len(r.code) {
+		if !r.view.bounds(r.code, a, 8) {
 			return fmt.Errorf("native sprite hardware control outside CODE")
 		}
-		d0, d1 = binary.BigEndian.Uint32(r.code[a:]), binary.BigEndian.Uint32(r.code[a+4:])
+		var err error
+		d0, err = r.long(a)
+		if err != nil {
+			return err
+		}
+		d1, err = r.long(a + 4)
+		if err != nil {
+			return err
+		}
 	}
 	// EE32 normally restores these two longs. A direct descriptor call
 	// leaves the actual BLTCON/mask table words visible to its parent.
@@ -301,7 +320,11 @@ func (r *NativeRenderFrameRules) MapCursor(cb NativeRenderFrameCallbacks) (Nativ
 	grid := 0xf44 + int(int16(c.D[2]))
 	c.Byte(2, m.byte(grid+1))
 	c.Word(2, uint16(c.D[2])&255)
-	c.Byte(2, r.code[0x33512+int(uint16(c.D[2]))])
+	raster, err := r.byte(0x33512 + int(uint16(c.D[2])))
+	if err != nil {
+		return p, err
+	}
+	c.Byte(2, raster)
 	c.Word(2, uint16(c.D[2])&15)
 	c.Word(2, uint16(c.D[2])<<4)
 	shape := 0x33194 + int(int16(c.D[2]))
@@ -682,16 +705,24 @@ func (r *NativeRenderFrameRules) HUD(cb NativeRenderFrameCallbacks, redraw bool)
 			}
 			source := 0x33a88 + side*240 + int(int16(variant)) + int(int16(phase))
 			for {
-				if source < 0 || source+5 > len(r.code) || at < 0 || at >= 8000 {
+				if !r.view.bounds(r.code, source, 5) || at < 0 || at >= 8000 {
 					return p, fmt.Errorf("native population stencil outside backing")
 				}
-				c.Byte(0, r.code[source])
+				v, err := r.byte(source)
+				if err != nil {
+					return p, err
+				}
+				c.Byte(0, v)
 				source++
 				for plane := range 4 {
 					address := at + plane*8000
 					c.Byte(2, cb.Bitmap[address])
 					c.Byte(2, uint8(c.D[2])&uint8(c.D[0]))
-					c.Byte(2, uint8(c.D[2])|r.code[source])
+					v, err := r.byte(source)
+					if err != nil {
+						return p, err
+					}
+					c.Byte(2, uint8(c.D[2])|v)
 					source++
 					cb.Bitmap[address] = uint8(c.D[2])
 				}

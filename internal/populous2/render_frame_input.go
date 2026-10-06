@@ -105,11 +105,15 @@ func (r *NativeRenderFrameRules) Highlights(cb NativeRenderFrameCallbacks) error
 		}
 		at := int(int16(y*40 + x))
 		for row := 0; row < 12; row++ {
-			if width < 1 || at < 0 || at+width > len(cb.Bitmap) || pattern+row*4+width > len(r.code) {
+			if width < 1 || at < 0 || at+width > len(cb.Bitmap) || !r.view.bounds(r.code, pattern+row*4, width) {
 				return fmt.Errorf("native XOR highlight outside bitmap/CODE")
 			}
 			for column := 0; column < width; column++ {
-				cb.Bitmap[at+column] ^= r.code[pattern+row*4+column]
+				v, err := r.byte(pattern + row*4 + column)
+				if err != nil {
+					return err
+				}
+				cb.Bitmap[at+column] ^= v
 			}
 			at += 40
 			if at >= 8000 {
@@ -174,7 +178,7 @@ func (r *NativeRenderFrameRules) text(cb NativeRenderFrameCallbacks, text []byte
 			return nil
 		}
 		font := 0x33c68 + int(int16(c.D[0]))
-		if font < 0 || font+32 > len(r.code) {
+		if !r.view.bounds(r.code, font, 32) {
 			return fmt.Errorf("native text glyph outside retained CODE")
 		}
 		for row := 0; row < 8; row++ {
@@ -183,7 +187,11 @@ func (r *NativeRenderFrameRules) text(cb NativeRenderFrameCallbacks, text []byte
 				if at < 0 || at >= len(cb.Bitmap) {
 					return fmt.Errorf("native glyph outside retained bitmap")
 				}
-				cb.Bitmap[at] = r.code[font+row*4+plane]
+				v, err := r.byte(font + row*4 + plane)
+				if err != nil {
+					return err
+				}
+				cb.Bitmap[at] = v
 			}
 		}
 		start++

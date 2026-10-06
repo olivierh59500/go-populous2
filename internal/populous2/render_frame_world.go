@@ -71,10 +71,11 @@ func (r *NativeActorRenderRules) projectActorCoordinates(at, grid int, cb Native
 	c.Word(2, uint16(int16(c.D[2])>>4))
 	c.D[0] = uint32(m.byte(grid - 3))
 	tile := uint16(c.D[0])
-	if 0x33512+int(tile) >= len(r.Frames.code) {
-		return fmt.Errorf("native actor projection raster missing")
+	raster, e := r.Frames.byte(0x33512 + int(tile))
+	if e != nil {
+		return e
 	}
-	c.Byte(0, r.Frames.code[0x33512+int(tile)])
+	c.Byte(0, raster)
 	c.Word(0, uint16(c.D[0])&15)
 	c.Word(0, uint16(c.D[0])*2)
 	offset, e := r.word(0xe392 + int(int16(c.D[0])))
