@@ -1579,3 +1579,19 @@ handshake operations remain responsible for native control state. Real TCP
 retry/history and pending-operation rejection tests, full tests, vet and build
 pass for this boundary. Initial dial and write-only failures are validated
 separately before broad retry coverage is claimed.
+
+## Actual terrain clicks and neighboring geometry
+
+Four original campaign sessions selected by their real passwords cover all
+LAND banks. Native mouse IRQ movement to224,100, left-click raise2 at clock4
+and right-click lower4 at clock7 execute through the complete input suffix
+and17500, with20 original main frames per session. The selected world
+coordinates differ with each camera; no terrain or input output is seeded.
+
+Fifty-two strict full-state/pixel checkpoints match all data registers, BSS,
+live CODE, screens/Copper, cursor RAM, heap and low vectors. Four hundred and
+sixty-eight actual D2B4 readings compare the nine corner heights surrounding
+the picked vertex. The center rises0→1 and returns1→0 while the native slope
+raster keeps neighboring corners consistent. Full tests, focused terrain/
+stock/campaign race comparisons and vet pass; no production correction was
+needed in this native path. The inherited renderer remains a separate target.
