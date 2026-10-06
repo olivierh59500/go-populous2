@@ -37,7 +37,12 @@ type Follower struct {
 	PreviousX, PreviousY        uint8
 	MoveProgress                uint8
 	Target                      int
-	moveAccumulator             uint16
+	positionX, positionY        int
+	velocityX, velocityY        int
+	legRemaining                int
+	positionSet, moving         bool
+	BattleWith                  int
+	BattleAggressor             bool
 }
 
 type Player struct {
@@ -67,6 +72,7 @@ type World struct {
 	Tick                 uint64
 	Result               int // Zero ongoing, one blue victory, two red victory.
 	random               randomState
+	effects              effectPool
 	terrainTargets       [MapSize * MapSize]uint8
 	terrainTargetSet     [MapSize * MapSize]bool
 	developmentTarget    [CornerSize * CornerSize]uint8
@@ -119,6 +125,7 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 func (w *World) allocate(f Follower) int {
 	for id := 1; id < len(w.Followers); id++ {
 		if w.Followers[id].State == Inactive {
+			f.initialisePosition()
 			w.Followers[id] = f
 			return id
 		}
@@ -186,6 +193,10 @@ func (w *World) stepFollower(id int) {
 		return
 	}
 	tile := int(f.X) + int(f.Y)*MapSize
+	if f.State == Fighting {
+		w.stepBattle(id)
+		return
+	}
 	if f.State == Town {
 		stage := w.TownStage(int(f.Owner), int(f.X), int(f.Y), id)
 		if stage == 0 || w.Players[f.Owner].Mode != Settle {
@@ -249,54 +260,20 @@ func (w *World) stepFollower(id int) {
 			return
 		}
 	}
-	// Twenty is the usual campaign speed. A higher movement byte accelerates
-	// cell travel without changing the global simulation clock.
-	speed := max(1, int(f.MovementSpeed))
-	f.moveAccumulator += uint16(speed)
-	f.MoveProgress = uint8(min(255, int(f.moveAccumulator)*255/160))
-	if f.moveAccumulator < 160 {
-		f.Frame = (f.Frame + 1) % 4
-		return
-	}
-	f.moveAccumulator -= 160
-	f.MoveProgress = 0
-	x, y, ok := w.chooseMove(id)
-	if !ok {
-		f.Frame = (f.Frame + 1) % 4
-		return
-	}
-	other := int(w.Occupants[x+y*MapSize])
-	if other != 0 && other != id {
-		if w.Followers[other].Owner != f.Owner {
-			w.battle(id, other)
-			return
-		}
-		if w.Followers[other].State == Town || w.Players[f.Owner].Mode == Join {
-			w.Followers[other].Population += f.Population
-			w.remove(id)
-			return
-		}
-		return
-	}
-	w.Occupants[tile] = 0
-	f.PreviousX, f.PreviousY = f.X, f.Y
-	dx, dy := x-int(f.X), y-int(f.Y)
-	for direction, d := range directions {
-		if d == [2]int{dx, dy} {
-			f.Direction = uint8(direction)
-			break
-		}
-	}
-	f.X, f.Y = uint8(x), uint8(y)
-	f.Frame = (f.Frame + 1) % 4
-	w.Occupants[x+y*MapSize] = uint16(id)
-	w.Footsteps[x+y*MapSize]++
-	if w.Tick%8 == 0 {
+	if !f.moving {
 		f.Population -= w.Level.Players[f.Owner].Attrition
 		if f.Population <= 0 {
 			w.remove(id)
+			return
+		}
+		x, y, ok := w.chooseMove(id)
+		if !ok || !w.beginLeg(id, x, y) {
+			f.Frame = (f.Frame + 1) % 4
+			return
 		}
 	}
+	w.advanceLeg(id)
+
 }
 
 func (w *World) emptyNeighbour(x, y int) (int, int, bool) {
@@ -375,28 +352,6 @@ func (w *World) chooseMove(id int) (int, int, bool) {
 	return bestX, bestY, found
 }
 
-func (w *World) battle(attacker, defender int) {
-	a, d := &w.Followers[attacker], &w.Followers[defender]
-	attack := max(1, a.Population*(a.Weapons+1))
-	defence := max(1, d.Population*(d.Weapons+1))
-	// Combat wears down both groups across multiple passes; no one-frame
-	// winner selection is hidden in the presentation layer.
-	a.Population -= max(1, defence/96)
-	d.Population -= max(1, attack/96)
-	a.Frame = (a.Frame + 1) % 4
-	d.Frame = (d.Frame + 1) % 4
-	if a.Population <= 0 {
-		w.Players[d.Owner].BattlesWon++
-		w.remove(attacker)
-	}
-	if d.Population <= 0 {
-		if a.State != Inactive {
-			w.Players[a.Owner].BattlesWon++
-		}
-		w.remove(defender)
-	}
-}
-
 func (w *World) remove(id int) {
 	f := w.Followers[id]
 	at := int(f.X) + int(f.Y)*MapSize
@@ -455,7 +410,7 @@ func (w *World) Evacuate(id int) bool {
 	f.Work = 0
 	f.Frame = 0
 	// The group gets one movement interval to leave before it may settle again.
-	f.moveAccumulator = 160
+	f.moving = false
 	f.SettleAfter = w.Tick + 24
 	x, y, ok := w.emptyNeighbour(int(f.X), int(f.Y))
 	if !ok {
@@ -465,6 +420,8 @@ func (w *World) Evacuate(id int) bool {
 	w.Occupants[at] = 0
 	f.PreviousX, f.PreviousY = f.X, f.Y
 	f.X, f.Y = uint8(x), uint8(y)
+	f.positionSet = false
+	f.initialisePosition()
 	w.Occupants[x+y*MapSize] = uint16(id)
 	w.repaintFarms()
 	w.summarize()
