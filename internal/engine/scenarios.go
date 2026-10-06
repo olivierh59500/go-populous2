@@ -1,8 +1,9 @@
 package engine
 
-// TerrainEditAllowed is the player's height admission. It is independent of
-// population proximity and mana affordability. Direct effect terrain changes
-// use their own creator policies rather than this player cursor rule.
+// TerrainEditAllowed checks a supplied static or effective height policy.
+// Human input also needs the owned actors in the visible view, supplied by
+// CursorTerrainRights and CastFromViewport. Mana and direct effect creator
+// admission are separate checks.
 func (s ScenarioOptions) TerrainEditAllowed(height int, raise bool) bool {
 	if height < 0 || height > 8 || raise && s.ForbidRaise || !raise && s.ForbidLower {
 		return false
