@@ -170,3 +170,19 @@ sessions and original `.GAM` files. Original-save import/export uses the
 separate `internal/gamcodec` boundary and never supplies executable state to
 the simulation. Unsupported original records report an error and leave the
 current game intact.
+
+## Original GAM interoperability
+
+The GAM codec preserves the original 56,690-byte file layout and keeps reserved
+user-save fields outside the simulation. Supported mappings include campaign
+and custom-player settings, profile and camera metadata, AI choices/cooldowns,
+statistics, mixed actor links, effect controllers, appearance variants, hero
+claims, contact waits, retained deaths and their cleanup state. Tests cover an
+unchanged original-file byte roundtrip and continued Go simulation after import.
+
+Semantic JSON is the lossless format for independent Go sessions. Original GAM
+cannot store a pending Go input order or an active deferred settlement deadline
+as a separate field. Export rejects these states explicitly, along with unknown
+original records or missing artwork-token mappings; it does not reuse reserved
+bytes or discard active state. Save as JSON, or finish the pending action before
+exporting GAM.

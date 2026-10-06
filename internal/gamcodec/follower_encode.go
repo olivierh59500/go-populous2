@@ -30,6 +30,11 @@ func encodeFollowerLifecycle(record []byte, w *engine.World, id int, catalog Cat
 	word := func(at int, value int) { binary.BigEndian.PutUint16(record[at:], uint16(value)) }
 	name := ""
 	frame := int(f.Frame)
+	if f.IsHero() && f.Hero.Phase == engine.HeroWaiting {
+		record[0], record[22], record[23] = 2, 10, 0x24
+		word(20, f.Hero.Wait)
+		name = "contact/waiting"
+	}
 	if f.ContactWaiting {
 		record[0], record[22] = 2, 10
 		word(20, f.ContactWait)
@@ -45,7 +50,7 @@ func encodeFollowerLifecycle(record []byte, w *engine.World, id int, catalog Cat
 		}
 		return nil
 	}
-	if f.ContactWaiting {
+	if f.ContactWaiting || f.IsHero() && f.Hero.Phase == engine.HeroWaiting {
 		// The waiting sequence is separate from the arriving follower's
 		// ordinary motion and is resolved below from semantic artwork.
 	} else if f.Neutral.Kind != engine.NeutralNone {
@@ -180,6 +185,17 @@ func encodeFollowerLifecycle(record []byte, w *engine.World, id int, catalog Cat
 	} else if f.State != engine.Walking && f.State != engine.Town {
 		return fmt.Errorf("GAM follower%d lifecycle is not mapped yet", id)
 	}
+	if name == "" && f.IsHero() && f.State == engine.Walking {
+		record[0] = 2
+		if f.Hero.Phase == engine.HeroFindTarget {
+			record[22] = 0x24
+		} else {
+			record[22] = 0x26
+			if w.Snapshot().Motion[id].Moving {
+				record[22], record[23] = 4, 0x26
+			}
+		}
+	}
 	if name != "" {
 		token, err := roleToken(catalog, name, frame)
 		if err != nil {
@@ -188,7 +204,7 @@ func encodeFollowerLifecycle(record []byte, w *engine.World, id int, catalog Cat
 		word(10, int(token))
 	}
 	if f.IsHero() {
-		for offset, index := range map[int]int{30: f.Hero.Target, 42: f.Hero.CaptiveOf, 44: f.Hero.ClaimedBy} {
+		for offset, index := range map[int]int{34: f.Hero.Target, 42: f.Hero.CaptiveOf} {
 			ref := engine.ActorRef{}
 			if index > 0 {
 				ref = engine.ActorRef{Kind: engine.ActorFollower, Index: uint16(index)}
@@ -200,5 +216,14 @@ func encodeFollowerLifecycle(record []byte, w *engine.World, id int, catalog Cat
 			word(offset, int(reference))
 		}
 	}
+	claim := engine.ActorRef{}
+	if f.Hero.ClaimedBy > 0 {
+		claim = engine.ActorRef{Kind: engine.ActorFollower, Index: uint16(f.Hero.ClaimedBy)}
+	}
+	reference, err := fileReference(claim)
+	if err != nil {
+		return err
+	}
+	word(36, int(reference))
 	return nil
 }

@@ -11,6 +11,13 @@ import (
 func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Catalog) (engine.Follower, engine.FollowerMotionSnapshot, error) {
 	word := func(at int) uint16 { return binary.BigEndian.Uint16(record[at:]) }
 	f := engine.Follower{Owner: record[12] - 1, X: record[6], Y: record[8], PreviousX: record[6], PreviousY: record[8], MovementSpeed: record[18], Weapons: int(record[25]), Population: int(int32(binary.BigEndian.Uint32(record[26:]))), Stage: record[1], FoundedAt: uint64(word(46))}
+	f.LastDevelopedStage = record[19]
+	f.ForceEmigration = record[13]&4 != 0
+	variant := word(50)
+	if variant > 14 || variant&1 != 0 {
+		return f, engine.FollowerMotionSnapshot{}, fmt.Errorf("GAM follower%d appearance selector is invalid", id)
+	}
+	f.AppearanceVariant = uint8(variant / 2)
 	motion := engine.FollowerMotionSnapshot{PositionX: int(word(6)), PositionY: int(word(8)), VelocityX: int(int16(word(14))), VelocityY: int(int16(word(16))), LegRemaining: int(int16(word(20))), PositionSet: true}
 	f.State = engine.Walking
 	if record[0] == 0x3c {
@@ -124,16 +131,25 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 		f.Hero.Phase = engine.HeroFindTarget
 	}
 	if f.Hero.Kind != engine.HeroNone {
-		if target, err := reference(word(30)); err == nil && target.Kind == engine.ActorFollower {
+		if target, err := reference(word(34)); err == nil && target.Kind == engine.ActorFollower {
 			f.Hero.Target = int(target.Index)
 			f.Hero.Phase = engine.HeroPursuing
 		}
 		if capture, err := reference(word(42)); err == nil && capture.Kind == engine.ActorFollower {
 			f.Hero.CaptiveOf = int(capture.Index)
 		}
-		if claim, err := reference(word(44)); err == nil && claim.Kind == engine.ActorFollower {
-			f.Hero.ClaimedBy = int(claim.Index)
+		if state == 0x24 {
+			f.Hero.Phase = engine.HeroFindTarget
 		}
+		if state == 10 && record[23] == 0x24 {
+			f.ContactWaiting = false
+			f.ContactWait = 0
+			f.Hero.Phase = engine.HeroWaiting
+			f.Hero.Wait = int(int16(word(20)))
+		}
+	}
+	if claim, err := reference(word(36)); err == nil && claim.Kind == engine.ActorFollower {
+		f.Hero.ClaimedBy = int(claim.Index)
 	}
 	if f.State == engine.Ruin && f.Population <= 0 && (snapshot.World.FireDamage.Deaths[id].Mode != engine.FireVictimAlive || f.TerrainDeath.Active || f.CombatAftermath.Kind != engine.CombatAftermathNone) {
 		f.CleanupPrepared = true
@@ -145,7 +161,7 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 	if f.State == engine.Walking {
 		f.Frame %= 4
 	}
-	if state != 2 && state != 4 && state != 6 && state != 18 && state != 0x30 && state != 0x46 && state != 0x3a {
+	if state != 2 && state != 4 && state != 6 && state != 18 && state != 0x30 && state != 0x46 && state != 0x3a && state != 0x24 && state != 0x26 {
 		role, ok := followerAnimationRole(catalog.AnimationRoles[word(10)], state)
 		if state == 10 && f.IsHero() {
 			ok = false

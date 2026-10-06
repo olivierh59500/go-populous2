@@ -168,6 +168,9 @@ func validateSnapshotWorld(w *World) error {
 		if f.Conversion.Active && (f.Conversion.SourceOwner > 1 || f.Conversion.Frame >= 12) {
 			return fmt.Errorf("snapshot follower %d conversion is invalid", id)
 		}
+		if f.AppearanceVariant > 7 {
+			return fmt.Errorf("snapshot follower appearance is invalid")
+		}
 		if f.ContactWaiting && (f.ContactWait < -32768 || f.ContactWait > 32767) {
 			return fmt.Errorf("snapshot contact waiting timer is invalid")
 		}

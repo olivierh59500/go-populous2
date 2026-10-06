@@ -142,3 +142,24 @@ func TestGAMHeroContactWaitingPreservesSilentReplyFrame(t *testing.T) {
 		t.Fatal("hero waiting reply changed during GAM conversion")
 	}
 }
+
+func TestGAMFollowerAppearanceSelectorPreservesEveryVariant(t *testing.T) {
+	for variant := 0; variant < 8; variant++ {
+		record := make([]byte, 52)
+		record[0], record[12], record[22], record[6], record[8] = 2, 1, 2, 20, 20
+		binary.BigEndian.PutUint16(record[50:], uint16(variant*2))
+		f, _, err := decodeFollower(record, 1, &engine.Snapshot{}, Catalog{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if int(f.AppearanceVariant) != variant {
+			t.Fatal("file variant was derived from the follower index")
+		}
+	}
+	record := make([]byte, 52)
+	record[0], record[12], record[22] = 2, 1, 2
+	binary.BigEndian.PutUint16(record[50:], 3)
+	if _, _, err := decodeFollower(record, 1, &engine.Snapshot{}, Catalog{}); err == nil {
+		t.Fatal("odd appearance selector was accepted")
+	}
+}

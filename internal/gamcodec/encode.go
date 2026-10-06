@@ -123,6 +123,9 @@ func Encode(document *Document) ([]byte, error) {
 			byteAt(at+12, 0)
 			continue
 		}
+		if f.SettleAfter > w.Tick {
+			return nil, fmt.Errorf("GAM cannot represent follower%d's deferred settlement deadline; use the Go save format until that delay expires", id)
+		}
 		link := w.Actors.Followers[id]
 		next, err := fileReference(link.Next)
 		if err != nil {
@@ -141,9 +144,14 @@ func Encode(document *Document) ([]byte, error) {
 		wordAt(at+14, uint16(int16(motion.VelocityX)))
 		wordAt(at+16, uint16(int16(motion.VelocityY)))
 		byteAt(at+18, f.MovementSpeed)
+		byteAt(at+19, f.LastDevelopedStage)
 		byteAt(at+25, uint8(f.Weapons))
 		longAt(at+26, uint32(int32(f.Population)))
 		wordAt(at+46, uint16(f.FoundedAt))
+		if f.AppearanceVariant > 7 {
+			return nil, fmt.Errorf("GAM follower appearance is outside eight variants")
+		}
+		wordAt(at+50, uint16(f.AppearanceVariant)*2)
 		if f.State == engine.Town {
 			byteAt(at, 4)
 			byteAt(at+1, f.Stage)
@@ -158,13 +166,16 @@ func Encode(document *Document) ([]byte, error) {
 			byteAt(at+22, phase)
 			wordAt(at+20, uint16(int16(motion.LegRemaining)))
 		}
-		flags := data[at+13-fileStart] &^ uint8(2|0x20)
+		flags := data[at+13-fileStart] &^ uint8(2|4|0x20)
 		if f.IsHero() {
 			flags |= 2
 			wordAt(at+40, uint16(f.Hero.Kind-1)*2)
 		}
 		if f.Disease.Infected {
 			flags |= 0x20
+		}
+		if f.ForceEmigration {
+			flags |= 4
 		}
 		byteAt(at+13, flags)
 		wordAt(at+10, uint16(f.Frame*4))

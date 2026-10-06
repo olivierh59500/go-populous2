@@ -1,6 +1,7 @@
 package gamcodec
 
 import (
+	"encoding/binary"
 	"reflect"
 	"testing"
 
@@ -330,5 +331,111 @@ func TestGAMContactWaitingAndArrivalContinueMergeAndBattle(t *testing.T) {
 				compareCodecContinuation(t, w, restored.World, pass)
 			}
 		})
+	}
+}
+
+func TestFreshGAMAppearanceVariantOverridesSlotAssignment(t *testing.T) {
+	catalog := continuationCatalog()
+	w := continuationWorld(t, catalog)
+	addCodecFollower(t, w, 1, 20, 20, 0, 500, engine.Walking)
+	addCodecFollower(t, w, 2, 50, 50, 1, 500, engine.Walking)
+	w.Followers[1].AppearanceVariant, w.Followers[2].AppearanceVariant = 7, 6
+	document, err := NewDocument(w, catalog, engine.NewDeity("BLUE"), 0, 2, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := Encode(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, err := Decode(data, catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if restored.World.Followers[1].AppearanceVariant != 7 || restored.World.Followers[2].AppearanceVariant != 6 {
+		t.Fatal("fresh/imported GAM appearance was reassigned from actor slots")
+	}
+}
+
+func TestGAMSixHeroClaimsContinueTypedPursuit(t *testing.T) {
+	for kind := engine.HeroPerseus; kind <= engine.HeroHelen; kind++ {
+		t.Run(heroNames[kind], func(t *testing.T) {
+			catalog := continuationCatalog()
+			w := continuationWorld(t, catalog)
+			addCodecFollower(t, w, 1, 20, 20, 0, 1000, engine.Walking)
+			addCodecFollower(t, w, 2, 40, 40, 1, 700, engine.Walking)
+			w.Players[0].Mode, w.Players[1].Mode = engine.Rally, engine.Rally
+			w.Followers[1].Hero = engine.HeroState{Kind: kind, Phase: engine.HeroPursuing, Target: 2}
+			w.Followers[2].Hero.ClaimedBy = 1
+			document, err := NewDocument(w, catalog, engine.NewDeity("BLUE"), 0, 2, 0, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			data, err := Encode(document)
+			if err != nil {
+				t.Fatal(err)
+			}
+			restored, err := Decode(data, catalog)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if restored.World.Followers[1].Hero.Target != 2 || restored.World.Followers[2].Hero.ClaimedBy != 1 {
+				t.Fatal("hero reciprocal claim was lost")
+			}
+			for pass := 1; pass <= 12; pass++ {
+				w.Step()
+				restored.World.Step()
+				compareCodecContinuation(t, w, restored.World, pass)
+				if w.Followers[1].Hero != restored.World.Followers[1].Hero {
+					t.Fatalf("hero phase/claim diverged at pass%d", pass)
+				}
+			}
+		})
+	}
+}
+
+func TestGAMNeutralAndTimedScenarioContinueWithoutRestartingEvents(t *testing.T) {
+	catalog := continuationCatalog()
+	for frame := 0; frame < 6; frame++ {
+		catalog.AnimationRoles[716+uint16(frame*4)] = []AnimationRole{{Name: "neutral/road-maker", Frame: frame}}
+	}
+	level := catalog.Levels[0]
+	binary.BigEndian.PutUint16(level.WorldParameters[:], 2)
+	level.WorldParameters[3], level.WorldParameters[4], level.WorldParameters[5] = 90, 20, 20
+	catalog.Levels[0] = level
+	w := continuationWorld(t, catalog)
+	w.Level.WorldParameters = level.WorldParameters
+	events, err := engine.DecodeScenarioEvents(level.WorldParameters)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.Scenario = events
+	addCodecFollower(t, w, 1, 10, 10, 0, 500, engine.Walking)
+	addCodecFollower(t, w, 2, 50, 50, 1, 500, engine.Walking)
+	w.Step()
+	w.Step()
+	w.Step()
+	document, err := NewDocument(w, catalog, engine.NewDeity("BLUE"), 0, 2, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := Encode(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, err := Decode(data, catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if restored.World.Scenario.Cursor != 1 {
+		t.Fatal("GAM restarted an already dispatched scenario event")
+	}
+	for pass := 1; pass <= 12; pass++ {
+		w.Step()
+		restored.World.Step()
+		compareCodecContinuation(t, w, restored.World, pass)
+		if w.Scenario != restored.World.Scenario {
+			t.Fatal("scenario cursor changed after GAM load")
+		}
 	}
 }
