@@ -141,6 +141,7 @@ func (w *World) paintWater(x, y int, code uint8) {
 		return
 	}
 	at := x + y*MapSize
+	w.ClearEarthTerrain(x, y)
 	w.Water.Painted[at], w.Water.Tiles[at] = true, code
 	// All ground-effect creators replace the active parcel's tile artwork.
 	w.Nature.Ground[at] = GroundParcel{}

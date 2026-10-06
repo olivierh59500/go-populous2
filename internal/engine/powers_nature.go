@@ -156,6 +156,7 @@ func flowersNatureCode(code uint8) bool {
 }
 
 func (w *World) paintNature(at int, p GroundParcel) {
+	w.ClearEarthTerrain(at%MapSize, at/MapSize)
 	w.Nature.Ground[at] = p
 	w.Water.Painted[at] = false
 	w.FireDamage.Painted[at] = false
