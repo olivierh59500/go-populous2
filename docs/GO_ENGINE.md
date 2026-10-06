@@ -154,10 +154,19 @@ unimplemented actions.
 | Move the viewport | Arrows or click the overview |
 | Deity profile / world / multiplayer | Main menu |
 | Options / detached map editor | O / P |
-| Load / save the independent session | F9 / F10 |
+| Browse/load / browse/save the session | F9 / F10; Load Game in the main menu |
 | Help / return to menu | H / Escape |
 
 Desktop two-player sessions can also be started with `-listen address:port`
 and `-connect address:port`. A waiting or interrupted connection keeps the
 window responsive and pauses simulation. Cosmetic audio/framebuffer state is
 separate from the synchronized world.
+
+The left gameplay panel also provides mouse controls for powers, tactical
+modes, the rally marker, help, options and saving. Save filenames can be edited
+in the browser; Delete clears the field, and an existing destination requires
+a separate replacement confirmation. The browser accepts semantic JSON
+sessions and original `.GAM` files. Original-save import/export uses the
+separate `internal/gamcodec` boundary and never supplies executable state to
+the simulation. Unsupported original records report an error and leave the
+current game intact.
