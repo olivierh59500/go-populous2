@@ -111,6 +111,31 @@ func export(files fs.FS, output string) error {
 			return err
 		}
 		catalog.Landscapes[land].Sprites = regions
+		prepared, err := populous2.DecodeNativeSpriteBitmapBank(source, land)
+		if err != nil {
+			return err
+		}
+		for _, spriteID := range []int{396, 397} {
+			sprite := prepared.Sprites[spriteID]
+			images := make([]*image.RGBA, sprite.Height)
+			for height := 1; height <= sprite.Height; height++ {
+				length := sprite.Width / 8 * 5 * height
+				img, err := populous2.DecodeNativeMaskedPlanes(sprite.Planes[:length], sprite.Width, height, source.Landscapes[land].Palettes[0])
+				if err != nil {
+					return err
+				}
+				images[height-1] = img
+			}
+			name := fmt.Sprintf("storm-strike-%d-%d.png", land, spriteID)
+			atlas, regions, err := pack(name, images, nil)
+			if err != nil {
+				return err
+			}
+			if err := writePNG(output, name, atlas); err != nil {
+				return err
+			}
+			catalog.StormStrikeArt[land] = append(catalog.StormStrikeArt[land], visualassets.ShortenedSpriteDescriptor{Sprite: spriteID, Heights: regions})
+		}
 		catalog.Landscapes[land].Palette = source.Landscapes[land].Palettes[0]
 		for code, index := range source.Landscapes[land].MapColor {
 			if index >= 16 {
@@ -403,6 +428,15 @@ func export(files fs.FS, output string) error {
 		}
 		catalog.Animations["swimming/"+name] = animation(frames, true)
 	}
+	for name, start := range map[string]int{"storm/cloud": 0xce4, "storm/strike": 0xd30} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[name] = animation(frames, true)
+	}
+	catalog.Animations["marker/leader-blue"] = visualassets.Animation{Frames: []visualassets.Frame{{Layers: []visualassets.SpriteLayer{{Sprite: 93}}}}}
+	catalog.Animations["marker/leader-red"] = visualassets.Animation{Frames: []visualassets.Frame{{Layers: []visualassets.SpriteLayer{{Sprite: 94}}}}}
 	catalog.FileCompatibility = exportSaveCompatibility(source, catalog)
 	data, err := json.MarshalIndent(catalog, "", "  ")
 	if err != nil {

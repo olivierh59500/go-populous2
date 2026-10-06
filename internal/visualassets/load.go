@@ -169,6 +169,26 @@ func loadFS(files fs.FS) (*Bundle, error) {
 			return nil, err
 		}
 	}
+	for land, entries := range catalog.StormStrikeArt {
+		if len(entries) > 8 {
+			return nil, fmt.Errorf("too many storm strike sprite families")
+		}
+		for _, entry := range entries {
+			if entry.Sprite < 0 || entry.Sprite >= len(b.Sprites[land]) || len(entry.Heights) == 0 || len(entry.Heights) > 128 {
+				return nil, fmt.Errorf("invalid shortened storm artwork")
+			}
+			art := ShortenedSpriteArt{Sprite: entry.Sprite, Heights: make([]*image.RGBA, len(entry.Heights))}
+			for height, region := range entry.Heights {
+				if region.Height != height+1 {
+					return nil, fmt.Errorf("storm artwork height metadata differs")
+				}
+				if art.Heights[height], err = loader.region(region, false); err != nil {
+					return nil, err
+				}
+			}
+			b.StormStrikeArt[land] = append(b.StormStrikeArt[land], art)
+		}
+	}
 	for part := range catalog.PortraitParts {
 		for variant, region := range catalog.PortraitParts[part] {
 			if b.PortraitParts[part][variant], err = loader.region(region, false); err != nil {

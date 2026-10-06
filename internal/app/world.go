@@ -277,6 +277,9 @@ func (g *Game) drawWorld() {
 			}
 			g.fireAtCell(x, y, land)
 			g.drawAirAtCell(x, y, land)
+			g.drawStormAtCell(x, y, land)
+			g.drawLavaAtCell(x, y, land)
+			g.drawMagnetAtCell(x, y, land)
 			for _, wall := range w.Earth.Walls {
 				if !wall.Active || int(wall.X) != x || int(wall.Y) != y {
 					continue
@@ -353,6 +356,9 @@ func (g *Game) drawWorld() {
 				if g.drawAirborne(id, land, ax, ay) || g.lightningVictim(id, land, ax, ay) {
 					continue
 				}
+				if g.drawActiveBattle(id, ax, ay, land) {
+					continue
+				}
 				if victim := w.FireDamage.Deaths[id]; victim.Mode != engine.FireVictimAlive {
 					name := "death/fire"
 					if victim.Mode == engine.FireVictimBurning {
@@ -385,6 +391,7 @@ func (g *Game) drawWorld() {
 						name = fmt.Sprintf("hero/%s/%s", heroNames[f.Hero.Kind], compassNames[f.Direction&7])
 					}
 					g.animation(name, int(f.Frame), ax, ay, land)
+					g.drawLeaderMarker(id, ax, ay, land, name, int(f.Frame))
 				}
 				if f.Disease.Infected {
 					g.animation("plague", int(f.Disease.Frame), ax, ay, land)

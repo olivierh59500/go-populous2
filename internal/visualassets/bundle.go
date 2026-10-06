@@ -70,19 +70,20 @@ type FontDescriptor struct {
 // Catalog is the portable import result. All paths are relative to its root;
 // its fields contain only graphics, color palettes and animation composition.
 type Catalog struct {
-	Version           int                       `json:"version"`
-	Landscapes        [LandscapeCount]Landscape `json:"landscapes"`
-	Background        string                    `json:"background"`
-	Startup           string                    `json:"startup"`
-	StartupPalette    [16]color.RGBA            `json:"startup_palette"`
-	Ending            string                    `json:"ending,omitempty"`
-	PortraitParts     [3][8]Region              `json:"portrait_parts"`
-	Font              FontDescriptor            `json:"font"`
-	Animations        map[string]Animation      `json:"animations,omitempty"`
-	Towns             *TownArt                  `json:"towns,omitempty"`
-	EndingSequence    *EndingDescriptor         `json:"ending_sequence,omitempty"`
-	TileRasters       [256]uint8                `json:"tile_rasters"`
-	FileCompatibility *FileCompatibility        `json:"file_compatibility,omitempty"`
+	Version           int                                         `json:"version"`
+	Landscapes        [LandscapeCount]Landscape                   `json:"landscapes"`
+	Background        string                                      `json:"background"`
+	Startup           string                                      `json:"startup"`
+	StartupPalette    [16]color.RGBA                              `json:"startup_palette"`
+	Ending            string                                      `json:"ending,omitempty"`
+	PortraitParts     [3][8]Region                                `json:"portrait_parts"`
+	Font              FontDescriptor                              `json:"font"`
+	Animations        map[string]Animation                        `json:"animations,omitempty"`
+	Towns             *TownArt                                    `json:"towns,omitempty"`
+	EndingSequence    *EndingDescriptor                           `json:"ending_sequence,omitempty"`
+	TileRasters       [256]uint8                                  `json:"tile_rasters"`
+	FileCompatibility *FileCompatibility                          `json:"file_compatibility,omitempty"`
+	StormStrikeArt    [LandscapeCount][]ShortenedSpriteDescriptor `json:"storm_strike_art,omitempty"`
 }
 
 type Bundle struct {
@@ -99,6 +100,7 @@ type Bundle struct {
 	EndingSequence              *EndingSequence
 	TileRasters                 [256]uint8
 	FileCompatibility           *FileCompatibility
+	StormStrikeArt              [LandscapeCount][]ShortenedSpriteArt
 }
 
 // Portrait assembles independently selectable headpiece, eyes and mouth.

@@ -244,6 +244,34 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	for land := range 4 {
+		bank, err := populous2.DecodeNativeSpriteBitmapBank(source, land)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, id := range []int{396, 397} {
+			sprite := bank.Sprites[id]
+			for height := 1; height <= sprite.Height; height++ {
+				want, err := populous2.DecodeNativeMaskedPlanes(sprite.Planes[:sprite.Width/8*5*height], sprite.Width, height, source.Landscapes[land].Palettes[0])
+				if err != nil {
+					t.Fatal(err)
+				}
+				got := portable.StormStrikeImage(land, id, height)
+				if got == nil || !bytes.Equal(got.Pix, want.Pix) {
+					t.Fatal("shortened storm artwork pixels differ", land, id, height)
+				}
+			}
+		}
+	}
+	for name, start := range map[string]int{"storm/cloud": 0xce4, "storm/strike": 0xd30} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(portable.Animations[name], animation(frames, true)) {
+			t.Fatal("storm artwork differs", name)
+		}
+	}
 	for _, path := range []string{"populous.ii", "POPULOUS.II", "code.bin"} {
 		if _, err := os.Stat(filepath.Join(output, path)); !os.IsNotExist(err) {
 			t.Fatalf("unexpected game program in portable installation: %s", path)
