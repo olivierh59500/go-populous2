@@ -1426,3 +1426,18 @@ export corpus and filesystem failure/replace tests remain green. Full tests,
 focused race tests, vet and a native build pass. A later macOS binary launch
 failed in Ebitengine monitor initialization before application entry, so it
 is not counted as a graphical export check.
+
+## Winning result to a new campaign world
+
+Two controlled result-caller cases now execute the complete bound381E→B244
+sequence, actual deity Proceed,10A8C reset menu and original campaign chooser,
+then verify real follower-pool/world creation. The world32 case advances by
+source scoring; world999 runs the genuine Zeus ending and resets to world0.
+All child routines run their bodies, including retained resource, palette,
+input, award and audio operations.
+
+The result retains its completed follower-pass ownership throughout the UI.
+The final cache refresh preserves full BSS/live CODE, loaded LAND and caller
+registers; its pending request is consumed once before continuation. Full
+tests, focused result/progression race tests and vet pass. This verifies the
+complete controlled transition, not traversal of all1,000 campaign worlds.
