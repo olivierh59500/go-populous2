@@ -49,6 +49,7 @@ type NativeGame struct {
 	Files          *populous2.NativeRuntimeFileStore
 	FileBrowser    *populous2.NativeRuntimeFileBrowserState
 	FileRules      populous2.NativeRuntimeFileBrowserRules
+	DeityEditor    populous2.NativeRuntimeDeity
 }
 
 func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {

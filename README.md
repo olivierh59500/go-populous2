@@ -89,7 +89,7 @@ go run ./cmd/populous2-native -save-root /path/to/existing/save-directory
 
 This target uses the original320×200 screen, initial menu/world constructor,
 native simulation/render/input, raw GAM file dialogs and four-channel audio.
-Deity/result integration and complete paired gameplay remain in progress;
+Result/progression integration and complete paired gameplay remain in progress;
 required missing source operations
 return explicit errors. The normal command remains available while these paths
 are completed. Diagnostic `-auto-start` clicks the original custom-game button;
@@ -102,6 +102,9 @@ Full paired interactive gameplay is still under validation.
 `-save-root` binds the original file requester's native paths to an existing
 directory. Saving/loading uses raw GAM bytes and the original overwrite/error
 dialogs; no default directory or automatic export is chosen.
+
+The native deity editor preserves original portrait parts, experience/bolt
+controls and password format, including raw name/password text editing.
 
 The default window is 960 × 720, with a 640 × 480 logical display and doubled
 Amiga artwork. Input updates at 60 Hz; the simulation uses the nominal PAL

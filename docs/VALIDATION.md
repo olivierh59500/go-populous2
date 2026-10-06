@@ -1198,3 +1198,17 @@ After each completed frame, full terrain, actor/global pools and RNG match
 between peers. This establishes a bounded native gameplay composition check;
 long interactive sessions, connection failure UI, save interoperability and
 every cross-effect interaction remain part of final multiplayer validation.
+
+## Desktop deity editor integration
+
+NativeRuntimeDeity composes the originalB740 editor with actual profile switch,
+encoded FACES loading and retained palette children. The menu invokes it with
+real incoming register/address context, shared physical RAM and audio. Original
+4BBA name/password edits remain inside the controller.
+
+A runtime test navigates the real initial-menu deity action, advances native
+VBlanks into the editor, then clicks original action66 to return to the retained
+menu. No raw profile fields or resource cache bits are synthesized. A bounded
+desktop run completed0 and its framebuffer portrait/experience/password screen
+was visually inspected. Full controller input/caret/password behavior has
+separate284-run CPU evidence.

@@ -39,6 +39,9 @@ func (g *NativeGame) initialChild(call populous2.NativeStartupResetFrameCall, ph
 	if call.Routine == 0x3f92 {
 		return g.fileChild(call, phase)
 	}
+	if call.Routine == 0xb740 {
+		return g.DeityEditor.AdvanceChild(g.Host, call, phase, g.Startup.Campaign)
+	}
 	return populous2.NativeCommandFrameResult{}, fmt.Errorf("native initial UI body%x is not yet bound", call.Routine)
 }
 
