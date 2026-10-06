@@ -192,7 +192,7 @@ func validateCommands(commands []Command, side int) error {
 			if command.Mode > engine.Fight {
 				return fmt.Errorf("invalid network follower mode")
 			}
-		case "rally":
+		case "rally", "terrain-secondary":
 			if command.Target.X < 0 || command.Target.X >= 64 || command.Target.Y < 0 || command.Target.Y >= 64 {
 				return fmt.Errorf("invalid network rally target")
 			}
@@ -225,6 +225,12 @@ func applyCommand(world *engine.World, side int, command Command) error {
 		}
 		if !world.Evacuate(command.Follower) {
 			return fmt.Errorf("town evacuation was rejected")
+		}
+	case "terrain-secondary":
+		if !world.Sprog(side, command.Target.X, command.Target.Y) {
+			target := command.Target
+			target.Lower = true
+			return world.Cast(side, engine.RaiseLower, target)
 		}
 	case "lightning-activate":
 		return world.ActivateLightning(side)
