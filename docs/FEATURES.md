@@ -19,7 +19,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
 | Audio | 31 samples, 133 patterns, native four-channel device/CIA replay, raster DMA transport and shared CODE access; native desktop sound/queue/pause/resume integration | Original beam/CIA phase and analog/PWM fidelity, complete animation-triggered cues and interactive timing comparison |
 | Saving | Raw GAM DOS save/load/list/overwrite with actual filesystem counts, partial operations and source pointer ownership; idle cache refresh without World regeneration; legacy typed APIs remain | Interactive save/load and two-player/cross-effect interoperability |
-| Interface | Original raw initial menu/chooser/in-game/options/serial/profile/panel/input/editor/protection and deity/name/password controllers; complete physical file browser; native desktop menu/terrain/protection/deity/file captures | Award controller, result/reset/ending desktop composition and complete interactive transition validation |
+| Interface | Original raw initial menu/chooser/in-game/options/serial/profile/panel/input/editor/protection and deity/name/password controllers; complete physical file browser; native desktop menu/terrain/protection/deity/file captures | Award controller, winning result/ending desktop composition and complete interactive transition validation |
 | Multiplayer | Original raw command/serial protocol and retained handshake/resume; paired physical world constructors and commands match; configured asynchronous TCP/serial menu ports in native desktop | Complete paired interactive gameplay, remaining reset UI children and save policy |
 | Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, original result text/layout/wait, saved one-time application and actual raw381E result controller and animation decoder/final Zeus ending | Visual transition validation and full conquest pacing/script/AI parity |
 
@@ -78,8 +78,9 @@ The default command still uses the inherited playable Game loop. The separate
 `cmd/populous2-native` target runs the assembled register-bearing session,
 physical resource host, original screen/input and four-channel audio. Bounded
 desktop captures verify its initial menu, terrain and protection requester.
-The actual raw ending controller and animation decoder are verified against
-the original CPU; the result/award/ending paths still need complete desktop
+The actual raw result and ending controllers and animation decoder are verified
+against the original CPU. Loss results now invoke real reset menus in the
+native desktop; the award and winning result/ending paths still need complete
 composition before
 this target replaces the default and before full original
 interactive/campaign fidelity can be established.
