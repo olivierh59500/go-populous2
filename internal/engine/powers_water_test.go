@@ -78,6 +78,76 @@ func TestBasaltParentReservesBudgetUntilChildAdmission(t *testing.T) {
 	}
 }
 
+func TestWhirlpoolNeedsFourPristineWaterTilesAndSharesBudget(t *testing.T) {
+	w := &World{random: 4311}
+	w.Players[0].Experience[Water] = 255
+	before := w.random
+	if err := w.CastWhirlpool(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	if w.random != before || w.Water.Whirlpools[0].Life != 555 {
+		t.Fatal("whirlpool creation consumed RNG or lost experience lifetime")
+	}
+	for quadrant, d := range whirlpoolFootprint {
+		if w.Cell(32+d[0], 32+d[1]).Code != uint8(152+quadrant) {
+			t.Fatal("whirlpool quadrant art differs")
+		}
+	}
+	if err := w.CastWhirlpool(0, 32, 32); err == nil {
+		t.Fatal("existing animated water accepted another whirlpool")
+	}
+	if err := w.CastWhirlpool(0, 63, 63); err == nil {
+		t.Fatal("out-of-map footprint accepted")
+	}
+	land := testFlatWorld()
+	if err := land.CastWhirlpool(0, 32, 32); err == nil {
+		t.Fatal("whirlpool accepted dry land")
+	}
+}
+
+func TestWhirlpoolExpiryRestoresOnlyItsOwnFrame(t *testing.T) {
+	w := &World{}
+	if err := w.CastWhirlpool(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	w.Water.Whirlpools[0].Life = 1
+	w.paintWater(33, 32, 224)
+	w.tickWaterEffects()
+	if w.Water.Whirlpools[0].Active || w.effects.Slots[0].Kind != EffectNone {
+		t.Fatal("expired whirlpool retained effect slot")
+	}
+	if w.Cell(32, 32).Code != 0 || w.Cell(33, 32).Code != 224 {
+		t.Fatal("whirlpool cleared unrelated permanent terrain")
+	}
+}
+
+func TestWhirlpoolLowersFirstCoastQuadrantWithoutSpendingMana(t *testing.T) {
+	w := &World{random: 4311}
+	if err := w.CastWhirlpool(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	// Turn its first quadrant into a raised coastline while retaining three
+	// currently stamped water quadrants; the effect only handles this shore.
+	for _, p := range [4][2]int{{32, 32}, {33, 32}, {32, 33}, {33, 33}} {
+		w.Heights[p[0]+p[1]*CornerSize] = 1
+	}
+	w.rebuildCells()
+	w.Water.Painted[32+32*MapSize] = false
+	w.Players[0].Mana = 1000
+	w.tickWaterEffects()
+	if w.Players[0].Mana != 1000 {
+		t.Fatal("natural whirlpool lowering charged a player")
+	}
+	for _, p := range [4][2]int{{32, 32}, {33, 32}, {32, 33}, {33, 33}} {
+		if w.Heights[p[0]+p[1]*CornerSize] != 0 {
+			t.Fatal("coastline corner remained raised")
+		}
+	}
+	if w.Cell(32, 32).Code != 156 {
+		t.Fatal("lowered shore did not receive current whirlpool frame")
+	}
+}
+
 func TestPrivateBasaltReferenceTraces(t *testing.T) {
 	path := os.Getenv("POPULOUS2_BASALT_TRACE")
 	if path == "" {
@@ -194,5 +264,120 @@ func TestPrivateBasaltReferenceTraces(t *testing.T) {
 	}
 	if checked == 0 {
 		t.Fatal("private basalt catalog provided no valid reference cases")
+	}
+}
+
+func TestPrivateWhirlpoolWaterTraces(t *testing.T) {
+	path := os.Getenv("POPULOUS2_WHIRLPOOL_TRACE")
+	if path == "" {
+		t.Skip("set POPULOUS2_WHIRLPOOL_TRACE for private whirlpool comparison")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type cell struct {
+		Index        int
+		Height, Tile uint8
+		Head         uint16
+	}
+	var catalog struct {
+		Cases []struct {
+			Input struct {
+				Name, Mode        string
+				X, Y, Occupied    int
+				Owner, Experience uint8
+				Seed              uint32
+				Life, Timer       int16
+				Animation         uint16
+				InitialCells      []cell
+				RawOffset         uint16
+				RawValue          uint8
+			}
+			Accepted       bool
+			Slot           int
+			InitialActor   struct{ Raw string }
+			InitialRNG     uint32
+			InitialChanges []cell
+			Trace          []struct {
+				Tick    int
+				Actor   struct{ Raw string }
+				RNG     uint32
+				Changes []cell
+				Lowers  []struct {
+					X, Y    int
+					Changes []cell
+				}
+			}
+		}
+	}
+	if err := json.Unmarshal(data, &catalog); err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, reference := range catalog.Cases {
+		input := reference.Input
+		if input.Owner < 1 || input.Owner > 2 || input.Mode == "tick" || input.RawOffset != 0 {
+			continue
+		}
+		coast := false
+		for _, frame := range reference.Trace {
+			if len(frame.Lowers) > 0 {
+				coast = true
+			}
+		}
+		if coast {
+			continue
+		}
+		t.Run(input.Name, func(t *testing.T) {
+			w := &World{random: randomState(input.Seed)}
+			w.Players[input.Owner-1].Experience[Water] = input.Experience
+			for range input.Occupied {
+				w.allocateEffect(EffectFireRain, 0)
+			}
+			for _, c := range input.InitialCells {
+				w.Tiles[c.Index] = Cell{Code: c.Tile}
+			}
+			err := w.CastWhirlpool(int(input.Owner-1), input.X, input.Y)
+			if (err == nil) != reference.Accepted || uint32(w.random) != reference.InitialRNG {
+				t.Fatal("whirlpool admission or RNG differs")
+			}
+			compare := func(rawString string, cells []cell) {
+				raw, err := hex.DecodeString(rawString)
+				if err != nil || len(raw) != 32 {
+					t.Fatal("invalid private whirlpool record")
+				}
+				e := w.Water.Whirlpools[reference.Slot]
+				if e.Active != (raw[12] != 0) {
+					t.Fatal("whirlpool lifetime active state differs")
+				}
+				if e.Active && (e.X != int(raw[6]) || e.Y != int(raw[8]) || e.Life != int(int16(binary.BigEndian.Uint16(raw[24:]))) || e.Delay != int(int16(binary.BigEndian.Uint16(raw[20:]))) || e.Frame != (int(binary.BigEndian.Uint16(raw[10:]))-151)/4) {
+					t.Fatalf("whirlpool semantic state differs: %+v", e)
+				}
+				for _, c := range cells {
+					if got := w.Cell(c.Index%MapSize, c.Index/MapSize).Code; got != c.Tile {
+						t.Fatalf("whirlpool parcel%d =%d expected%d", c.Index, got, c.Tile)
+					}
+				}
+			}
+			if reference.Accepted {
+				compare(reference.InitialActor.Raw, reference.InitialChanges)
+			}
+			next := 0
+			for tick := 1; next < len(reference.Trace); tick++ {
+				w.tickWaterEffects()
+				if expected := reference.Trace[next]; expected.Tick == tick {
+					compare(expected.Actor.Raw, expected.Changes)
+					if uint32(w.random) != expected.RNG {
+						t.Fatal("whirlpool movement random sequence differs")
+					}
+					next++
+				}
+			}
+		})
+		checked++
+	}
+	if checked == 0 {
+		t.Fatal("whirlpool reference catalog supplied no normal cases")
 	}
 }
