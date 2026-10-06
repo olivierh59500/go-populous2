@@ -1360,3 +1360,33 @@ source order, including the partial prefix on a callback error; standalone
 nil-callback behavior remains compatible. The old1,465-case Fungus corpus,
 previous124 simulation cases, full tests, focused race tests and vet pass.
 Both configured corpora use one shared fixture runner.
+
+## Complete native award controller
+
+NativeRuntimeProgressionState follows B244 with actual encoded JUDGE/FACES/
+award resources, physical saved animation context, two portraits/screens,
+terrain generation and preview, recorded-point processing, award images and
+audio, screen swaps, palette fade and the genuine B740 deity child. The
+world1000 branch runs the actual B142 ending and clears the campaign world
+only after its source return.
+
+Sixteen original CPU traces produce1,220 snapshots. Worlds0/32/150/300/900/
+999/1000 and scores0 through65,035 are exercised with two incoming register/
+address seeds; caller profile1, seed12345678 and two explicit queued redraw
+words define the isolated setup. Two additional empty-queue cases capture
+actual source swap boundaries for host IRQ delivery. All eight data and
+supplied address registers, full BSS/live CODE, both screens/Copper and pointer
+RAM match through the real B740 entry. No deity child is acknowledged in
+these independent parent references.
+
+A separate composition test opens the actual deity editor, submits its
+original Proceed button and returns from B244. Full tests, complete focused
+race comparisons, vet and the native desktop build pass. A direct framebuffer
+preview shows the original Zeus/portraits/terrain presentation and was visually
+inspected; it is not a claim of an interactive full campaign capture.
+
+The native desktop now binds this award/deity/ending operation to the retained
+result controller. The existing result host then runs the original10A8C reset
+menus and refreshes LAND rules before simulation continues. End-to-end winning
+result, long campaign pacing and broader interactive save/network transitions
+remain final validation requirements.
