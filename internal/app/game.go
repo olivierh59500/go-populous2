@@ -148,6 +148,25 @@ func (g *Game) Update() error {
 	}
 	switch g.Screen {
 	case MainMenu:
+		if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+			g.openNetworkSetup()
+			break
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+			g.helpReturn, g.Screen = MainMenu, HelpScreen
+			break
+		}
+		if clicked {
+			if handled, quit, err := g.handleOriginalStartup(x, y); handled {
+				if err != nil {
+					g.Message, g.messageUntil = err.Error(), g.Updates+150
+				}
+				if quit {
+					return ebiten.Termination
+				}
+				break
+			}
+		}
 		if clicked && x >= 110 && x < 214 && y >= 175 && y < 192 {
 			if err := g.openSaveBrowser(false); err != nil {
 				g.Message, g.messageUntil = err.Error(), g.Updates+150
@@ -293,6 +312,9 @@ func (g *Game) button(label string, x, y, width int) {
 func (g *Game) drawFrame() {
 	switch g.Screen {
 	case MainMenu:
+		if g.drawOriginalStartup() {
+			break
+		}
 		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), g.Assets.Visual.Startup, image.Point{}, draw.Src)
 		draw.Draw(g.framebuffer, image.Rect(73, 80, 249, 147), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 		g.button("CREATE YOUR DEITY", 78, 85, 168)

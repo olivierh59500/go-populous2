@@ -4,6 +4,7 @@ package app
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 
@@ -15,11 +16,12 @@ import (
 // Assets contains presentation data and decoded campaign/landscape records.
 // It has no original executable, instructions, relocated memory or registers.
 type Assets struct {
-	Visual     *visualassets.Bundle
-	Levels     []engine.Level
-	Landscapes [4]engine.Landscape
-	Music      *music.Bank
-	RulesID    string
+	Visual      *visualassets.Bundle
+	StartupMenu *visualassets.StartupMenu
+	Levels      []engine.Level
+	Landscapes  [4]engine.Landscape
+	Music       *music.Bank
+	RulesID     string
 }
 
 func LoadAssets(files fs.FS) (*Assets, error) {
@@ -35,7 +37,11 @@ func LoadAssets(files fs.FS) (*Assets, error) {
 	if err != nil {
 		return nil, err
 	}
-	bundle := &Assets{Visual: visual, Levels: levels}
+	menu, err := visualassets.LoadStartupMenu(files)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("startup menu: %w", err)
+	}
+	bundle := &Assets{Visual: visual, Levels: levels, StartupMenu: menu}
 	for index := range bundle.Landscapes {
 		data, err := fs.ReadFile(files, fmt.Sprintf("land%d.dat", index))
 		if err != nil {

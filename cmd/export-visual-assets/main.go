@@ -159,6 +159,9 @@ func export(files fs.FS, output string) error {
 			startup.SetRGBA(x, y, presentation.StartupPalette[presentation.StartupPixels[x+y*320]])
 		}
 	}
+	if err := exportStartupMenu(output, presentation); err != nil {
+		return err
+	}
 	if err := writePNG(output, catalog.Startup, startup); err != nil {
 		return err
 	}
