@@ -10,6 +10,10 @@ The portable host now admits new gameplay passes every four PAL interrupts
 Input, palette waits, retained modal children and audio continue independently.
 Returning from a dialog does not execute a burst of overdue simulation passes.
 The host gate never modifies the original simulation counters or saved game.
+An already latched help close click bypasses the preview delay. An integration
+test boots the original conquest chooser, runs the real help resource/text and
+preview bodies for 50 interrupts with ten animation updates, then closes the
+requester using a click that remains pending after button release.
 
 The independent CPU measurement corpus contains all 29 admitted help slots,
 with 32 redraws each, and six initial gameplay passes on campaign worlds 12, 25,
