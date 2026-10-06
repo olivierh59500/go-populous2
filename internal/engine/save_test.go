@@ -23,8 +23,6 @@ func TestSnapshotContinuesMotionAIAndSharedEffectsIdentically(t *testing.T) {
 	w.Players[0].Leader, w.Players[1].Leader = a, b
 	w.beginLeg(a, 33, 32)
 	w.advanceLeg(a)
-	w.terrainTargets[50+50*MapSize], w.terrainTargetSet[50+50*MapSize] = 1, true
-	w.developmentTarget[49+49*CornerSize], w.developmentTargetSet[49+49*CornerSize] = 1, true
 	if err := w.CastFireColumn(0, 20, 20); err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +47,7 @@ func TestSnapshotContinuesMotionAIAndSharedEffectsIdentically(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(w, restored) {
-		t.Fatal("snapshot lost private motion, construction or effect state")
+		t.Fatal("snapshot lost private motion, AI or effect state")
 	}
 	for tick := 0; tick < 60; tick++ {
 		w.Step()
@@ -171,6 +169,83 @@ func TestSnapshotPreservesMixedActorRegistryAndMagnetFractions(t *testing.T) {
 	}
 	if !reflect.DeepEqual(w.Actors, restored.Actors) || w.Magnets != restored.Magnets {
 		t.Fatal("save lost mixed actor order or fractional magnet coordinates")
+	}
+}
+
+func TestSnapshotContinuesNeutralScenarioAndWindState(t *testing.T) {
+	w := testFlatWorld()
+	w.random = 4311
+	w.Players[0].RallyX, w.Players[0].RallyY = 10, 10
+	w.Players[1].RallyX, w.Players[1].RallyY = 50, 50
+	addFollower(w, 10, 10, 0, 500, Town)
+	addFollower(w, 50, 50, 1, 500, Town)
+	for kind := NeutralRoadMaker; kind <= NeutralMonster; kind++ {
+		if _, err := w.CreateNeutral(kind, 20+int(kind)*3, 25); err != nil {
+			t.Fatal(err)
+		}
+	}
+	w.Scenario = ScenarioState{Events: [10]ScenarioEvent{{Time: 3, Kind: ScenarioFireColumn, X: 30, Y: 30}, {Time: 8, Kind: ScenarioRoadMaker, X: 15, Y: 15}}}
+	if err := w.CastWind(0, 30, 30, 1); err != nil {
+		t.Fatal(err)
+	}
+	w.Step()
+	w.Step()
+	var output bytes.Buffer
+	if err := WriteSnapshot(&output, w); err != nil {
+		t.Fatal(err)
+	}
+	restored, err := ReadSnapshot(bytes.NewReader(output.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for pass := 0; pass < 60; pass++ {
+		w.Step()
+		restored.Step()
+		if !reflect.DeepEqual(w, restored) {
+			t.Fatalf("neutral/scenario/wind continuation diverged at pass%d", pass+1)
+		}
+	}
+}
+
+func TestSnapshotAcceptsRetainedTerrainDeathAndRejectsInvalidNeutralOwner(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+	id := addFollower(w, 32, 32, 0, 0, Ruin)
+	w.Followers[id].TerrainDeath = TerrainDeathState{Active: true, Frame: 1, Frames: 2}
+	if _, err := w.Snapshot().Restore(); err != nil {
+		t.Fatal(err)
+	}
+	s := w.Snapshot()
+	s.World.Followers[id].Owner = 2
+	if _, err := s.Restore(); err == nil {
+		t.Fatal("owner2 ordinary follower was accepted without a neutral kind")
+	}
+	s = w.Snapshot()
+	s.World.Followers[id].TerrainDeath.Frame = 2
+	if _, err := s.Restore(); err == nil {
+		t.Fatal("already completed terrain death was accepted as active")
+	}
+}
+
+func TestSnapshotVersionOneRetiredConstructionFieldsRemainReadable(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+	s := w.Snapshot()
+	s.Construction = &ConstructionSnapshot{}
+	s.Construction.TerrainTargets[100] = 3
+	s.Construction.TerrainTargetSet[100] = true
+	data, err := json.Marshal(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, err := ReadSnapshot(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if restored.Snapshot().Construction != nil || !reflect.DeepEqual(w, restored) {
+		t.Fatal("retired planner data altered the current simulation")
 	}
 }
 

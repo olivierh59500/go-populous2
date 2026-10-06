@@ -39,14 +39,16 @@ type Snapshot struct {
 	Motion       [FollowerCapacity]FollowerMotionSnapshot `json:"motion"`
 	Random       uint32                                   `json:"random"`
 	Reservations [EffectCapacity]EffectReservation        `json:"reservations"`
-	Construction ConstructionSnapshot                     `json:"construction"`
+	// Construction is accepted for version-one compatibility. The retired
+	// terrain planner no longer reads these fields; new saves leave it empty.
+	Construction *ConstructionSnapshot `json:"construction,omitempty"`
 }
 
 func (w *World) Snapshot() Snapshot {
 	if w == nil {
 		return Snapshot{Version: SnapshotVersion}
 	}
-	s := Snapshot{Version: SnapshotVersion, World: SavedWorld(*w), Random: uint32(w.random), Reservations: w.effects.Slots, Construction: ConstructionSnapshot{w.terrainTargets, w.terrainTargetSet, w.developmentTarget, w.developmentTargetSet}}
+	s := Snapshot{Version: SnapshotVersion, World: SavedWorld(*w), Random: uint32(w.random), Reservations: w.effects.Slots}
 	for id, f := range w.Followers {
 		s.Motion[id] = FollowerMotionSnapshot{f.positionX, f.positionY, f.velocityX, f.velocityY, f.legRemaining, f.positionSet, f.moving}
 	}
@@ -96,8 +98,6 @@ func (s Snapshot) Restore() (*World, error) {
 	w := World(s.World)
 	w.random = randomState(s.Random)
 	w.effects.Slots = s.Reservations
-	w.terrainTargets, w.terrainTargetSet = s.Construction.TerrainTargets, s.Construction.TerrainTargetSet
-	w.developmentTarget, w.developmentTargetSet = s.Construction.DevelopmentTargets, s.Construction.DevelopmentTargetSet
 	for id, motion := range s.Motion {
 		f := &w.Followers[id]
 		f.positionX, f.positionY = motion.PositionX, motion.PositionY
@@ -114,6 +114,14 @@ func validateSnapshotWorld(w *World) error {
 	if err := validateActorRegistry(&w.Actors); err != nil {
 		return err
 	}
+	if int(w.Scenario.Cursor) > len(w.Scenario.Events) {
+		return fmt.Errorf("snapshot scenario cursor is invalid")
+	}
+	for _, event := range w.Scenario.Events {
+		if event.Kind > ScenarioMonster || event.Direction > 3 || event.Time != 0 && !inside(int(event.X), int(event.Y)) {
+			return fmt.Errorf("snapshot scenario event is invalid")
+		}
+	}
 	if w.Result < 0 || w.Result > 2 || w.Level.Number < 0 || w.Level.Number >= 1000 || w.Level.Landscape < 0 || w.Level.Landscape > 3 {
 		return fmt.Errorf("snapshot campaign state is invalid")
 	}
@@ -126,12 +134,9 @@ func validateSnapshotWorld(w *World) error {
 		if height > 8 {
 			return fmt.Errorf("snapshot terrain vertex %d exceeds height eight", vertex)
 		}
-		if w.developmentTargetSet[vertex] && w.developmentTarget[vertex] > 8 {
-			return fmt.Errorf("snapshot development altitude is invalid")
-		}
 	}
 	for at, cell := range w.Tiles {
-		if cell.BaseAltitude > 8 || cell.Shape > 15 || w.Farms[at] > 2 || w.terrainTargetSet[at] && w.terrainTargets[at] > 8 {
+		if cell.BaseAltitude > 8 || cell.Shape > 15 || w.Farms[at] > 2 {
 			return fmt.Errorf("snapshot parcel %d is invalid", at)
 		}
 		for _, height := range cell.Corners {
@@ -152,11 +157,15 @@ func validateSnapshotWorld(w *World) error {
 		if f.State == Inactive {
 			continue
 		}
-		if id == 0 || f.Owner > 1 || f.State > Converting || !inside(int(f.X), int(f.Y)) || f.Stage >= TownStages || f.Hero.Kind > HeroHelen || f.Hero.Phase > HeroDying || f.NextFollower < 0 || f.NextFollower >= FollowerCapacity || f.PreviousFollower < 0 || f.PreviousFollower >= FollowerCapacity || f.BattleWith < 0 || f.BattleWith >= FollowerCapacity || f.ContactWith < 0 || f.ContactWith >= FollowerCapacity || f.Hero.Target < 0 || f.Hero.Target >= FollowerCapacity || f.Hero.ClaimedBy < 0 || f.Hero.ClaimedBy >= FollowerCapacity || f.Hero.CaptiveOf < 0 || f.Hero.CaptiveOf >= FollowerCapacity {
+		validOwner := f.Owner < 2 || f.Owner == 2 && f.Neutral.Kind > NeutralNone && f.Neutral.Kind <= NeutralMonster
+		if id == 0 || !validOwner || f.Neutral.Kind > NeutralMonster || f.Neutral.VictimTime < 0 || f.Neutral.VictimTime > 400 || f.State > Converting || !inside(int(f.X), int(f.Y)) || f.Stage >= TownStages || f.Hero.Kind > HeroHelen || f.Hero.Phase > HeroDying || f.NextFollower < 0 || f.NextFollower >= FollowerCapacity || f.PreviousFollower < 0 || f.PreviousFollower >= FollowerCapacity || f.BattleWith < 0 || f.BattleWith >= FollowerCapacity || f.ContactWith < 0 || f.ContactWith >= FollowerCapacity || f.Hero.Target < 0 || f.Hero.Target >= FollowerCapacity || f.Hero.ClaimedBy < 0 || f.Hero.ClaimedBy >= FollowerCapacity || f.Hero.CaptiveOf < 0 || f.Hero.CaptiveOf >= FollowerCapacity {
 			return fmt.Errorf("snapshot follower %d contains an invalid state or relation", id)
 		}
 		if f.Conversion.Active && (f.Conversion.SourceOwner > 1 || f.Conversion.Frame >= 12) {
 			return fmt.Errorf("snapshot follower %d conversion is invalid", id)
+		}
+		if f.TerrainDeath.Active && (f.TerrainDeath.Frames < 1 || f.TerrainDeath.Frame >= f.TerrainDeath.Frames) {
+			return fmt.Errorf("snapshot terrain-death lifecycle is invalid")
 		}
 		if f.positionSet && (f.positionX < 0 || f.positionY < 0 || f.positionX >= MapSize*256 || f.positionY >= MapSize*256 || f.positionX>>8 != int(f.X) || f.positionY>>8 != int(f.Y)) || f.velocityX < -32768 || f.velocityX > 32767 || f.velocityY < -32768 || f.velocityY > 32767 || f.legRemaining < -32768 || f.legRemaining > 32767 {
 			return fmt.Errorf("snapshot follower %d contains invalid continuous motion", id)
@@ -187,7 +196,7 @@ func validateSnapshotWorld(w *World) error {
 			return fmt.Errorf("snapshot effect reservation %d is invalid", id)
 		}
 		if reservation.Kind == EffectNone {
-			if w.Fire.Columns[id].Active || w.Fire.Rain[id].Active || w.Fire.Volcano[id].Active || w.Fire.Lava[id].Active || w.Nature.Fungi[id].Active || w.Air.Markers[id].Active || w.Air.Bolts[id].Active || w.Air.Whirlwinds[id].Active || w.Air.Storms[id].Active || w.Water.Basalt[id].Active || w.Water.Whirlpools[id].Active || w.Water.Waves[id].Active {
+			if w.Fire.Columns[id].Active || w.Fire.Rain[id].Active || w.Fire.Volcano[id].Active || w.Fire.Lava[id].Active || w.Nature.Fungi[id].Active || w.Air.Markers[id].Active || w.Air.Bolts[id].Active || w.Air.Whirlwinds[id].Active || w.Air.Storms[id].Active || w.Water.Basalt[id].Active || w.Water.Whirlpools[id].Active || w.Water.Waves[id].Active || w.Wind[id].Active {
 				return fmt.Errorf("snapshot active effect %d has no reservation", id)
 			}
 			continue
@@ -237,6 +246,10 @@ func validateSnapshotWorld(w *World) error {
 			if !w.Water.Waves[id].Active {
 				return fmt.Errorf("snapshot tidal-wave reservation has no controller")
 			}
+		case EffectHurricane:
+			if !w.Wind[id].Active {
+				return fmt.Errorf("snapshot wind reservation has no controller")
+			}
 		}
 		for _, effect := range []FireEffect{w.Fire.Columns[id], w.Fire.Rain[id], w.Fire.Volcano[id], w.Fire.Lava[id]} {
 			if effect.Active && (effect.Owner > 2 || effect.Phase > LavaFlowing || effect.Stage < 0 || effect.Stage > 8 || effect.Direction < 0 || effect.Direction > 3 || effect.X < 0 || effect.Y < 0 || effect.X >= MapSize*256 || effect.Y >= MapSize*256) {
@@ -260,6 +273,9 @@ func validateSnapshotWorld(w *World) error {
 		}
 		if wave := w.Water.Waves[id]; wave.Active && (wave.Owner > 2 || wave.Direction < 0 || wave.Direction > 3) {
 			return fmt.Errorf("snapshot tidal-wave direction is invalid")
+		}
+		if wind := w.Wind[id]; wind.Active && (wind.Owner > 2 || wind.Direction < 0 || wind.Direction > 3 || wind.Life < -32768 || wind.Life > 32767) {
+			return fmt.Errorf("snapshot wind controller is invalid")
 		}
 	}
 	for _, reference := range w.Air.MarkerSlots {
