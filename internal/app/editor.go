@@ -76,8 +76,13 @@ func (g *Game) applyEditor() error {
 		return fmt.Errorf("edited world is invalid: %w", err)
 	}
 	candidate.Editor = false
+	candidate.Result = 0
 	g.World = candidate
 	g.CustomGame = true
+	g.restoreCustomSetup()
+	g.resultApplied = false
+	g.Paused = false
+	g.AnimationSounds = AnimationSoundGate{}
 	g.Screen = Playing
 	g.Editor = nil
 	return nil

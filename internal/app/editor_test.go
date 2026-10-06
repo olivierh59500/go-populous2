@@ -47,7 +47,7 @@ func TestEditorApplyAdoptsValidatedDetachedTerrainAndObjects(t *testing.T) {
 	if err := g.applyEditor(); err != nil {
 		t.Fatal(err)
 	}
-	if g.World == live || g.World.Editor || g.Screen != Playing || g.World.Heights[32+32*engine.CornerSize] != 3 {
+	if g.World == live || g.World.Editor || g.Screen != Playing || g.World.Heights[32+32*engine.CornerSize] != 3 || g.CustomLevel == nil {
 		t.Fatal("editor apply did not adopt validated detached world")
 	}
 	var ids [engine.FollowerCapacity]int
