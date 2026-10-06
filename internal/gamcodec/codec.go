@@ -153,10 +153,7 @@ func Decode(data []byte, catalog Catalog) (*Document, error) {
 		if owner == 0 {
 			continue
 		}
-		if owner > 2 {
-			return nil, fmt.Errorf("GAM follower%d uses unsupported neutral record kind%d", id, record[0])
-		}
-		f, motion, err := decodeFollower(record, id)
+		f, motion, err := decodeFollower(record, id, &snapshot, catalog)
 		if err != nil {
 			return nil, err
 		}

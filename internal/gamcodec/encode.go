@@ -95,9 +95,6 @@ func Encode(document *Document) ([]byte, error) {
 			byteAt(at+12, 0)
 			continue
 		}
-		if f.Owner > 1 || f.Conversion.Active || f.Disease.Dying || f.Neutral.Kind != engine.NeutralNone || f.State != engine.Walking && f.State != engine.Town {
-			return nil, fmt.Errorf("GAM follower%d lifecycle is not mapped yet", id)
-		}
 		link := w.Actors.Followers[id]
 		next, err := fileReference(link.Next)
 		if err != nil {
@@ -143,6 +140,9 @@ func Encode(document *Document) ([]byte, error) {
 		}
 		byteAt(at+13, flags)
 		wordAt(at+10, uint16(f.Frame*4))
+		if err := encodeFollowerLifecycle(data[at-fileStart:at+52-fileStart], w, id, document.Metadata.Catalog); err != nil {
+			return nil, err
+		}
 	}
 	for id, scenery := range w.Nature.Scenery {
 		at := 0x6bd0 + id*14
@@ -244,7 +244,7 @@ func Encode(document *Document) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		wordAt(god+10, reference)
+		wordAt(god+8, reference)
 		marker, err := effectReference(w.Air.MarkerSlots[owner])
 		if err != nil {
 			return nil, err

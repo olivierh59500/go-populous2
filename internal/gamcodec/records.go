@@ -8,29 +8,85 @@ import (
 	"go-populous2/internal/engine"
 )
 
-func decodeFollower(record []byte, id int) (engine.Follower, engine.FollowerMotionSnapshot, error) {
+func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Catalog) (engine.Follower, engine.FollowerMotionSnapshot, error) {
 	word := func(at int) uint16 { return binary.BigEndian.Uint16(record[at:]) }
 	f := engine.Follower{Owner: record[12] - 1, X: record[6], Y: record[8], PreviousX: record[6], PreviousY: record[8], MovementSpeed: record[18], Weapons: int(record[25]), Population: int(int32(binary.BigEndian.Uint32(record[26:]))), Stage: record[1], FoundedAt: uint64(word(46))}
 	motion := engine.FollowerMotionSnapshot{PositionX: int(word(6)), PositionY: int(word(8)), VelocityX: int(int16(word(14))), VelocityY: int(int16(word(16))), LegRemaining: int(int16(word(20))), PositionSet: true}
-	switch record[0] {
-	case 2:
-		switch record[22] {
-		case 2:
-			f.State = engine.Walking
-		case 4:
-			f.State = engine.Walking
-			motion.Moving = true
-		default:
-			return f, motion, fmt.Errorf("GAM follower%d motion phase%d is not mapped yet", id, record[22])
+	f.State = engine.Walking
+	if record[0] == 0x3c {
+		f.Owner = 2
+		selector := word(40)
+		if selector < 2 || selector > 12 || selector&1 != 0 {
+			return f, motion, fmt.Errorf("invalid GAM neutral selector")
 		}
+		f.Neutral.Kind = engine.NeutralKind(selector / 2)
+	} else if record[0] == 4 {
+		f.State = engine.Town
+	}
+	state := record[22]
+	switch state {
+	case 0x44:
+		if f.Neutral.Kind == engine.NeutralNone {
+			return f, motion, fmt.Errorf("GAM neutral phase has no invention kind")
+		}
+	case 0x46:
+		f.State = engine.Ruin
+		f.Neutral.VictimTime = int(word(20))
+	case 2, 18:
 	case 4:
-		if record[22] != 6 {
-			return f, motion, fmt.Errorf("GAM town%d phase%d is not mapped yet", id, record[22])
-		}
+		motion.Moving = true
+	case 6:
 		f.State = engine.Town
 		f.Work = word(20)
+	case 0x14, 0x1a:
+		f.State = engine.Airborne
+		effect, err := effectIndex(word(32))
+		if err != nil {
+			return f, motion, err
+		}
+		carry := engine.AirCarryState{Phase: engine.AirCarryFlying, Effect: effect, Frames: 12}
+		if state == 0x1a {
+			carry.Phase, carry.Frames = engine.AirCarryLanding, 7
+		}
+		snapshot.World.Air.Carry[id] = carry
+	case 0x1c, 0x1e, 0x20, 0x22:
+		phase := engine.LightningVictimWalkingHit
+		if state == 0x1e {
+			phase = engine.LightningVictimTownHit
+		}
+		if state == 0x20 {
+			phase = engine.LightningVictimDeath
+			f.State = engine.Ruin
+		}
+		if state == 0x22 {
+			phase = engine.LightningVictimRecovery
+		}
+		bolt, err := effectIndex(word(32))
+		if err != nil {
+			return f, motion, err
+		}
+		snapshot.World.AirVictims[id] = engine.LightningVictimState{Phase: phase, Bolt: bolt, Frames: 2}
+	case 0x36:
+		f.State = engine.Converting
+		f.Conversion = engine.ConversionState{Active: true, SourceOwner: f.Owner}
+	case 0x3a:
+		f.Consecrated = true
+	case 0x3c:
+		f.State = engine.Ruin
+		snapshot.World.FireDamage.Deaths[id] = engine.FireVictimDeath{Mode: engine.FireVictimBurning, Frames: 21}
+	case 0x28:
+		f.State = engine.Ruin
+		f.CombatAftermath = engine.CombatAftermathState{Kind: engine.CombatTownCollapse, Frames: 13, RuinTime: 400}
+	case 0x30:
+		f.State = engine.Ruin
+		f.CombatAftermath = engine.CombatAftermathState{Kind: engine.CombatTownRuin, RuinTime: int(word(20))}
 	default:
-		return f, motion, fmt.Errorf("GAM follower%d kind%d is not mapped yet", id, record[0])
+		if record[0] == 6 && state == 8 {
+			f.State = engine.Ruin
+			snapshot.World.FireDamage.Deaths[id] = engine.FireVictimDeath{Mode: engine.FireVictimDying, Frames: 9}
+		} else {
+			return f, motion, fmt.Errorf("GAM follower%d kind%d phase%d is not mapped yet", id, record[0], state)
+		}
 	}
 	if record[13]&2 != 0 {
 		hero := word(40)
@@ -40,6 +96,18 @@ func decodeFollower(record []byte, id int) (engine.Follower, engine.FollowerMoti
 		f.Hero.Kind = engine.HeroKind(hero/2 + 1)
 		f.Hero.Phase = engine.HeroFindTarget
 	}
+	if f.Hero.Kind != engine.HeroNone {
+		if target, err := reference(word(30)); err == nil && target.Kind == engine.ActorFollower {
+			f.Hero.Target = int(target.Index)
+			f.Hero.Phase = engine.HeroPursuing
+		}
+		if capture, err := reference(word(42)); err == nil && capture.Kind == engine.ActorFollower {
+			f.Hero.CaptiveOf = int(capture.Index)
+		}
+		if claim, err := reference(word(44)); err == nil && claim.Kind == engine.ActorFollower {
+			f.Hero.ClaimedBy = int(claim.Index)
+		}
+	}
 	if record[13]&0x20 != 0 {
 		f.Disease.Infected = true
 	}
@@ -47,8 +115,90 @@ func decodeFollower(record []byte, id int) (engine.Follower, engine.FollowerMoti
 	if f.State == engine.Walking {
 		f.Frame %= 4
 	}
+	if state != 2 && state != 4 && state != 6 && state != 18 && state != 0x30 && state != 0x46 && state != 0x3a {
+		role, ok := followerAnimationRole(catalog.AnimationRoles[word(10)], state)
+		if !ok {
+			return f, motion, fmt.Errorf("GAM follower%d phase%d animation%d has no semantic catalog role", id, state, word(10))
+		}
+		f.Frame = uint16(role.Frame)
+		switch f.State {
+		case engine.Airborne:
+			carry := &snapshot.World.Air.Carry[id]
+			carry.Frame = role.Frame
+			if f.IsHero() && carry.Phase == engine.AirCarryFlying {
+				carry.Frames = 4
+			}
+		case engine.Converting:
+			f.Conversion.Frame = uint16(role.Frame)
+			f.Conversion.Hero = f.IsHero()
+		case engine.Ruin:
+			if death := &snapshot.World.FireDamage.Deaths[id]; death.Mode != engine.FireVictimAlive {
+				death.Frame = role.Frame
+				if f.IsHero() {
+					death.Frames = 9
+				}
+			}
+			if f.CombatAftermath.Kind == engine.CombatTownCollapse {
+				f.CombatAftermath.Frame = uint16(role.Frame)
+				f.CombatAftermath.Frames = uint16(catalogAnimationLength(catalog, role.Name))
+			}
+		}
+		if victim := &snapshot.World.AirVictims[id]; victim.Phase != engine.LightningVictimNone {
+			victim.Hero = f.Hero.Kind
+			victim.Frame = role.Frame
+			victim.Frames = catalogAnimationLength(catalog, role.Name)
+			if strings.HasPrefix(role.Name, "lightning/recovery") {
+				victim.Sequence = engine.LightningRecoverySequence
+			} else if strings.HasPrefix(role.Name, "death/") {
+				victim.Sequence = engine.LightningDeathSequence
+			}
+		}
+	}
 	f.Target = int(f.X+uint8(sign(motion.VelocityX))) + int(f.Y+uint8(sign(motion.VelocityY)))*64
 	return f, motion, nil
+}
+
+func followerAnimationRole(roles []AnimationRole, state uint8) (AnimationRole, bool) {
+	prefix := ""
+	switch state {
+	case 0x14:
+		prefix = "airborne/"
+	case 0x1a:
+		prefix = "airborne/landing"
+	case 0x1c, 0x1e:
+		prefix = "lightning/"
+	case 0x20:
+		prefix = "death/"
+	case 0x22:
+		prefix = "lightning/recovery"
+	case 0x36:
+		prefix = "conversion/"
+	case 0x3c:
+		prefix = "death/burning"
+	case 0x28:
+		prefix = "ruin/town/"
+	case 8:
+		prefix = "death/"
+	case 0x44:
+		prefix = "neutral/"
+	}
+	for _, role := range roles {
+		if (strings.HasPrefix(role.Name, prefix) || state == 0x20 && role.Name == "lightning/hit") && prefix != "" {
+			return role, true
+		}
+	}
+	return AnimationRole{}, false
+}
+func catalogAnimationLength(catalog Catalog, name string) int {
+	length := 0
+	for _, roles := range catalog.AnimationRoles {
+		for _, role := range roles {
+			if role.Name == name {
+				length = max(length, role.Frame+1)
+			}
+		}
+	}
+	return length
 }
 func sign(v int) int {
 	if v < 0 {
@@ -78,7 +228,7 @@ func decodePlayers(r fileReader, s *engine.Snapshot) error {
 		default:
 			return fmt.Errorf("GAM player mode%d is invalid", mode)
 		}
-		leader, err := reference(r.word(god + 10))
+		leader, err := reference(r.word(god + 8))
 		if err != nil {
 			return err
 		}
