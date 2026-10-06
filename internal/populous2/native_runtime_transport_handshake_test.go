@@ -14,6 +14,7 @@ func TestNativeRuntimeHandshakeConstructsActualNegotiatedWorlds(t *testing.T) {
 	var directors [2]NativeRuntimeDirector
 	var rules [2]NativeStartupCampaignHostRules
 	var supplied [2]NativeRuntimeDirectorCallbacks
+	var devices [2]*NativeAudioDevice
 	for side, connection := range []net.Conn{left, right} {
 		h := nativeRuntimeHostTest(t)
 		hosts[side] = h
@@ -28,6 +29,7 @@ func TestNativeRuntimeHandshakeConstructsActualNegotiatedWorlds(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		devices[side] = device
 		rules[side], err = DecodeNativeStartupCampaignHostRules(h.Bundle.Executable)
 		if err != nil {
 			t.Fatal(err)
@@ -136,5 +138,73 @@ func TestNativeRuntimeHandshakeConstructsActualNegotiatedWorlds(t *testing.T) {
 			}
 		}
 		time.Sleep(100 * time.Microsecond)
+	}
+	var gameFrames [2]*NativeRuntimeFrame
+	var err error
+	for side, h := range hosts {
+		side := side
+		audio := supplied[side].Audio
+		operations := NativeRuntimeAudioOperations{Command: audio.Command, MusicCommand: audio.MusicCommand, DirectCue: devices[side].DirectCue}
+		gameFrames[side], err = h.NewFrame(NativeRuntimeFrameBindings{Audio: operations, RenderChildren: NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return 0, nil }, Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }, Sound: devices[side].DirectCue}, Menu: NativeInGameHostCallbacks{Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }}, Session: NativeFrameSessionCallbacks{Transport: transports[side].PacketCallback}})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	for tick := 0; tick < 120; tick++ {
+		var done [2]bool
+		for side, h := range hosts {
+			at := 0xeb56 + side*10
+			command := uint32(8)
+			for _, patch := range []nativeHeroPatch{{at + 1, 1, command}, {at + 2, 1, uint32(20 + side*10 + tick%4)}, {at + 3, 1, uint32(25 + side*8 + tick%3)}} {
+				renderFramePatch(h.Memory.BSS, patch)
+			}
+			if err := h.Session.BeginRaw(h.World, frames[side]); err != nil {
+				t.Fatal(err)
+			}
+			p := &h.Session.Presentation.Input
+			if _, err := h.Session.Presentation.VBlank(NativeMouseSample{CounterX: uint8(p.Mouse.CounterX), CounterY: uint8(p.Mouse.CounterY)}, h.Memory.BSS, &frames[side]); err != nil {
+				t.Fatal(err)
+			}
+		}
+		deadline = time.Now().Add(time.Second)
+		for !done[0] || !done[1] {
+			if time.Now().After(deadline) {
+				t.Fatalf("paired native gameplay frame%d stalled%d/%d", tick, hosts[0].Session.Phase, hosts[1].Session.Phase)
+			}
+			for side := range hosts {
+				if done[side] {
+					continue
+				}
+				if hosts[side].Session.Phase == NativeFrameSessionClock {
+					p := &hosts[side].Session.Presentation.Input
+					if _, err := hosts[side].Session.Presentation.VBlank(NativeMouseSample{CounterX: uint8(p.Mouse.CounterX), CounterY: uint8(p.Mouse.CounterY)}, hosts[side].Memory.BSS, &frames[side]); err != nil {
+						t.Fatal(err)
+					}
+				}
+				done[side], err = gameFrames[side].Advance()
+				if err != nil {
+					t.Fatalf("paired native frame%d side%d:%v", tick, side, err)
+				}
+				if done[side] {
+					frames[side] = hosts[side].Session.Frame
+				}
+			}
+			time.Sleep(100 * time.Microsecond)
+		}
+		for _, span := range [][2]int{{0xf44, 0x4000}, {0x5f50, 0x87f0}, {0xeb28, 4}} {
+			for i := 0; i < span[1]; i++ {
+				a, err := hosts[0].Memory.BSS.Read8(span[0] + i)
+				if err != nil {
+					t.Fatal(err)
+				}
+				b, err := hosts[1].Memory.BSS.Read8(span[0] + i)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if a != b {
+					t.Fatalf("paired native gameplay diverged tick%d at%x", tick, span[0]+i)
+				}
+			}
+		}
 	}
 }

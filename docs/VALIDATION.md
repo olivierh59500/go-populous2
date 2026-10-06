@@ -1184,3 +1184,17 @@ captured the real browser, field controls and cancel button, then exited0.
 The source browser and backend separately pass their full-register/pixel/raw
 filesystem comparisons. Interactive save/load and broader campaign/two-player
 interoperability remain final validation work.
+
+## Paired complete native gameplay frames
+
+The negotiated-world test now advances120 complete native frames on both
+physical runtimes. Rendering, followers, AI/effects/scenery/audio, swap,
+transport, command execution and source input run their actual bound bodies.
+Palette waits receive real VBlanks and retain the current frame. Both players
+send papal-magnet commands through the original serial
+records, without World.Cast or inherited World.Tick.
+
+After each completed frame, full terrain, actor/global pools and RNG match
+between peers. This establishes a bounded native gameplay composition check;
+long interactive sessions, connection failure UI, save interoperability and
+every cross-effect interaction remain part of final multiplayer validation.
