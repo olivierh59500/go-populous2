@@ -56,6 +56,8 @@ type Follower struct {
 	NextFollower, PreviousFollower int
 	ContactWith                    int
 	ContactFriendly                bool
+	ContactWait                    int
+	ContactWaiting                 bool
 	BattleWasTown                  bool
 	CombatAftermath                CombatAftermathState
 	BattleWith                     int
@@ -78,36 +80,37 @@ type Summary struct{ Population, Towns, Groups, BattlesWon, Mana int }
 // World owns simulation state. All arrays have a geometric or game meaning;
 // none represents CPU memory, a register bank, or a relocated executable.
 type World struct {
-	Editor               bool
-	BirthBlocked         bool
-	NeutralBirthDeadline uint64
-	Scenario             ScenarioState
-	Level                Level
-	Landscape            Landscape
-	Nature               NatureState
-	Fire                 FireEffects
-	FireDamage           FireDamageState
-	Water                WaterEffects
-	Air                  AirEffects
-	Earth                EarthState
-	AI                   [2]AIState
-	Wind                 [EffectCapacity]WindEffect
-	AirVictims           [FollowerCapacity]LightningVictimState
-	Heights              [CornerSize * CornerSize]uint8
-	Tiles                [MapSize * MapSize]Cell
-	Farms                [MapSize * MapSize]uint8 // Zero, blue, or red cultivation.
-	Occupants            [MapSize * MapSize]uint16
-	Footsteps            [MapSize * MapSize]uint16
-	Pressure             [MapSize * MapSize]uint8
-	Followers            [FollowerCapacity]Follower
-	Actors               ActorRegistry
-	Magnets              [2]MagnetActor
-	Players              [2]Player
-	Tick                 uint64
-	Armageddon           bool
-	Result               int // Zero ongoing, one blue victory, two red victory.
-	random               randomState
-	effects              effectPool
+	followerTransitionDepth [FollowerCapacity]uint8
+	Editor                  bool
+	BirthBlocked            bool
+	NeutralBirthDeadline    uint64
+	Scenario                ScenarioState
+	Level                   Level
+	Landscape               Landscape
+	Nature                  NatureState
+	Fire                    FireEffects
+	FireDamage              FireDamageState
+	Water                   WaterEffects
+	Air                     AirEffects
+	Earth                   EarthState
+	AI                      [2]AIState
+	Wind                    [EffectCapacity]WindEffect
+	AirVictims              [FollowerCapacity]LightningVictimState
+	Heights                 [CornerSize * CornerSize]uint8
+	Tiles                   [MapSize * MapSize]Cell
+	Farms                   [MapSize * MapSize]uint8 // Zero, blue, or red cultivation.
+	Occupants               [MapSize * MapSize]uint16
+	Footsteps               [MapSize * MapSize]uint16
+	Pressure                [MapSize * MapSize]uint8
+	Followers               [FollowerCapacity]Follower
+	Actors                  ActorRegistry
+	Magnets                 [2]MagnetActor
+	Players                 [2]Player
+	Tick                    uint64
+	Armageddon              bool
+	Result                  int // Zero ongoing, one blue victory, two red victory.
+	random                  randomState
+	effects                 effectPool
 }
 
 func NewWorld(level Level, land Landscape) (*World, error) {
@@ -208,11 +211,7 @@ func (w *World) Step() {
 	w.Tick++
 	w.beginAIObservations()
 	w.BirthBlocked = false
-	for owner := range w.Players {
-		if w.Tick&1 == 0 && w.Players[owner].Mana < 32767 {
-			w.Players[owner].Mana++
-		}
-	}
+
 	// Source simulation phases process followers, AI, the shared effect pool,
 	// and scenery in that order. A newborn in a later slot runs this pass;
 	// a reused lower slot waits for the following pass.
@@ -258,6 +257,11 @@ func (w *World) Step() {
 }
 
 func (w *World) stepFollower(id int) {
+	if id <= 0 || id >= FollowerCapacity || w.followerTransitionDepth[id] >= 64 {
+		return
+	}
+	w.followerTransitionDepth[id]++
+	defer func() { w.followerTransitionDepth[id]-- }()
 	f := &w.Followers[id]
 	if f.Owner > 1 {
 		w.tickNeutral(id)
@@ -296,6 +300,10 @@ func (w *World) stepFollower(id int) {
 	}
 	if f.State == Fighting {
 		w.stepBattle(id)
+		return
+	}
+	if f.ContactWaiting {
+		w.stepContactWait(id)
 		return
 	}
 	if f.ContactWith != 0 {
@@ -395,7 +403,9 @@ func (w *World) stepFollower(id int) {
 		}
 	}
 	w.advanceLeg(id)
-
+	if f.State == Walking && !f.moving && f.ContactWith == 0 {
+		w.stepFollower(id)
+	}
 }
 
 func (w *World) emptyNeighbour(x, y int) (int, int, bool) {

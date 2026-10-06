@@ -47,11 +47,11 @@ func TestSettlementNineteenStagesAndEconomy(t *testing.T) {
 	for range 7 {
 		w.Step()
 	}
-	if w.Followers[id].Population != 900 || w.Players[0].Mana != 3 {
+	if w.Followers[id].Population != 900 || w.Players[0].Mana != 0 {
 		t.Fatal("town worked early")
 	}
 	w.Step()
-	if w.Followers[id].Population != 910 || w.Players[0].Mana != 104 {
+	if w.Followers[id].Population != 910 || w.Players[0].Mana != 100 {
 		t.Fatalf("stage eighteen economy: %+v", w.Followers[id])
 	}
 	// The inner nine cells produce stage nine; the outer sixteen support
@@ -100,6 +100,7 @@ func TestEmigrationPopulationAccountingAndPoolExhaustion(t *testing.T) {
 func TestWalkingFoundingAndRallyOrders(t *testing.T) {
 	w := testFlatWorld()
 	id := addFollower(w, 8, 8, 0, 100, Walking)
+	addFollower(w, 50, 50, 1, 100, Town)
 	for range 20 {
 		if w.Followers[id].State != Town {
 			w.Step()

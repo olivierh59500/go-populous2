@@ -91,17 +91,28 @@ func (w *World) advanceLeg(id int) {
 			if f.Hero.CaptiveOf != 0 {
 				return
 			}
+			if w.Followers[other].Owner == f.Owner && w.Followers[other].State == Town && !f.IsHero() {
+				w.mergeFollowers(id, other)
+				return
+			}
 			w.prepareContact(id, other)
 			return
 		}
+
 		if !f.IsHero() && f.Hero.CaptiveOf == 0 && w.Players[f.Owner].Mode != Rally && w.Tick >= f.SettleAfter && settlementLand(w.Cell(x, y).Code) {
 			if stage := w.EvaluateTown(id); stage > 0 {
 				f.State = Town
 				f.Stage = uint8(stage)
-				f.Work = 0
+				f.Work = uint16(f.legRemaining)
 				f.FoundedAt = w.Tick
 				f.Frame = uint16(stage)
 				f.moving = false
+				f.positionX = x*256 + 128
+				f.positionY = y*256 + 128
+				f.positionSet = true
+				w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, f.positionX, f.positionY)
+				w.stepFollower(id)
+				return
 			}
 		}
 

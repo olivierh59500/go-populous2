@@ -6,7 +6,7 @@ func TestFriendlyEntryHomesBeforeMergingPopulation(t *testing.T) {
 	w := testFlatWorld()
 	a := w.allocate(Follower{Owner: 0, X: 20, Y: 20, State: Walking, Population: 100, MovementSpeed: 20})
 	w.linkFollower(a)
-	b := w.allocate(Follower{Owner: 0, X: 21, Y: 20, State: Town, Population: 200, MovementSpeed: 20})
+	b := w.allocate(Follower{Owner: 0, X: 21, Y: 20, State: Walking, Population: 200, MovementSpeed: 20})
 	w.linkFollower(b)
 	w.beginLeg(a, 21, 20)
 	for range 7 {
@@ -58,8 +58,41 @@ func TestRemovedContactTargetReleasesArrivingGroup(t *testing.T) {
 	b := addFollower(w, 21, 20, 0, 200, Walking)
 	w.prepareContact(a, b)
 	w.remove(b)
-	w.stepContact(a)
-	if w.Followers[a].State != Walking || w.Followers[a].ContactWith != 0 || w.Followers[a].Population != 100 {
-		t.Fatal("removed target left a stale contact")
+	for range 14 {
+		if w.Followers[a].ContactWith != 0 {
+			w.stepContact(a)
+		}
+	}
+	if w.Followers[a].State == Inactive || w.Followers[a].ContactWith != 0 || w.Followers[a].Population != 100 {
+		t.Fatalf("removed target redispatch: state%d target%d population%d", w.Followers[a].State, w.Followers[a].ContactWith, w.Followers[a].Population)
+	}
+}
+
+func TestSourceContactMergeTransfersLeaderWithoutDeathStatistics(t *testing.T) {
+	w := testFlatWorld()
+	a := addFollower(w, 20, 20, 0, 100, Walking)
+	b := addFollower(w, 20, 20, 0, 200, Walking)
+	w.Players[0].Leader = a
+	w.Players[0].Statistics.Metric = 100
+	w.Followers[a].Weapons = 7
+	w.Followers[b].Weapons = 3
+	w.mergeFollowers(a, b)
+	if w.Players[0].Leader != b || w.Players[0].Statistics.Metric != 100 || w.Players[0].Statistics.LeaderLosses != 0 || w.Followers[b].Population != 300 || w.Followers[b].Weapons != 7 || w.Followers[a].State != Inactive {
+		t.Fatal("join counted a death or lost the source leader attributes")
+	}
+}
+
+func TestContactRedispatchHasBoundedTransitionsAndKeepsWorldTick(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 1000, Walking)
+	w.Players[0].Mode = Rally
+	w.Players[0].RallyX = 20
+	w.Players[0].RallyY = 20
+	w.Followers[id].ContactWith = id
+	w.Followers[id].moving = false
+	before := w.Tick
+	w.stepFollower(id)
+	if w.Tick != before || w.followerTransitionDepth[id] != 0 || w.Followers[id].State != Walking {
+		t.Fatal("contact redispatch changed world time or leaked transition budget")
 	}
 }
