@@ -1113,3 +1113,16 @@ A command restart test runs actual custom construction, panel and audio while
 the raw World is borrowed. Cache refresh is marked pending and occurs only
 after release, rather than overwriting a native reset from typed views. Live
 frame wiring and complete menu/file/result transitions remain integration work.
+
+## Retained result boundary after population recount
+
+ResultAdvance lets the native session retain the result UI after the complete
+follower pass. The identity and full data-register continuation survive waits;
+the ordered actor pass and population recount are not repeated. Completion
+then resumes the original following AI/effect stages. Legacy synchronous
+result callbacks and independent pass comparisons keep their behavior.
+
+A regression test mutates a recounted population while the result child is
+pending and verifies that the next Advance preserves it, caller registers and
+raw borrow. The actual381E result controller and ending/reset children still
+require their own source comparison and concrete callback binding.

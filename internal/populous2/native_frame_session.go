@@ -54,19 +54,23 @@ type NativeFrameSession struct {
 	imageAudioCode       *NativeImageAudioCodeAlias
 	inputPhase           uint32
 	requireInput         bool
+	followersCompleted   bool
+	resultPending        bool
+	resultIdentity       uint16
 }
 
 type NativeFrameSessionCallbacks struct {
 	// Clock and Render perform genuine source children and retain any inner
 	// phase on a wait. Render receives the real HUNK4 drawing target and the
 	// shared image descriptor bank. There is no default successful renderer.
-	Palette   func(*NativeFrameRegisterContext) (bool, error)
-	Render    func(FollowerCleanupMemory, *NativeFrameRegisterContext, *NativeImageRenderState, []byte, *uint32) (bool, error)
-	Result    func(uint16, *NativeFrameRegisterContext) error
-	Audio     NativeFrameAudioCallbacks
-	Execute   func(int, *NativeCommandRegisterContext, *uint32) (bool, error)
-	Transport func(int, uint8, *NativeCommandRegisterContext, *uint32) (bool, error)
-	Commands  NativeCommandWorldBindings
+	Palette       func(*NativeFrameRegisterContext) (bool, error)
+	Render        func(FollowerCleanupMemory, *NativeFrameRegisterContext, *NativeImageRenderState, []byte, *uint32) (bool, error)
+	Result        func(uint16, *NativeFrameRegisterContext) error
+	ResultAdvance func(uint16, *NativeFrameRegisterContext) (bool, error)
+	Audio         NativeFrameAudioCallbacks
+	Execute       func(int, *NativeCommandRegisterContext, *uint32) (bool, error)
+	Transport     func(int, uint8, *NativeCommandRegisterContext, *uint32) (bool, error)
+	Commands      NativeCommandWorldBindings
 	// DirectSound performs register-preserving184F6. It is a real device
 	// operation and must not increment the software scheduler's flags.
 	DirectSound func(uint16) error
@@ -191,6 +195,7 @@ func (s *NativeFrameSession) begin(w *World, input NativeFrameRegisterContext, r
 	}
 	s.Frame = input
 	s.Pass = NativeFramePassState{}
+	s.followersCompleted, s.resultPending = false, false
 	s.Deferred = NativeDeferredFrameState{}
 	s.commandStates = [2]NativeCommandFrameState{}
 	s.commandPalettes = [2]*NativeFramePaletteState{}
@@ -370,8 +375,32 @@ func (s *NativeFrameSession) physicsCallbacks(cb NativeFrameSessionCallbacks, bi
 	}}
 	bindings := NativeFrameContinuationBindings{World: NativeFrameWorldBindings{Audio: &s.Audio, MapPoint: paint, Commands: commands}, Audio: device,
 		Followers: func(c *NativeFrameRegisterContext) (bool, error) {
-			err := s.followerRules.Tick(w, c, &s.Followers, NativeFollowerFrameOutputs{MapPoint: func(_ uint16, c *NativeFrameRegisterContext) error { return paint(c) }, Result: cb.Result, Commands: commands})
-			return err == nil, err
+			if cb.ResultAdvance == nil || !s.followersCompleted {
+				result := cb.Result
+				if cb.ResultAdvance != nil {
+					result = func(identity uint16, _ *NativeFrameRegisterContext) error {
+						s.resultPending = true
+						s.resultIdentity = identity
+						return nil
+					}
+				}
+				err := s.followerRules.Tick(w, c, &s.Followers, NativeFollowerFrameOutputs{MapPoint: func(_ uint16, c *NativeFrameRegisterContext) error { return paint(c) }, Result: result, Commands: commands})
+				if err != nil {
+					return false, err
+				}
+				s.followersCompleted = cb.ResultAdvance != nil
+			}
+			if s.resultPending {
+				if cb.ResultAdvance == nil {
+					return false, fmt.Errorf("native retained result callback missing")
+				}
+				done, err := cb.ResultAdvance(s.resultIdentity, c)
+				if err != nil || !done {
+					return false, err
+				}
+				s.resultPending = false
+			}
+			return true, nil
 		},
 		Swap: func(c *NativeFrameRegisterContext) (bool, error) {
 			// Audio has completed (or the pause gate skipped it). Transfer
