@@ -41,6 +41,7 @@ const (
 	GroundFungusDead
 	GroundRestored
 	GroundScorched
+	GroundBaptism
 )
 
 type GroundParcel struct {
@@ -100,6 +101,8 @@ func (n *NatureState) TileCode(x, y int) (uint8, bool) {
 		return 15, true
 	case GroundScorched:
 		return 95, true
+	case GroundBaptism:
+		return 143, true
 	case GroundFungusFresh, GroundFungusYoung, GroundFungusGrowing, GroundFungusMature, GroundFungusOld, GroundFungusDying, GroundFungusDead:
 		return 145 + uint8(n.Ground[x+y*MapSize].Mark-GroundFungusFresh), true
 	default:

@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -216,5 +217,163 @@ func TestPrivateArmageddonGameplayStates(t *testing.T) {
 	}
 	if checked == 0 {
 		t.Fatal("private Armageddon catalog supplied no mapped gameplay cases")
+	}
+}
+
+func TestBaptismSamplesGroundWithoutOverwritingOccupants(t *testing.T) {
+	w := testFlatWorld()
+	w.random = 4311
+	w.Players[0].Experience[Water] = 255
+	id := addFollower(w, 32, 32, 0, 100, Walking)
+	if err := w.CastBaptism(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	placed := 0
+	for at, p := range w.Nature.Ground {
+		if p.Mark == GroundBaptism {
+			placed++
+			if w.Occupants[at] != 0 || w.Cell(at%MapSize, at/MapSize).Code != 143 {
+				t.Fatal("font did not preserve occupants or artwork")
+			}
+		}
+	}
+	if placed == 0 || w.Occupants[32+32*MapSize] != uint16(id) {
+		t.Fatal("baptism did not create sampled parcels")
+	}
+}
+
+func TestBaptismDelayedFlipPreservesPopulationAndVelocityFractions(t *testing.T) {
+	for _, reference := range []struct {
+		owner  int
+		hero   HeroKind
+		length int
+	}{{0, HeroNone, 12}, {1, HeroNone, 11}, {0, HeroPerseus, 11}, {1, HeroHelen, 11}} {
+		w := testFlatWorld()
+		id := addFollower(w, 32, 32, reference.owner, 100, Walking)
+		w.Players[reference.owner].Leader = id
+		f := &w.Followers[id]
+		f.Hero.Kind = reference.hero
+		f.velocityX = 16
+		f.velocityY = -16
+		w.Nature.Ground[32+32*MapSize] = GroundParcel{Mark: GroundBaptism, Owner: 0}
+		for frame := 1; frame < reference.length; frame++ {
+			if !w.advanceConversion(id) || f.Owner != uint8(reference.owner) || f.State != Converting {
+				t.Fatal("font flipped before completing its frames")
+			}
+		}
+		if !w.advanceConversion(id) || f.Owner != uint8(reference.owner^1) || f.State != Walking || f.Population != 100 || f.X != 33 || f.Y != 31 || f.positionX&255 != 128 || f.positionY&255 != 128 {
+			t.Fatal("font completion did not preserve original conversion fields", *f)
+		}
+		if w.Players[reference.owner].Leader != 0 || w.Occupants[33+31*MapSize] != uint16(id) {
+			t.Fatal("font leader/graph handoff incomplete")
+		}
+	}
+}
+
+func TestBaptismConversionDoesNotWrapAtWorldEdges(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 0, 63, 0, 100, Walking)
+	f := &w.Followers[id]
+	f.velocityX = -20
+	f.velocityY = 20
+	w.Nature.Ground[0+63*MapSize] = GroundParcel{Mark: GroundBaptism}
+	for range 12 {
+		w.advanceConversion(id)
+	}
+	if f.X != 0 || f.Y != 63 || f.Owner != 1 {
+		t.Fatal("font completion wrapped outside finite world")
+	}
+}
+
+func TestPrivateBaptismGroundCreation(t *testing.T) {
+	path := os.Getenv("POPULOUS2_BAPTISM_TRACE")
+	if path == "" {
+		t.Skip("set POPULOUS2_BAPTISM_TRACE for private baptism map comparison")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type patch struct {
+		Address, Width int
+		Value          uint32
+	}
+	var catalog struct {
+		Cases []struct {
+			Input struct {
+				Name       string
+				Owner      uint16
+				X, Y       uint8
+				Seed       uint32
+				Tile       uint8
+				Pattern    int
+				Initial    []patch
+				Links      []uint16
+				Operations []struct {
+					Kind    string
+					Repeat  int
+					Initial []patch
+				}
+			}
+			Frames []struct {
+				RNG     uint32
+				Changes []struct {
+					Address int
+					Value   uint8
+				}
+			}
+		}
+	}
+	if err = json.Unmarshal(data, &catalog); err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, c := range catalog.Cases {
+		i := c.Input
+		if !strings.HasPrefix(i.Name, "cast-font-") || i.Owner < 1 || i.Owner > 2 || !inside(int(i.X), int(i.Y)) || i.Pattern != 0 || len(i.Links) != 0 || len(i.Operations) != 1 || i.Operations[0].Kind != "font" || i.Operations[0].Repeat != 1 || len(c.Frames) != 1 {
+			continue
+		}
+		w := testFlatWorld()
+		w.random = randomState(i.Seed)
+		for at := range w.Tiles {
+			w.Tiles[at].Code = i.Tile
+		}
+		unsupported := false
+		for _, p := range i.Initial {
+			if p.Address == 0xe76a+int(i.Owner)*314+0x57 && p.Width == 1 {
+				w.Players[i.Owner-1].Experience[Water] = uint8(p.Value)
+			} else {
+				unsupported = true
+			}
+		}
+		if unsupported {
+			continue
+		}
+		t.Run(i.Name, func(t *testing.T) {
+			if err := w.CastBaptism(int(i.Owner-1), int(i.X), int(i.Y)); err != nil {
+				t.Fatal(err)
+			}
+			if uint32(w.random) != c.Frames[0].RNG {
+				t.Fatal("baptism random sequence differs")
+			}
+			expected := [MapSize * MapSize]byte{}
+			for at := range expected {
+				expected[at] = i.Tile
+			}
+			for _, change := range c.Frames[0].Changes {
+				if change.Address >= 0xf45 && change.Address < 0x4f44 && (change.Address-0xf45)%4 == 0 {
+					expected[(change.Address-0xf45)/4] = change.Value
+				}
+			}
+			for at, code := range expected {
+				if got := w.Cell(at%MapSize, at/MapSize).Code; got != code {
+					t.Fatalf("baptism parcel%d code%d expected%d", at, got, code)
+				}
+			}
+		})
+		checked++
+	}
+	if checked == 0 {
+		t.Fatal("baptism fixture supplied no normal sampling cases")
 	}
 }

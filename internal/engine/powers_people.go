@@ -11,6 +11,13 @@ type DiseaseState struct {
 	DeathFrame uint16
 }
 
+type ConversionState struct {
+	Active      bool
+	Frame       uint16
+	SourceOwner uint8
+	Hero        bool
+}
+
 // CastPlague affects opposing allocated followers at the target parcel.
 // Recasting restarts their overlay; it neither spends RNG nor spreads simply
 // because unrelated friendly and enemy groups stand near one another.
@@ -109,4 +116,86 @@ func (w *World) CastArmageddon(owner int) error {
 	}
 	w.Armageddon = true
 	return nil
+}
+
+// Baptism uses the water experience tier to extend both its sampling divisor
+// and attempt count. It replaces only unoccupied fertile or road parcels.
+func (w *World) CastBaptism(owner, x, y int) error {
+	if owner < 0 || owner > 1 || !inside(x, y) {
+		return fmt.Errorf("invalid baptism target")
+	}
+	base := 17 + int(w.Players[owner].Experience[Water]>>5)
+	count := int(w.random.next())%base + base/2
+	for attempt := 0; attempt <= count; attempt++ {
+		nx, ny, ok := w.natureSample(x, y)
+		if !ok {
+			continue
+		}
+		at := nx + ny*MapSize
+		if w.Occupants[at] != 0 || w.Nature.sceneryAt(nx, ny) >= 0 || w.WallAt(nx, ny) >= 0 {
+			continue
+		}
+		code := w.Cell(nx, ny).Code
+		if !fertileNatureCode(code) && !roadCode(code) && !(code >= 220 && code <= 223) {
+			continue
+		}
+		w.paintNature(at, GroundParcel{Mark: GroundBaptism, Owner: uint8(owner)})
+	}
+	return nil
+}
+
+// advanceConversion owns the retained font animation and owner flip. Fonts
+// convert either side, independently of the caster that originally placed it.
+func (w *World) advanceConversion(id int) bool {
+	if id <= 0 || id >= FollowerCapacity {
+		return false
+	}
+	f := &w.Followers[id]
+	if f.State == Inactive {
+		return false
+	}
+	if !f.Conversion.Active {
+		if w.Nature.Ground[int(f.X)+int(f.Y)*MapSize].Mark != GroundBaptism {
+			return false
+		}
+		if f.State == Ruin || f.State == Airborne || f.Disease.Dying {
+			return false
+		}
+		f.Conversion = ConversionState{Active: true, SourceOwner: f.Owner, Hero: f.IsHero()}
+		f.State = Converting
+		f.positionX, f.positionY = int(f.X)*256+128, int(f.Y)*256+128
+		f.positionSet = true
+		f.moving = false
+		f.Frame = 0
+	}
+	f.Conversion.Frame++
+	length := 11
+	if !f.Conversion.Hero && f.Conversion.SourceOwner == 0 {
+		length = 12
+	}
+	if int(f.Conversion.Frame) < length {
+		return true
+	}
+	owner := f.Owner
+	if w.Players[owner].Leader == id {
+		w.Players[owner].Leader = 0
+	}
+	f.Owner ^= 1
+	f.State = Walking
+	f.Frame = 0
+	f.Conversion = ConversionState{}
+	x, y := int(f.X)+sign(f.velocityX), int(f.Y)+sign(f.velocityY)
+	if x < 0 || x >= MapSize {
+		x = int(f.X)
+	}
+	if y < 0 || y >= MapSize {
+		y = int(f.Y)
+	}
+	fixedX, fixedY := x*256+(f.positionX&255), y*256+(f.positionY&255)
+	w.moveFollowerCell(id, x, y)
+	f.positionX, f.positionY = fixedX, fixedY
+	f.PreviousX, f.PreviousY = f.X, f.Y
+	f.SettleAfter = w.Tick + 1
+	w.repaintFarms()
+	return true
 }
