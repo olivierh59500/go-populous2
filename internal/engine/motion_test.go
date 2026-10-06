@@ -61,3 +61,17 @@ func TestZeroSpeedDoesNotFabricateMovement(t *testing.T) {
 		t.Fatal("zero-speed leg was silently accelerated")
 	}
 }
+
+func TestCellEntryWrapsPressureWithoutLoweringSourcePressure(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Pressure[20+20*MapSize] = 16
+	w.Pressure[21+20*MapSize] = 248
+	w.beginLeg(id, 21, 20)
+	for range 7 {
+		w.advanceLeg(id)
+	}
+	if w.Pressure[20+20*MapSize] != 16 || w.Pressure[21+20*MapSize] != 0 {
+		t.Fatal("pressure did not retain source and wrap destination byte")
+	}
+}

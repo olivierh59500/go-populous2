@@ -130,7 +130,7 @@ func (w *World) Cast(owner int, id PowerID, target PowerTarget) error {
 			return errors.New("terrain cannot be changed")
 		}
 	case PapalMagnet:
-		if !w.SetRally(owner, target.X, target.Y) {
+		if !w.PlaceMagnet(owner, target.X, target.Y) {
 			return errors.New("invalid rally target")
 		}
 		w.Players[owner].Mana -= w.PowerCost(owner, id)

@@ -22,6 +22,9 @@ func (w *World) TownStage(owner, x, y, ignoreID int) int {
 			return false
 		}
 		at := nx + ny*MapSize
+		if !w.NatureTownAllowed(owner, nx, ny) {
+			return false
+		}
 		if !w.Tiles[at].IsFlat() || w.Tiles[at].Corners[0] != w.Tiles[x+y*MapSize].Corners[0] {
 			return false
 		}

@@ -153,7 +153,11 @@ func (w *World) Cell(x, y int) Cell {
 	if !inside(x, y) {
 		return Cell{}
 	}
-	return w.Tiles[x+y*MapSize]
+	cell := w.Tiles[x+y*MapSize]
+	if code, ok := w.Nature.TileCode(x, y); ok {
+		cell.Code = code
+	}
+	return cell
 }
 
 // RaiseAt and LowerAt admit an order at the base mana cost. Every corner
@@ -179,6 +183,15 @@ func (w *World) changeHeight(player, x, y int, raise bool) bool {
 	for i, height := range w.Heights {
 		if height != before[i] {
 			changes++
+		}
+	}
+	for cy := 0; cy < MapSize; cy++ {
+		for cx := 0; cx < MapSize; cx++ {
+			at := cx + cy*CornerSize
+			if before[at] != w.Heights[at] || before[at+1] != w.Heights[at+1] || before[at+CornerSize] != w.Heights[at+CornerSize] || before[at+CornerSize+1] != w.Heights[at+CornerSize+1] {
+				w.Pressure[cx+cy*MapSize] = 0
+				w.Nature.Ground[cx+cy*MapSize] = GroundParcel{}
+			}
 		}
 	}
 	w.Players[player].Mana = max(0, w.Players[player].Mana-w.PowerCost(player, RaiseLower)*changes)

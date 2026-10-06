@@ -88,6 +88,7 @@ func (w *World) advanceLeg(id int) {
 		f.X, f.Y = uint8(x), uint8(y)
 		w.Occupants[x+y*MapSize] = uint16(id)
 		w.Footsteps[x+y*MapSize]++
+		w.Pressure[x+y*MapSize] += 8
 	}
 	f.positionX, f.positionY = nx, ny
 	// This field remains available for UI consumers; Position is authoritative.

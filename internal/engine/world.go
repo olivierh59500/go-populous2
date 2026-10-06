@@ -62,11 +62,13 @@ type Summary struct{ Population, Towns, Groups, BattlesWon, Mana int }
 type World struct {
 	Level                Level
 	Landscape            Landscape
+	Nature               NatureState
 	Heights              [CornerSize * CornerSize]uint8
 	Tiles                [MapSize * MapSize]Cell
 	Farms                [MapSize * MapSize]uint8 // Zero, blue, or red cultivation.
 	Occupants            [MapSize * MapSize]uint16
 	Footsteps            [MapSize * MapSize]uint16
+	Pressure             [MapSize * MapSize]uint8
 	Followers            [FollowerCapacity]Follower
 	Players              [2]Player
 	Tick                 uint64
@@ -156,6 +158,7 @@ func (w *World) Step() {
 		return
 	}
 	w.Tick++
+	w.tickNature()
 	for owner := range w.Players {
 		if w.Tick&1 == 0 && w.Players[owner].Mana < 32767 {
 			w.Players[owner].Mana++
@@ -188,6 +191,9 @@ func (w *World) Step() {
 
 func (w *World) stepFollower(id int) {
 	f := &w.Followers[id]
+	if w.EnterNatureHazard(id) {
+		return
+	}
 	if f.State == Inactive || f.Population <= 0 {
 		w.remove(id)
 		return
@@ -288,70 +294,6 @@ func (w *World) emptyNeighbour(x, y int) (int, int, bool) {
 	return 0, 0, false
 }
 
-func (w *World) chooseMove(id int) (int, int, bool) {
-	f := w.Followers[id]
-	owner := int(f.Owner)
-	p := w.Players[owner]
-	targetX, targetY := p.RallyX, p.RallyY
-	if p.Mode == Fight {
-		best := 10000
-		for other := 1; other < len(w.Followers); other++ {
-			enemy := w.Followers[other]
-			if enemy.State != Inactive && enemy.Owner != f.Owner {
-				distance := abs(int(enemy.X)-int(f.X)) + abs(int(enemy.Y)-int(f.Y))
-				if distance < best {
-					best = distance
-					targetX, targetY = int(enemy.X), int(enemy.Y)
-				}
-			}
-		}
-	}
-	bestScore := int(^uint(0) >> 1)
-	bestX, bestY := 0, 0
-	found := false
-	start := int(w.random.next()) % 8
-	for n := 0; n < 8; n++ {
-		d := directions[(start+n)%8]
-		x, y := int(f.X)+d[0], int(f.Y)+d[1]
-		if !inside(x, y) || w.Tiles[x+y*MapSize].IsWater() {
-			continue
-		}
-		at := x + y*MapSize
-		other := int(w.Occupants[at])
-		score := int(w.Footsteps[at]) * 4
-		if p.Mode == Rally || p.Mode == Fight {
-			score += (abs(x-targetX) + abs(y-targetY)) * 32
-		}
-		if p.Mode == Settle {
-			score -= w.TownStage(owner, x, y, id) * 200
-		}
-		if other != 0 && other != id {
-			e := w.Followers[other]
-			if e.Owner != f.Owner {
-				if p.Mode == Fight {
-					score -= 1000
-				} else {
-					score += 500
-				}
-			}
-			if e.Owner == f.Owner {
-				if e.State == Town {
-					score += 10000
-				}
-				if p.Mode == Join {
-					score -= 2000
-				} else if e.State != Town {
-					score += 400
-				}
-			}
-		}
-		if score < bestScore {
-			bestScore, bestX, bestY, found = score, x, y, true
-		}
-	}
-	return bestX, bestY, found
-}
-
 func (w *World) remove(id int) {
 	f := w.Followers[id]
 	at := int(f.X) + int(f.Y)*MapSize
@@ -361,6 +303,8 @@ func (w *World) remove(id int) {
 	if f.State != Inactive && w.Players[f.Owner].Leader == id {
 		w.Players[f.Owner].Leader = 0
 	}
+	w.Nature.Deaths[id] = NatureAlive
+	w.Nature.DeathFrames[id] = 0
 	w.Followers[id] = Follower{}
 }
 
@@ -425,5 +369,16 @@ func (w *World) Evacuate(id int) bool {
 	w.Occupants[x+y*MapSize] = uint16(id)
 	w.repaintFarms()
 	w.summarize()
+	return true
+}
+
+// PlaceMagnet relocates the papal magnet without selecting the rally tactic.
+// Mode selection is a separate HUD action, as in the original game.
+func (w *World) PlaceMagnet(owner, x, y int) bool {
+	if owner < 0 || owner > 1 || !inside(x, y) || w.Players[owner].Leader == 0 {
+		return false
+	}
+	w.Players[owner].RallyX = x
+	w.Players[owner].RallyY = y
 	return true
 }

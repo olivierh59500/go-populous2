@@ -82,3 +82,21 @@ func TestTerrainAtlasBanksAndSlopedPicking(t *testing.T) {
 		t.Fatal("surface picking ignored height")
 	}
 }
+
+func TestTerrainEditsClearOnlyChangedGroundAndPressure(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].Mana = 1000
+	w.Nature.Ground[31+31*MapSize] = GroundParcel{Mark: GroundFlowers, Owner: 0}
+	w.Pressure[31+31*MapSize] = 64
+	w.Nature.Ground[10+10*MapSize] = GroundParcel{Mark: GroundSwamp, Owner: 1}
+	w.Pressure[10+10*MapSize] = 80
+	if !w.RaiseAt(0, 32, 32) {
+		t.Fatal("raise rejected")
+	}
+	if w.Nature.Ground[31+31*MapSize].Mark != GroundNone || w.Pressure[31+31*MapSize] != 0 {
+		t.Fatal("changed ground retained its overlay or pressure")
+	}
+	if w.Nature.Ground[10+10*MapSize].Mark != GroundSwamp || w.Pressure[10+10*MapSize] != 80 {
+		t.Fatal("unrelated ground was cleared")
+	}
+}
