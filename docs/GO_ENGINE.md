@@ -61,6 +61,7 @@ See [ASSET_SETUP.md](ASSET_SETUP.md) for supported disk revisions.
 | Options / detached map editor | O / P; EDIT in options |
 | Browse/load / browse/save | F9 / F10; Load Game in the main menu |
 | Pause / help / return | Space / H / Escape |
+| Inspect a group or town | I, then click; click its top-right panel to recenter |
 
 The gameplay panel also offers mouse controls. The options/editor operate on
 validated detached drafts; Cancel preserves the live game. Power help creates

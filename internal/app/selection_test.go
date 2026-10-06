@@ -3,6 +3,7 @@ package app
 import (
 	"image"
 	"image/color"
+	"path/filepath"
 	"testing"
 
 	"go-populous2/internal/engine"
@@ -38,5 +39,23 @@ func TestSelectedArtworkUsesPanelAnchorAndDoesNotChangeWorld(t *testing.T) {
 	}
 	if w.Snapshot() != before {
 		t.Fatal("selection panel rendering changed the world")
+	}
+}
+
+func TestSelectedGroupAndInspectModeSurviveSessionSave(t *testing.T) {
+	g := browserGame(t)
+	g.SelectedFollower = g.World.Players[0].Leader
+	g.Inspecting = true
+	g.SavePath = filepath.Join(t.TempDir(), "selected.json")
+	id := g.SelectedFollower
+	if err := g.saveGame(); err != nil {
+		t.Fatal(err)
+	}
+	g.SelectedFollower, g.Inspecting = 0, false
+	if err := g.loadGame(); err != nil {
+		t.Fatal(err)
+	}
+	if g.SelectedFollower != id || !g.Inspecting {
+		t.Fatal("saved selection or inspection mode was lost")
 	}
 }
