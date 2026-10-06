@@ -231,7 +231,7 @@ func (g *Game) pickCorner(mouseX, mouseY int) (int, int, bool) {
 
 func (g *Game) drawWorld() {
 	w := g.World
-	draw.Draw(g.framebuffer, g.framebuffer.Bounds(), g.Assets.Visual.Background, image.Point{}, draw.Src)
+	g.drawTerrainBackdrop()
 	land := w.Level.Landscape
 	var commands [viewSize*viewSize + engine.FollowerCapacity + engine.EffectCapacity + engine.SceneryCapacity + engine.WallCapacity + 2]RenderCommand
 	for _, command := range sourceRenderPlan(w, g.CameraX, g.CameraY, commands[:0]) {
