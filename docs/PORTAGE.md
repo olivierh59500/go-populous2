@@ -1,8 +1,10 @@
 # Conversion and fidelity
 
-This is a playable conversion in progress. Original resources and several
-native routines have been translated, while the supplied Populous I engine
-still provides parts of movement, combat, terrain bookkeeping and land AI.
+This is a conversion in progress. The native integration target executes Go
+translations of the original register-bearing startup, rendering, input,
+simulation, menus, audio and result/progression controllers. The inherited
+playable command remains available until complete original-game validation
+supports replacing it.
 [FEATURES.md](FEATURES.md) tracks the complete original feature inventory and
 all 29 powers. [NATIVE_RULES.md](NATIVE_RULES.md) records the newer translations.
 
@@ -40,22 +42,26 @@ original flat-ground cast maps and final random states. Runtime gameplay uses
 Go translations; the isolated instruction-execution harness is local analysis
 material and is not shipped with the game.
 
-Native simulation parity is not yet established for the other systems.
-In particular, deterministic saves and reproducible demonstration runs are
-regression checks, not evidence of original movement or combat behavior.
+Independent CPU corpora now compare source followers, AI, effects, terrain,
+towns, scripts, menus, rendering, input, audio and result/award/ending paths.
+Configured mixed simulation and separate complete paired-frame tests cover
+documented compositions. These proofs establish their explicit inputs and
+boundaries; deterministic saves or repeatable demonstration runs alone do
+not establish full original-game fidelity.
 
 ## Remaining conversion work
 
-- Native movement, linked tile occupancy, combat, inventions and land AI.
-- Remaining vegetation interactions, full settlement founding/contact state
-  dispatch and environmental automata. Native support and farm composition are
-  integrated into ordinary town updates and lightning recovery.
-- Original state machines for the remaining disasters, routes, walls and heroes.
-- Experience awards, scenario scripts and special editor/battle-mode rules,
-  opponent personalities, original campaign scoring and world progression.
-- Original menus, statistics, transitions and final sequence.
-- Native animation-triggered sound events and hardware timing/mixing comparison.
-- Original GAM interoperability and two-player transport.
+- Complete stock and campaign end-to-end comparisons across every landscape,
+  including rare linked occupancy, combat, inventions and environmental states.
+- Broader mixed disaster, wall and hero interactions beyond the documented
+  configured simulation corpora.
+- Complete winning result/award/deity/reset continuation and long campaign
+  scoring, pacing, scenario and opponent behavior.
+- Interactive native terrain/picking, menus, statistics and final-sequence
+  transitions before making the native command the default.
+- Animation-triggered audio timing and remaining hardware/analog fidelity.
+- Interactive original GAM save/load and longer paired serial/TCP gameplay,
+  including connection failure and save interoperability.
 
 The separate Challenge executable is an additional scenario extension, outside
 the main two-disk game.
