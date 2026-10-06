@@ -149,4 +149,12 @@ func TestSoundEffectMuteLeavesThemeAndItsTimelineUnchanged(t *testing.T) {
 	if !b.music || b.volume != 1 {
 		t.Fatal("effect toggle changed music or master volume")
 	}
+	if !b.IsSoundEnabled() || !b.IsMusicEnabled() {
+		t.Fatal("enabled audio options were not reported")
+	}
+	b.SetMusic(false)
+	b.SetSoundEnabled(false)
+	if b.IsMusicEnabled() || b.IsSoundEnabled() {
+		t.Fatal("muted audio options were not retained")
+	}
 }

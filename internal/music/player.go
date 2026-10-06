@@ -140,6 +140,26 @@ func (r *Player) SetSoundEnabled(enabled bool) {
 	}
 }
 
+func (r *Player) MusicEnabled() bool {
+	if r == nil {
+		return false
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.music
+}
+func (r *Player) SoundEnabled() bool {
+	if r == nil {
+		return false
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.sound
+}
+
+func (r *Player) IsMusicEnabled() bool { return r.MusicEnabled() }
+func (r *Player) IsSoundEnabled() bool { return r.SoundEnabled() }
+
 func (r *Player) PlayPattern(id int, volume uint8) bool {
 	return r.playPattern(id, volume, 0)
 }
