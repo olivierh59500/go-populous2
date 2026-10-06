@@ -1,5 +1,10 @@
 package populous2
 
+import (
+	"encoding/binary"
+	"fmt"
+)
+
 // nativeWallCallbacks uses the original mixed actor graph and retained record
 // image. SourceD7 is supplied by the original command register continuation;
 // the creator replaces its low mask byte only, so zero is not an implied value.
@@ -21,7 +26,7 @@ func (w *World) nativeWallCallbacks(sourceD7 uint16) NativeWallCallbacks {
 		}
 		return memory.Write16(god+0x44, value+1)
 	}
-	return NativeWallCallbacks{
+	callbacks := NativeWallCallbacks{
 		Memory: memory, SourceD7: sourceD7,
 		Link: w.nativeRuntimeInsert, Unlink: w.nativeRuntimeUnlink,
 		Move: func(ref NativeRecordReference, x, y uint16) (bool, error) {
@@ -36,6 +41,23 @@ func (w *World) nativeWallCallbacks(sourceD7 uint16) NativeWallCallbacks {
 			return err
 		},
 	}
+	if w.nativeSharedCode != nil {
+		callbacks.WriteNeighbor = func(index int, ref NativeRecordReference) error {
+			if index < 0 || index >= 4 || len(w.NativeAI.Code) < 0x1648c {
+				return fmt.Errorf("native wall CODE neighbor slot%d unavailable", index)
+			}
+			value := uint32(0)
+			if ref != 0 {
+				// 16332's relocated LEA supplies the actual base76C0;
+				// its following ADDA.W uses the signed raw reference.
+				base := binary.BigEndian.Uint32(w.NativeAI.Code[0x16334:])
+				value = base + uint32(int32(int16(ref)))
+			}
+			binary.BigEndian.PutUint32(w.NativeAI.Code[0x1647c+index*4:], value)
+			return nil
+		}
+	}
+	return callbacks
 }
 
 // castNativeWall is the $17800 command boundary. A failed disconnected cast

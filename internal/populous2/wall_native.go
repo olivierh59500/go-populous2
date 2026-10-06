@@ -53,6 +53,10 @@ type NativeWallCallbacks struct {
 	Link, Unlink func(NativeRecordReference) error
 	Move         func(NativeRecordReference, uint16, uint16) (bool, error)
 	Enter        func(NativeRecordReference) error // Complete $1275a after a committed crossing.
+	// WriteNeighbor retains16350/1635A's actual CODE1647C pointer stores.
+	// The host resolves references against its real BSS load address; nil
+	// preserves the established standalone relative-reference ABI.
+	WriteNeighbor func(int, NativeRecordReference) error
 }
 
 type NativeWallCreation struct {
@@ -124,6 +128,11 @@ func (r *NativeWallRules) Create(owner uint16, x, y uint8, state *NativeWallPlac
 		candidate := packed + uint16(int16(delta[0]+delta[1]*256))
 		if candidate&0xc0c0 != 0 {
 			state.Neighbors[cursor] = 0
+			if cb.WriteNeighbor != nil {
+				if err := cb.WriteNeighbor(cursor, 0); err != nil {
+					return result, err
+				}
+			}
 			cursor++
 			continue
 		}
@@ -141,6 +150,11 @@ func (r *NativeWallRules) Create(owner uint16, x, y uint8, state *NativeWallPlac
 				if actual == candidate {
 					connections |= 1
 					state.Neighbors[cursor] = NativeRecordReference(head)
+					if cb.WriteNeighbor != nil {
+						if err := cb.WriteNeighbor(cursor, NativeRecordReference(head)); err != nil {
+							return result, err
+						}
+					}
 					cursor++
 				}
 				matched = true
@@ -150,6 +164,11 @@ func (r *NativeWallRules) Create(owner uint16, x, y uint8, state *NativeWallPlac
 		}
 		if !matched {
 			state.Neighbors[cursor] = 0
+			if cb.WriteNeighbor != nil {
+				if err := cb.WriteNeighbor(cursor, 0); err != nil {
+					return result, err
+				}
+			}
 			cursor++
 		}
 	}

@@ -17,6 +17,7 @@ type nativeGameplayCPUFixture struct {
 		Links        []uint16
 		Packets      []struct {
 			Tick                 int
+			TargetRef            uint16
 			Owner, Command, X, Y uint8
 		}
 		Placement, PlacementOwner uint8
@@ -28,12 +29,13 @@ type nativeGameplayCPUFixture struct {
 		Interval                  int
 		View                      uint16
 	}
-	Startup        nativeGameplayCPUPoint
-	Frames         []nativeGameplayCPUPoint
-	ResultBoundary bool
-	ErrorPC        uint32
-	FollowerStates map[string]int
-	FXStates       map[string]int
+	Startup          nativeGameplayCPUPoint
+	Frames           []nativeGameplayCPUPoint
+	ResultBoundary   bool
+	ErrorPC          uint32
+	FollowerStates   map[string]int
+	FXStates         map[string]int
+	WallBreakEntries int
 }
 type nativeGameplayCPUPoint struct {
 	Tick                                   int
@@ -108,7 +110,7 @@ func runNativeGameplayCPUCorpus(t *testing.T, filename string, expectedCases int
 					t.Fatalf("tick%d routine%x BSS differs", want.Tick, want.Routine)
 				}
 				if fileFrameHash(code) != want.CodeHash {
-					if dir := os.Getenv("NATIVE_GAMEPLAY_DEBUG"); dir != "" && (want.Tick == -1 || want.Tick == 0 || want.Tick == 6 || want.Tick == 15 || want.Tick == 88 || want.Tick == 102) {
+					if dir := os.Getenv("NATIVE_GAMEPLAY_DEBUG"); dir != "" && (want.Tick == -1 || want.Tick == 0 || want.Tick == 6 || want.Tick == 15 || want.Tick == 88 || want.Tick == 102 || want.Tick == 1) {
 						_ = os.MkdirAll(dir, 0755)
 						_ = os.WriteFile(filepath.Join(dir, fmt.Sprintf("go-%s-%d-%x-code.bin", f.Input.Name, want.Tick, want.Routine)), code, 0600)
 					}
@@ -173,7 +175,20 @@ func runNativeGameplayCPUCorpus(t *testing.T, filename string, expectedCases int
 				}
 				for _, packet := range f.Input.Packets {
 					if packet.Tick == tick {
-						data := []byte{packet.Owner, packet.Command, packet.X, packet.Y, 0, 0, 0, 0, 2, 0}
+						x, y := packet.X, packet.Y
+						if packet.TargetRef != 0 {
+							at := cleanupRecordAddress(NativeRecordReference(packet.TargetRef))
+							var err error
+							x, err = h.Memory.BSS.Read8(at + 6)
+							if err != nil {
+								t.Fatal(err)
+							}
+							y, err = h.Memory.BSS.Read8(at + 8)
+							if err != nil {
+								t.Fatal(err)
+							}
+						}
+						data := []byte{packet.Owner, packet.Command, x, y, 0, 0, 0, 0, 2, 0}
 						for i, v := range data {
 							_ = h.Memory.BSS.Write8(0xeb56+i, v)
 						}
