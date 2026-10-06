@@ -40,6 +40,7 @@ type NativeGame struct {
 	AutoStart      bool
 	autoClicked    bool
 	beam           uint16
+	Commands       *populous2.NativeRuntimeCommandChildren
 }
 
 func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {
@@ -100,10 +101,12 @@ func (g *NativeGame) boot() error {
 func (g *NativeGame) createFrame() error {
 	operations, h := g.Operations, g.Host
 	sound := func(cue uint16, c *populous2.NativeFrameRegisterContext) error { return operations.DirectCue(cue, c) }
+	g.Commands = &populous2.NativeRuntimeCommandChildren{Host: h, Rules: g.Rules, Supplied: g.Startup, Audio: populous2.NativeAudioControlFrameCallbacks{Command: operations.Command, MusicCommand: operations.MusicCommand, CodeBase: h.Memory.CodeBase}}
 	frame, err := h.NewFrame(populous2.NativeRuntimeFrameBindings{Audio: operations,
 		RenderChildren: populous2.NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return g.beam, nil }, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, Sound: sound},
 		InputChildren:  populous2.NativeGameplayHUDHostCallbacks{Campaign: g.Startup.Campaign, Ownership: g.Startup.Ownership, Audio: operations},
 		Menu:           populous2.NativeInGameHostCallbacks{Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Sound: sound}},
+		Session:        populous2.NativeFrameSessionCallbacks{CommandChild: g.Commands.Call},
 	})
 	if err != nil {
 		return err
@@ -178,6 +181,15 @@ func (g *NativeGame) Update() error {
 			}
 			if complete {
 				g.Registers = g.Host.Session.Frame
+				if g.Commands.RefreshPending {
+					if err := g.Host.RefreshWorldCaches(); err != nil {
+						return err
+					}
+					g.Commands.RefreshPending = false
+					if err := g.createFrame(); err != nil {
+						return err
+					}
+				}
 				if g.Host.Session.ExitRequested {
 					return ebiten.Termination
 				}
