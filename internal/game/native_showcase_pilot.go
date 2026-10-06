@@ -9,6 +9,7 @@ import (
 // the regular, input-only settlement player. Captions follow the visible
 // controller rather than an assumed sequence of loading times.
 type NativeShowcasePilot struct {
+	TerrainEdit   func(NativePresentationTerrainEdit)
 	Caption       string
 	player        *NativePresentationPilot
 	phase         int
@@ -44,6 +45,7 @@ func (p *NativeShowcasePilot) Next(g *NativeGame) (NativeInput, error) {
 		p.player.failed = make(map[int]int)
 	}
 	if g.Frame != nil {
+		p.player.TerrainEdit = p.TerrainEdit
 		if p.gameAt == 0 {
 			p.gameAt = g.Updates
 		}
@@ -219,7 +221,7 @@ func (p *NativeShowcasePilot) gameCaption(age int) string {
 	case age < 10800:
 		return "Spells need a target and enough earned mana.\nReserve resources for construction while putting pressure on the enemy."
 	case age < 12000:
-		return "Balance expansion with divine intervention.\nThe world continues at its normal gameplay cadence throughout."
+		return "Balance expansion with divine intervention.\nProtect your settlements while you watch the attack unfold."
 	case age < 13300:
 		return "Keep the settlement economy growing while the expedition advances.\nPopulation, mana and position all shape your next decision."
 	default:
@@ -244,7 +246,7 @@ func (p *NativeShowcasePilot) observeAction(g *NativeGame) {
 	case "Engaging the opponent while towns keep producing":
 		caption = "Switch the expedition to fight mode.\nFollowers engage the enemy while settlements support the campaign."
 	case "Spending earned mana on the opponent":
-		caption = "Select an available offensive power and target an enemy town.\nThe spell spends earned mana rather than bypassing the game rules."
+		caption = "Select an available offensive power and target an enemy town.\nWatch the mana reserve drop as the power strikes its target."
 	case "Creating Perseus from the rallied leader":
 		caption = "Turn the rallied leader into Perseus using an unlocked divine power.\nHeroes provide another way to confront the opposing god."
 	}

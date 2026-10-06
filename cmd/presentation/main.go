@@ -23,16 +23,20 @@ func main() {
 	checkpoints := flag.String("checkpoints", "", "optional directory for one PNG checkpoint every 30 seconds")
 	inspect := flag.Bool("inspect", false, "run the identical input sequence without encoding a video")
 	trace := flag.String("terrain-trace", "", "optional new JSONL file recording terrain mouse actions")
+	showcase := flag.Bool("showcase", false, "tour the menus and begin a conquest with visible English subtitles")
 	flag.Parse()
 	if *seconds < 10 || *seconds > 1800 {
 		log.Fatal("seconds must be between 10 and 1800")
 	}
-	if err := run(*output, *seconds, *checkpoints, *inspect, *trace); err != nil {
+	if *showcase && *seconds > 360 {
+		log.Fatal("a showcase cannot exceed six minutes")
+	}
+	if err := run(*output, *seconds, *checkpoints, *inspect, *trace, *showcase); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run(output string, seconds int, checkpoints string, inspect bool, trace string) error {
+func run(output string, seconds int, checkpoints string, inspect bool, trace string, showcase bool) error {
 	bundle, err := populous2.Load()
 	if err != nil {
 		return err
@@ -43,6 +47,35 @@ func run(output string, seconds int, checkpoints string, inspect bool, trace str
 	}
 	defer g.Close()
 	pilot := game.NewNativePresentationPilot()
+	next, status := pilot.Next, func() string { return pilot.Status(g) }
+	var tour *game.NativeShowcasePilot
+	var subtitles *recording.SubtitleCanvas
+	var cues []subtitleCue
+	if showcase {
+		tour = game.NewNativeShowcasePilot()
+		next, status = tour.Next, func() string { return tour.Status(g) }
+		subtitles, err = recording.NewSubtitleCanvas()
+		if err != nil {
+			return err
+		}
+	}
+	var subtitleFile *os.File
+	subtitlesComplete := false
+	if showcase && !inspect {
+		if err := os.MkdirAll(filepath.Dir(output), 0755); err != nil {
+			return err
+		}
+		subtitleFile, err = os.OpenFile(output+".en.srt", os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			subtitleFile.Close()
+			if !subtitlesComplete {
+				os.Remove(output + ".en.srt")
+			}
+		}()
+	}
 	var traceError error
 	if trace != "" {
 		file, err := os.OpenFile(trace, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
@@ -51,15 +84,23 @@ func run(output string, seconds int, checkpoints string, inspect bool, trace str
 		}
 		defer file.Close()
 		encoder := json.NewEncoder(file)
-		pilot.TerrainEdit = func(edit game.NativePresentationTerrainEdit) {
+		observe := func(edit game.NativePresentationTerrainEdit) {
 			if traceError == nil {
 				traceError = encoder.Encode(edit)
 			}
 		}
+		pilot.TerrainEdit = observe
+		if tour != nil {
+			tour.TerrainEdit = observe
+		}
 	}
 	var recorder *recording.Recorder
 	if !inspect {
-		recorder, err = recording.New(output, 320, 200, 50, 44100)
+		if showcase {
+			recorder, err = recording.NewSized(output, 960, 680, 960, 680, 50, 44100)
+		} else {
+			recorder, err = recording.New(output, 320, 200, 50, 44100)
+		}
 		if err != nil {
 			return err
 		}
@@ -73,7 +114,7 @@ func run(output string, seconds int, checkpoints string, inspect bool, trace str
 	pcm := make([]byte, 44100/50*4)
 	frames, resultTick := 0, -1
 	for tick := 0; tick < seconds*50; tick++ {
-		input, err := pilot.Next(g)
+		input, err := next(g)
 		if err != nil {
 			return fmt.Errorf("pilot update %d: %w", tick, err)
 		}
@@ -84,11 +125,27 @@ func run(output string, seconds int, checkpoints string, inspect bool, trace str
 		if err != nil {
 			return fmt.Errorf("game update %d: %w", tick, err)
 		}
+		if showcase {
+			if len(cues) == 0 || cues[len(cues)-1].text != tour.Caption {
+				if len(cues) > 0 {
+					cues[len(cues)-1].end = tick
+				}
+				cues = append(cues, subtitleCue{start: tick, text: tour.Caption})
+			}
+		}
 		if _, err := io.ReadFull(g.Stream, pcm); err != nil {
 			return fmt.Errorf("audio update %d: %w", tick, err)
 		}
+		video, width, height := rgba, 320, 200
+		if showcase {
+			video, err = subtitles.Frame(rgba, tour.Caption)
+			if err != nil {
+				return fmt.Errorf("caption update %d: %w", tick, err)
+			}
+			width, height = 960, 680
+		}
 		if recorder != nil {
-			if err := recorder.WriteFrame(rgba, pcm); err != nil {
+			if err := recorder.WriteFrame(video, pcm); err != nil {
 				return err
 			}
 		}
@@ -103,15 +160,19 @@ func run(output string, seconds int, checkpoints string, inspect bool, trace str
 				break
 			}
 		}
-		if tick%1500 == 1499 {
-			fmt.Printf("%ds: %s\n", (tick+1)/50, pilot.Status(g))
+		interval := 1500
+		if showcase {
+			interval = 500
+		}
+		if tick%interval == interval-1 {
+			fmt.Printf("%ds: %s\n", (tick+1)/50, status())
 			if checkpoints != "" {
 				path := filepath.Join(checkpoints, fmt.Sprintf("game-%04ds.png", (tick+1)/50))
 				f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 				if err != nil {
 					return err
 				}
-				err = png.Encode(f, &image.RGBA{Pix: rgba, Stride: 320 * 4, Rect: image.Rect(0, 0, 320, 200)})
+				err = png.Encode(f, &image.RGBA{Pix: video, Stride: width * 4, Rect: image.Rect(0, 0, width, height)})
 				closeErr := f.Close()
 				if err != nil {
 					return err
@@ -127,11 +188,39 @@ func run(output string, seconds int, checkpoints string, inspect bool, trace str
 			return err
 		}
 	}
-	summary := map[string]any{"seconds": float64(frames) / 50, "fps": 50, "status": pilot.Status(g), "inputOnly": true, "output": output}
+	if showcase && len(cues) > 0 {
+		cues[len(cues)-1].end = frames
+		if !inspect {
+			data, err := subtitles.SRT(50)
+			if err != nil {
+				return err
+			}
+			_, writeErr := subtitleFile.Write(data)
+			closeErr := subtitleFile.Close()
+			if writeErr != nil {
+				return writeErr
+			}
+			if closeErr != nil {
+				return closeErr
+			}
+			subtitlesComplete = true
+		}
+		for _, cue := range cues {
+			if cue.text != "" {
+				fmt.Printf("caption %.2f–%.2fs: %s\n", float64(cue.start)/50, float64(cue.end)/50, cue.text)
+			}
+		}
+	}
+	summary := map[string]any{"seconds": float64(frames) / 50, "fps": 50, "status": status(), "inputOnly": true, "output": output}
 	b, err := json.MarshalIndent(summary, "", "  ")
 	if err != nil {
 		return err
 	}
 	fmt.Println(string(b))
 	return nil
+}
+
+type subtitleCue struct {
+	start, end int
+	text       string
 }

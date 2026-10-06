@@ -115,6 +115,16 @@ settlements and preserves standing town foundations, including indirect
 changes caused by the original terrain propagation. `-terrain-trace /path/to/file.jsonl`
 records completed terrain clicks and their resulting vertex heights for review.
 
+For a shorter narrated presentation, `-showcase` tours the main menu, deity
+profile, conquest selection and power help before starting ordinary gameplay.
+English captions are drawn in a separate band below the complete game image;
+the matching `.en.srt` file is exported beside the MP4. Showcase duration cannot
+exceed six minutes.
+
+```sh
+go run ./cmd/presentation -showcase -seconds 345 -output recordings/populous2-presentation-en.mp4
+```
+
 The file requester uses the current working directory unless `-save-root`
 selects another existing directory. It writes only in response to the
 original Save action. Existing original requester overwrite/error behavior
