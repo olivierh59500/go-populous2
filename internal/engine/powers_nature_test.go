@@ -62,19 +62,20 @@ func TestTreesUseSharedSceneryBudgetAndAge(t *testing.T) {
 func TestForestBurialRecoversWithoutDeletingGeometry(t *testing.T) {
 	w := testFlatWorld()
 	w.Nature.Scenery[0] = SceneryActor{Kind: SceneryTree, X: 10, Y: 10, Age: 0}
-	w.Nature.Ground[10+10*MapSize] = GroundParcel{Mark: GroundSwamp}
+	original := w.Tiles[10+10*MapSize]
+	w.Tiles[10+10*MapSize] = Cell{}
 	w.Tick = 1
 	w.tickNature()
 	if a := w.Nature.Scenery[0]; a.Age != -1 || a.Kind != SceneryTree {
 		t.Fatal("hazard did not start tree removal")
 	}
-	w.Nature.Ground[10+10*MapSize] = GroundParcel{}
+	w.Tiles[10+10*MapSize] = original
 	w.Tick = 2
 	w.tickNature()
 	if w.Nature.Scenery[0].Age != 2 {
 		t.Fatal("dry land did not recover the tree")
 	}
-	w.Nature.Ground[10+10*MapSize] = GroundParcel{Mark: GroundSwamp}
+	w.Tiles[10+10*MapSize] = Cell{}
 	for tick := uint64(3); tick < 30; tick++ {
 		w.Tick = tick
 		w.tickNature()
@@ -82,8 +83,28 @@ func TestForestBurialRecoversWithoutDeletingGeometry(t *testing.T) {
 	if w.Nature.Scenery[0].Kind != SceneryNone {
 		t.Fatal("buried tree did not leave scenery pool")
 	}
-	if !w.Tiles[10+10*MapSize].IsFlat() {
+	if w.Tiles[10+10*MapSize] != (Cell{}) {
 		t.Fatal("tree removal altered terrain")
+	}
+}
+
+func TestTreesCanCoexistWithSwampAndKeepAgingNormally(t *testing.T) {
+	w := testFlatWorld()
+	for at := range w.Nature.Ground {
+		w.Nature.Ground[at] = GroundParcel{Mark: GroundSwamp}
+	}
+	w.random = 4311
+	if err := w.CastTrees(0, 32, 32); err != nil || countTrees(w) == 0 {
+		t.Fatal("swamp incorrectly rejected original tree decoration")
+	}
+	for tick := uint64(1); tick <= 96; tick++ {
+		w.Tick = tick
+		w.tickNature()
+	}
+	for _, a := range w.Nature.Scenery {
+		if a.Kind == SceneryTree && a.Age != 0 {
+			t.Fatal("swamp incorrectly buried its trees")
+		}
 	}
 }
 

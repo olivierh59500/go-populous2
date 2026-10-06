@@ -166,7 +166,9 @@ func (w *World) CastTrees(owner, x, y int) error {
 		if w.Tiles[at].IsWater() || w.Occupants[at] != 0 || w.Nature.sceneryAt(nx, ny) >= 0 {
 			continue
 		}
-		if mark := w.Nature.Ground[at].Mark; mark == GroundSwamp || mark == GroundFungusDead {
+		// Swamp does not reject trees: the original game lets decoration
+		// coexist with its animated ground. Decomposed fungus rejects trees.
+		if mark := w.Nature.Ground[at].Mark; mark == GroundFungusDead {
 			continue
 		}
 		free := -1
@@ -317,7 +319,7 @@ func (w *World) tickNature() {
 			continue
 		}
 		a.Frame++
-		hazard := w.Tiles[int(a.X)+int(a.Y)*MapSize].IsWater() || w.Nature.Ground[int(a.X)+int(a.Y)*MapSize].Mark == GroundSwamp
+		hazard := w.Tiles[int(a.X)+int(a.Y)*MapSize].IsWater()
 		if a.Age < 0 {
 			a.Age--
 			if a.Age == -24 {
