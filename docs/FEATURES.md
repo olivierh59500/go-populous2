@@ -44,9 +44,9 @@ notes distinguish translated bodies from bounded composed comparison cases.
 | Roads | 12 | 42 | Native painting/removal, connected/slope art, fractional road-speed bonus/saturation and mask-based Fungus exclusion; controlled four-landscape comparisons pass, with broader environment combinations separate |
 | City walls | 13 | 34 | Native linked placement, connected art/gates, sculpt protection, signed breaking and unsigned passage thresholds, fractional movement and terminal break art; live neighbor pointers retain source stale entries. Controlled cases cover blocked/admitted/breaking crossings; broader environment/gate combinations remain |
 | Earthquake | 14 | 40 | Native directed creation, fissure branching, original terrain reconstruction and fade; raw slot/full-pool aliases retained and World comparisons pass |
-| Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
+| Batholith | 15 | 48 | Native DF68 sampled raise/boulder allocation and actual D81E terrain effects; creator and shared consequence controllers compared independently and in configured simulation |
 | Heracles | 16 | 60 | Native creation, wrapping population doubling, capped speed bonus and shared combat/routing; controlled original combat and town-destruction compositions compared |
-| Lightning | 18 | 28 / 30 / 32 | Native marker/activation/bolts, gradual victims, procedural beams and living-town native farm reform; remaining terrain/hero cleanup branches pending |
+| Lightning | 18 | 28 / 30 / 32 | Native marker/activation/dismissal, bolts, gradual victims, beams and town reform; complete FX/scorch/unlink and siege/hero cleanup controllers have original references |
 | Whirlwind | 19 | 22 | Complete native raw phases/motion, linked pickup, town farm collapse, transport/landing/release and water-child creation; mutable register/source/owner-word aliases retained; World full-memory and saved continuation comparisons pass |
 | Storm | 20 | 64 | Native raw cloud creation/admission, thunder/cooldown, exact terrain scorch and linked victim scan; World/runtime/save comparisons pass |
 | Odysseus | 21 | 66 | Native creation, doubled/capped speed, original art and shared routing/combat; controlled original combat compositions compared |
@@ -55,8 +55,8 @@ notes distinguish translated bodies from bounded composed comparison cases.
 | Fire rain | 25 | 38 | Native unlinked meteor delay, decoded falling art, height-aware impact and exact victim/terrain callbacks; World/save continuation pass |
 | Volcano | 26 | 62 | Native crater growth/terrain preservation, raw fire-column eruption, lava/Basalt creation and contact states; World full-eruption comparisons pass |
 | Achilles | 27 | 68 | Native creation, original art, routing/combat and victim/death controllers; controlled original combat compositions compared |
-| Whirlpool | 31 | 24 | Native four-water admission, terrain animation, motion, direct coast lowering, lifetime and ordered shared-pool execution; broader terrain/actor interactions pending |
-| Basalt | 30 | 74 | Native linked propagation actors, four cardinal directions, persistent terrain prefix and original sculpture shapes; remaining environmental interactions pending |
+| Whirlpool | 31 | 24 | Native water admission, animation/motion, real coast lowering, lifetime and ordered pool execution; full controller and shared water/prepass consequences compared |
+| Basalt | 30 | 74 | Native linked propagation, cardinal directions, persistent terrain prefix, original shapes and actual child/unlink operations; full controller, lava/Basalt and terrain barriers compared |
 | Baptismal fonts | 32 | 52 | Complete native sampled placement, original delayed conversion and hero tables, leader release and fractional movement; full World memory/RNG comparisons pass |
 | Helen | 33 | 70 | Native targeting/capture without owner conversion, fractional captive routing/link repair, cleanup/release and water immunity; complete controlled capture→removal comparisons. Broader collateral/environment combinations remain |
 | Tidal wave | 34 | 56 | Native four adjacent-water fronts, fixed fractional speed, lateral cloning/newborn cadence, shore lowering and height/Basalt barriers; World pool/map/height and saved continuation comparisons pass; drowning uses the shared native water prepass |
