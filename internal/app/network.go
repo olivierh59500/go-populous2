@@ -63,7 +63,7 @@ func (c *NetworkController) Start(world *engine.World) error {
 		return fmt.Errorf("network connection is closed")
 	}
 	if c.started {
-		return nil
+		return fmt.Errorf("network game has already started")
 	}
 	var candidate *engine.World
 	if c.listen != "" {

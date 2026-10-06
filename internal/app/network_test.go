@@ -167,6 +167,13 @@ func TestNetworkControllerRejectsAmbiguousAndInvalidAddresses(t *testing.T) {
 	}
 }
 
+func TestNetworkControllerRejectsStartingASecondWorld(t *testing.T) {
+	host, _, _, _ := controllerPair(t)
+	if err := host.Start(controllerWorld(t)); err == nil {
+		t.Fatal("active connection accepted a replacement world without a new handshake")
+	}
+}
+
 func TestNetworkControllerJoinCanBeginBeforeHostListens(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
