@@ -28,6 +28,7 @@ func (g *Game) startConquest() error {
 		return err
 	}
 	g.World, g.Screen = world, Playing
+	g.Paused = false
 	g.AnimationSounds = AnimationSoundGate{}
 	g.resultApplied = false
 	world.Players[0].Experience = g.Profile.Experience
@@ -57,7 +58,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	w := g.World
 	if g.Network != nil {
 		g.advanceNetwork()
-	} else if g.Updates%4 == 0 {
+	} else if !g.Paused && g.Updates%4 == 0 {
 		w.Step()
 		if w.Result != 0 {
 			var scoreError error
@@ -354,6 +355,9 @@ func (g *Game) drawWorld() {
 	}
 	if g.PickingPower {
 		g.drawPowerMenu()
+	}
+	if g.Paused {
+		g.button("PAUSED", 120, 91, 80)
 	}
 }
 

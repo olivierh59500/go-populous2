@@ -61,6 +61,7 @@ type Game struct {
 	Selected                     engine.PowerID
 	Category                     engine.Element
 	PickingPower                 bool
+	Paused                       bool
 	helpReturn                   Screen
 	Direction                    uint8
 	Message                      string
@@ -171,6 +172,9 @@ func (g *Game) Update() error {
 			}
 		}
 	case Playing:
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) && g.Network == nil {
+			g.Paused = !g.Paused
+		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyO) {
 			if err := g.openOptions(); err != nil {
 				g.Message, g.messageUntil = err.Error(), g.Updates+100

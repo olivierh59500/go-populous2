@@ -30,6 +30,7 @@ func (g *Game) drawHelp() {
 		"1-4: SETTLE RALLY JOIN FIGHT",
 		"O: OPTIONS     P: MAP EDITOR",
 		"F9: LOAD       F10: SAVE",
+		"SPACE: PAUSE / RESUME",
 	} {
 		g.text(text, 32, 35+row*12)
 	}

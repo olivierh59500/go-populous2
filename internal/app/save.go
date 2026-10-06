@@ -16,6 +16,8 @@ type savedSession struct {
 	LevelIndex       int
 	Selected         engine.PowerID
 	Direction        uint8
+	CustomGame       bool
+	Paused           bool
 }
 
 func (g *Game) saveGame() error {
@@ -25,7 +27,7 @@ func (g *Game) saveGame() error {
 	if g.World == nil || g.SavePath == "" {
 		return fmt.Errorf("no save location or game")
 	}
-	session := savedSession{Version: 1, World: g.World.Snapshot(), Profile: g.Profile, CameraX: g.CameraX, CameraY: g.CameraY, LevelIndex: g.LevelIndex, Selected: g.Selected, Direction: g.Direction}
+	session := savedSession{Version: 1, World: g.World.Snapshot(), Profile: g.Profile, CameraX: g.CameraX, CameraY: g.CameraY, LevelIndex: g.LevelIndex, Selected: g.Selected, Direction: g.Direction, CustomGame: g.CustomGame, Paused: g.Paused}
 	if _, err := session.World.Restore(); err != nil {
 		return err
 	}
@@ -83,6 +85,7 @@ func (g *Game) loadGame() error {
 	}
 	g.World, g.Profile, g.CameraX, g.CameraY, g.LevelIndex, g.Selected, g.Direction = world, session.Profile, session.CameraX, session.CameraY, session.LevelIndex, session.Selected, session.Direction
 	g.Screen, g.resultApplied = Playing, false
+	g.CustomGame, g.Paused = session.CustomGame, session.Paused
 	g.AnimationSounds = AnimationSoundGate{}
 	g.Message = "GAME LOADED"
 	g.messageUntil = g.Updates + 100
