@@ -56,9 +56,12 @@ A bounded comparison of world 12, landscape 0, seed `0x15b0`, now matches 160
 simulation passes for all 4,225 terrain corners, the 400 follower slots'
 identity/population/state/position/town stage, both mana balances and RNG.
 It found and corrected passive mana, contact waiting/completion and the search
-eligibility of cultivated land. This compares one physics pass at a time;
-it does not prove every input/render interaction, campaign world or effect
-combination. Original GAM continuation has separate active-state tests.
+eligibility of cultivated land. This initial comparison stops before swap and
+the deferred-command stage. A subsequent integrated-frame comparison found a
+missing sea-level crossing request to the AI, followed by a deferred terrain
+command. That boundary is being corrected and the comparison extended before
+using it as evidence for complete frame parity. Original GAM continuation has
+separate active-state tests.
 
 ## Architecture
 
