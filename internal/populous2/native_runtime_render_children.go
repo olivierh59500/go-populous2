@@ -7,10 +7,13 @@ import "fmt"
 // they must not reacquire its outer lock. Beam is the explicit VPOSR sample,
 // not an invented random value. IRQs and keys enter Presentation separately.
 type NativeRuntimeRenderChildrenCallbacks struct {
-	Beam      func() (uint16, error)
-	Ownership func(bool, *NativeFrameRegisterContext) error
-	Sound     func(uint16, *NativeFrameRegisterContext) error
-	Errors    NativeErrorFrameCallbacks
+	// SkipCopyProtection is a recreation host policy. The original manual
+	// challenge remains available for source comparisons and diagnostic runs.
+	SkipCopyProtection bool
+	Beam               func() (uint16, error)
+	Ownership          func(bool, *NativeFrameRegisterContext) error
+	Sound              func(uint16, *NativeFrameRegisterContext) error
+	Errors             NativeErrorFrameCallbacks
 	// CallerA is optional explicit address-register backing. Main's D-only
 	// callback cannot claim numeric A preservation when this is absent.
 	CallerA *[7]NativeRequesterAddress
@@ -86,6 +89,12 @@ func (s *NativeRuntimeRenderChildren) Bind(bindings NativeSessionRenderBindings)
 func (s *NativeRuntimeRenderChildren) AdvanceProtection(actor int, frame *NativeFrameRegisterContext) (bool, error) {
 	if err := s.valid(frame); err != nil {
 		return false, err
+	}
+	if s.Callbacks.SkipCopyProtection {
+		// The original successful challenge records this session flag.
+		// Gameplay state, clocks and resources are otherwise untouched.
+		err := s.Host.Memory.BSS.Write16(0x3b8, 1)
+		return err == nil, err
 	}
 	if s.Callbacks.Beam == nil || s.Callbacks.Ownership == nil || s.Callbacks.Sound == nil {
 		return false, fmt.Errorf("native protection Beam/ownership/sound child missing")

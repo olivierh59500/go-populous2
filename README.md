@@ -75,12 +75,22 @@ go run ./cmd/populous2 -export-root /path/to/existing/export-directory
 go build -o bin/populous2 ./cmd/populous2
 ```
 
-The main command runs the original320×200 register-bearing runtime at50
-updates/s: actual startup/menu/world construction, native render/input/
+The main command runs the original 320×200 register-bearing runtime with
+50 Hz PAL interrupts: actual startup/menu/world construction, native render/input/
 simulation, raw GAM dialogs, four-channel audio and retained result/award/
 deity/ending/reset controllers. `cmd/populous2-native` is an alias of the same
 launcher. Native gameplay is compared with original CPU execution; the
 fidelity evidence and machine boundaries are documented in docs/FEATURES.md.
+
+Gameplay admits a new pass every four PAL interrupts (12.5 passes/s), and
+animated power-help previews every five (10 previews/s). Mouse input, retained
+palette waits and audio keep their independent clocks. These presentation
+defaults are calibrated against original CPU and blitter work; see
+[host pacing](docs/HOST_PACING.md) for measurements and limitations.
+
+Normal play skips the original manual-based statue challenge. To inspect its
+historical behavior, launch with `-original-protection`. The diagnostic
+`-unpaced` option disables the host work gates without changing the PAL clock.
 
 The file requester uses the current working directory unless `-save-root`
 selects another existing directory. It writes only in response to the
@@ -121,10 +131,10 @@ controls and password format, including raw name/password text editing.
 
 The inherited command uses a 960 × 720 window with a 640 × 480 logical
 display and doubled Amiga artwork. The native integration command instead
-uses the original320 × 200 display and nominal PAL input/simulation cadence
-of50 updates/s. The legacy input loop runs at60Hz with a50Hz simulation;
-its `-simulation-rate` option selects a diagnostic rate. Original CPU-bound throughput and special idle pacing remain comparison
-targets; the viewport-size value eight is not a simulation-rate setting.
+uses the original 320 × 200 display with 50 Hz PAL input and paced gameplay
+passes. The legacy input loop runs at 60 Hz with a 50 Hz simulation;
+its `-simulation-rate` option selects a diagnostic rate. The viewport-size
+value eight is not a simulation-rate setting.
 
 `-custom` currently exposes all 29 Amiga powers for testing. It does not yet
 apply the original conquest-based custom-game unlocking policy.

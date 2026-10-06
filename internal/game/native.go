@@ -56,6 +56,11 @@ type NativeGame struct {
 	Progression    populous2.NativeRuntimeProgressionState
 	ScreenExport   *populous2.NativeRuntimeScreenExport
 
+	OriginalProtection bool
+	Unpaced            bool
+	gameCadence        populous2.NativeHostCadence
+	helpCadence        populous2.NativeHostCadence
+
 	interruptsInstalled bool
 }
 
@@ -134,7 +139,7 @@ func (g *NativeGame) createFrame() error {
 	g.Commands = &populous2.NativeRuntimeCommandChildren{Host: h, Rules: g.Rules, Supplied: g.Startup, Audio: populous2.NativeAudioControlFrameCallbacks{Command: operations.Command, MusicCommand: operations.MusicCommand, CodeBase: h.Memory.CodeBase}}
 	g.Commands.Other = g.commandFileChild
 	frame, err := h.NewFrame(populous2.NativeRuntimeFrameBindings{Audio: operations,
-		RenderChildren: populous2.NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return g.beam, nil }, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, Sound: sound},
+		RenderChildren: populous2.NativeRuntimeRenderChildrenCallbacks{SkipCopyProtection: !g.OriginalProtection, Beam: func() (uint16, error) { return g.beam, nil }, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, Sound: sound},
 		InputChildren:  populous2.NativeGameplayHUDHostCallbacks{Campaign: g.Startup.Campaign, Ownership: g.Startup.Ownership, Audio: operations},
 		InputOther:     g.inputOther,
 		Menu:           populous2.NativeInGameHostCallbacks{Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Sound: sound, Call: g.menuChild}, SerialTransport: g.serialChild},
@@ -196,6 +201,16 @@ func (g *NativeGame) Update() error {
 		if _, err := g.Host.Session.Presentation.VBlank(sample, g.Host.Memory.BSS, &g.Registers); err != nil {
 			return err
 		}
+		click, err := g.Host.Memory.BSS.Read16(0x140)
+		if err != nil {
+			return err
+		}
+		// Original CPU and blitter work spans several PAL interrupts.
+		// Keep input/audio IRQs at 50 Hz while admitting work at source
+		// pass boundaries; retained UI/palette waits still see every IRQ.
+		if !g.Unpaced && g.helpPreviewActive() && click == 0 && !g.helpCadence.Ready(uint64(g.Updates), populous2.NativeHostHelpPeriod) {
+			return g.Host.Session.Presentation.WriteRGBA(g.pixels, true)
+		}
 		if g.Frame == nil {
 			step, err := g.Director.Advance(g.Host, &g.Rules, &g.Registers, g.Startup)
 			if err != nil {
@@ -220,6 +235,9 @@ func (g *NativeGame) Update() error {
 			}
 		} else {
 			if g.Host.Session.Phase == populous2.NativeFrameSessionIdle {
+				if !g.Unpaced && !g.gameCadence.Ready(uint64(g.Updates), populous2.NativeHostGameplayPeriod) {
+					return g.Host.Session.Presentation.WriteRGBA(g.pixels, true)
+				}
 				if err := g.Host.Session.BeginRaw(g.Host.World, g.Registers); err != nil {
 					return err
 				}
@@ -270,6 +288,27 @@ func (g *NativeGame) Update() error {
 	}
 	g.image.WritePixels(g.pixels)
 	return nil
+}
+
+// helpPreviewActive covers each retained owner of the original $517A help
+// child, including campaign selection after a result, reset or network exit.
+// Palette transitions and modal input remain outside the redraw work gate.
+func (g *NativeGame) helpPreviewActive() bool {
+	active := func(s *populous2.NativeCampaignHelpFrameState) bool {
+		return s.Started && !s.Finished && s.PC == 0x51dc
+	}
+	if g.Frame == nil && active(&g.Director.Children.Help) {
+		return true
+	}
+	if g.Frame != nil && active(&g.Frame.InputChildren.HUD.Children.Help) {
+		return true
+	}
+	for _, director := range []*populous2.NativeRuntimeDirector{g.NetworkStartup, g.Result.Reset} {
+		if director != nil && active(&director.Children.Help) {
+			return true
+		}
+	}
+	return g.Commands != nil && g.Commands.Startup != nil && active(&g.Commands.Startup.Children.Help)
 }
 
 func (g *NativeGame) Draw(screen *ebiten.Image) {

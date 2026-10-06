@@ -22,6 +22,8 @@ func Run() {
 	connect := flag.String("connect", "", "connect native serial bytes over TCP to this address")
 	saveRoot := flag.String("save-root", "", "existing directory used by the original file requester (default: working directory)")
 	exportRoot := flag.String("export-root", "", "existing directory for original editor ILBM screen exports")
+	originalProtection := flag.Bool("original-protection", false, "enable the original manual statue challenge")
+	unpaced := flag.Bool("unpaced", false, "diagnostic: admit source work at every PAL update")
 	flag.Parse()
 	if *frames < 0 || *captureAfter < 0 || *frames > 0 && *capture != "" && *captureAfter >= *frames {
 		log.Fatal("invalid native update or capture limit")
@@ -63,6 +65,8 @@ func Run() {
 	g.Capture, g.CaptureAfter = *capture, *captureAfter
 	g.AutoStart = *autoStart
 	g.AutoMenuAction = *autoAction
+	g.OriginalProtection = *originalProtection
+	g.Unpaced = *unpaced
 	ebiten.SetTPS(50)
 	ebiten.SetWindowSize(960, 600)
 	ebiten.SetWindowTitle("Populous II - Go / Ebitengine")

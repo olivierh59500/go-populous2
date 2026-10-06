@@ -5,6 +5,11 @@ Ebitengine. The executable's supplied French revision determines original
 behavior and resources. `cmd/populous2-native` shares the same launcher;
 `cmd/populous2-legacy` retains the inherited diagnostic engine.
 
+Normal play bypasses the original manual statue challenge, which remains
+available with `-original-protection`. The PAL interrupt stays at 50 Hz;
+gameplay and help-preview work have separate source-calibrated admission
+periods. [HOST_PACING.md](HOST_PACING.md) explains this portable timing boundary.
+
 | Requirement | Implementation and authoritative evidence |
 |---|---|
 | Original resources/presentation | Actual encoded26-resource loader, relocated HUNK/BSS/CODE owners, original320×200 bitmap/menu/font/palette/screens/cursor; full requester/render CPU/DMA references and bounded desktop captures |
