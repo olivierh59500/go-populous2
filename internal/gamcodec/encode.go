@@ -44,14 +44,31 @@ func Encode(document *Document) ([]byte, error) {
 		byteAt(profileGod+0x4e+i, part)
 	}
 	for id, reservation := range snapshot.Reservations {
-		if reservation.Kind != engine.EffectNone {
-			return nil, fmt.Errorf("GAM export of active effect%d (%d) is not mapped yet", id, reservation.Kind)
+		at := 0xc800 + id*32
+		if reservation.Kind == engine.EffectNone {
+			byteAt(at+12, 0)
+			continue
 		}
-	}
-	for id, wall := range w.Earth.Walls {
-		if wall.Active {
-			return nil, fmt.Errorf("GAM export of active wall%d is not mapped yet", id)
+		record, err := encodeEffect(w, id, reservation.Kind, document.Metadata.Catalog)
+		if err != nil {
+			return nil, err
 		}
+		for _, field := range effectFileFields(reservation.Kind, w, id) {
+			for off := field[0]; off < field[0]+field[1]; off++ {
+				byteAt(at+off, record[off])
+			}
+		}
+		link := w.Actors.Effects[id]
+		next, err := fileReference(link.Next)
+		if err != nil {
+			return nil, err
+		}
+		previous, err := fileReference(link.Previous)
+		if err != nil {
+			return nil, err
+		}
+		wordAt(at+2, next)
+		wordAt(at+4, previous)
 	}
 	longAt(0xf40, uint32(w.Tick))
 	longAt(0xeb24, w.Level.Seed)
@@ -156,6 +173,64 @@ func Encode(document *Document) ([]byte, error) {
 		wordAt(at+2, next)
 		wordAt(at+4, previous)
 	}
+	for id, wall := range w.Earth.Walls {
+		at := 0x5f50 + id*16
+		if !wall.Active {
+			byteAt(at+12, 0)
+			continue
+		}
+		kind := uint8(26)
+		if wall.Broken {
+			kind = 28
+		}
+		byteAt(at, kind)
+		byteAt(at+1, wall.Variant)
+		wordAt(at+6, uint16(wall.X*256+128))
+		wordAt(at+8, uint16(wall.Y*256+128))
+		byteAt(at+12, wall.Owner+1)
+		role := "wall/connection/" + fmt.Sprint(wall.Connections)
+		if wall.Gate {
+			role = "wall/gate-horizontal"
+			if wall.GateVertical {
+				role = "wall/gate-vertical"
+			}
+		}
+		if wall.Broken {
+			role = "wall/broken/" + fmt.Sprint(wall.Variant)
+		}
+		found := false
+		for token, roles := range document.Metadata.Catalog.AnimationRoles {
+			for _, animation := range roles {
+				if animation.Name == role && animation.Frame == int(wall.Frame) {
+					wordAt(at+10, token)
+					found = true
+					break
+				}
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("wall%d artwork role%s/frame%d has no GAM catalog token", id, role, wall.Frame)
+		}
+		link := w.Actors.Walls[id]
+		next, err := fileReference(link.Next)
+		if err != nil {
+			return nil, err
+		}
+		previous, err := fileReference(link.Previous)
+		if err != nil {
+			return nil, err
+		}
+		wordAt(at+2, next)
+		wordAt(at+4, previous)
+		ownerNext := uint16(0)
+		if wall.Next > 0 {
+			ownerNext, err = fileReference(engine.ActorRef{Kind: engine.ActorWall, Index: wall.Next - 1})
+			if err != nil {
+				return nil, err
+			}
+		}
+		wordAt(at+14, ownerNext)
+	}
 	for owner, player := range w.Players {
 		god := 0xe76a + (owner+1)*314
 		longAt(god, uint32(int32(player.Mana)))
@@ -170,6 +245,11 @@ func Encode(document *Document) ([]byte, error) {
 			return nil, err
 		}
 		wordAt(god+10, reference)
+		marker, err := effectReference(w.Air.MarkerSlots[owner])
+		if err != nil {
+			return nil, err
+		}
+		wordAt(god+0x12, uint16(marker))
 		for i, value := range player.Experience {
 			byteAt(god+0x52+i, value)
 		}

@@ -21,7 +21,7 @@ type Catalog struct {
 	Levels         []engine.Level
 	Landscapes     [4]engine.Landscape
 	Geometry       [256]uint8
-	AnimationRoles map[uint16]AnimationRole
+	AnimationRoles map[uint16][]AnimationRole
 }
 
 // Metadata belongs to the file codec only. Original preserves reserved save
@@ -34,6 +34,7 @@ type Metadata struct {
 	CameraX, CameraY      int
 	initial               engine.Snapshot
 	initialProfile        engine.Deity
+	Catalog               Catalog
 }
 type Document struct {
 	World    *engine.World
@@ -182,13 +183,19 @@ func Decode(data []byte, catalog Catalog) (*Document, error) {
 	for id := 0; id < engine.EffectCapacity; id++ {
 		record := r.record(0xc800, id, 32)
 		if record[12] != 0 {
-			return nil, fmt.Errorf("GAM effect%d kind%d phase%d is not mapped yet", id, record[0], record[22])
+			if err := decodeEffect(record, id, &snapshot, catalog); err != nil {
+				return nil, err
+			}
 		}
 	}
 	for id := 0; id < engine.WallCapacity; id++ {
 		record := r.record(0x5f50, id, 16)
 		if record[12] != 0 {
-			return nil, fmt.Errorf("GAM wall%d is not mapped yet", id)
+			wall, err := decodeWall(record, catalog)
+			if err != nil {
+				return nil, fmt.Errorf("GAM wall%d: %w", id, err)
+			}
+			snapshot.World.Earth.Walls[id] = wall
 		}
 	}
 	if err := decodePlayers(r, &snapshot); err != nil {
@@ -210,6 +217,6 @@ func Decode(data []byte, catalog Catalog) (*Document, error) {
 		profile.FaceParts[i] = r.byte(god + 0x4e + i)
 	}
 	profile.Experience = world.Players[side-1].Experience
-	metadata := Metadata{Original: append([]byte(nil), data[:FileSize]...), Profile: profile, ProfileSide: side - 1, GameMode: mode, CameraX: int(int16(r.word(0x5f44))), CameraY: int(int16(r.word(0x5f46))), initial: world.Snapshot(), initialProfile: profile}
+	metadata := Metadata{Original: append([]byte(nil), data[:FileSize]...), Profile: profile, ProfileSide: side - 1, GameMode: mode, CameraX: int(int16(r.word(0x5f44))), CameraY: int(int16(r.word(0x5f46))), initial: world.Snapshot(), initialProfile: profile, Catalog: catalog}
 	return &Document{World: world, Metadata: metadata}, nil
 }

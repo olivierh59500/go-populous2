@@ -3,6 +3,7 @@ package gamcodec
 import (
 	"encoding/binary"
 	"fmt"
+	"strings"
 
 	"go-populous2/internal/engine"
 )
@@ -97,6 +98,16 @@ func decodePlayers(r fileReader, s *engine.Snapshot) error {
 		s.World.Magnets[owner] = engine.MagnetActor{X: int(binary.BigEndian.Uint16(magnet[6:])), Y: int(binary.BigEndian.Uint16(magnet[8:])), Owner: uint8(owner)}
 		p.RallyX, p.RallyY = s.World.Magnets[owner].X/256, s.World.Magnets[owner].Y/256
 		p.Computer = owner == 1
+		if marker, err := effectIndex(r.word(god + 0x12)); err == nil {
+			s.World.Air.MarkerSlots[owner] = marker
+		} else {
+			return err
+		}
+		pending, err := effectIndex(r.word(god + 14))
+		if err != nil {
+			return err
+		}
+		s.World.Nature.PendingFungus[owner] = uint16(pending)
 	}
 	return nil
 }
@@ -163,4 +174,60 @@ func decodeChains(r fileReader, s *engine.Snapshot) error {
 		}
 	}
 	return nil
+}
+
+func decodeWall(record []byte, catalog Catalog) (engine.WallActor, error) {
+	if record[0] != 26 && record[0] != 28 || record[12] > 2 || record[1] > 8 || record[1]&1 != 0 {
+		return engine.WallActor{}, fmt.Errorf("invalid wall kind/owner/variant")
+	}
+	w := engine.WallActor{Active: true, Broken: record[0] == 28, Owner: record[12] - 1, X: int(record[6]), Y: int(record[8]), Variant: record[1]}
+	animation := binary.BigEndian.Uint16(record[10:])
+	role, ok := wallAnimationRole(catalog.AnimationRoles[animation])
+	if ok {
+		w.Frame = uint8(role.Frame)
+		w.Gate = role.Name == "wall/gate-horizontal" || role.Name == "wall/gate-vertical"
+		w.GateVertical = role.Name == "wall/gate-vertical"
+	} else {
+		if animation >= 0xb44 && animation < 0xb50 {
+			w.Gate = true
+			w.Frame = uint8((animation - 0xb44) / 4)
+		} else if animation >= 0xb54 && animation < 0xb60 {
+			w.Gate, w.GateVertical = true, true
+			w.Frame = uint8((animation - 0xb54) / 4)
+		} else if !w.Broken {
+			matched := false
+			for _, base := range []uint16{0x5bc, 0x5cc, 0x5dc} {
+				if animation >= base && animation < base+12 && (animation-base)%4 == 0 {
+					w.Frame = uint8((animation - base) / 4)
+					matched = true
+					break
+				}
+			}
+			if !matched {
+				return w, fmt.Errorf("wall animation%d has no semantic catalog role", animation)
+			}
+		} else {
+			return w, fmt.Errorf("broken wall animation%d has no semantic catalog role", animation)
+		}
+	}
+	next, err := reference(binary.BigEndian.Uint16(record[14:]))
+	if err != nil {
+		return w, err
+	}
+	if next.Kind != engine.ActorNone {
+		if next.Kind != engine.ActorWall {
+			return w, fmt.Errorf("wall owner-list link points into another pool")
+		}
+		w.Next = next.Index + 1
+	}
+	return w, nil
+}
+
+func wallAnimationRole(roles []AnimationRole) (AnimationRole, bool) {
+	for _, role := range roles {
+		if strings.HasPrefix(role.Name, "wall/") {
+			return role, true
+		}
+	}
+	return AnimationRole{}, false
 }
