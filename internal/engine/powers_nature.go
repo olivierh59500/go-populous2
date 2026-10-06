@@ -147,6 +147,20 @@ func (w *World) validNatureTarget(owner, x, y int) error {
 	return nil
 }
 
+func fertileNatureCode(code uint8) bool {
+	return code == 15 || code == 31 || code == 47 || code == 63 || code == 95 || code == 145 || code == 151 || code == 245
+}
+
+func flowersNatureCode(code uint8) bool {
+	return code >= 15 && code <= 127 && code%16 == 15 || code >= 143 && code <= 151 || code >= 168 && code <= 196 || code >= 201 && code <= 216 || code >= 220 && code <= 223 || code == 245
+}
+
+func (w *World) paintNature(at int, p GroundParcel) {
+	w.Nature.Ground[at] = p
+	w.Water.Painted[at] = false
+	w.FireDamage.Painted[at] = false
+}
+
 // CastTrees plants empty sampled parcels. A full scenery pool ends the cast
 // immediately, and rejected parcels do not consume the rare-variant draw.
 func (w *World) CastTrees(owner, x, y int) error {
@@ -206,10 +220,10 @@ func (w *World) CastFlowers(owner, x, y int) error {
 	count := int(w.random.next()%17) + 8 + int(w.Players[owner].Experience[Plants]>>5)
 	for attempt := 0; attempt <= count; attempt++ {
 		nx, ny, ok := w.natureSample(x, y)
-		if !ok || !w.Tiles[nx+ny*MapSize].IsFlat() {
+		if !ok || !flowersNatureCode(w.Cell(nx, ny).Code) {
 			continue
 		}
-		w.Nature.Ground[nx+ny*MapSize] = GroundParcel{Mark: GroundFlowers, Owner: uint8(owner)}
+		w.paintNature(nx+ny*MapSize, GroundParcel{Mark: GroundFlowers, Owner: uint8(owner)})
 	}
 	return nil
 }
@@ -227,14 +241,10 @@ func (w *World) CastSwamp(owner, x, y int) error {
 			continue
 		}
 		at := nx + ny*MapSize
-		if !w.Tiles[at].IsFlat() || w.Occupants[at] != 0 || w.Nature.sceneryAt(nx, ny) >= 0 {
+		if !fertileNatureCode(w.Cell(nx, ny).Code) || w.Occupants[at] != 0 || w.Nature.sceneryAt(nx, ny) >= 0 {
 			continue
 		}
-		mark := w.Nature.Ground[at].Mark
-		if mark != GroundNone && mark != GroundFlowers && mark != GroundRestored && mark != GroundScorched && mark != GroundFungusFresh && mark != GroundFungusDead {
-			continue
-		}
-		w.Nature.Ground[at] = GroundParcel{Mark: GroundSwamp, Owner: uint8(owner)}
+		w.paintNature(at, GroundParcel{Mark: GroundSwamp, Owner: uint8(owner)})
 	}
 	return nil
 }
@@ -246,14 +256,10 @@ func (w *World) CastFungus(owner, x, y int) error {
 		return err
 	}
 	at := x + y*MapSize
-	if !w.Tiles[at].IsFlat() {
+	if !fertileNatureCode(w.Cell(x, y).Code) {
 		return nil
 	}
-	mark := w.Nature.Ground[at].Mark
-	if mark != GroundNone && mark != GroundFlowers && mark != GroundRestored && mark != GroundScorched && mark != GroundFungusFresh && mark != GroundFungusDead {
-		return nil
-	}
-	w.Nature.Ground[at] = GroundParcel{Mark: GroundFungusFresh, Owner: uint8(owner)}
+	w.paintNature(at, GroundParcel{Mark: GroundFungusFresh, Owner: uint8(owner)})
 	if pending := w.Nature.PendingFungus[owner]; pending > 0 {
 		id := int(pending) - 1
 		f := &w.Nature.Fungi[id]

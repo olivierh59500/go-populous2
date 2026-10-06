@@ -367,6 +367,49 @@ func TestEmptyGroundCastsSucceedButEmptyForestIsNotAdmitted(t *testing.T) {
 	}
 }
 
+func TestNatureEligibilityUsesActiveArtworkAndClearsPriorEffects(t *testing.T) {
+	w := testFlatWorld()
+	w.random = 4311
+	for at := range w.Water.Painted {
+		w.Water.Painted[at] = true
+		w.Water.Tiles[at] = 224
+	}
+	if err := w.CastFlowers(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	if err := w.CastSwamp(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	if err := w.CastFungus(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range w.Nature.Ground {
+		if p.Mark != GroundNone {
+			t.Fatal("nature used hidden flat geometry instead of basalt shape")
+		}
+	}
+	for at := range w.Water.Painted {
+		w.Water.Painted[at] = false
+		w.FireDamage.Painted[at] = true
+		w.FireDamage.Tiles[at] = 220
+	}
+	if err := w.CastFlowers(0, 32, 32); err != nil {
+		t.Fatal(err)
+	}
+	restored := 0
+	for at, p := range w.Nature.Ground {
+		if p.Mark == GroundFlowers {
+			restored++
+			if w.FireDamage.Painted[at] || w.Water.Painted[at] || w.Cell(at%MapSize, at/MapSize).Code != 245 {
+				t.Fatal("restored land retained a previous fire/water overlay")
+			}
+		}
+	}
+	if restored == 0 {
+		t.Fatal("renew did not restore eligible lava terrain")
+	}
+}
+
 func TestPrivateFungusMapTraces(t *testing.T) {
 	path := os.Getenv("POPULOUS2_FUNGUS_TRACE")
 	if path == "" {
