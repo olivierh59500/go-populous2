@@ -31,7 +31,12 @@ func (g *Game) openOptions() error {
 			computer[owner] = p.Computer
 		}
 	}
-	g.Options = &OptionsState{Draft: level, Computer: computer, Return: g.Screen, Music: true, Sound: true}
+	musicEnabled, soundEnabled := true, true
+	if g.music != nil {
+		musicEnabled = g.music.IsMusicEnabled()
+		soundEnabled = g.music.IsSoundEnabled()
+	}
+	g.Options = &OptionsState{Draft: level, Computer: computer, Return: g.Screen, Music: musicEnabled, Sound: soundEnabled}
 	g.Screen = OptionsScreen
 	return nil
 }
