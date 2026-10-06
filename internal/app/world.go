@@ -278,6 +278,36 @@ func (g *Game) drawWorld() {
 				f := w.Followers[id]
 				ax, ay := g.projectCorner(x, y)
 				ay += 8
+				if state := f.CombatAftermath; state.Kind != engine.CombatAftermathNone {
+					key := "combat/death"
+					switch state.Kind {
+					case engine.CombatHeroDefeated:
+						key = "combat/hero-death"
+					case engine.CombatVictorious:
+						key = "combat/victory-blue"
+						if f.Owner != 0 {
+							key = "combat/victory-red"
+						}
+					case engine.CombatTownCollapse, engine.CombatTownRuin:
+						key = fmt.Sprintf("ruin/town/%d", f.Stage)
+					case engine.CombatCollateralDeath:
+						key = "death/fire"
+					}
+					g.animation(key, int(state.Frame), ax, ay, land)
+					continue
+				}
+				if f.TerrainDeath.Active || f.State == engine.Drowning {
+					key := "swimming/follower"
+					frame := int(f.Frame)
+					if f.TerrainDeath.Active {
+						key, frame = "death/water", int(f.TerrainDeath.Frame)
+					}
+					if f.IsHero() {
+						key += "/" + heroNames[f.Hero.Kind]
+					}
+					g.animation(key, frame, ax, ay, land)
+					continue
+				}
 				if f.Neutral.Kind != engine.NeutralNone || f.Neutral.VictimTime > 0 {
 					name := "neutral/monster-victim"
 					if f.Neutral.Kind != engine.NeutralNone {

@@ -46,5 +46,6 @@ func (g *Game) drawHelp() {
 		}
 		g.text(text, 32, 121)
 	}
+	g.button("PREVIEW POWER", 96, 155, 128)
 	g.button("RETURN", 120, 174, 80)
 }

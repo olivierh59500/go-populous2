@@ -28,6 +28,7 @@ const (
 	OptionsScreen
 	EditorScreen
 	HelpScreen
+	PowerHelpScreen
 )
 
 // Game holds ordinary Go screen and input state. Original program counters,
@@ -38,6 +39,7 @@ type Game struct {
 	Network                      *NetworkController
 	Options                      *OptionsState
 	Editor                       *EditorState
+	PowerPreview                 *PowerPreview
 	CustomLevel                  *engine.Level
 	CustomComputer               [2]bool
 	CustomGame                   bool
@@ -58,6 +60,8 @@ type Game struct {
 	editingProfileName           bool
 	editingProfileCode           bool
 	profileCodeInput             string
+	editingWorldCode             bool
+	worldCodeInput               string
 	Selected                     engine.PowerID
 	Category                     engine.Element
 	PickingPower                 bool
@@ -134,7 +138,7 @@ func (g *Game) Update() error {
 	}
 	x, y := ebiten.CursorPosition()
 	clicked := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
-	if inpututil.IsKeyJustPressed(ebiten.KeyH) && g.Screen != HelpScreen {
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) && g.Screen == Playing {
 		g.helpReturn, g.Screen = g.Screen, HelpScreen
 	}
 	switch g.Screen {
@@ -155,21 +159,15 @@ func (g *Game) Update() error {
 				} else {
 					g.Options.Return = ConquestBriefing
 				}
+			case y >= 156 && y < 173:
+				g.helpReturn, g.Screen = MainMenu, HelpScreen
 			}
 		}
 	case DeityProfile:
 		g.updateProfile(x, y, clicked)
 	case ConquestBriefing:
-		if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
-			g.LevelIndex = max(0, g.LevelIndex-1)
-		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
-			g.LevelIndex = min(len(g.Assets.Levels)-1, g.LevelIndex+1)
-		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || (clicked && x >= 115 && x < 215 && y >= 164 && y < 189) {
-			if err := g.startConquest(); err != nil {
-				return err
-			}
+		if err := g.updateBriefing(x, y, clicked); err != nil {
+			return err
 		}
 	case Playing:
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) && g.Network == nil {
@@ -220,8 +218,16 @@ func (g *Game) Update() error {
 			g.Message, g.messageUntil = err.Error(), g.Updates+100
 		}
 	case HelpScreen:
-		if clicked || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		if clicked && y >= 155 && y < 173 {
+			if err := g.openPowerHelp(g.Selected); err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+100
+			}
+		} else if clicked || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 			g.Screen = g.helpReturn
+		}
+	case PowerHelpScreen:
+		if err := g.updatePowerHelp(x, y, clicked); err != nil {
+			g.Message, g.messageUntil = err.Error(), g.Updates+100
 		}
 	}
 	g.drawFrame()
@@ -278,14 +284,18 @@ func (g *Game) drawFrame() {
 		g.button("CONQUEST", 78, 102, 168)
 		g.button("MULTIPLAYER", 78, 120, 168)
 		g.button("CUSTOM GAME", 78, 138, 168)
+		g.button("HELP", 78, 156, 168)
 	case DeityProfile:
 		g.drawProfile()
 	case ConquestBriefing:
 		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 		g.text("CONQUEST", 128, 15)
-		g.text(fmt.Sprintf("WORLD %d", g.LevelIndex), 24, 42)
-		g.text(g.Assets.Levels[g.LevelIndex].Code, 24, 58)
-		g.text("LEFT / RIGHT TO SELECT", 24, 74)
+		for index, line := range g.briefingLines() {
+			g.text(line, 24, 42+index*16)
+		}
+		if g.Updates < g.messageUntil {
+			g.text(g.Message, 24, 146)
+		}
 		g.button("PROCEED", 115, 168, 100)
 	case Playing:
 		g.drawWorld()
@@ -301,5 +311,7 @@ func (g *Game) drawFrame() {
 		g.drawEditor()
 	case HelpScreen:
 		g.drawHelp()
+	case PowerHelpScreen:
+		g.drawPowerHelp()
 	}
 }
