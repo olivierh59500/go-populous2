@@ -52,6 +52,7 @@ func TestOptionsApplyIsAtomicAndKeepsFactionSettingsSeparate(t *testing.T) {
 	g.Options.Owner = 1
 	g.Options.toggleRule(3)
 	g.Options.Computer[1] = false
+	g.Options.Draft.Players[1].Powers[engine.FireColumn] = true
 	g.Options.Draft.Landscape = 2
 	if err := g.applyOptions(); err != nil {
 		t.Fatal(err)
@@ -61,6 +62,13 @@ func TestOptionsApplyIsAtomicAndKeepsFactionSettingsSeparate(t *testing.T) {
 	}
 	if g.World.Level.Players[1].Extra[0]&(1<<3) == 0 || g.CustomLevel == nil || g.CustomComputer[1] {
 		t.Fatal("options scoring word or next-game setup did not follow semantic choices")
+	}
+	found := false
+	for _, choice := range g.World.AI[1].Choices[:g.World.AI[1].ChoiceCount] {
+		found = found || choice.Power == engine.FireColumn
+	}
+	if !found {
+		t.Fatal("live power change did not reach the AI choice catalogue")
 	}
 	if err := g.openOptions(); err != nil {
 		t.Fatal(err)

@@ -128,6 +128,7 @@ func (g *Game) applyOptions() error {
 		for owner := range candidate.Players {
 			candidate.Players[owner].Computer = g.Options.Computer[owner]
 		}
+		candidate.RefreshAIChoices()
 		if _, err := candidate.Snapshot().Restore(); err != nil {
 			return fmt.Errorf("changed game rules: %w", err)
 		}
