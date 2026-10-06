@@ -472,7 +472,7 @@ func TestPrivateWhirlpoolWaterTraces(t *testing.T) {
 	}
 }
 
-func TestPrivateTidalCreationAndSingleTick(t *testing.T) {
+func TestPrivateTidalCreationAndOrderedPoolTraces(t *testing.T) {
 	path := os.Getenv("POPULOUS2_TIDAL_TRACE")
 	if path == "" {
 		t.Skip("set POPULOUS2_TIDAL_TRACE for private tidal comparison")
@@ -512,7 +512,7 @@ func TestPrivateTidalCreationAndSingleTick(t *testing.T) {
 	checked := 0
 	for _, reference := range catalog.Cases {
 		i := reference.Input
-		if i.Owner < 1 || i.Owner > 2 || i.Prepass != 0 || len(i.Links) > 0 || i.Mode == "pass" || len(i.Alt) != CornerSize*CornerSize {
+		if i.Owner < 1 || i.Owner > 2 || i.Prepass != 0 || len(i.Links) > 0 || len(i.Alt) != CornerSize*CornerSize {
 			continue
 		}
 		// Only normal actor fields and cells are translated by this test.
@@ -575,7 +575,13 @@ func TestPrivateTidalCreationAndSingleTick(t *testing.T) {
 			} else {
 				p := raw[i.Parent]
 				w.Water.Waves[i.Parent] = TidalEffect{Active: true, Newborn: p[22] == 0x28, Owner: uint8(i.Owner - 1), X: int(binary.BigEndian.Uint16(p[6:])), Y: int(binary.BigEndian.Uint16(p[8:])), Direction: int(i.Direction / 4)}
-				w.tickTidalWave(i.Parent)
+				if i.Mode == "pass" {
+					for range i.Ticks {
+						w.tickWaterEffects()
+					}
+				} else {
+					w.tickTidalWave(i.Parent)
+				}
 			}
 			for _, change := range reference.Changes {
 				if change.Address >= 0xc800 && change.Address < 0xe740 {
