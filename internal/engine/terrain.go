@@ -175,10 +175,16 @@ func (w *World) Cell(x, y int) Cell {
 func (w *World) RaiseAt(player, x, y int) bool { return w.changeHeight(player, x, y, true, true) }
 func (w *World) LowerAt(player, x, y int) bool { return w.changeHeight(player, x, y, false, true) }
 func (w *World) changeHeight(player, x, y int, raise, cursorAdmission bool) bool {
+	if player < 0 || player > 1 {
+		return false
+	}
+	return w.changeHeightWithOptions(player, x, y, raise, cursorAdmission, w.Level.Players[player].Scenario)
+}
+func (w *World) changeHeightWithOptions(player, x, y int, raise, cursorAdmission bool, options ScenarioOptions) bool {
 	if player < 0 || player > 1 || !insideCorner(x, y) || w.Players[player].Mana < w.PowerCost(player, RaiseLower) {
 		return false
 	}
-	if !w.terrainPlanAllowedCommand(player, x, y, raise, cursorAdmission) {
+	if !w.terrainPlanAllowedWithOptions(player, x, y, raise, cursorAdmission, options) {
 		return false
 	}
 	h := w.Heights[x+y*CornerSize]

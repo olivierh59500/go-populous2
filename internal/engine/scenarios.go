@@ -23,10 +23,15 @@ func (w *World) terrainPlanAllowed(owner, x, y int, raise bool) bool {
 	return w.terrainPlanAllowedCommand(owner, x, y, raise, true)
 }
 func (w *World) terrainPlanAllowedCommand(owner, x, y int, raise, cursorAdmission bool) bool {
+	if owner < 0 || owner > 1 {
+		return false
+	}
+	return w.terrainPlanAllowedWithOptions(owner, x, y, raise, cursorAdmission, w.Level.Players[owner].Scenario)
+}
+func (w *World) terrainPlanAllowedWithOptions(owner, x, y int, raise, cursorAdmission bool, options ScenarioOptions) bool {
 	if owner < 0 || owner > 1 || !insideCorner(x, y) {
 		return false
 	}
-	options := w.Level.Players[owner].Scenario
 	if cursorAdmission && !options.TerrainEditAllowed(int(w.Heights[x+y*CornerSize]), raise) || raise && options.ForbidRaise || !raise && options.ForbidLower {
 		return false
 	}
