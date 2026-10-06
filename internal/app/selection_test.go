@@ -59,3 +59,21 @@ func TestSelectedGroupAndInspectModeSurviveSessionSave(t *testing.T) {
 		t.Fatal("saved selection or inspection mode was lost")
 	}
 }
+
+func TestInspectPickingUsesOriginalAnchorAndLeavesManaUntouched(t *testing.T) {
+	w := &engine.World{}
+	w.Followers[1] = engine.Follower{State: engine.Walking, Owner: 0, X: 12, Y: 12, Population: 100}
+	w.Actors.Link(engine.ActorRef{Kind: engine.ActorFollower, Index: 1}, 12*256+128, 12*256+128)
+	g := &Game{World: w, CameraX: 8, CameraY: 8, Assets: &Assets{Visual: &visualassets.Bundle{}}}
+	x, y := g.followerRenderAnchor(w.Followers[1])
+	before := w.Snapshot()
+	if id := g.pickFollower(x+8, y-18); id != 1 {
+		t.Fatal("original walking inspect boundary did not select actor", id)
+	}
+	if id := g.pickFollower(x+9, y-18); id != 0 {
+		t.Fatal("inspect hit extended beyond original horizontal boundary")
+	}
+	if w.Snapshot() != before {
+		t.Fatal("inspect hit query changed world or mana")
+	}
+}
