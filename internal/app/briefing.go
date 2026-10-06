@@ -10,7 +10,7 @@ import (
 )
 
 func (g *Game) updateBriefing(x, y int, clicked bool) error {
-	if clicked && x >= 24 && x < 288 && y >= 54 && y < 70 {
+	if clicked && x >= 24 && x < 288 && y >= 54 && y < 66 {
 		g.editingWorldCode = true
 		g.worldCodeInput = ""
 	}
@@ -59,7 +59,7 @@ func (g *Game) briefingLines() []string {
 	lines := []string{fmt.Sprintf("WORLD %d", g.LevelIndex), code}
 	text := strings.ToUpper(level.OpponentText)
 	if len(text) > 0 {
-		for len(text) > 0 && len(lines) < 6 {
+		for len(text) > 0 && len(lines) < 5 {
 			count := min(32, len(text))
 			if count < len(text) {
 				if space := strings.LastIndexByte(text[:count], ' '); space > 0 {
@@ -70,5 +70,8 @@ func (g *Game) briefingLines() []string {
 			text = strings.TrimSpace(text[count:])
 		}
 	}
+	foe := level.Players[1]
+	lines = append(lines, fmt.Sprintf("ENEMY GROUPS %d PEOPLE %d", foe.Groups, foe.Population))
+	lines = append(lines, fmt.Sprintf("SPEED %d WEAPONS %d", foe.MovementSpeed, foe.Weapons))
 	return lines
 }

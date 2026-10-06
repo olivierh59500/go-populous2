@@ -179,7 +179,7 @@ func (g *Game) Update() error {
 		g.updateProfile(x, y, clicked)
 	case ConquestBriefing:
 		if err := g.updateBriefing(x, y, clicked); err != nil {
-			return err
+			g.Message, g.messageUntil = err.Error(), g.Updates+150
 		}
 	case Playing:
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) && g.Network == nil {
@@ -312,7 +312,7 @@ func (g *Game) drawFrame() {
 		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 		g.text("CONQUEST", 128, 15)
 		for index, line := range g.briefingLines() {
-			g.text(line, 24, 42+index*16)
+			g.text(line, 24, 42+index*14)
 		}
 		if g.Updates < g.messageUntil {
 			g.text(g.Message, 24, 146)
