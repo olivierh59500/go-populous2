@@ -12,6 +12,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	embedded "go-populous2/assets"
 	"go-populous2/internal/populous2"
@@ -188,12 +189,23 @@ func export(files fs.FS, output string) error {
 		"fire-column/emerging": 0x1a0,
 		"fire-column/active":   0x4b8,
 		"fire-column/ending":   0x660,
+		"meteor/falling":       0x81c,
+		"fire-impact/land":     0x49c,
+		"fire-impact/water":    0x5ec,
+		"lava/north":           0xec8,
+		"lava/east":            0xed4,
+		"lava/south":           0xec8,
+		"lava/west":            0xed4,
+		"lava/slope-3":         0xeec,
+		"lava/slope-6":         0xef8,
+		"lava/slope-9":         0xee0,
+		"lava/slope-12":        0xf04,
 	} {
 		frames, err := populous2.DecodeAnimation(source.Executable, start)
 		if err != nil {
 			return err
 		}
-		catalog.Animations[name] = animation(frames, name == "fire-column/active")
+		catalog.Animations[name] = animation(frames, name == "fire-column/active" || strings.HasPrefix(name, "lava/"))
 	}
 	for hero, name := range heroes {
 		if start := source.FungusHazards.HeroDeath[hero]; start != 0 {
