@@ -104,6 +104,7 @@ type World struct {
 	Footsteps               [MapSize * MapSize]uint16
 	Pressure                [MapSize * MapSize]uint8
 	Followers               [FollowerCapacity]Follower
+	SelectionTransfers      FollowerSelectionTransfers
 	Actors                  ActorRegistry
 	Magnets                 [2]MagnetActor
 	Players                 [2]Player
@@ -213,6 +214,7 @@ func (w *World) Step() {
 		return
 	}
 	w.Tick++
+	w.SelectionTransfers.reset()
 	w.beginAIObservations()
 	w.BirthBlocked = false
 
@@ -359,6 +361,7 @@ func (w *World) stepFollower(id int) {
 			return
 		}
 		f.Population -= emigrant
+		w.SelectionTransfers.add(id, next)
 		if next == 250 && w.Tick >= w.NeutralBirthDeadline {
 			w.NeutralBirthDeadline = w.Tick + 50
 			w.random.next()

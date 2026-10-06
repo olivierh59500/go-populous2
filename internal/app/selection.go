@@ -15,11 +15,8 @@ func (g *Game) refreshSelectedFollower() {
 	if id := g.SelectedFollower; id > 0 && id < engine.FollowerCapacity && g.World.Followers[id].State != engine.Inactive {
 		return
 	}
-	id := g.World.Players[g.playerSide()].Leader
-	if id > 0 && id < engine.FollowerCapacity && g.World.Followers[id].State != engine.Inactive {
-		g.SelectedFollower = id
-		return
-	}
+	// A missing or removed selection leaves the amphitheatre empty. Leader
+	// identity does not implicitly select an actor in the original interface.
 	g.SelectedFollower = 0
 }
 

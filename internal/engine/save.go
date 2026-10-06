@@ -115,6 +115,9 @@ func (s Snapshot) Restore() (*World, error) {
 }
 
 func validateSnapshotWorld(w *World) error {
+	if err := w.SelectionTransfers.validate(); err != nil {
+		return err
+	}
 	if err := validateActorRegistry(&w.Actors); err != nil {
 		return err
 	}

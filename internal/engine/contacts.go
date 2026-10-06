@@ -120,6 +120,7 @@ func (w *World) mergeFollowers(source, target int) {
 		to.Frame = 0
 	}
 	w.clearHeroLinks(source)
+	w.SelectionTransfers.add(source, target)
 	w.unlinkFollower(source)
 	w.Followers[source] = Follower{}
 }

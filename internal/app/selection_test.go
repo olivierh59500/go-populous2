@@ -24,6 +24,22 @@ func TestSelectionPanelRecentersWithoutChangingSimulation(t *testing.T) {
 	}
 }
 
+func TestEmptyAndRemovedSelectionDoNotFallBackToLocalLeader(t *testing.T) {
+	w := controllerWorld(t)
+	leader := w.Players[0].Leader
+	g := &Game{World: w, SelectedFollower: 0}
+	g.refreshSelectedFollower()
+	if g.SelectedFollower != 0 {
+		t.Fatal("empty source selection implicitly selected the leader", leader)
+	}
+	g.SelectedFollower = engine.FollowerCapacity - 1
+	w.Followers[g.SelectedFollower] = engine.Follower{}
+	g.refreshSelectedFollower()
+	if g.SelectedFollower != 0 {
+		t.Fatal("removed source selection implicitly selected another actor")
+	}
+}
+
 func TestSelectedArtworkUsesPanelAnchorAndDoesNotChangeWorld(t *testing.T) {
 	w := &engine.World{}
 	w.Followers[1] = engine.Follower{State: engine.Walking, Owner: 0, X: 12, Y: 12, Population: 0}
