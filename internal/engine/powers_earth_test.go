@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -155,6 +156,73 @@ func TestWallCrossingUsesOriginalMovementThresholds(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+// Expected digests cover all original actors/heads after the named actions.
+// Numeric artwork identifiers exist only in the comparison adapter below.
+func TestWallConstructionMatchesOriginalActorFingerprints(t *testing.T) {
+	type placement struct{ owner, x, y int }
+	for _, reference := range []struct {
+		name     string
+		calls    []placement
+		tiles    map[int]uint8
+		ticks    int
+		accepted []bool
+		digest   string
+	}{
+		{"turn", []placement{{0, 32, 32}, {0, 33, 32}, {0, 34, 32}, {0, 34, 33}, {0, 33, 33}}, nil, 0, []bool{true, true, true, true, true}, "b507958740f45e37cdddf4585d329bc248a33f1a07b37d5717fbb1cf62b8ca67"},
+		{"disconnected", []placement{{0, 32, 32}, {0, 40, 40}, {0, 33, 32}}, nil, 0, []bool{true, false, true}, "e36051ea0c282a0eb138aeb7e947d6e164caf58547d4aabc85d9698e41ecd57c"},
+		{"opposing", []placement{{0, 32, 32}, {1, 33, 32}, {0, 34, 32}}, nil, 0, []bool{true, true, true}, "983c5a5ac11f12ea8e81db190e44c0c348f763c26db01d6c20b29f397f9adb26"},
+		{"cardinals", []placement{{0, 32, 32}, {0, 32, 31}, {0, 33, 32}, {0, 31, 32}, {0, 32, 33}}, nil, 0, []bool{true, true, true, true, true}, "ec2a69b74188622768a6fe849ea4c8966a976d1efe74dabd82b50aa8f3027cc1"},
+		{"road-gates", []placement{{0, 32, 32}, {0, 33, 32}}, map[int]uint8{32 + 32*MapSize: 197, 33 + 32*MapSize: 198}, 0, []bool{true, true}, "940374aff4b3375bbe8f957cc1b2689b8fead1fe2c9bf48466ae4e9be89ff8e6"},
+		{"road-cross", []placement{{0, 32, 32}, {0, 33, 32}, {0, 34, 32}}, map[int]uint8{32 + 32*MapSize: 201, 33 + 32*MapSize: 202, 34 + 32*MapSize: 216}, 0, []bool{true, true, true}, "6134e9eaf6d37b85ac8fcdb300ca6b001453fd8baed4c1caed6e710a856678b5"},
+		{"terminal", []placement{{0, 32, 32}, {0, 33, 32}, {0, 33, 33}}, nil, 16, []bool{true, true, true}, "9e06817bf89cdf7e1e906eb2b587771e455be04f5b9fb435fd0c6545afdc9f68"},
+	} {
+		t.Run(reference.name, func(t *testing.T) {
+			w := testFlatWorld()
+			for at, code := range reference.tiles {
+				w.Tiles[at].Code = code
+			}
+			for i, p := range reference.calls {
+				if (w.CastWall(p.owner, p.x, p.y) == nil) != reference.accepted[i] {
+					t.Fatal("wall placement acceptance differs", i)
+				}
+			}
+			for range reference.ticks {
+				w.tickWalls()
+			}
+			var canonical bytes.Buffer
+			fmt.Fprintf(&canonical, "%d|%d\n", w.Earth.WallHeads[0], w.Earth.WallHeads[1])
+			for _, a := range w.Earth.Walls {
+				if !a.Active && a.Next == 0 {
+					continue
+				}
+				active, owner := 0, -1
+				if a.Active {
+					active, owner = 1, int(a.Owner)
+				}
+				art := 1468
+				if a.Variant == 2 {
+					art = 1484
+				} else if a.Variant == 4 {
+					art = 1500
+				}
+				if a.Gate {
+					art = 2884
+					if a.GateVertical {
+						art = 2900
+					}
+				}
+				if !a.Active {
+					art = 0
+				}
+				fmt.Fprintf(&canonical, "%d|%d|%d|%d|%d|%d|%d\n", active, owner, a.X, a.Y, a.Variant, art+int(a.Frame)*4, a.Next)
+			}
+			if got := fmt.Sprintf("%x", sha256.Sum256(canonical.Bytes())); got != reference.digest {
+				t.Fatal("original wall state differs", got, canonical.String())
+			}
+		})
 	}
 }
 
