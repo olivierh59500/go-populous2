@@ -38,6 +38,7 @@ type NativeGame struct {
 	captured       bool
 	failure        error
 	AutoStart      bool
+	AutoMenuAction int
 	autoClicked    bool
 	beam           uint16
 	Commands       *populous2.NativeRuntimeCommandChildren
@@ -45,6 +46,9 @@ type NativeGame struct {
 	Transport      *populous2.NativeRuntimeTransport
 	NetworkStartup *populous2.NativeRuntimeDirector
 	networkRefresh bool
+	Files          *populous2.NativeRuntimeFileStore
+	FileBrowser    *populous2.NativeRuntimeFileBrowserState
+	FileRules      populous2.NativeRuntimeFileBrowserRules
 }
 
 func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {
@@ -68,6 +72,11 @@ func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {
 
 func (g *NativeGame) boot() error {
 	h := g.Host
+	// Native DOS callbacks use this explicit portable library label; no
+	// host OS structure is dereferenced by the source filesystem adapter.
+	if err := h.Memory.BSS.Write32(0x14c, 0xc00000); err != nil {
+		return err
+	}
 	if _, err := h.InitializePresentation(populous2.NativeMouseSample{}); err != nil {
 		return err
 	}
@@ -99,6 +108,7 @@ func (g *NativeGame) boot() error {
 	}
 	g.Startup = populous2.NativeRuntimeDirectorCallbacks{NativeStartupCampaignHostCallbacks: populous2.NativeStartupCampaignHostCallbacks{NativeStartupHostFrameCallbacks: populous2.NativeStartupHostFrameCallbacks{NativeStartupResetFrameCallbacks: populous2.NativeStartupResetFrameCallbacks{Hardware: func(populous2.NativeFrameHardwareWrite) error { return nil }}, Audio: &control}, Campaign: populous2.NativeCampaignSelectionChildrenCallbacks{NativeCampaignHelpFrameCallbacks: populous2.NativeCampaignHelpFrameCallbacks{AudioCommand: operations.Command, AudioControl: control, NativeCampaignFrameCallbacks: populous2.NativeCampaignFrameCallbacks{NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Sound: sound}}}}, Ownership: ownership}}
 	g.booted = true
+	g.Startup.MenuChild = g.initialChild
 	return nil
 }
 
@@ -106,6 +116,7 @@ func (g *NativeGame) createFrame() error {
 	operations, h := g.Operations, g.Host
 	sound := func(cue uint16, c *populous2.NativeFrameRegisterContext) error { return operations.DirectCue(cue, c) }
 	g.Commands = &populous2.NativeRuntimeCommandChildren{Host: h, Rules: g.Rules, Supplied: g.Startup, Audio: populous2.NativeAudioControlFrameCallbacks{Command: operations.Command, MusicCommand: operations.MusicCommand, CodeBase: h.Memory.CodeBase}}
+	g.Commands.Other = g.commandFileChild
 	frame, err := h.NewFrame(populous2.NativeRuntimeFrameBindings{Audio: operations,
 		RenderChildren: populous2.NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return g.beam, nil }, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, Sound: sound},
 		InputChildren:  populous2.NativeGameplayHUDHostCallbacks{Campaign: g.Startup.Campaign, Ownership: g.Startup.Ownership, Audio: operations},
@@ -149,16 +160,20 @@ func (g *NativeGame) Update() error {
 		g.beam = 0
 		x, y := ebiten.CursorPosition()
 		left, right := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft), ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight)
-		if g.AutoStart && g.Frame == nil && g.Updates >= 100 && !g.autoClicked {
+		if (g.AutoStart || g.AutoMenuAction != 0) && g.Frame == nil && g.Updates >= 100 && !g.autoClicked {
 			var err error
-			x, y, err = g.nativeActionPosition(6)
+			action := g.AutoMenuAction
+			if action == 0 {
+				action = 6
+			}
+			x, y, err = g.nativeActionPosition(action)
 			if err != nil {
 				return err
 			}
 			left, right = true, false
 		}
 		sample := g.Mouse.Sample(&g.Host.Session.Presentation.Input, x, y, left, right)
-		if g.AutoStart && g.Frame == nil && sample.Left {
+		if (g.AutoStart || g.AutoMenuAction != 0) && g.Frame == nil && sample.Left {
 			g.autoClicked = true
 		}
 		if _, err := g.Host.Session.Presentation.VBlank(sample, g.Host.Memory.BSS, &g.Registers); err != nil {
@@ -170,6 +185,11 @@ func (g *NativeGame) Update() error {
 				return err
 			}
 			if step.Complete {
+				if g.FileBrowser != nil && g.FileBrowser.Files.RefreshPending {
+					if err := g.FileBrowser.Files.RefreshLoadedViews(g.Host); err != nil {
+						return err
+					}
+				}
 				exit, err := g.Host.Memory.BSS.Read16(0x3aa)
 				if err != nil {
 					return err
@@ -193,6 +213,12 @@ func (g *NativeGame) Update() error {
 			}
 			if complete {
 				g.Registers = g.Host.Session.Frame
+				if g.FileBrowser != nil && g.FileBrowser.Files.RefreshPending {
+					if err := g.FileBrowser.Files.RefreshLoadedViews(g.Host); err != nil {
+						return err
+					}
+					g.networkRefresh = true
+				}
 				if g.Commands.RefreshPending || g.networkRefresh {
 					if err := g.Host.RefreshWorldCaches(); err != nil {
 						return err
@@ -260,6 +286,9 @@ func (g *NativeGame) Close() {
 	}
 	if g.Network != nil {
 		g.Network.Close()
+	}
+	if g.Files != nil {
+		g.Files.Close()
 	}
 	g.Host.Close()
 }

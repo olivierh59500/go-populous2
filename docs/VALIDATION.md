@@ -1170,3 +1170,17 @@ D80C child from identical physical owners: all data registers, BSS, planner
 scratch and overview pixels match. Existing complete direct-terrain/command
 and sculpt-neighbor tests also pass. This covers native path composition;
 broader interactive terrain/disaster behavior remains part of final validation.
+
+## Desktop native file requester wiring
+
+The native desktop now supplies the complete3F92 browser from its initial menu
+and command dispatcher. Its actual DOS operations use only the existing
+directory explicitly configured by-save-root. The source rebases selected
+pointers once; loaded typed views and render rules refresh after the surrounding
+frame returns idle. File handles close with the application.
+
+A bounded desktop run navigated the original initial-menu load action and
+captured the real browser, field controls and cancel button, then exited0.
+The source browser and backend separately pass their full-register/pixel/raw
+filesystem comparisons. Interactive save/load and broader campaign/two-player
+interoperability remain final validation work.

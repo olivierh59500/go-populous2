@@ -84,6 +84,7 @@ go run ./cmd/populous2-native
 go run ./cmd/populous2-native -auto-start -frames 500
 go run ./cmd/populous2-native -listen 127.0.0.1:2468
 go run ./cmd/populous2-native -connect 127.0.0.1:2468
+go run ./cmd/populous2-native -save-root /path/to/existing/save-directory
 ```
 
 This target uses the original320×200 screen, initial menu/world constructor,
@@ -96,6 +97,10 @@ it does not substitute an automatically generated World.
 `-listen` and `-connect` configure the host byte stream for the original serial
 requester. They preserve its profile, connect, handshake and command behavior.
 Full paired interactive gameplay is still under validation.
+
+`-save-root` binds the original file requester's native paths to an existing
+directory. Saving/loading uses raw GAM bytes and the original overwrite/error
+dialogs; no default directory or automatic export is chosen.
 
 The default window is 960 × 720, with a 640 × 480 logical display and doubled
 Amiga artwork. Input updates at 60 Hz; the simulation uses the nominal PAL
