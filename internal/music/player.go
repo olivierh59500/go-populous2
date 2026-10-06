@@ -80,6 +80,7 @@ type Player struct {
 	clock      float64
 	tempo      uint8
 	music      bool
+	sound      bool
 	paused     bool
 	volume     float64
 	pending    [4]byte
@@ -95,7 +96,7 @@ func NewPlayer(bank *Bank, sampleRate int) (*Player, error) {
 	if err := bank.Validate(); err != nil {
 		return nil, err
 	}
-	r := &Player{bank: bank, sampleRate: sampleRate, volume: 1}
+	r := &Player{bank: bank, sampleRate: sampleRate, volume: 1, sound: true}
 	r.playTheme()
 	return r, nil
 }
@@ -122,6 +123,23 @@ func (r *Player) SetVolume(volume float64) {
 	r.volume = max(0, min(1, volume))
 }
 
+// SetSoundEnabled controls foreground effects independently of the score.
+// Disabling effects also stops the effects already sounding; music timing,
+// gain, envelopes and the four score voices remain untouched.
+func (r *Player) SetSoundEnabled(enabled bool) {
+	if r == nil {
+		return
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.sound = enabled
+	if !enabled {
+		for id := 4; id < len(r.voices); id++ {
+			r.voices[id] = audioVoice{sample: -1}
+		}
+	}
+}
+
 func (r *Player) PlayPattern(id int, volume uint8) bool {
 	return r.playPattern(id, volume, 0)
 }
@@ -132,6 +150,9 @@ func (r *Player) playPattern(id int, volume, channel uint8) bool {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if !r.sound {
+		return false
+	}
 	for i := 4; i < len(r.voices); i++ {
 		if !r.voices[i].active {
 			r.voices[i] = audioVoice{sequence: []int{id}, sample: -1, active: true, masterVolume: min(63, int(volume)), channel: channel & 3}

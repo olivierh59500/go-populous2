@@ -126,3 +126,27 @@ func TestLoadFSValidatesScoreAndPCMPaths(t *testing.T) {
 		t.Fatal("absent sample reference was accepted")
 	}
 }
+
+func TestSoundEffectMuteLeavesThemeAndItsTimelineUnchanged(t *testing.T) {
+	a, b := testPlayer(t, testBank()), testPlayer(t, testBank())
+	if !b.TriggerCue(0) {
+		t.Fatal("effect admission failed before muting")
+	}
+	b.SetSoundEnabled(false)
+	if b.TriggerCue(0) || b.PlayPattern(0, 63) {
+		t.Fatal("muted effects admitted new voices")
+	}
+	left, right := make([]byte, 44100*4), make([]byte, 44100*4)
+	a.Read(left)
+	b.Read(right)
+	if !bytes.Equal(left, right) {
+		t.Fatal("effect mute changed the theme gain or playback timeline")
+	}
+	b.SetSoundEnabled(true)
+	if !b.TriggerCue(0) {
+		t.Fatal("re-enabled effects were not admitted")
+	}
+	if !b.music || b.volume != 1 {
+		t.Fatal("effect toggle changed music or master volume")
+	}
+}
