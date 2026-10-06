@@ -8,6 +8,7 @@ import (
 
 type nativeStockSample struct {
 	X, Y uint8
+	Key  uint8
 	Left bool
 }
 type nativeStockSnapshot struct {
@@ -49,87 +50,11 @@ func TestNativeRuntimeStockGameplayAgainstOriginalMain(t *testing.T) {
 	if len(f.Frames) != 15 || len(f.FrameInputs) != 2499 || len(f.StartupPolls) == 0 {
 		t.Fatal("stock main checkpoints or inputs truncated")
 	}
-	h := nativeRuntimeHostTest(t)
-	if err := h.Memory.BSS.Write32(0x14c, 0xc00000); err != nil {
-		t.Fatal(err)
-	}
-	c := NativeFrameRegisterContext{AddressBase: h.Memory.BSSBase}
-	if _, err := h.InterruptVectors(0x39e, &c, func(uint32) (uint16, error) { return 0, nil }, nil); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := h.InitializePresentation(NativeMouseSample{}); err != nil {
-		t.Fatal(err)
-	}
-	if done, err := h.AdvanceAllocations(0x1a43e, &c, NativeErrorFrameCallbacks{}); err != nil || !done {
-		t.Fatal(done, err)
-	}
-	device, _, err := h.InitializeAudio(&c, 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rules, err := DecodeNativeStartupCampaignHostRules(h.Bundle.Executable)
-	if err != nil {
-		t.Fatal(err)
-	}
-	audio := NativeRuntimeAudioOperations{Command: device.Command, MusicCommand: device.MusicCommand, DirectCue: device.DirectCue}
-	control := NativeAudioControlDeviceCallbacks(device, h.Memory.BSS, &c)
-	ownership := func(bool, *NativeFrameRegisterContext, *[7]NativeRequesterAddress) error { return nil }
-	startup := NativeRuntimeDirectorCallbacks{NativeStartupCampaignHostCallbacks: NativeStartupCampaignHostCallbacks{NativeStartupHostFrameCallbacks: NativeStartupHostFrameCallbacks{Audio: &control, NativeStartupResetFrameCallbacks: NativeStartupResetFrameCallbacks{Hardware: func(NativeFrameHardwareWrite) error { return nil }}}, Campaign: NativeCampaignSelectionChildrenCallbacks{NativeCampaignHelpFrameCallbacks: NativeCampaignHelpFrameCallbacks{AudioCommand: device.Command, AudioControl: control, NativeCampaignFrameCallbacks: NativeCampaignFrameCallbacks{NativeFileFrameCallbacks: NativeFileFrameCallbacks{Sound: device.DirectCue}}}}, Ownership: ownership}}
-	apply := func(s nativeStockSample, frame *NativeFrameRegisterContext) {
-		if _, err := h.Session.Presentation.VBlank(NativeMouseSample{CounterX: s.X, CounterY: s.Y, Left: s.Left}, h.Memory.BSS, frame); err != nil {
-			t.Fatal(err)
-		}
-	}
-	director := NativeRuntimeDirector{}
-	pos := 0
-	for _, end := range f.StartupPolls {
-		if end < pos || end > len(f.Startup.Samples) {
-			t.Fatal("invalid original startup poll")
-		}
-		for ; pos < end; pos++ {
-			apply(f.Startup.Samples[pos], &c)
-		}
-		step, err := director.Advance(h, &rules, &c, startup)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if step.Complete && end != len(f.Startup.Samples) {
-			t.Fatal("native startup returned before original source")
-		}
-	}
-	if pos != len(f.Startup.Samples) || !director.ready {
-		t.Fatal("native stock startup did not complete")
-	}
-	check := func(want nativeStockSnapshot, d [8]uint32) {
-		if d != want.D {
-			t.Fatalf("stock tick%d D differs: got%x want%x", want.Tick, d, want.D)
-		}
-		bss, err := h.Memory.SnapshotBSS()
-		if err != nil {
-			t.Fatal(err)
-		}
-		low, err := h.Host.Span(0, 256)
-		if err != nil {
-			t.Fatal(err)
-		}
-		fx, err := h.Host.Span(0x700000, NativeStartupAudioBytes)
-		if err != nil {
-			t.Fatal(err)
-		}
-		background, err := h.Bitmap(0x700000 + NativeStartupAudioBytes)
-		if err != nil {
-			t.Fatal(err)
-		}
-		heap := append(append([]byte(nil), fx...), background...)
-		p := h.Session.Presentation
-		for _, pair := range []struct{ name, got, want string }{{"BSS", fileFrameHash(bss), want.BSSHash}, {"CODE", fileFrameHash(nativeRuntimeResultCodeBytes(t, h)), want.CodeHash}, {"screens/Copper", fileFrameHash(p.Chip), want.ChipHash}, {"pointer", fileFrameHash(p.PointerData[:15260]), want.PointerHash}, {"heap", fileFrameHash(heap), want.HeapHash}, {"low RAM", fileFrameHash(low), want.LowHash}} {
-			if pair.got != pair.want {
-				t.Fatalf("stock tick%d %s differs: got%s want%s", want.Tick, pair.name, pair.got, pair.want)
-			}
-		}
-	}
+	g := nativeRuntimeGameplayStart(t, f.Startup, f.StartupPolls)
+	h, c, rules, audio, startup, apply := g.Host, g.Frame, g.Rules, g.Audio, g.Startup, g.Apply
+	check := func(want nativeStockSnapshot, d [8]uint32) { nativeRuntimeGameplayCheck(t, h, want, d) }
 	check(f.Startup, c.D)
-	result := NativeRuntimeResultHost{Rules: rules, Startup: startup, Callbacks: NativeRuntimeResultCallbacks{Audio: audio, Sound: device.DirectCue, Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }}}
+	result := NativeRuntimeResultHost{Rules: rules, Startup: startup, Callbacks: NativeRuntimeResultCallbacks{Audio: audio, Sound: audio.DirectCue, Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }}}
 	entered := false
 	resultAdvance := func(identity uint16, ctx *NativeFrameRegisterContext) (bool, error) {
 		if !entered {
@@ -145,10 +70,7 @@ func TestNativeRuntimeStockGameplayAgainstOriginalMain(t *testing.T) {
 		}
 		return done, err
 	}
-	frame, err := h.NewFrame(NativeRuntimeFrameBindings{Audio: audio, Session: NativeFrameSessionCallbacks{ResultAdvance: resultAdvance}, RenderChildren: NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return 0, nil }, Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }, Sound: device.DirectCue}, InputChildren: NativeGameplayHUDHostCallbacks{Campaign: startup.Campaign, Ownership: ownership, Audio: audio}, Menu: NativeInGameHostCallbacks{Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }}})
-	if err != nil {
-		t.Fatal(err)
-	}
+	frame := g.newFrame(t, resultAdvance)
 	checkpoint := 0
 	for tick, events := range f.FrameInputs {
 		if events.Tick != tick || len(events.Polls) == 0 {
