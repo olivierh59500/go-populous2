@@ -130,3 +130,42 @@ func TestWaterDeathAndLivingLoopUseDistinctSourceSequences(t *testing.T) {
 		}
 	}
 }
+
+func TestResultDetectionUsesExactZeroSourceOrderingAndEditorSuppression(t *testing.T) {
+	for _, test := range []struct {
+		blue, red int
+		editor    bool
+		result    int
+	}{{0, 100, false, 2}, {100, 0, false, 1}, {0, 0, false, 2}, {-1, 100, false, 0}, {100, -1, false, 0}, {0, 0, true, 0}} {
+		w := &World{Editor: test.editor}
+		w.Players[0].Population = test.blue
+		w.Players[1].Population = test.red
+		if got := w.DetectResult(); got != test.result {
+			t.Fatalf("population%d/%d editor%v result%d", test.blue, test.red, test.editor, got)
+		}
+	}
+	w := testFlatWorld()
+	w.Editor = false
+	addFollower(w, 20, 20, 0, 100, Town)
+	w.Step()
+	if w.Tick != 1 || w.Result != 1 {
+		t.Fatal("result retained an invented twenty-five-pass grace")
+	}
+}
+
+func TestRefreshAIChoicesUpdatesLivePowersWithoutResettingReaction(t *testing.T) {
+	w := testFlatWorld()
+	w.AI[1].Reaction = 17
+	w.AI[1].ExpansionCooldown = 2
+	w.Level.Players[1].Powers[Swamp] = true
+	w.RefreshAIChoices()
+	if w.AI[1].ChoiceCount != 5 || w.AI[1].Reaction != 17 || w.AI[1].ExpansionCooldown != 2 {
+		t.Fatal("live rule refresh reset timing or omitted available powers")
+	}
+	w.Level.Players[1].Powers[Swamp] = false
+	w.Level.Players[1].Powers[Helen] = true
+	w.RefreshAIChoices()
+	if w.AI[1].ChoiceCount != 1 || w.AI[1].LeaderChoiceCount != 1 || w.AI[1].Choices[1].Power != Helen {
+		t.Fatal("changed live options retained stale AI choices")
+	}
+}

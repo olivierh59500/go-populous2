@@ -20,7 +20,7 @@ func testLandscape() Landscape {
 	return l
 }
 func testFlatWorld() *World {
-	w := &World{Landscape: testLandscape()}
+	w := &World{Landscape: testLandscape(), Editor: true}
 	for i := range w.Heights {
 		w.Heights[i] = 1
 	}

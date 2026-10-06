@@ -246,14 +246,7 @@ func (w *World) Step() {
 	w.repaintFarms()
 	w.summarize()
 	w.RecordCampaignMetrics()
-	if w.Tick > 25 {
-		if w.Players[0].Population == 0 && w.Players[1].Population > 0 {
-			w.Result = 2
-		}
-		if w.Players[1].Population == 0 && w.Players[0].Population > 0 {
-			w.Result = 1
-		}
-	}
+	w.Result = w.DetectResult()
 }
 
 func (w *World) stepFollower(id int) {

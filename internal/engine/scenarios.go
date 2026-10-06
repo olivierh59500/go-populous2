@@ -133,3 +133,26 @@ func (w *World) Sprog(owner, x, y int) bool {
 	}
 	return false
 }
+
+// DetectResult checks the first faction before the second, as the original
+// campaign pass does. Editor worlds suppress automatic results.
+func (w *World) DetectResult() int {
+	if w.Editor {
+		return 0
+	}
+	if w.Players[0].Population == 0 {
+		return 2
+	}
+	if w.Players[1].Population == 0 {
+		return 1
+	}
+	return 0
+}
+
+// RefreshAIChoices recompiles the named power catalogue after live campaign
+// rules change. It does not reset reaction/cooldown timers or world state.
+func (w *World) RefreshAIChoices() {
+	for owner := range w.Players {
+		w.compileAIPowers(owner)
+	}
+}
