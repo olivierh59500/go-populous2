@@ -52,6 +52,7 @@ type NativeGame struct {
 	FileRules      populous2.NativeRuntimeFileBrowserRules
 	DeityEditor    populous2.NativeRuntimeDeity
 	Result         populous2.NativeRuntimeResultHost
+	Progression    populous2.NativeRuntimeProgressionState
 
 	interruptsInstalled bool
 }
@@ -121,6 +122,7 @@ func (g *NativeGame) boot() error {
 	g.booted = true
 	g.Startup.MenuChild = g.initialChild
 	g.Result = populous2.NativeRuntimeResultHost{Rules: g.Rules, Startup: g.Startup, Callbacks: populous2.NativeRuntimeResultCallbacks{Audio: operations, Sound: sound, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }}}
+	g.Result.Progression = g.progressionChild
 	return nil
 }
 
