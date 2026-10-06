@@ -81,7 +81,8 @@ func (w *World) InheritDiseaseMerge(source, target int) {
 	}
 	from := w.Followers[source].Disease
 	if from.Infected {
-		w.Followers[target].Disease = from
+		w.Followers[target].Disease.Infected = true
+		w.Followers[target].Disease.Frame = from.Frame
 	}
 }
 

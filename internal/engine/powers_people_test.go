@@ -63,6 +63,17 @@ func TestDiseaseInheritsOnlyFromInfectedMergeAndTownBirth(t *testing.T) {
 	}
 }
 
+func TestDiseaseMergeDoesNotCopyRetainedDeathState(t *testing.T) {
+	w := testFlatWorld()
+	a := addFollower(w, 32, 32, 0, 0, Ruin)
+	b := addFollower(w, 32, 32, 0, 100, Walking)
+	w.Followers[a].Disease = DiseaseState{Infected: true, Frame: 7, Dying: true, DeathFrame: 1}
+	w.InheritDiseaseMerge(a, b)
+	if d := w.Followers[b].Disease; !d.Infected || d.Frame != 7 || d.Dying || d.DeathFrame != 0 {
+		t.Fatal("plague merge copied fields outside infection/overlay", d)
+	}
+}
+
 func TestZeroPopulationPlagueRetainsItsDeathFrames(t *testing.T) {
 	w := testFlatWorld()
 	id := addFollower(w, 32, 32, 0, 0, Walking)
