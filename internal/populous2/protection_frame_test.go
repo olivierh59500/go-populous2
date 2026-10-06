@@ -26,7 +26,8 @@ type protectionFrameFixture struct {
 		D                                        [8]uint32
 		A                                        [7]uint32
 		BSSHash, ChipHash, PointerHash, CodeHash string
-		Scratch, Faces, Mouse                    []byte
+		ScratchHash                              string
+		Faces, Mouse                             []byte
 		Selector, Patch, Copper                  uint32
 		Calls                                    []struct {
 			Routine   int
@@ -189,7 +190,7 @@ func TestNativeProtectionFrameAgainstOriginalCPU(t *testing.T) {
 					if fileFrameHash(code) != want.CodeHash {
 						t.Fatalf("frame%d complete retained CODE differs", expected)
 					}
-					if !bytes.Equal(code[0xab4e:0xab4e+1100], want.Scratch) || !bytes.Equal(code[0x326c:0x326f], want.Faces) {
+					if fileFrameHash(code[0xab4e:0xab4e+1100]) != want.ScratchHash || !bytes.Equal(code[0x326c:0x326f], want.Faces) {
 						t.Fatal("native requester workspace or face selection differs")
 					}
 					if p.CopperSelector != want.Selector || p.SpritePatchPointer != want.Patch || p.ActiveCopper != want.Copper {

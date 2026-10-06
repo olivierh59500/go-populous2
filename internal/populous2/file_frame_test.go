@@ -1,7 +1,6 @@
 package populous2
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
@@ -32,7 +31,8 @@ type fileFrameFixture struct {
 		PC                             int
 		D                              [8]uint32
 		BSSHash, ChipHash, PointerHash string
-		Window, Scratch, Mouse         []byte
+		WindowHash, ScratchHash        string
+		Mouse                          []byte
 		Selector, Patch, Copper        uint32
 		Calls                          []struct {
 			Routine    int
@@ -236,12 +236,8 @@ func TestNativeFileFrameAgainstOriginalCPU(t *testing.T) {
 					if fileFrameHash(fileFrameMemoryBytes(t, m)) != want.BSSHash {
 						t.Fatal("complete source BSS differs")
 					}
-					if !bytes.Equal(code[0xab4e:0xab4e+2048], want.Scratch) {
-						for i, v := range code[0xab4e : 0xab4e+2048] {
-							if v != want.Scratch[i] {
-								t.Fatalf("requester workspace differs at%x got%x want%x", i, v, want.Scratch[i])
-							}
-						}
+					if fileFrameHash(code[0xab4e:0xab4e+2048]) != want.ScratchHash {
+						t.Fatal("requester workspace digest differs")
 					}
 					if fileFrameHash(p.Chip) != want.ChipHash {
 						t.Fatal("complete source chip/pixel RAM differs")
@@ -249,10 +245,10 @@ func TestNativeFileFrameAgainstOriginalCPU(t *testing.T) {
 					if fileFrameHash(p.PointerData[:15260]) != want.PointerHash {
 						t.Fatal("actual pointer sprite RAM differs")
 					}
-					if !bytes.Equal(code[0x3f90:0x446a], want.Window) {
+					if fileFrameHash(code[0x3f90:0x446a]) != want.WindowHash {
 						t.Fatal("raw file CODE window differs")
 					}
-					if !bytes.Equal(code[0xab4e:0xab4e+2048], want.Scratch) {
+					if fileFrameHash(code[0xab4e:0xab4e+2048]) != want.ScratchHash {
 						t.Fatal("raw requester CODE workspace differs")
 					}
 					mouse := []uint16{p.Input.Mouse.Image, p.Input.Mouse.CounterX, p.Input.Mouse.CounterY, p.Input.Mouse.PositionX, p.Input.Mouse.PositionY, p.Input.Mouse.MaximumY}

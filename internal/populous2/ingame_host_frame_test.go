@@ -23,7 +23,8 @@ func TestNativeInGameHostComposedAgainstOriginalCPU(t *testing.T) {
 				D                                        [8]uint32
 				BSSHash, ChipHash, PointerHash, BankHash string
 				LastY                                    uint16
-				Window, Scratch, Mouse, Options          []byte
+				ScratchHash                              string
+				Window, Mouse, Options                   []byte
 				Selector, Patch, Copper                  uint32
 				Calls                                    []struct {
 					Routine int
@@ -151,7 +152,7 @@ func TestNativeInGameHostComposedAgainstOriginalCPU(t *testing.T) {
 						t.Fatalf("native composed menu frame%d %s differs: %s/%s", expected, hash.name, hash.got, hash.want)
 					}
 				}
-				if !bytes.Equal(code[0x4710:0x471c], want.Window) || !bytes.Equal(code[0xab4e:0xab4e+2048], want.Scratch) || !bytes.Equal(code[0xa2a:0xa36], want.Mouse) || !bytes.Equal(code[0x4952:0x4978], want.Options) {
+				if !bytes.Equal(code[0x4710:0x471c], want.Window) || fileFrameHash(code[0xab4e:0xab4e+2048]) != want.ScratchHash || !bytes.Equal(code[0xa2a:0xa36], want.Mouse) || !bytes.Equal(code[0x4952:0x4978], want.Options) {
 					t.Fatalf("native composed menu frame%d CODE differs", expected)
 				}
 				if image.LastY != want.LastY || presentation.CopperSelector != want.Selector || presentation.SpritePatchPointer != want.Patch || presentation.ActiveCopper != want.Copper || calls != len(want.Calls) || sounds != len(want.Sounds) {

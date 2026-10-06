@@ -23,13 +23,14 @@ type nativeModalFixture struct {
 	}
 	ClickEnd  int
 	Snapshots []struct {
-		Finished             bool
-		Registers            [8]uint32
-		Caret                int
-		Fields, Scratch, Low []byte
-		Toggle               uint32
-		Hashes               [2]string
-		Draws                []struct {
+		Finished    bool
+		Registers   [8]uint32
+		Caret       int
+		ScratchHash string
+		Fields, Low []byte
+		Toggle      uint32
+		Hashes      [2]string
+		Draws       []struct {
 			Buffer      uint32
 			Column, Row uint16
 			Text        []byte
@@ -131,12 +132,8 @@ func TestNativeNumericModalAgainstOriginalCPU(t *testing.T) {
 				if !bytes.Equal(fields, want.Fields) {
 					t.Fatalf("native modal frame%d numeric buffers differ: got%x want%x", frame, fields, want.Fields)
 				}
-				if !bytes.Equal(painting.Scratch[:], want.Scratch) {
-					for a, v := range painting.Scratch {
-						if a >= len(want.Scratch) || v != want.Scratch[a] {
-							t.Fatalf("native modal frame%d requester byte%x got%x want%x", frame, a, v, want.Scratch[a])
-						}
-					}
+				if fileFrameHash(painting.Scratch[:]) != want.ScratchHash {
+					t.Fatalf("native modal frame%d requester digest differs", frame)
 				}
 				if len(step.Draws) != len(want.Draws) {
 					t.Fatalf("native modal frame%d draw count%d want%d", frame, len(step.Draws), len(want.Draws))

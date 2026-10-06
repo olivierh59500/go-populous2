@@ -28,7 +28,7 @@ type dosFrameInput struct {
 }
 type dosFrameFixture struct {
 	ChipHash, PointerHash string
-	Scratch               []byte
+	ScratchHash           string
 	Input                 dosFrameInput
 	D                     [8]uint32
 	BSSHash               string
@@ -286,8 +286,8 @@ func TestNativeDOSFrameAgainstOriginalCPU(t *testing.T) {
 					t.Fatalf("source DOS continuation incomplete %v/%d/%d", complete, index, children)
 				}
 				if f.Input.Menu {
-					if fileFrameHash(presentation.Chip) != f.ChipHash || fileFrameHash(presentation.PointerData[:15260]) != f.PointerHash || !bytes.Equal(code[0xab4e:0xab4e+2048], f.Scratch) {
-						t.Fatalf("actual composed overwrite differs chip%v pointer%v scratch%v", fileFrameHash(presentation.Chip) == f.ChipHash, fileFrameHash(presentation.PointerData[:15260]) == f.PointerHash, bytes.Equal(code[0xab4e:0xab4e+2048], f.Scratch))
+					if fileFrameHash(presentation.Chip) != f.ChipHash || fileFrameHash(presentation.PointerData[:15260]) != f.PointerHash || fileFrameHash(code[0xab4e:0xab4e+2048]) != f.ScratchHash {
+						t.Fatalf("actual composed overwrite differs chip%v pointer%v scratch%v", fileFrameHash(presentation.Chip) == f.ChipHash, fileFrameHash(presentation.PointerData[:15260]) == f.PointerHash, fileFrameHash(code[0xab4e:0xab4e+2048]) == f.ScratchHash)
 					}
 				}
 				if frame.D != f.D {

@@ -25,12 +25,13 @@ func TestNativeRuntimeMainEditorChildAgainstOriginalCPU(t *testing.T) {
 				}
 			}
 			Frames []struct {
-				PC                                int
-				D                                 [8]uint32
-				BSSHash, ChipHash, PointerHash    string
-				Fields, Scratch, Debug, ImageBank []byte
-				LastY                             uint16
-				Selector, Patch, Copper           uint32
+				PC                             int
+				D                              [8]uint32
+				BSSHash, ChipHash, PointerHash string
+				ScratchHash                    string
+				Fields, Debug, ImageBank       []byte
+				LastY                          uint16
+				Selector, Patch, Copper        uint32
 			}
 		}
 	}
@@ -160,7 +161,7 @@ func TestNativeRuntimeMainEditorChildAgainstOriginalCPU(t *testing.T) {
 				if got := fileFrameHash(presentation.PointerData); got != want.PointerHash {
 					t.Errorf("main/editor pointer at%d differs: %s/%s", index, got, want.PointerHash)
 				}
-				if !bytes.Equal(code[0x37bc:0x381e], want.Fields) || !bytes.Equal(code[0xab4e:0xab4e+2048], want.Scratch) || !bytes.Equal(code[0x2e2a:0x2f08], want.Debug) {
+				if !bytes.Equal(code[0x37bc:0x381e], want.Fields) || fileFrameHash(code[0xab4e:0xab4e+2048]) != want.ScratchHash || !bytes.Equal(code[0x2e2a:0x2f08], want.Debug) {
 					t.Errorf("main/editor retained CODE at%d differs", index)
 				}
 				if !bytes.Equal(image.AudioBank[:], want.ImageBank) || image.LastY != want.LastY {

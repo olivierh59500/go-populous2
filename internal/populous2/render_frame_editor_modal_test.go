@@ -23,7 +23,8 @@ type editorModalFixture struct {
 		PC                             int
 		D                              [8]uint32
 		BSSHash, ChipHash, PointerHash string
-		Fields, Scratch                []byte
+		ScratchHash                    string
+		Fields                         []byte
 		Selector, Patch, Copper        uint32
 	}
 }
@@ -94,7 +95,7 @@ func TestNativeEditorNumericModalCompleteAgainstOriginalCPU(t *testing.T) {
 				if fileFrameHash(fileFrameMemoryBytes(t, m)) != want.BSSHash || fileFrameHash(p.Chip) != want.ChipHash || fileFrameHash(p.PointerData) != want.PointerHash {
 					t.Errorf("native completeeditor BSS/chip/pointer differs at%d", i)
 				}
-				if !bytes.Equal(code[0x37bc:0x381e], want.Fields) || !bytes.Equal(code[0xab4e:0xab4e+2048], want.Scratch) {
+				if !bytes.Equal(code[0x37bc:0x381e], want.Fields) || fileFrameHash(code[0xab4e:0xab4e+2048]) != want.ScratchHash {
 					t.Errorf("native completeeditor fields/scratch differ at%d", i)
 				}
 				if p.CopperSelector != want.Selector || p.SpritePatchPointer != want.Patch || p.ActiveCopper != want.Copper {
