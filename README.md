@@ -47,6 +47,12 @@ they do not establish independence from the original executable. See the
 [Go engine migration](docs/GO_ENGINE.md) for the replacement boundaries and
 [feature inventory](docs/FEATURES.md) for the current functional coverage.
 
+An independent engine is being developed in `cmd/populous2-go`. Its first
+playable slice uses exported artwork and audio assets, ordinary Go simulation
+state and Go screen logic without loading the original executable. This target
+is incomplete; [GO_ENGINE.md](docs/GO_ENGINE.md) lists its current features,
+remaining work and asset-preparation commands.
+
 ![Go Populous II](screenshots/game.png)
 
 ![Original deity portrait and profile editor](screenshots/deity.png)

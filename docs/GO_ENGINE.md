@@ -63,3 +63,39 @@ landscapes, tile banks, sprite differences and 1,000 campaign records. This is a
 preparatory change; the complete game still needs the remaining replacements
 above. The next playable slice is an independent menu and early conquest,
 including terrain sculpting, founding and growth, followers, mana and AI.
+
+## Independent application in progress
+
+`cmd/populous2-go` is a separate migration target. Its production dependencies
+are `internal/app`, `internal/engine`, `internal/visualassets` and
+`internal/music`; they do not import the original-executable readers or the
+register-based translation. It loads a directory of PNG atlases, semantic
+animation/music metadata, signed PCM and decoded campaign/landscape data.
+
+Prepare the private assets once with the import tools, then run the new target:
+
+```sh
+go run ./cmd/export-visual-assets -output assets/generated
+go run ./cmd/export-audio-assets -output assets/generated/audio
+go run ./cmd/populous2-go -data assets/generated
+```
+
+The independent slice currently has Go menus/profile/world selection,
+isometric rendering and picking, the 1,000 campaign records, four landscapes,
+propagated terrain changes, settlement founding/economy, ordinary followers,
+opposing land AI, tactical modes and Go music/sample replay. Terrain-generation
+digests and sample-replay comparisons establish specific migrated behavior.
+Further follower decisions, effects, rendering layers and campaign presentation
+still require migration and fidelity checks.
+
+Only terrain shaping and the rally magnet are admitted by the new power
+dispatcher. Other powers return an explicit unavailable error without consuming
+mana. Heroes, complete scenarios/progression, ending, original GAM codec and
+multiplayer are not yet implemented in this target. The default `cmd/populous2`
+therefore remains the reference translation until the independent target meets
+the completion checks above.
+
+Generated artwork and audio remain local and excluded from Git. Import tools
+may inspect the original executable to recover its actual art/music data; the
+independent game neither opens that file nor receives a substitute instruction
+or memory image.
