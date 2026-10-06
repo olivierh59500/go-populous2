@@ -1441,3 +1441,19 @@ The final cache refresh preserves full BSS/live CODE, loaded LAND and caller
 registers; its pending request is consumed once before continuation. Full
 tests, focused result/progression race tests and vet pass. This verifies the
 complete controlled transition, not traversal of all1,000 campaign worlds.
+
+## GAM browser simulation continuation
+
+A campaign runtime now saves and reloads an actual native GAM through the
+complete3F92 browser, original submit button, DOS/resource/palette/minimap/
+panel children and source selected-pointer rebasing. The same existing
+World/session/CODE owners are retained; cache hydration follows source return.
+Synchronous and asynchronous filesystem paths both pass.
+
+After saving,20 ordered simulation passes are recorded. Reloading the same
+file reproduces the full GAM-region state on each of20 resumed passes,
+including terrain, actor/occupancy pools, gods, script/RNG and clock fields.
+The test explicitly chooses mode8 and advances F40 once per physics pass;
+main rendering/input and result UI are outside this continuation check.
+Original browser/DOS bodies have separate CPU references. Full tests, focused
+race tests and vet pass for this integration regression.
