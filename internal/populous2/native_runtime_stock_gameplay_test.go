@@ -12,9 +12,12 @@ type nativeStockSample struct {
 }
 type nativeStockSnapshot struct {
 	Tick                                                        int
+	Label                                                       string
+	Routine                                                     uint32
 	D                                                           [8]uint32
 	BSSHash, CodeHash, ChipHash, PointerHash, HeapHash, LowHash string
 	Samples                                                     []nativeStockSample
+	Polls                                                       []int
 }
 
 // The fixture runs the original stock custom menu and complete E94 main,
@@ -27,10 +30,12 @@ func TestNativeRuntimeStockGameplayAgainstOriginalMain(t *testing.T) {
 	}
 	var catalog struct {
 		Cases []struct {
-			Startup      nativeStockSnapshot
-			StartupPolls []int
-			Frames       []nativeStockSnapshot
-			FrameInputs  []struct {
+			Startup                 nativeStockSnapshot
+			ResultEntry, ResultWait nativeStockSnapshot
+			ResultFlow              []nativeStockSnapshot
+			StartupPolls            []int
+			Frames                  []nativeStockSnapshot
+			FrameInputs             []struct {
 				Tick    int
 				Samples []nativeStockSample
 				Polls   []int
@@ -41,7 +46,7 @@ func TestNativeRuntimeStockGameplayAgainstOriginalMain(t *testing.T) {
 		t.Fatal("stock main corpus incomplete", err)
 	}
 	f := catalog.Cases[0]
-	if len(f.Frames) != 13 || len(f.FrameInputs) != 1000 || len(f.StartupPolls) == 0 {
+	if len(f.Frames) != 15 || len(f.FrameInputs) != 2499 || len(f.StartupPolls) == 0 {
 		t.Fatal("stock main checkpoints or inputs truncated")
 	}
 	h := nativeRuntimeHostTest(t)
@@ -95,9 +100,9 @@ func TestNativeRuntimeStockGameplayAgainstOriginalMain(t *testing.T) {
 	if pos != len(f.Startup.Samples) || !director.ready {
 		t.Fatal("native stock startup did not complete")
 	}
-	check := func(want nativeStockSnapshot) {
-		if c.D != want.D {
-			t.Fatalf("stock tick%d D differs: got%x want%x", want.Tick, c.D, want.D)
+	check := func(want nativeStockSnapshot, d [8]uint32) {
+		if d != want.D {
+			t.Fatalf("stock tick%d D differs: got%x want%x", want.Tick, d, want.D)
 		}
 		bss, err := h.Memory.SnapshotBSS()
 		if err != nil {
@@ -123,8 +128,24 @@ func TestNativeRuntimeStockGameplayAgainstOriginalMain(t *testing.T) {
 			}
 		}
 	}
-	check(f.Startup)
-	frame, err := h.NewFrame(NativeRuntimeFrameBindings{Audio: audio, RenderChildren: NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return 0, nil }, Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }, Sound: device.DirectCue}, InputChildren: NativeGameplayHUDHostCallbacks{Campaign: startup.Campaign, Ownership: ownership, Audio: audio}, Menu: NativeInGameHostCallbacks{Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }}})
+	check(f.Startup, c.D)
+	result := NativeRuntimeResultHost{Rules: rules, Startup: startup, Callbacks: NativeRuntimeResultCallbacks{Audio: audio, Sound: device.DirectCue, Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }}}
+	entered := false
+	resultAdvance := func(identity uint16, ctx *NativeFrameRegisterContext) (bool, error) {
+		if !entered {
+			check(f.ResultEntry, ctx.D)
+			entered = true
+		}
+		done, err := result.Advance(h, identity, ctx)
+		if err == nil && done && result.RefreshPending {
+			if err = h.RefreshResultWorldCaches(); err != nil {
+				return false, err
+			}
+			result.RefreshPending = false
+		}
+		return done, err
+	}
+	frame, err := h.NewFrame(NativeRuntimeFrameBindings{Audio: audio, Session: NativeFrameSessionCallbacks{ResultAdvance: resultAdvance}, RenderChildren: NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return 0, nil }, Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }, Sound: device.DirectCue}, InputChildren: NativeGameplayHUDHostCallbacks{Campaign: startup.Campaign, Ownership: ownership, Audio: audio}, Menu: NativeInGameHostCallbacks{Ownership: func(bool, *NativeFrameRegisterContext) error { return nil }}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,16 +173,70 @@ func TestNativeRuntimeStockGameplayAgainstOriginalMain(t *testing.T) {
 				t.Fatalf("stock tick%d returned before original wait boundary", tick)
 			}
 		}
+		if tick == 2498 {
+			if complete || !entered || result.Result == nil || result.Result.PC != 0x3868 {
+				t.Fatal("natural result did not retain its original wait")
+			}
+			check(f.ResultWait, h.Session.Frame.D)
+			break
+		}
 		if !complete || pos != len(events.Samples) {
 			t.Fatalf("stock tick%d source frame remained pending: phase%d render%d protection%x", tick, h.Session.Phase, frame.RenderState.Step, frame.RenderChildren.ProtectionStep.PC)
 		}
 		c = h.Session.Frame
 		if checkpoint < len(f.Frames) && f.Frames[checkpoint].Tick == tick {
-			check(f.Frames[checkpoint])
+			check(f.Frames[checkpoint], c.D)
 			checkpoint++
 		}
 	}
-	if checkpoint != 13 || h.World.nativeCallDepth != 0 || h.Session.Phase != NativeFrameSessionIdle {
-		t.Fatal("stock main checkpoints/borrow incomplete")
+	if checkpoint != 14 || !entered || len(f.ResultFlow) != 163 {
+		t.Fatal("stock natural result checkpoints incomplete", checkpoint, len(f.ResultFlow))
+	}
+	newFrames, uiWaits := 0, 0
+	for index, event := range f.ResultFlow {
+		if event.Label == "new-world" {
+			if h.Session.Phase != NativeFrameSessionIdle {
+				t.Fatal("previous source result frame remained pending")
+			}
+			c = h.Session.Frame
+			if err := h.Session.BeginRaw(h.World, c); err != nil {
+				t.Fatal(err)
+			}
+		}
+		pos, complete := 0, false
+		for _, end := range event.Polls {
+			if end < pos || end > len(event.Samples) {
+				t.Fatal("invalid result/reset input poll")
+			}
+			for ; pos < end; pos++ {
+				apply(event.Samples[pos], &h.Session.Frame)
+			}
+			complete, err = frame.Advance()
+			if err != nil {
+				t.Fatalf("result event%d %s: %v", index, event.Label, err)
+			}
+		}
+		if pos != len(event.Samples) {
+			t.Fatal("result event inputs truncated")
+		}
+		if event.Label == "new-world" {
+			newFrames++
+			if !complete {
+				t.Fatal("new stock world frame did not return", index)
+			}
+		} else if event.Routine == 0xe94 {
+			if !complete || result.Result != nil || result.Reset != nil {
+				t.Fatal("actual reset did not return to main")
+			}
+		} else if complete {
+			t.Fatal("result/reset source wait completed prematurely", index, event.Label)
+		}
+		if event.Label == "result-blank" {
+			uiWaits++
+		}
+		check(event, h.Session.Frame.D)
+	}
+	if newFrames != 10 || uiWaits != 100 || h.World.nativeCallDepth != 0 || h.Session.Phase != NativeFrameSessionIdle {
+		t.Fatal("stock result/reset/new-world coverage incomplete", newFrames, uiWaits)
 	}
 }
