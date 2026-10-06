@@ -18,7 +18,7 @@ func TestViewportStepChangesOnlyItsCurrentFrameScoringObservation(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	view := Viewport{20, 20, 8}
+	view := Viewport{X: 20, Y: 20, Size: 8}
 	w.StepWithViewport(view)
 	ordinary.Step()
 	for owner := range w.Players {
@@ -44,7 +44,7 @@ func TestViewportStepDoesNotInventPermissionsForAnEmptyView(t *testing.T) {
 	}
 	addFollower(w, 22, 22, 0, 100, Town)
 	addFollower(w, 23, 23, 1, 100, Town)
-	w.StepWithViewport(Viewport{40, 40, 8})
+	w.StepWithViewport(Viewport{X: 40, Y: 40, Size: 8})
 	if w.Players[0].Statistics.ScenarioOptions != 0 || w.Players[1].Statistics.ScenarioOptions != 0 {
 		t.Fatal("unrendered towns were used as a guessed nonzero scoring divisor")
 	}
@@ -59,7 +59,7 @@ func TestViewportStepPreservesCompletedResultObservations(t *testing.T) {
 	w.Players[0].Statistics.ScenarioOptions = 1
 	w.Players[1].Statistics.ScenarioOptions = 3
 	before := *w
-	w.StepWithViewport(Viewport{40, 40, 8})
+	w.StepWithViewport(Viewport{X: 40, Y: 40, Size: 8})
 	if !reflect.DeepEqual(*w, before) {
 		t.Fatal("finished result was reinterpreted using a later camera position")
 	}
@@ -74,7 +74,7 @@ func TestViewportStepRetainsUninterpretedSavedOptionBits(t *testing.T) {
 	}
 	addFollower(w, 22, 22, 0, 100, Town)
 	addFollower(w, 23, 23, 1, 100, Walking)
-	w.StepWithViewport(Viewport{20, 20, 8})
+	w.StepWithViewport(Viewport{X: 20, Y: 20, Size: 8})
 	if w.Players[0].Statistics.ScenarioOptions != 0xa401 || w.Players[1].Statistics.ScenarioOptions != 0xa402 {
 		t.Fatal("viewport observation discarded saved high option bits")
 	}

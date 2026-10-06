@@ -49,6 +49,10 @@ func (g *Game) loadOriginalGame() error {
 	}
 	g.World, g.Profile, g.OriginalSave = document.World, meta.Profile, document
 	g.presentation.Reset()
+	if g.mobile != nil {
+		g.mobile.NeedsCenter = true
+		g.mobile.SceneCache.Ready = false
+	}
 	g.LocalSide, g.LevelIndex = meta.ProfileSide, document.World.Level.Number
 	g.restoreControlMode()
 	g.CameraX, g.CameraY = meta.CameraX, meta.CameraY

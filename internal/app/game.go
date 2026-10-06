@@ -7,13 +7,16 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
+	"sync/atomic"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"go-populous2/internal/engine"
 	"go-populous2/internal/gamcodec"
+	"go-populous2/internal/mobileui"
 	"go-populous2/internal/music"
+	"go-populous2/internal/platformbridge"
 )
 
 type Screen uint8
@@ -38,6 +41,10 @@ const (
 // Game holds ordinary Go screen and input state. Original program counters,
 // address registers and memory-controller continuations are not part of it.
 type Game struct {
+	mobile                       *MobileState
+	sceneProjection              *mobileui.Viewport
+	bluetooth                    *platformbridge.Bridge
+	bluetoothAvailable           *atomic.Bool
 	Assets                       *Assets
 	World                        *engine.World
 	OriginalSave                 *gamcodec.Document
@@ -112,7 +119,7 @@ func New(assets *Assets) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Game{Assets: assets, Profile: engine.NewDeity("BLUE"), framebuffer: image.NewRGBA(image.Rect(0, 0, 320, 200)), image: ebiten.NewImage(320, 200), music: replay}, nil
+	return &Game{Assets: assets, Profile: engine.NewDeity("BLUE"), framebuffer: image.NewRGBA(image.Rect(0, 0, 320, 200)), image: ebiten.NewImage(320, 200), music: replay, bluetooth: platformbridge.New(), bluetoothAvailable: new(atomic.Bool)}, nil
 }
 
 func (g *Game) Update() error {
@@ -135,8 +142,12 @@ func (g *Game) Update() error {
 		g.audio = player
 		g.audio.Play()
 	}
+	g.updateBluetooth()
 	if err := g.pollNetwork(); err != nil {
 		g.Message, g.messageUntil = err.Error(), g.Updates+250
+	}
+	if g.mobile != nil {
+		return g.updateMobileFrame()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		if g.Screen == PowerHelpScreen {
@@ -329,14 +340,20 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(g.image, nil)
+	frame := g.framebuffer
+	if g.mobile != nil {
+		screen.DrawImage(g.mobile.Image, nil)
+		frame = g.mobile.Frame
+	} else {
+		screen.DrawImage(g.image, nil)
+	}
 	if g.Capture != "" && !g.captured && g.Updates >= g.CaptureAfter {
 		file, err := os.OpenFile(g.Capture, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 		if err != nil {
 			g.failure = err
 			return
 		}
-		err = png.Encode(file, g.framebuffer)
+		err = png.Encode(file, frame)
 		closeErr := file.Close()
 		if err == nil {
 			err = closeErr
@@ -348,8 +365,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.captured = true
 	}
 }
-func (g *Game) Layout(int, int) (int, int) { return 320, 200 }
+func (g *Game) Layout(width, height int) (int, int) {
+	if g.mobile != nil {
+		w, h := mobileui.LogicalSize(width, height)
+		g.mobile.resize(w, h)
+		return w, h
+	}
+	return 320, 200
+}
 func (g *Game) Close() {
+	if g.bluetooth != nil {
+		g.bluetooth.Stop()
+	}
 	if g.Network != nil {
 		g.Network.Close()
 	}

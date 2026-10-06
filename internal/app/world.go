@@ -50,6 +50,10 @@ func (g *Game) startConquest() error {
 	g.effectScanCursor = 0
 	g.selectionTransferTick = world.Tick
 	g.presentation.Reset()
+	if g.mobile != nil {
+		g.mobile.NeedsCenter = true
+		g.mobile.SceneCache.Ready = false
+	}
 	g.SelectionReturn = FollowerSelectionReturn{}
 	leader := world.Players[0].Leader
 	if leader > 0 {
@@ -62,6 +66,17 @@ func (g *Game) startConquest() error {
 }
 
 func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
+	if err := g.advancePlayingWorld(engine.Viewport{X: g.CameraX, Y: g.CameraY, Size: viewSize}); err != nil {
+		return err
+	}
+	if g.Screen != Playing {
+		return nil
+	}
+	w := g.World
+	return g.updateWorldInput(w, mouseX, mouseY, clicked)
+}
+
+func (g *Game) advancePlayingWorld(view engine.Viewport) error {
 	if g.World == nil {
 		return fmt.Errorf("playing screen has no world")
 	}
@@ -73,7 +88,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if g.Network != nil {
 		g.advanceNetwork()
 	} else if !g.Paused && g.Updates%4 == 0 {
-		w.StepWithViewport(engine.Viewport{X: g.presentation.CameraX, Y: g.presentation.CameraY, Size: viewSize})
+		w.StepWithViewport(view)
 		g.consumeSelectionTransfers()
 		if w.Scenario.Err != "" {
 			g.Message, g.messageUntil = "WORLD EVENT: "+w.Scenario.Err, g.Updates+200
@@ -84,6 +99,10 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 		}
 	}
 	g.refreshSelectedFollower()
+	return nil
+}
+
+func (g *Game) updateWorldInput(w *engine.World, mouseX, mouseY int, clicked bool) error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyF11) {
 		if handled, err := g.handleHUDHelp(mouseX, mouseY); handled {
 			if err != nil {
@@ -244,6 +263,10 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 }
 
 func (g *Game) projectCorner(x, y int) (int, int) {
+	if g.sceneProjection != nil {
+		ox, oy := g.sceneProjection.Origin()
+		return ox + 16*(x-y), oy + 8*(x+y-int(g.World.Heights[x+y*engine.CornerSize]))
+	}
 	return 192 + 16*(x-g.CameraX-y+g.CameraY), 72 + 8*(x-g.CameraX+y-g.CameraY) - int(g.World.Heights[x+y*engine.CornerSize])*8
 }
 
@@ -360,6 +383,9 @@ func (g *Game) animationCropped(name string, frame, x, y, land, age int) {
 		frame %= len(animation.Frames)
 	} else {
 		frame = min(frame, len(animation.Frames)-1)
+	}
+	if g.sceneProjection != nil && !g.mobileAnimationVisible(name, frame, x, y, land, age) {
+		return
 	}
 	g.playAnimationCue(name, frame, 0)
 	for index, layer := range animation.Frames[frame].Layers {

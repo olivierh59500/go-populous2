@@ -72,6 +72,10 @@ func (g *Game) drawTownSurroundingsAt(x, y, land int) {
 		cell := g.World.Cell(x, y)
 		px := 192 + 16*(x-g.CameraX-y+g.CameraY)
 		py := 72 + 8*(x-g.CameraX+y-g.CameraY) - int(cell.BaseAltitude)*8
+		if g.sceneProjection != nil {
+			ox, oy := g.sceneProjection.Origin()
+			px, py = ox+16*(x-y), oy+8*(x+y)-int(cell.BaseAltitude)*8
+		}
 		g.drawArtworkLayers(selected.Layers, px, py, land)
 	}
 }

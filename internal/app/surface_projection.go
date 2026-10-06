@@ -107,6 +107,9 @@ func projectSurface(cell engine.Cell, fixedX, fixedY, cameraX, cameraY int) (int
 }
 
 func (g *Game) projectActor(fixedX, fixedY int) (int, int) {
+	if g.sceneProjection != nil {
+		return mobileProjectSurface(g.World.Cell(fixedX>>8, fixedY>>8), fixedX, fixedY, *g.sceneProjection)
+	}
 	return projectSurface(g.World.Cell(fixedX>>8, fixedY>>8), fixedX, fixedY, g.CameraX, g.CameraY)
 }
 

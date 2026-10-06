@@ -50,8 +50,12 @@ func (g *Game) line(x0, y0, x1, y1 int, c color.RGBA) {
 		sy = -1
 	}
 	error := dx + dy
+	clip := g.framebuffer.Bounds()
+	if g.sceneProjection == nil {
+		clip.Max.X, clip.Max.Y = min(clip.Max.X, 320), min(clip.Max.Y, 178)
+	}
 	for {
-		if x0 >= 0 && x0 < 320 && y0 >= 0 && y0 < 178 {
+		if x0 >= clip.Min.X && x0 < clip.Max.X && y0 >= clip.Min.Y && y0 < clip.Max.Y {
 			g.framebuffer.SetRGBA(x0, y0, c)
 		}
 		if x0 == x1 && y0 == y1 {

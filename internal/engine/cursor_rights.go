@@ -2,15 +2,68 @@ package engine
 
 import "fmt"
 
-// Viewport describes the original eight-by-eight parcel view. Membership is
-// geometric, not a pixel-distance test around the pointer or a follower.
-type Viewport struct{ X, Y, Size int }
+// Viewport describes the parcels actually presented to a human player. The
+// legacy eight-by-eight form retains the original desktop rules. Mobile uses
+// an exclusive rectangle and one row bitset per map row to exclude parcels
+// hidden outside the projected playfield or beneath controls.
+type Viewport struct {
+	X, Y, Size    int
+	Width, Height int      `json:",omitempty"`
+	Visible       []uint64 `json:",omitempty"`
+}
 
 func (v Viewport) Valid() bool {
-	return v.Size == 8 && v.X >= 0 && v.Y >= 0 && v.X+v.Size <= MapSize && v.Y+v.Size <= MapSize
+	if v.Size == 8 {
+		return v.Width == 0 && v.Height == 0 && len(v.Visible) == 0 && v.X >= 0 && v.Y >= 0 && v.X+v.Size <= MapSize && v.Y+v.Size <= MapSize
+	}
+	if v.Size != 0 || v.X < 0 || v.Y < 0 || v.Width < 1 || v.Height < 1 || v.X+v.Width > MapSize || v.Y+v.Height > MapSize || len(v.Visible) != MapSize {
+		return false
+	}
+	allowed := ^uint64(0)
+	if v.Width < MapSize {
+		allowed = (uint64(1)<<uint(v.Width) - 1) << uint(v.X)
+	}
+	any := false
+	for y, row := range v.Visible {
+		if y < v.Y || y >= v.Y+v.Height {
+			if row != 0 {
+				return false
+			}
+		} else if row&^allowed != 0 {
+			return false
+		}
+		any = any || row != 0
+	}
+	return any
 }
+
+func (v Viewport) ContainsCell(x, y int) bool {
+	if !v.Valid() || x < 0 || y < 0 || x >= MapSize || y >= MapSize {
+		return false
+	}
+	return v.containsCell(x, y)
+}
+
+func (v Viewport) containsCell(x, y int) bool {
+	if v.Size == 8 {
+		return x >= v.X && y >= v.Y && x < v.X+v.Size && y < v.Y+v.Size
+	}
+	return x >= v.X && y >= v.Y && x < v.X+v.Width && y < v.Y+v.Height && v.Visible[y]&(uint64(1)<<uint(x)) != 0
+}
+
 func (v Viewport) ContainsCorner(x, y int) bool {
-	return v.Valid() && x >= v.X && y >= v.Y && x <= v.X+v.Size && y <= v.Y+v.Size
+	if !v.Valid() || !insideCorner(x, y) {
+		return false
+	}
+	if v.Size == 8 {
+		return x >= v.X && y >= v.Y && x <= v.X+v.Size && y <= v.Y+v.Size
+	}
+	for _, cell := range [4][2]int{{x, y}, {x - 1, y}, {x, y - 1}, {x - 1, y - 1}} {
+		if cell[0] >= 0 && cell[1] >= 0 && cell[0] < MapSize && cell[1] < MapSize && v.containsCell(cell[0], cell[1]) {
+			return true
+		}
+	}
+	return false
 }
 
 // CursorTerrainRights combines campaign permissions with the owned actors
@@ -31,7 +84,7 @@ func (w *World) CursorTerrainRights(owner int, view Viewport) ScenarioOptions {
 			continue
 		}
 		_, _, mapped := w.Actors.Position(ActorRef{Kind: ActorFollower, Index: uint16(id)})
-		if !mapped || int(f.X) < view.X || int(f.Y) < view.Y || int(f.X) >= view.X+view.Size || int(f.Y) >= view.Y+view.Size {
+		if !mapped || !view.containsCell(int(f.X), int(f.Y)) {
 			continue
 		}
 		if w.Air.Carry[id].Phase != AirCarryNone || w.AirVictims[id].Phase != LightningVictimNone || w.Nature.Deaths[id] != NatureAlive || w.FireDamage.Deaths[id].Mode != FireVictimAlive {

@@ -1,0 +1,48 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "com.olivierh.populous2"
+    compileSdk 36
+    buildToolsVersion "36.0.0"
+    ndkVersion "28.2.13676358"
+
+    defaultConfig {
+        applicationId "com.olivierh.populous2"
+        minSdk 23
+        targetSdk 36
+        versionCode 1
+        versionName "0.1.0"
+
+        ndk {
+            abiFilters "arm64-v8a"
+        }
+    }
+
+    buildTypes {
+        release {
+            debuggable false
+            jniDebuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+
+    packaging {
+        jniLibs {
+            // Load the Go library directly from the APK, aligned for 16 KiB pages.
+            useLegacyPackaging false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation files("libs/populous2.aar")
+}

@@ -34,6 +34,10 @@ type NetworkController struct {
 	cancel                 context.CancelFunc
 	listener               net.Listener
 	connection             net.Conn
+	openConnection         func(context.Context) (net.Conn, error)
+	closeTransport         func()
+	hosting                bool
+	bluetooth              bool
 	session                *network.Session
 	updates                chan networkUpdate
 	queued                 []network.Command
@@ -66,7 +70,7 @@ func (c *NetworkController) Start(world *engine.World) error {
 		return fmt.Errorf("network game has already started")
 	}
 	var candidate *engine.World
-	if c.listen != "" {
+	if c.listen != "" || c.hosting {
 		if world == nil {
 			return fmt.Errorf("select a world before hosting")
 		}
@@ -80,8 +84,14 @@ func (c *NetworkController) Start(world *engine.World) error {
 			candidate.Players[owner].Assisted = false
 		}
 		c.status.Message = "Waiting for the other player"
+		if c.bluetooth {
+			c.status.Message = "Waiting for a Bluetooth player"
+		}
 	} else {
 		c.status.Message = "Connecting to the other player"
+		if c.bluetooth {
+			c.status.Message = "Connecting over Bluetooth"
+		}
 	}
 	c.started, c.status.Busy = true, true
 	go c.handshake(candidate)
@@ -90,7 +100,9 @@ func (c *NetworkController) Start(world *engine.World) error {
 func (c *NetworkController) handshake(world *engine.World) {
 	var connection net.Conn
 	var err error
-	if c.listen != "" {
+	if c.openConnection != nil {
+		connection, err = c.openConnection(c.ctx)
+	} else if c.listen != "" {
 		var listener net.Listener
 		listener, err = net.Listen("tcp", c.listen)
 		if err == nil {
@@ -137,7 +149,7 @@ func (c *NetworkController) handshake(world *engine.World) {
 	ctx, cancel := context.WithTimeout(c.ctx, 15*time.Second)
 	defer cancel()
 	var session *network.Session
-	if c.listen != "" {
+	if c.listen != "" || c.hosting {
 		session, err = network.Host(ctx, connection, world, c.rules)
 	} else {
 		session, world, err = network.Join(ctx, connection, c.rules)
@@ -236,7 +248,7 @@ func (c *NetworkController) Close() {
 	}
 	c.closed = true
 	c.cancel()
-	listener, connection, session := c.listener, c.connection, c.session
+	listener, connection, session, closeTransport := c.listener, c.connection, c.session, c.closeTransport
 	c.mu.Unlock()
 	if listener != nil {
 		listener.Close()
@@ -245,6 +257,9 @@ func (c *NetworkController) Close() {
 		session.Close()
 	} else if connection != nil {
 		connection.Close()
+	}
+	if closeTransport != nil {
+		closeTransport()
 	}
 }
 
@@ -272,12 +287,17 @@ func (g *Game) pollNetwork() error {
 	if g.Network == nil {
 		return nil
 	}
+	wasReady := g.Network.Status().Ready
 	world, results, status := g.Network.Poll()
 	if world != nil {
-		first := g.World == nil || g.Screen == MainMenu || g.Screen == NetworkSetup || g.Screen == ConquestBriefing
+		first := !wasReady || g.World == nil || g.Screen == MainMenu || g.Screen == NetworkSetup || g.Screen == ConquestBriefing
 		g.World, g.Screen = world, Playing
 		g.consumeSelectionTransfers()
 		if first {
+			if g.mobile != nil {
+				g.mobile.NeedsCenter = true
+				g.mobile.SceneCache.Ready = false
+			}
 			leader := world.Players[status.Side].Leader
 			g.SelectedFollower, g.Inspecting = 0, false
 			g.selectionTransferTick = world.Tick

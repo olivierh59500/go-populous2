@@ -71,6 +71,22 @@ original file fields at a separate codec boundary. States the original format
 cannot represent produce a clear export error. A failed TCP round pauses the
 session; automatic reconnection is not implemented.
 
+## Android
+
+The Android version uses the same independent Go engine, campaign and 29 powers
+with a wider playfield, touch menus, two-finger camera movement and Bluetooth
+Classic multiplayer. Lightning and directional effects have dedicated touch
+controls. Saves remain in the app's private directory.
+
+```sh
+./scripts/build-android.sh
+./scripts/run-android.sh --skip-bind
+```
+
+Prepare the excluded portable assets first, as for desktop. The
+[Android guide](docs/ANDROID.md) describes the SDK, controls, lifecycle and
+Bluetooth pairing. A complete radio match requires two Android devices.
+
 ## Validation and reference applications
 
 The independent launcher's dependency test rejects the earlier executable-based

@@ -16,7 +16,7 @@ import (
 	"go-populous2/internal/engine"
 )
 
-const ProtocolVersion = 2
+const ProtocolVersion = 3
 const maximumFrameBytes = 16 << 20
 const maximumCommands = 64
 

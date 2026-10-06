@@ -155,6 +155,10 @@ func (g *Game) loadGame() error {
 	g.Category = session.Category
 	g.heroScanCursor, g.effectScanCursor = 0, 0
 	g.presentation.Reset()
+	if g.mobile != nil {
+		g.mobile.NeedsCenter = true
+		g.mobile.SceneCache.Ready = false
+	}
 	g.Screen, g.resultApplied = Playing, false
 	g.CustomGame, g.Paused = session.CustomGame, session.Paused
 	g.LocalSide, g.OriginalSave = session.LocalSide, original

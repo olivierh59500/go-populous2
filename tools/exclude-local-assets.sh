@@ -12,6 +12,11 @@ if ! grep -Fqx '/assets/generated/' "$exclude"; then
     printf '\n/assets/generated/\n' >> "$exclude"
 fi
 previous=$(git config --get core.hooksPath || true)
+for pattern in '/.local/' '/bin/' '/captures/' '/previous/' '/new/' '/android/.gradle/' '/android/build/' '/android/app/build/' '/android/app/libs/' '/android/local.properties' '*.keystore' '*.jks' '*.p12' '/.gitignore'; do
+    if ! grep -Fqx "$pattern" "$exclude"; then
+        printf '%s\n' "$pattern" >> "$exclude"
+    fi
+done
 if [ -n "$previous" ] && [ "$previous" != 'tools/git-hooks' ]; then
     printf '%s\n' 'Existing Git hook directory retained; original asset exclusions are installed.'
 else
