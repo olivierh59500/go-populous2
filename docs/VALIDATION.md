@@ -1267,3 +1267,21 @@ API remains strict. A regression changes the loaded LAND while that boundary
 is retained, checks that the following simulation sees the new rules, and
 verifies full BSS/CODE preservation and unchanged borrow/continuation state.
 Full tests, focused race tests and vet pass for this cache operation.
+
+## Retained result reset composition
+
+NativeRuntimeResultHost keeps the real381E controller and10A8C reset/menu/
+chooser across waits. An integration test starts through the actual campaign
+menu and110CC producer, reaches the result caller boundary, advances101 native
+VBlanks and the real continue/fade path, then selects conquest or custom from
+the reset menu. Required resource, panel, palette and audio bodies run; no
+missing child is acknowledged. Source loss progression increments the world
+once, and decoded LAND rules refresh before later AI/effects while the raw
+frame remains borrowed. Full tests, focused race tests and vet pass.
+
+The native desktop now binds this retained result/reset operation. Its exact
+build and vet pass; a bounded280-update desktop run exits0 and displays the
+previously reached protection requester. This checks launch/render regression,
+not a graphical result transition. B244 remains an explicit required child
+until its award sequence is proved and bound. A stock custom-game zero-divisor
+precondition is under separate source audit; no score default hides it.
