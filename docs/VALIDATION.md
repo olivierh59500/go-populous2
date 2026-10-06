@@ -1493,3 +1493,19 @@ The runtime now derives physical pointers from the current relocated LEA
 operand, preserving skipped/stale entries and partial callback-error writes.
 Legacy wall references, full tests, focused family/wall race tests and vet
 pass. Broader environment, transport and campaign combinations remain work.
+
+## Campaign main-frame parity across all landscapes
+
+Worlds12/25/30/100/500/999 are selected through the original main-menu
+Conquest action, password modal and keyboard interrupts, then Proceed.
+Original world records, opponent personalities, seed, options and parameters
+remain unchanged. Each source and Go runtime executes1,000 complete main
+frames, including any genuine protection requester and its button input.
+
+Ninety-six strict checkpoints cover startup, the first12 complete frames and
+frames100/500/1000 across all four LAND banks. All data registers, full BSS/
+live CODE, both screen/Copper allocations, cursor RAM, heap and low vectors
+match. Shared replay helpers also retain the earlier stock2,499-frame natural
+result/reset proof. Full tests, focused stock/campaign race comparisons and
+vet pass. This covers six original campaign configurations, not completion
+of every world or every player-driven terrain/effect combination.
