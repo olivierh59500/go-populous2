@@ -136,6 +136,21 @@ func TestArmageddonExcludesRetainedDeathsAndAirborneGroups(t *testing.T) {
 	}
 }
 
+func TestArmageddonDoesNotConvertNeutralScenarioActors(t *testing.T) {
+	w := testFlatWorld()
+	w.random = 4311
+	id := addFollower(w, 32, 32, 0, 100, Walking)
+	w.Followers[id].Owner = 2
+	w.Followers[id].Neutral.Kind = NeutralMonster
+	before := w.Followers[id]
+	if err := w.CastArmageddon(0); err != nil {
+		t.Fatal(err)
+	}
+	if w.Followers[id] != before || w.random != 4311 {
+		t.Fatal("Armageddon mutated a neutral actor or consumed a hero draw")
+	}
+}
+
 func TestPrivateArmageddonGameplayStates(t *testing.T) {
 	path := os.Getenv("POPULOUS2_ARMAGEDDON_TRACE")
 	if path == "" {

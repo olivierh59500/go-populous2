@@ -98,7 +98,7 @@ func (w *World) CastArmageddon(owner int) error {
 	}
 	for id := 1; id < FollowerCapacity; id++ {
 		f := &w.Followers[id]
-		if f.State == Inactive || f.State == Ruin || f.State == Airborne || f.Disease.Dying {
+		if f.Owner > 1 || f.Neutral.Kind != NeutralNone || f.State == Inactive || f.State == Ruin || f.State == Airborne || f.Disease.Dying {
 			continue
 		}
 		// Retained terrain/fire deaths and suspended lightning victims belong
