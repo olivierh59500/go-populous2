@@ -39,8 +39,8 @@ func (w *World) stepBattle(id int) {
 	}
 	w.random.next()
 	quotient := combatQuotient(a.Population)
-	d.Population -= a.Weapons*quotient + 10
-	a.Population -= d.Weapons*quotient + 10
+	d.Population = int(int32(uint32(d.Population) - (uint32(uint8(a.Weapons))*uint32(quotient) + 10)))
+	a.Population = int(int32(uint32(a.Population) - (uint32(uint8(d.Weapons))*uint32(quotient) + 10)))
 	a.Frame = (a.Frame + 1) % 4
 	d.Frame = a.Frame
 	if a.Population <= 0 && d.Population <= 0 {

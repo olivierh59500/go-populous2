@@ -90,18 +90,17 @@ func (w *World) advanceWater(id int) bool {
 		return false
 	}
 	f.State = Drowning
-	f.Frame = (f.Frame + 1) % 4
+	f.Frame = (f.Frame + 1) % 2
 	options := w.Level.Players[f.Owner].Scenario
 	alive := !options.FatalWater
 	if alive {
-		f.Population -= w.Level.Players[f.Owner].Attrition
-		alive = f.Population > 0
+		before := f.Population
+		amount := w.Level.Players[f.Owner].Attrition
+		f.Population = int(int32(uint32(before) - uint32(amount)))
+		alive = int64(int32(before))-int64(int32(uint32(amount))) > 0
 	}
 	if !alive {
-		frames := 2
-		if f.IsHero() {
-			frames = [6]int{5, 9, 9, 9, 8, 3}[int(f.Hero.Kind)-1]
-		}
+		frames := f.WaterDeathFrames()
 		f.TerrainDeath = TerrainDeathState{Active: true, Frame: 1, Frames: uint16(frames)}
 		f.State = Ruin
 		f.Population = 0

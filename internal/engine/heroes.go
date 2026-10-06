@@ -426,3 +426,12 @@ func (w *World) SplitAdonis(id int) int {
 	}
 	return next
 }
+
+// WaterDeathFrames describes the terminal swimmer death, distinct from the
+// two-frame living drowning loop and the elemental drowning-entry table.
+func (f Follower) WaterDeathFrames() int {
+	if !f.IsHero() {
+		return 7
+	}
+	return [6]int{5, 9, 9, 9, 8, 3}[int(f.Hero.Kind)-1]
+}

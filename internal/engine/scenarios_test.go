@@ -62,9 +62,11 @@ func TestFatalWaterRetainsFollowerUntilDeathSequenceCompletes(t *testing.T) {
 	if w.Followers[id].State != Ruin || w.Followers[id].Population != 0 || w.Occupants[20+20*MapSize] != uint16(id) {
 		t.Fatal("fatal swimmer was not retained")
 	}
-	w.stepFollower(id)
+	for range 6 {
+		w.stepFollower(id)
+	}
 	if w.Followers[id].State != Inactive || w.Occupants[20+20*MapSize] != 0 {
-		t.Fatal("water death did not clean up after source two-frame sequence")
+		t.Fatal("water death did not clean up after source seven-frame sequence")
 	}
 }
 
@@ -105,6 +107,26 @@ func TestScenarioPermissionOriginalNumericalCorpus(t *testing.T) {
 		options := decodeScenario(uint16(test.Options))
 		if options.TerrainEditAllowed(test.Height, true) != test.Raise || options.TerrainEditAllowed(test.Height, false) != test.Lower {
 			t.Fatalf("owner%d options%d height%d", test.Owner, test.Options, test.Height)
+		}
+	}
+}
+
+func TestWaterDeathAndLivingLoopUseDistinctSourceSequences(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Tiles[20+20*MapSize] = Cell{}
+	for range 8 {
+		w.stepFollower(id)
+		if w.Followers[id].Frame >= 2 {
+			t.Fatal("living drowning loop exceeded its two artwork frames")
+		}
+	}
+	if (Follower{}).WaterDeathFrames() != 7 {
+		t.Fatal("terminal swimmer death length")
+	}
+	for kind := HeroPerseus; kind <= HeroHelen; kind++ {
+		if (Follower{Hero: HeroState{Kind: kind}}).WaterDeathFrames() != [6]int{5, 9, 9, 9, 8, 3}[int(kind)-1] {
+			t.Fatal("hero terminal water death length")
 		}
 	}
 }
