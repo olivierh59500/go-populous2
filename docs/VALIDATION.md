@@ -1531,3 +1531,32 @@ one wall. Both populations remain alive. Real loopback normal/race runs, full
 tests and vet pass; sandbox socket skips are not counted as TCP execution.
 This does not establish two desktop windows, keyboard-generated network
 commands, connection-failure recovery or paired save interoperability.
+
+## Complete handshake failure palettes
+
+NativeRuntimeTransport now binds the original102E4 fade child required by
+17EEC's33B2 handshake error requester. Source banks, frame data registers
+and real VBlank waits remain retained across both fades. Four original
+same-profile failure runs yield156 snapshots through the actual error click
+and terminal return, with matching data registers, full BSS/CODE, both
+screen/Copper banks, cursor RAM and sent serial bytes. No world constructor
+or missing child is acknowledged. Direct palette references also pass.
+Full tests, focused race tests and vet pass for this missing host binding.
+
+## Environment and retained lifecycle composition
+
+An additional136 controlled original CPU runs across four LAND banks and
+two seeds verify44,248 ordered simulation/command points plus136 startup
+states. Real commands and retained graph operations cover road painting/
+removal, Fungus adjacency, Whirlwind linked pickup/landing/release, town
+destruction/ruins, Lightning recovery, Flame and Lava victims. Twenty-one
+follower and eleven FX state values occur; twenty-four11530 entries cover
+road-speed bonuses and saturation with explicit20/240/255 input speeds.
+
+Full data registers, BSS/RNG, live CODE, swap/minimap screens and heap match.
+Flat-grid/sparse-actor, mode8, high-mana/experience and selected controller
+inputs are explicit controlled fixtures; full rendering/input and natural
+gameplay are outside this corpus. Full tests, complete environment race
+comparisons and vet pass. Native road properties exclude road tiles197..216
+from Fungus's27/37 masks; this is the actual rule, rather than an inferred
+generic barrier.

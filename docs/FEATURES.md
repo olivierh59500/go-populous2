@@ -41,7 +41,7 @@ the remaining simulation routines.
 | Swamp | 8 | 54 | Complete native sampled placement and retained death, Adonis immunity, victim-side shallow restoration, leader release and terminal dispatch; full World memory/RNG comparisons pass |
 | Fungus | 9 | 26 | Complete raw native collection/generation and shared-pool reuse, signed period/cadence, actual adjacent-BSS edge accesses and mature mortality through native follower dispatch; full World memory/RNG and old-save continuation comparisons pass |
 | Adonis | 10 | 58 | Complete native creation, shared routing/combat and verified native post-victory split/full-pool behavior; combined interactions pending |
-| Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
+| Roads | 12 | 42 | Native painting/removal, connected/slope art, fractional road-speed bonus/saturation and mask-based Fungus exclusion; controlled four-landscape comparisons pass, with broader environment combinations separate |
 | City walls | 13 | 34 | Native linked placement, connected art/gates, sculpt protection, signed breaking and unsigned passage thresholds, fractional movement and terminal break art; live neighbor pointers retain source stale entries. Controlled cases cover blocked/admitted/breaking crossings; broader environment/gate combinations remain |
 | Earthquake | 14 | 40 | Native directed creation, fissure branching, original terrain reconstruction and fade; raw slot/full-pool aliases retained and World comparisons pass |
 | Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
