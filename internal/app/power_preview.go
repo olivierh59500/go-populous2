@@ -45,6 +45,7 @@ func newPowerPreview(assets *Assets, id engine.PowerID) (*PowerPreview, error) {
 	if err != nil {
 		return nil, err
 	}
+	w.Editor = true // A demonstration has no campaign elimination result.
 	// Use an unoccupied stage rather than the live campaign's objects or RNG.
 	for _, a := range w.Nature.Scenery {
 		if a.Kind != engine.SceneryNone {
