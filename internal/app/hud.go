@@ -30,7 +30,10 @@ func (g *Game) handleHUDClick(x, y int) (bool, error) {
 			return true, nil
 		}
 		if !g.World.Level.Players[g.playerSide()].Powers[id] {
-			return true, fmt.Errorf("power is disabled in this world")
+			return true, nil
+		}
+		if !g.World.Editor && g.World.Players[g.playerSide()].Mana < g.World.PanelPowerCost(g.playerSide(), id) {
+			return true, nil
 		}
 		g.Selected, g.Inspecting = id, false
 		g.PickingPower = false
@@ -71,7 +74,7 @@ func (g *Game) hudState(mouseX, mouseY int) visualassets.HUDState {
 		s.Costs[slot] = 65535
 	}
 	for _, power := range engine.Powers {
-		s.Costs[power.ID] = uint16(w.PowerCost(side, power.ID) / 4)
+		s.Costs[power.ID] = uint16(w.PanelPowerCost(side, power.ID) / 4)
 	}
 	for owner := range s.Population {
 		s.Population[owner] = uint32(max(0, w.Players[owner].Population))

@@ -108,3 +108,28 @@ The data-file fingerprints are in [assets-manifest.json](assets-manifest.json).
 They are metadata, not copies of the original data. Original-reference fixture
 captures are sanitized with `tools/sanitize_fixture_payloads.py`: full CODE
 workspace snapshots are replaced by SHA-256 fingerprints before publication.
+
+## English interface export
+
+The playing application uses an English interface. The ordinary two-disk import
+above provides the supported English executable automatically. Exporting artwork
+checks original startup and result labels before producing interface files.
+An incompatible language revision fails explicitly instead of producing a mix
+of French and English windows.
+
+If your imported graphics and campaign data came from the French revision,
+provide a compatible original English executable for the offline interface
+export:
+
+```sh
+go run ./cmd/export-visual-assets \
+  -input "/path/to/private/populous2-data" \
+  -interface-executable "/path/to/English/populous.ii" \
+  -output assets/runtime/data
+```
+
+Use the executable extracted and structurally validated by the disk importer.
+`-interface-executable` takes precedence over `POPULOUS2_INTERFACE_EXECUTABLE`;
+without either override, the exporter checks the executable in its input data.
+The English program is read only during local export. The playable build embeds
+ordinary PNG artwork and named JSON layouts, and does not require an executable.

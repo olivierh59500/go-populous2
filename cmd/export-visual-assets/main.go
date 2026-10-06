@@ -34,7 +34,14 @@ var compass = [...]struct {
 func main() {
 	input := flag.String("input", "", "private imported original files (defaults to POPULOUS2_DATA_DIR or embedded installation)")
 	output := flag.String("output", "assets/generated", "portable artwork output directory")
+	interfaceExecutable := flag.String("interface-executable", "", "optional original English executable used only to export interface artwork")
 	flag.Parse()
+	if *interfaceExecutable != "" {
+		if err := os.Setenv("POPULOUS2_INTERFACE_EXECUTABLE", *interfaceExecutable); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
 	var files fs.FS
 	var err error
 	if *input != "" {
@@ -58,6 +65,9 @@ func export(files fs.FS, output string) error {
 	}
 	source, err := populous2.LoadFS(files)
 	if err != nil {
+		return err
+	}
+	if _, err := interfaceSource(source); err != nil {
 		return err
 	}
 	presentation, err := populous2.DecodeNativePresentation(source.Executable)
@@ -184,6 +194,15 @@ func export(files fs.FS, output string) error {
 		return err
 	}
 	if err := exportFileLayouts(source, output); err != nil {
+		return err
+	}
+	if err := exportEditor(source, output); err != nil {
+		return err
+	}
+	if err := exportSpellHelp(source, output); err != nil {
+		return err
+	}
+	if err := exportNetworkLayout(source, output); err != nil {
 		return err
 	}
 	if err := exportStartupMenu(output, presentation); err != nil {

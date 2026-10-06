@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	"go-populous2/internal/engine"
 	"go-populous2/internal/populous2"
 	"go-populous2/internal/visualassets"
 )
@@ -112,7 +113,7 @@ func TestPrivatePointerFramesMatchOriginalAttachedSpritePixels(t *testing.T) {
 			}
 			got := image.NewRGBA(image.Rect(0, 0, 320, 200))
 			copy(got.Pix, background)
-			name := fmt.Sprintf("power/%d", power.ID)
+			name := fmt.Sprintf("power/%d", engine.PowerFromCostSlot(engine.PowerID(power.ID)))
 			sprite := art.Frames[name][phase]
 			draw.Draw(got, image.Rect(40, 30, 56, 46), sprite.Image, image.Point{}, draw.Over)
 			if !bytes.Equal(got.Pix, composed) {

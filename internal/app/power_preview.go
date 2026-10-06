@@ -7,10 +7,19 @@ import (
 	"image/draw"
 	"strings"
 
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
+
 	"go-populous2/internal/engine"
 )
 
+type SpellHelpPlayback struct {
+	Landscape, Age, LastSoundAge int
+	Background                   *image.RGBA
+}
+
 type PowerPreview struct {
+	Sheet            *SpellHelpPlayback
 	World            *engine.World
 	Power            engine.PowerID
 	Updates          int
@@ -142,14 +151,43 @@ func newPowerPreview(assets *Assets, id engine.PowerID) (*PowerPreview, error) {
 }
 
 func (g *Game) openPowerHelp(id engine.PowerID) error {
-	p, err := newPowerPreview(g.Assets, id)
-	if err != nil {
-		return err
+	if _, ok := engine.PowerByID(id); !ok {
+		return fmt.Errorf("unknown preview power")
 	}
-	p.Return = g.Screen
-	g.PowerPreview = p
+	if g.Assets.SpellHelp != nil {
+		landscape := g.briefingLevel().Landscape
+		if g.Screen == Playing || g.Screen == InGameMenuScreen || g.helpReturn == Playing && g.Screen == HelpScreen {
+			landscape = g.World.Level.Landscape
+		}
+		background := image.NewRGBA(image.Rect(0, 0, 320, 200))
+		// Render the paused caller through a silent copy, so pointer pixels from
+		// the previous frame are not baked into the help sheet's exposed border.
+		if g.framebuffer != nil && g.Assets.Visual != nil {
+			caller := *g
+			caller.framebuffer = background
+			caller.music = nil
+			caller.audio = nil
+			caller.drawFrame()
+		}
+		g.PowerPreview = &PowerPreview{Power: id, Return: g.Screen, Sheet: &SpellHelpPlayback{Landscape: landscape, LastSoundAge: -1, Background: background}}
+	} else {
+		p, err := newPowerPreview(g.Assets, id)
+		if err != nil {
+			return err
+		}
+		p.Return = g.Screen
+		g.PowerPreview = p
+	}
 	g.Screen = PowerHelpScreen
+	g.playSpellHelpSounds()
 	return nil
+}
+
+func (g *Game) closePowerHelp() {
+	if g.PowerPreview != nil {
+		g.Screen = g.PowerPreview.Return
+		g.PowerPreview = nil
+	}
 }
 
 func (g *Game) updatePowerHelp(x, y int, clicked bool) error {
@@ -157,9 +195,20 @@ func (g *Game) updatePowerHelp(x, y int, clicked bool) error {
 	if p == nil {
 		return fmt.Errorf("power help has no preview")
 	}
+	if p.Sheet != nil {
+		if clicked && g.Assets.SpellHelp.Descriptor.Layout.ActionAt(x, y) == "return" || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			g.closePowerHelp()
+			return nil
+		}
+		p.Updates++
+		if p.Updates%5 == 0 {
+			p.Sheet.Age++
+			g.playSpellHelpSounds()
+		}
+		return nil
+	}
 	if clicked && y >= 178 {
-		g.Screen = p.Return
-		g.PowerPreview = nil
+		g.closePowerHelp()
 		return nil
 	}
 	p.Updates++
@@ -177,11 +226,35 @@ func (g *Game) updatePowerHelp(x, y int, clicked bool) error {
 	return nil
 }
 
-func (g *Game) drawPowerHelp() {
-	if g.PowerPreview == nil {
+func (g *Game) playSpellHelpSounds() {
+	p := g.PowerPreview
+	if p == nil || p.Sheet == nil || g.Assets.SpellHelp == nil || p.Sheet.LastSoundAge == p.Sheet.Age {
 		return
 	}
+	sheet := p.Sheet
+	sequence := &g.Assets.SpellHelp.Sequences[sheet.Landscape][int(p.Power)]
+	index := sequence.FrameIndex(sheet.Age)
+	if index >= 0 {
+		for _, cue := range sequence.Frames[index].SoundCues {
+			if g.music != nil {
+				g.music.TriggerCue(cue)
+			}
+		}
+	}
+	sheet.LastSoundAge = sheet.Age
+}
+
+func (g *Game) drawPowerHelp() {
 	p := g.PowerPreview
+	if p == nil {
+		return
+	}
+	if p.Sheet != nil {
+		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), p.Sheet.Background, image.Point{}, draw.Src)
+		g.Assets.SpellHelp.DrawBase(g.framebuffer, g.Assets.Visual.Font, int(p.Power))
+		g.Assets.SpellHelp.DrawFrame(g.framebuffer, p.Sheet.Landscape, int(p.Power), p.Sheet.Age)
+		return
+	}
 	previewGame := *g
 	previewGame.World = p.World
 	previewGame.Network = nil

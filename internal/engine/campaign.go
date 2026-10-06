@@ -86,7 +86,7 @@ func (w *World) RecordCampaignMetrics() {
 
 func (w *World) RecordPowerUse(owner int, id PowerID) {
 	if owner >= 0 && owner < len(w.Players) && id != RaiseLower {
-		w.Players[owner].Statistics.WeightedPowerUse += uint16(id)%6 + 1
+		w.Players[owner].Statistics.WeightedPowerUse += uint16(PowerCostSlot(id))%6 + 1
 	}
 }
 

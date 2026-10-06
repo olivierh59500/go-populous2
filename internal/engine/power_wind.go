@@ -12,7 +12,14 @@ type WindEffect struct {
 // through the same typed registry, so a crossing can legitimately visit an
 // actor again when its destination appears later in the same scan.
 func (w *World) CastWind(owner, x, y, direction int) error {
-	if owner < 0 || owner > 1 || !inside(x, y) || direction < 0 || direction > 3 {
+	if owner < 0 || owner > 1 {
+		return fmt.Errorf("invalid wind owner")
+	}
+	return w.createWind(owner, x, y, direction)
+}
+
+func (w *World) createWind(owner, x, y, direction int) error {
+	if owner < 0 || owner > 2 || !inside(x, y) || direction < 0 || direction > 3 {
 		return fmt.Errorf("invalid wind target")
 	}
 	id := w.allocateEffect(EffectHurricane, uint8(owner))

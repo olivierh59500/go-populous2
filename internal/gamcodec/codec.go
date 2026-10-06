@@ -111,13 +111,17 @@ func Decode(data []byte, catalog Catalog) (*Document, error) {
 	for i := range snapshot.World.Level.WorldParameters {
 		snapshot.World.Level.WorldParameters[i] = r.byte(0xdde + i)
 	}
-	if events, err := engine.DecodeScenarioEvents(snapshot.World.Level.WorldParameters); err == nil {
+	var storedEvents [engine.ScenarioEventCapacity * 6]byte
+	for i := range storedEvents {
+		storedEvents[i] = r.byte(0xdde + i)
+	}
+	if events, err := engine.DecodeStoredScenarioEvents(storedEvents); err == nil {
 		snapshot.World.Scenario = events
 	} else {
 		return nil, fmt.Errorf("GAM scenario table: %w", err)
 	}
 	cursor := r.word(0xf0a)
-	if cursor%6 != 0 || cursor > 60 {
+	if cursor%6 != 0 || int(cursor) > len(storedEvents) {
 		return nil, fmt.Errorf("GAM scenario cursor is invalid")
 	}
 	snapshot.World.Scenario.Cursor = uint8(cursor / 6)

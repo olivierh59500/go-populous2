@@ -99,22 +99,11 @@ func TestPrivateDeityWidgetsAndRequesterMatchOriginalPixels(t *testing.T) {
 }
 
 func portableFont(source *populous2.NativeMenuFont, palette [16]color.RGBA) (*visualassets.Font, error) {
-	// Read the original font's atlas pixels as indices in its declared palette.
-	atlas := source.Atlas(palette)
+	// Keep the original indices directly; duplicate palette colors must not
+	// collapse glyph-plane information during a color-to-index round trip.
 	f := &visualassets.Font{FirstCode: populous2.NativeGlyphFirst, Width: 8, Height: 8, Glyphs: make([][]uint8, populous2.NativeGlyphCount)}
 	for i := range f.Glyphs {
-		f.Glyphs[i] = make([]uint8, 64)
-		for y := 0; y < 8; y++ {
-			for x := 0; x < 8; x++ {
-				c := color.RGBAModel.Convert(atlas.At((i%16)*8+x, (i/16)*8+y)).(color.RGBA)
-				for index, p := range palette {
-					if c == p {
-						f.Glyphs[i][x+y*8] = uint8(index)
-						break
-					}
-				}
-			}
-		}
+		f.Glyphs[i] = append([]uint8(nil), source.Glyphs[i][:]...)
 	}
 	return f, nil
 }

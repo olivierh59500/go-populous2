@@ -77,6 +77,7 @@ func (c *NetworkController) Start(world *engine.World) error {
 		}
 		for owner := range candidate.Players {
 			candidate.Players[owner].Computer = false
+			candidate.Players[owner].Assisted = false
 		}
 		c.status.Message = "Waiting for the other player"
 	} else {

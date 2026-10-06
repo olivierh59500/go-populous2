@@ -30,6 +30,9 @@ func TestIndependentAssetsLoadWithoutOriginalExecutable(t *testing.T) {
 	if len(assets.Levels) != 1000 || len(assets.Visual.Tiles[0]) != 255 || len(assets.Visual.Sprites[0]) != 830 || assets.Music == nil {
 		t.Fatal("portable asset catalog incomplete")
 	}
+	if err := assets.requireOriginalInterface(); err != nil {
+		t.Fatal("portable export cannot launch the restored original interface", err)
+	}
 }
 
 func TestLoadAssetsRequiresAVisualCatalog(t *testing.T) {

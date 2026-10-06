@@ -62,20 +62,25 @@ func (w *World) beginAIObservations() {
 }
 
 func (w *World) thinkAI(owner int) {
-	if !w.Players[owner].Computer {
+	if !w.Players[owner].Computer && !w.Players[owner].Assisted {
 		return
 	}
 	a := &w.AI[owner]
-	a.Reaction--
-	w.chooseAIUrgent(owner)
-	if a.Reaction > 0 {
-		return
-	}
-	a.Reaction = w.Level.Players[owner].ReactionDelay
-	if a.Order.Kind != AINoOrder {
-		return
+	if !w.Players[owner].Assisted {
+		a.Reaction--
+		w.chooseAIUrgent(owner)
+		if a.Reaction > 0 {
+			return
+		}
+		a.Reaction = w.Level.Players[owner].ReactionDelay
+		if a.Order.Kind != AINoOrder {
+			return
+		}
 	}
 	if w.chooseAIExpansion(owner) || w.chooseAIRelease(owner) {
+		return
+	}
+	if w.Players[owner].Assisted {
 		return
 	}
 	if !w.chooseAIOffensive(owner) {
@@ -175,7 +180,7 @@ func (w *World) executeAIOrders() {
 		case AIReleaseTown:
 			w.Sprog(owner, order.X, order.Y)
 		case AICastPower:
-			_ = w.Cast(owner, order.Power, order.Target)
+			_ = w.castPower(owner, order.Power, order.Target, false)
 		case AISetMode:
 			w.SetMode(owner, order.Mode)
 		}

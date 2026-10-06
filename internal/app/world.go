@@ -44,8 +44,12 @@ func (g *Game) startConquest() error {
 	g.Paused = false
 	g.AnimationSounds = AnimationSoundGate{}
 	g.resultApplied = false
+	g.restoreControlMode()
 	g.SelectedFollower, g.Inspecting = 0, false
+	g.heroScanCursor = 0
+	g.effectScanCursor = 0
 	g.selectionTransferTick = world.Tick
+	g.presentation.Reset()
 	g.SelectionReturn = FollowerSelectionReturn{}
 	leader := world.Players[0].Leader
 	if leader > 0 {
@@ -62,10 +66,14 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 		return fmt.Errorf("playing screen has no world")
 	}
 	w := g.World
+	if g.Updates%4 == 0 {
+		g.advanceSelectionPresentation()
+		g.presentation.Capture(g, !g.Paused && g.Network == nil)
+	}
 	if g.Network != nil {
 		g.advanceNetwork()
 	} else if !g.Paused && g.Updates%4 == 0 {
-		w.Step()
+		w.StepWithViewport(engine.Viewport{X: g.presentation.CameraX, Y: g.presentation.CameraY, Size: viewSize})
 		g.consumeSelectionTransfers()
 		if w.Scenario.Err != "" {
 			g.Message, g.messageUntil = "WORLD EVENT: "+w.Scenario.Err, g.Updates+200
@@ -76,6 +84,22 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 		}
 	}
 	g.refreshSelectedFollower()
+	if inpututil.IsKeyJustPressed(ebiten.KeyF11) {
+		if handled, err := g.handleHUDHelp(mouseX, mouseY); handled {
+			if err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+100
+			}
+			return nil
+		}
+	}
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		if handled, err := g.handleHUDSecondary(mouseX, mouseY, inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight)); handled {
+			if err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+100
+			}
+			return nil
+		}
+	}
 	if g.handleSelectionPanelClick(mouseX, mouseY, clicked) {
 		return nil
 	}
@@ -226,6 +250,11 @@ func (g *Game) projectCorner(x, y int) (int, int) {
 // pickCorner chooses the visible projected vertex instead of a rectangular
 // tile hitbox. Front vertices win equal distances, matching painter ordering.
 func (g *Game) pickCorner(mouseX, mouseY int) (int, int, bool) {
+	view := g.displayedGame()
+	return view.pickDisplayedCorner(mouseX, mouseY)
+}
+
+func (g *Game) pickDisplayedCorner(mouseX, mouseY int) (int, int, bool) {
 	if mouseX < 104 || mouseY < 45 || mouseY > 177 {
 		return 0, 0, false
 	}
@@ -288,7 +317,7 @@ func (g *Game) drawWorld() {
 	if g.PickingPower && g.Assets.HUD == nil {
 		g.drawPowerMenu()
 	}
-	if g.Paused {
+	if g.Paused && g.Assets.HUD == nil {
 		g.button("PAUSED", 120, 91, 80)
 	}
 }

@@ -231,10 +231,20 @@ func (w *World) plantTrees(x, y, experienceAttempts int) error {
 // CastFlowers restores sampled flat parcels, including damaged ground, while
 // leaving ownership, followers and occupancy unchanged.
 func (w *World) CastFlowers(owner, x, y int) error {
-	if err := w.validNatureTarget(owner, x, y); err != nil {
-		return err
+	if owner < 0 || owner > 1 {
+		return fmt.Errorf("invalid nature owner")
 	}
-	count := int(w.random.next()%17) + 8 + int(w.Players[owner].Experience[Plants]>>5)
+	return w.createFlowers(owner, x, y)
+}
+func (w *World) createFlowers(owner, x, y int) error {
+	if owner < 0 || owner > 2 || !inside(x, y) {
+		return fmt.Errorf("invalid nature target")
+	}
+	xp := 0
+	if owner < 2 {
+		xp = int(w.Players[owner].Experience[Plants] >> 5)
+	}
+	count := int(w.random.next()%17) + 8 + xp
 	for attempt := 0; attempt <= count; attempt++ {
 		nx, ny, ok := w.natureSample(x, y)
 		if !ok || !flowersNatureCode(w.Cell(nx, ny).Code) {
@@ -248,8 +258,14 @@ func (w *World) CastFlowers(owner, x, y int) error {
 // CastSwamp consumes the same sampled attempts at every experience tier.
 // Occupied parcels, water and sloped ground reject planting.
 func (w *World) CastSwamp(owner, x, y int) error {
-	if err := w.validNatureTarget(owner, x, y); err != nil {
-		return err
+	if owner < 0 || owner > 1 {
+		return fmt.Errorf("invalid nature owner")
+	}
+	return w.createSwamp(owner, x, y)
+}
+func (w *World) createSwamp(owner, x, y int) error {
+	if owner < 0 || owner > 2 || !inside(x, y) {
+		return fmt.Errorf("invalid nature target")
 	}
 	count := int(w.random.next()%17) + 8
 	for attempt := 0; attempt <= count; attempt++ {

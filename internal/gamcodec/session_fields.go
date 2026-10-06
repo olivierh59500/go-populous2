@@ -27,7 +27,8 @@ func decodeAIStatistics(r fileReader, s *engine.Snapshot, owner int) error {
 	p := &s.World.Players[owner]
 	p.Statistics = engine.CampaignStatistics{Population: r.long(god + 4), PeakPopulation: r.long(god + 0x3c), PeakMana: r.long(god + 0x40), Metric: r.word(god + 0x44), LeaderLosses: r.word(god + 0x46), BattleWins: r.word(god + 0x48), ScenarioOptions: r.word(god + 0x4a), WeightedPowerUse: r.word(god + 0x138)}
 	p.Population, p.Towns, p.BattlesWon = int(p.Statistics.Population), int(r.word(god+0x24)), int(p.Statistics.BattleWins)
-	p.Computer = r.word(god+0x1a) == 4 || r.word(god+0x1a) == 0x12
+	p.Computer = r.word(god+0x1a) == 4
+	p.Assisted = r.word(god+0x1a) == 18
 	options := &s.World.Level.Players[owner]
 	options.Groups = int(r.word(god + 0x5a))
 	options.Population = int(r.word(god + 0x5c))
@@ -122,8 +123,13 @@ func encodeAIStatistics(data []byte, w *engine.World, owner int) error {
 		word(god+offset, value)
 	}
 	control := uint16(2)
+	if p.Computer && p.Assisted {
+		return fmt.Errorf("GAM player cannot be both computer-controlled and assisted")
+	}
 	if p.Computer {
 		control = 4
+	} else if p.Assisted {
+		control = 18
 	}
 	word(god+0x1a, control)
 	word(0xeb2c+owner*2, scenarioFlags(w.Level.Players[owner].Scenario))

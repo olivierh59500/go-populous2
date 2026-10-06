@@ -140,7 +140,11 @@ func (g *Game) updateSaveBrowser(x, y int, clicked bool) {
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		b.Offset = min(max(0, len(b.Files)-6), b.Offset+1)
+		visible := 6
+		if g.Assets.FileLayout != nil {
+			visible = 12
+		}
+		b.Offset = min(max(0, len(b.Files)-visible), b.Offset+1)
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
 		b.Offset = max(0, b.Offset-1)
@@ -157,7 +161,7 @@ func (g *Game) updateSaveBrowser(x, y int, clicked bool) {
 			b.Confirm, b.Error = false, ""
 		}
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) && len(b.Name) > 0 {
+	if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) && (len(b.Name) > 0 || b.EditingDirectory) {
 		if b.EditingDirectory {
 			if len(b.DirectoryInput) > 0 {
 				b.DirectoryInput = b.DirectoryInput[:len(b.DirectoryInput)-1]
@@ -168,6 +172,10 @@ func (g *Game) updateSaveBrowser(x, y int, clicked bool) {
 		b.Confirm = false
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyDelete) || (ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyA)) {
+		if b.EditingDirectory {
+			b.DirectoryInput = ""
+			return
+		}
 		b.Name, b.Confirm, b.Error = "", false, ""
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
@@ -275,6 +283,7 @@ func (g *Game) finishFileDirectory() {
 	}
 	sort.Strings(names)
 	b.Directory, b.Files, b.Offset, b.EditingDirectory = path, names, 0, false
+	b.Error = ""
 }
 func (g *Game) drawOriginalFileBrowser() bool {
 	b := g.SaveBrowser

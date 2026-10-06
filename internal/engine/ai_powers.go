@@ -34,13 +34,13 @@ func (w *World) compileAIPowers(owner int) {
 	a.LeaderChoiceCount = 0
 	a.ChoiceIndex = 0
 	for _, choice := range offensiveChoices {
-		if w.Level.Players[owner].Powers[choice.Power] {
+		if w.Level.Players[owner].Powers[PowerCostSlot(choice.Power)] {
 			a.Choices[a.ChoiceCount] = choice
 			a.ChoiceCount++
 		}
 	}
 	for _, choice := range leaderChoices {
-		if w.Level.Players[owner].Powers[choice.Power] {
+		if w.Level.Players[owner].Powers[PowerCostSlot(choice.Power)] {
 			a.Choices[a.ChoiceCount+a.LeaderChoiceCount] = choice
 			a.LeaderChoiceCount++
 		}

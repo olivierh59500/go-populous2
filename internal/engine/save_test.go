@@ -184,7 +184,7 @@ func TestSnapshotContinuesNeutralScenarioAndWindState(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	w.Scenario = ScenarioState{Events: [10]ScenarioEvent{{Time: 3, Kind: ScenarioFireColumn, X: 30, Y: 30}, {Time: 8, Kind: ScenarioRoadMaker, X: 15, Y: 15}}}
+	w.Scenario = ScenarioState{Events: [ScenarioEventCapacity]ScenarioEvent{{Time: 3, Kind: ScenarioFireColumn, X: 30, Y: 30}, {Time: 8, Kind: ScenarioRoadMaker, X: 15, Y: 15}}}
 	if err := w.CastWind(0, 30, 30, 1); err != nil {
 		t.Fatal(err)
 	}
@@ -245,7 +245,7 @@ func TestSnapshotVersionOneRetiredConstructionFieldsRemainReadable(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if restored.Snapshot().Version != 2 || restored.Snapshot().Construction != nil || !reflect.DeepEqual(w, restored) {
+	if restored.Snapshot().Version != SnapshotVersion || restored.Snapshot().Construction != nil || !reflect.DeepEqual(w, restored) {
 		t.Fatal("retired planner data altered the current simulation")
 	}
 }

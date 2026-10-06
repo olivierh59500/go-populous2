@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"go-populous2/internal/engine"
 	"go-populous2/internal/populous2"
 	"go-populous2/internal/visualassets"
 )
@@ -50,7 +51,7 @@ func exportPointers(output string, source *populous2.Bundle) error {
 		if command == 0 {
 			return fmt.Errorf("pointer action missing for power%d", power.ID)
 		}
-		name := fmt.Sprintf("power/%d", power.ID)
+		name := fmt.Sprintf("power/%d", engine.PowerFromCostSlot(engine.PowerID(power.ID)))
 		for phase := 0; phase < 4; phase++ {
 			selector, err := selectFrame(command, phase*8)
 			if err != nil {

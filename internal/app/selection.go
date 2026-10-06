@@ -16,6 +16,11 @@ func (g *Game) refreshSelectedFollower() {
 // pickFollower follows the original anchor-based inspect hit test. The first
 // rendered eligible actor consumes the click; map cells alone are insufficient.
 func (g *Game) pickFollower(x, y int) int {
+	view := g.displayedGame()
+	return view.pickDisplayedFollower(x, y)
+}
+
+func (g *Game) pickDisplayedFollower(x, y int) int {
 	if g.World == nil || x < 104 || y < 45 || y >= 178 {
 		return 0
 	}

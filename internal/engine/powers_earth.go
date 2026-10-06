@@ -303,7 +303,14 @@ func (w *World) tickEarthEffect(id int) {
 // CastBatholith samples one point from the same random word for both axes.
 // Its raise and boulder branches are independent of the follower's commands.
 func (w *World) CastBatholith(owner, x, y int) error {
-	if owner < 0 || owner > 1 || !inside(x, y) {
+	if owner < 0 || owner > 1 {
+		return fmt.Errorf("invalid batholith owner")
+	}
+	return w.createBatholith(owner, x, y)
+}
+
+func (w *World) createBatholith(owner, x, y int) error {
+	if owner < 0 || owner > 2 || !inside(x, y) {
 		return fmt.Errorf("invalid batholith target")
 	}
 	bits := w.random.next()
@@ -338,6 +345,7 @@ func (w *World) CastBatholith(owner, x, y int) error {
 		variant = 0
 	}
 	w.Nature.Scenery[id] = SceneryActor{Kind: SceneryBoulder, X: uint8(x), Y: uint8(y), Age: 24, Variant: variant}
+	w.syncSceneryActor(id)
 	return nil
 }
 

@@ -27,7 +27,7 @@ Only import/reference tools consult the original executable.
 | Powers | All 29 admitted commands, bounded shared pools, mixed actor creation/movement/removal and inter-effect ordering |
 | AI/scenarios | Campaign policies, prepared commands, explicit terrain/water requests, deferred execution, ten-event scripts and six neutral inventions |
 | Campaign | 1,000 worlds/passwords, deity profiles/experience, scores, once-only awards, progression and original animated ending |
-| Interface | Main menu, world/profile entry, custom rules, detached options/editor, real paced power previews, pause and visible errors |
+| Interface | Original menu/profile/conquest requesters, HUD, selected-group animations, options/editor, paced original spell help and file windows |
 | Persistence | Lossless JSON session, strict detached validation, overwrite confirmation and original GAM file codec |
 | Multiplayer | Host/join menu, deterministic commands/snapshots, asynchronous TCP work, local-side controls/results and disconnect pause |
 | Presentation | Original art, dynamic towns, all active actor/effect states, 8 appearance banks, source depth/anchors/backdrops/overview and Go music/sample replay |
@@ -78,13 +78,17 @@ Android launcher/build target for this independent game is included in this
 refactor. A later mobile adapter must preserve input, asset, audio and lifecycle
 semantics and be benchmarked on the target device.
 
-The startup menu now reproduces the original five-slot layout in Go, with
-pixel and hit-region comparisons. The other interface screens use Go widgets
-over the original art. These
-are functional replacements; the original menus and interface have not yet
-been faithfully recreated in the independent runtime. The remaining work
-includes original requester layouts, HUD icons and meters, cursor/selection
-presentation, deity experience strips and world/help/options/file panels.
+The independent interface restores the original five-slot startup layout,
+deity and conquest windows, slanted HUD icons, mana/population indicators,
+selected-group artwork, in-game/about/options requesters, fifty-slot paint
+editor, spell-help sheets and file/result windows. Bounded source framebuffer
+and hit-region comparisons cover their normal states. Selected-group poses
+retain the source's pre-physics display phase across intermediate host updates.
+Human assistance is distinct from full computer control and cannot select
+offensive powers or alter the rally policy. JSON and GAM preserve that mode.
+The TCP window uses the original geometry with honest host/join labels, and
+the manual-based statue protection remains disabled. These explicit boundaries
+and the comparison scope are detailed in [ORIGINAL_INTERFACE.md](ORIGINAL_INTERFACE.md).
 Full audible-event coverage and broader simultaneous
 effect combinations can extend the existing checks without changing the
 independent runtime boundary.

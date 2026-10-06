@@ -48,12 +48,16 @@ func (g *Game) loadOriginalGame() error {
 		return fmt.Errorf("original GAM camera is outside the game map")
 	}
 	g.World, g.Profile, g.OriginalSave = document.World, meta.Profile, document
+	g.presentation.Reset()
 	g.LocalSide, g.LevelIndex = meta.ProfileSide, document.World.Level.Number
+	g.restoreControlMode()
 	g.CameraX, g.CameraY = meta.CameraX, meta.CameraY
 	g.CustomGame = meta.GameMode != 2
 	g.restoreCustomSetup()
 	g.Paused, g.resultApplied, g.Screen = false, false, Playing
 	g.Selected, g.Direction = engine.RaiseLower, 0
+	g.Category = engine.People
+	g.heroScanCursor, g.effectScanCursor = 0, 0
 	g.SelectedFollower, g.Inspecting = meta.SelectedFollower, false
 	g.selectionTransferTick = g.World.Tick
 	g.SelectionReturn = FollowerSelectionReturn{BackupFollower: meta.BackupFollower, FramesLeft: meta.SelectionReturnFrames}

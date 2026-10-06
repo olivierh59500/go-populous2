@@ -76,13 +76,20 @@ func (w *World) CastFromViewport(owner int, power PowerID, target PowerTarget, v
 	if power != RaiseLower {
 		return w.Cast(owner, power, target)
 	}
+	return w.CastWithCursorTerrainRights(owner, target, view, w.CursorTerrainRights(owner, view))
+}
+
+// CastWithCursorTerrainRights applies the rights captured while drawing the
+// displayed view. The live world still validates coordinates, power admission,
+// terrain rules and mana before changing a height. Network callers derive
+// rights from their synchronized live world through CastFromViewport.
+func (w *World) CastWithCursorTerrainRights(owner int, target PowerTarget, view Viewport, rights ScenarioOptions) error {
 	if owner < 0 || owner > 1 || !view.ContainsCorner(target.X, target.Y) {
 		return fmt.Errorf("terrain target lies outside the visible view")
 	}
 	if !w.Level.Players[owner].Powers[RaiseLower] {
 		return fmt.Errorf("terrain editing is disabled in this world")
 	}
-	rights := w.CursorTerrainRights(owner, view)
 	if !w.changeHeightWithOptions(owner, target.X, target.Y, !target.Lower, true, rights) {
 		return fmt.Errorf("terrain cannot be changed with the current visible followers")
 	}

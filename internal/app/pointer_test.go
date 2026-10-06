@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"testing"
@@ -13,11 +14,12 @@ func TestPointerSelectsInterfaceTerrainRightsAndPowerFrames(t *testing.T) {
 	if pointerSequence(engine.RaiseLower, false, true, false) != "forbidden" || pointerSequence(engine.RaiseLower, false, true, true) != "normal" || pointerSequence(engine.Volcano, true, true, true) != "interface" {
 		t.Fatal("pointer zone/terrain state differs")
 	}
-	art := &visualassets.PointerArt{Frames: map[string][]visualassets.Sprite{"power/26": make([]visualassets.Sprite, 4)}}
+	name := fmt.Sprintf("power/%d", engine.Volcano)
+	art := &visualassets.PointerArt{Frames: map[string][]visualassets.Sprite{name: make([]visualassets.Sprite, 4)}}
 	for phase := 0; phase < 4; phase++ {
 		img := image.NewRGBA(image.Rect(0, 0, 16, 16))
 		img.SetRGBA(0, 0, color.RGBA{R: uint8(phase + 1), A: 255})
-		art.Frames["power/26"][phase] = visualassets.Sprite{Image: img}
+		art.Frames[name][phase] = visualassets.Sprite{Image: img}
 	}
 	for phase := 0; phase < 4; phase++ {
 		sprite, ok := pointerFrame(art, pointerSequence(engine.Volcano, false, true, true), uint64(phase*8))

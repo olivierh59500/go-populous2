@@ -19,6 +19,7 @@ type savedSession struct {
 	CameraX, CameraY int
 	LevelIndex       int
 	Selected         engine.PowerID
+	Category         engine.Element
 	Direction        uint8
 	CustomGame       bool
 	Paused           bool
@@ -26,6 +27,7 @@ type savedSession struct {
 	SelectedFollower int
 	Inspecting       bool
 	SelectionReturn  FollowerSelectionReturn
+	ControlMode      uint8  `json:"control_mode,omitempty"`
 	OriginalGAM      []byte `json:"original_gam,omitempty"`
 }
 
@@ -39,10 +41,11 @@ func (g *Game) saveGame() error {
 	if strings.EqualFold(filepath.Ext(g.SavePath), ".gam") {
 		return g.saveOriginalGame()
 	}
-	session := savedSession{Version: 1, World: g.World.Snapshot(), Profile: g.Profile, CameraX: g.CameraX, CameraY: g.CameraY, LevelIndex: g.LevelIndex, Selected: g.Selected, Direction: g.Direction, CustomGame: g.CustomGame, Paused: g.Paused}
+	session := savedSession{Version: 2, World: g.World.Snapshot(), Profile: g.Profile, CameraX: g.CameraX, CameraY: g.CameraY, LevelIndex: g.LevelIndex, Selected: g.Selected, Category: g.Category, Direction: g.Direction, CustomGame: g.CustomGame, Paused: g.Paused}
 	session.LocalSide = g.playerSide()
 	session.SelectedFollower, session.Inspecting = g.SelectedFollower, g.Inspecting
 	session.SelectionReturn = g.SelectionReturn
+	session.ControlMode = g.controlMode
 	if g.OriginalSave != nil {
 		session.OriginalGAM = append([]byte(nil), g.OriginalSave.Metadata.Original...)
 	}
@@ -107,11 +110,14 @@ func (g *Game) loadGame() error {
 	if err := decoder.Decode(new(any)); err != io.EOF {
 		return fmt.Errorf("saved session has trailing data")
 	}
-	if session.Version != 1 || session.LevelIndex < 0 || session.LevelIndex >= len(g.Assets.Levels) || session.CameraX < 0 || session.CameraX > 56 || session.CameraY < 0 || session.CameraY > 56 || session.Direction > 3 || session.LocalSide < 0 || session.LocalSide > 1 || session.SelectedFollower < 0 || session.SelectedFollower >= engine.FollowerCapacity {
+	if session.Version != 1 && session.Version != 2 || session.Category > engine.Water || session.LevelIndex < 0 || session.LevelIndex >= len(g.Assets.Levels) || session.CameraX < 0 || session.CameraX > 56 || session.CameraY < 0 || session.CameraY > 56 || session.Direction > 3 || session.LocalSide < 0 || session.LocalSide > 1 || session.SelectedFollower < 0 || session.SelectedFollower >= engine.FollowerCapacity {
 		return fmt.Errorf("unsupported or invalid saved session")
 	}
 	if session.SelectionReturn.BackupFollower < 0 || session.SelectionReturn.BackupFollower >= engine.FollowerCapacity || session.SelectionReturn.FramesLeft > 100 {
 		return fmt.Errorf("invalid saved selection return")
+	}
+	if session.ControlMode != 0 && session.ControlMode != 2 && session.ControlMode != 4 && session.ControlMode != 18 {
+		return fmt.Errorf("invalid saved player control mode")
 	}
 	if len(session.Profile.Name) > 16 {
 		return fmt.Errorf("invalid saved deity name")
@@ -121,8 +127,17 @@ func (g *Game) loadGame() error {
 			return fmt.Errorf("invalid saved deity face")
 		}
 	}
-	if _, ok := engine.PowerByID(session.Selected); !ok {
+	if session.Version == 1 {
+		// Earlier sessions used semantic fire IDs in the opposite order from
+		// the original panel. Permission arrays already use physical slots.
+		session.Selected = engine.MigrateLegacyPowerID(session.Selected)
+	}
+	power, ok := engine.PowerByID(session.Selected)
+	if !ok {
 		return fmt.Errorf("invalid saved power selection")
+	}
+	if session.Version == 1 {
+		session.Category = power.Element
 	}
 	world, err := session.World.Restore()
 	if err != nil {
@@ -137,11 +152,18 @@ func (g *Game) loadGame() error {
 		original.World = world
 	}
 	g.World, g.Profile, g.CameraX, g.CameraY, g.LevelIndex, g.Selected, g.Direction = world, session.Profile, session.CameraX, session.CameraY, session.LevelIndex, session.Selected, session.Direction
+	g.Category = session.Category
+	g.heroScanCursor, g.effectScanCursor = 0, 0
+	g.presentation.Reset()
 	g.Screen, g.resultApplied = Playing, false
 	g.CustomGame, g.Paused = session.CustomGame, session.Paused
 	g.LocalSide, g.OriginalSave = session.LocalSide, original
 	g.SelectedFollower, g.Inspecting = session.SelectedFollower, session.Inspecting
 	g.SelectionReturn = session.SelectionReturn
+	g.controlMode = session.ControlMode
+	if g.controlMode == 0 {
+		g.restoreControlMode()
+	}
 	g.selectionTransferTick = world.Tick
 	g.refreshSelectedFollower()
 	g.restoreCustomSetup()

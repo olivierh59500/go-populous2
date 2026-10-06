@@ -25,6 +25,11 @@ func decodeEffect(record []byte, id int, s *engine.Snapshot, catalog Catalog) er
 	token := word(10)
 	phase := record[22]
 	reserve := engine.EffectReservation{Owner: owner, Generation: 1, LastVelocityX: vx, LastVelocityY: vy}
+	class, err := decodeInspectionClass(record[0])
+	if err != nil {
+		return err
+	}
+	reserve.InspectionClass = class
 	fire := engine.FireEffect{Active: true, Owner: owner, X: x, Y: y, VX: vx, VY: vy, Timer: timer, Life: life}
 	switch {
 	case record[0] == 38 && (phase == 0x12 || phase == 0x14):

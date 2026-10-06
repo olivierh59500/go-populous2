@@ -66,11 +66,15 @@ type Game struct {
 	editingProfileName           bool
 	editingProfileCode           bool
 	profileCodeInput             string
+	profileReturn                Screen
+	profileCaret                 int
 	editingWorldCode             bool
 	worldCodeInput               string
 	briefingOpponent             bool
 	Selected                     engine.PowerID
 	SelectedFollower             int
+	heroScanCursor               int
+	effectScanCursor             int
 	Inspecting                   bool
 	selectionTransferTick        uint64
 	SelectionReturn              FollowerSelectionReturn
@@ -86,6 +90,8 @@ type Game struct {
 	SavePath                     string
 	SaveBrowser                  *SaveBrowser
 	menuReturn                   Screen
+	controlMode                  uint8
+	presentation                 PlayingPresentation
 	AutoStart                    bool
 	framebuffer                  *image.RGBA
 	image                        *ebiten.Image
@@ -98,6 +104,9 @@ type Game struct {
 func New(assets *Assets) (*Game, error) {
 	if assets == nil || assets.Visual == nil || len(assets.Levels) == 0 {
 		return nil, fmt.Errorf("independent game assets are missing")
+	}
+	if err := assets.requireOriginalInterface(); err != nil {
+		return nil, err
 	}
 	replay, err := music.NewPlayer(assets.Music, 44100)
 	if err != nil {
@@ -130,14 +139,34 @@ func (g *Game) Update() error {
 		g.Message, g.messageUntil = err.Error(), g.Updates+250
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		if g.Screen == ConquestBriefing && (g.editingWorldCode || g.briefingOpponent) {
-			g.editingWorldCode, g.briefingOpponent = false, false
-		} else if g.Screen == InGameMenuScreen || g.Screen == AboutScreen {
-			g.Screen = Playing
+		if g.Screen == PowerHelpScreen {
+			g.closePowerHelp()
+		} else if g.Screen == HelpScreen {
+			g.Screen = g.helpReturn
+		} else if g.Screen == AboutScreen {
+			g.Screen = InGameMenuScreen
+		} else if g.Screen == DeityProfile {
+			if !g.editingProfileName && !g.editingProfileCode {
+				g.closeDeityProfile()
+			}
+		} else if g.Screen == ConquestBriefing && g.editingWorldCode {
+			// Original text modals ignore Escape; Enter accepts their buffer.
+		} else if g.Screen == ConquestBriefing && g.briefingOpponent {
+			g.briefingOpponent = false
+		} else if g.Screen == Playing {
+			if err := g.openInGameMenu(); err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+100
+			}
+		} else if g.Screen == InGameMenuScreen {
+			g.Screen = g.menuReturn
 		} else if g.Screen == SaveBrowserScreen {
 			g.closeSaveBrowser()
 		} else if g.Screen == EditorScreen {
-			g.cancelEditor()
+			if g.Editor != nil && g.Editor.EditingField != "" {
+				g.Editor.EditingField, g.Editor.NumberInput = "", ""
+			} else {
+				g.cancelEditor()
+			}
 		} else if g.Screen == OptionsScreen {
 			g.cancelOptions()
 		} else {
@@ -187,18 +216,15 @@ func (g *Game) Update() error {
 		if clicked && x >= 78 && x < 245 {
 			switch {
 			case y >= 86 && y < 101:
-				g.Screen = DeityProfile
+				g.openDeityProfile(MainMenu)
 			case y >= 102 && y < 117:
 				g.CustomGame = false
 				g.Screen = ConquestBriefing
 			case y >= 120 && y < 137:
 				g.openNetworkSetup()
 			case y >= 138 && y < 155:
-				g.CustomGame = true
-				if err := g.openOptions(); err != nil {
+				if err := g.startCustomGame(); err != nil {
 					g.Message, g.messageUntil = err.Error(), g.Updates+100
-				} else {
-					g.Options.Return = ConquestBriefing
 				}
 			case y >= 156 && y < 173:
 				g.helpReturn, g.Screen = MainMenu, HelpScreen
@@ -246,9 +272,6 @@ func (g *Game) Update() error {
 		if err := g.updateWorld(x, y, clicked); err != nil {
 			return err
 		}
-		if g.Updates%4 == 0 {
-			g.advanceSelectionPresentation()
-		}
 	case CampaignResult:
 		if g.Updates-g.resultAt >= 101 && (inpututil.IsKeyJustPressed(ebiten.KeyEnter) || clicked && g.resultContinueHit(x, y)) {
 			if err := g.applyCampaignResult(); err != nil {
@@ -290,13 +313,17 @@ func (g *Game) Update() error {
 			}
 		}
 	case AboutScreen:
-		if clicked || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || clicked && (g.Assets.AboutLayout == nil || g.Assets.AboutLayout.ActionAt(x, y) == "resume") {
 			g.Screen = InGameMenuScreen
 		}
 	}
 	g.drawFrame()
 	g.updateSystemPointerVisibility()
 	g.drawGamePointer(x, y)
+	if g.Screen == EditorScreen {
+		g.drawEditorPointer(x, y)
+	}
+	g.drawRequesterPointer(x, y)
 	g.image.WritePixels(g.framebuffer.Pix)
 	return nil
 }
@@ -363,7 +390,13 @@ func (g *Game) drawFrame() {
 	case ConquestBriefing:
 		g.drawBriefing()
 	case Playing:
-		g.drawWorld()
+		if g.presentation.Ready {
+			renderer := g.presentation.Renderer(g)
+			renderer.drawWorld()
+			g.AnimationSounds = renderer.AnimationSounds
+		} else {
+			g.drawWorld()
+		}
 	case CampaignResult:
 		g.drawCampaignResult()
 	case EndingScreen:

@@ -41,8 +41,8 @@ const (
 	Wind        PowerID = 22
 	FireColumn  PowerID = 24
 	FireRain    PowerID = 25
-	Volcano     PowerID = 26
-	Achilles    PowerID = 27
+	Achilles    PowerID = 26
+	Volcano     PowerID = 27
 	Basalt      PowerID = 30
 	Whirlpool   PowerID = 31
 	Baptism     PowerID = 32
@@ -72,7 +72,7 @@ var Powers = []Power{
 	{Trees, "Trees", Plants, 250, true}, {Flowers, "Flowers", Plants, 500, true}, {Swamp, "Swamp", Plants, 1750, true}, {Fungus, "Fungus", Plants, 2000, true}, {Adonis, "Adonis", Plants, 11000, true},
 	{Road, "Road", Earth, 25, true}, {Wall, "Wall", Earth, 62, true}, {Earthquake, "Earthquake", Earth, 10000, true}, {Batholith, "Batholith", Earth, 11250, true}, {Heracles, "Heracles", Earth, 11000, true},
 	{Lightning, "Lightning", Air, 50, true}, {Whirlwind, "Whirlwind", Air, 2750, true}, {Storm, "Storm", Air, 5250, true}, {Odysseus, "Odysseus", Air, 11000, true}, {Wind, "Wind", Air, 23000, true},
-	{FireColumn, "Fire column", Fire, 5625, true}, {FireRain, "Fire rain", Fire, 7500, true}, {Volcano, "Volcano", Fire, 10000, true}, {Achilles, "Achilles", Fire, 20000, true},
+	{FireColumn, "Fire column", Fire, 5625, true}, {FireRain, "Fire rain", Fire, 7500, true}, {Achilles, "Achilles", Fire, 20000, true}, {Volcano, "Volcano", Fire, 10000, true},
 	{Basalt, "Basalt", Water, 250, true}, {Whirlpool, "Whirlpool", Water, 1000, true}, {Baptism, "Baptism", Water, 6250, true}, {Helen, "Helen", Water, 7500, true}, {Tsunami, "Tsunami", Water, 25000, true},
 }
 
@@ -102,6 +102,12 @@ func (w *World) PowerCost(owner int, id PowerID) int {
 }
 
 func (w *World) Cast(owner int, id PowerID, target PowerTarget) error {
+	return w.castPower(owner, id, target, true)
+}
+
+// AI commands have already selected source command permissions, which use
+// cost slots rather than the two crossed physical fire icons.
+func (w *World) castPower(owner int, id PowerID, target PowerTarget, physicalPermissions bool) error {
 	p, ok := PowerByID(id)
 	if !ok {
 		return fmt.Errorf("unknown power %d", id)
@@ -112,7 +118,7 @@ func (w *World) Cast(owner int, id PowerID, target PowerTarget) error {
 	if owner < 0 || owner > 1 {
 		return errors.New("invalid player")
 	}
-	if !w.Level.Players[owner].Powers[id] {
+	if physicalPermissions && !w.Level.Players[owner].Powers[id] {
 		return errors.New("power is disabled in this world")
 	}
 	if id == Lightning {

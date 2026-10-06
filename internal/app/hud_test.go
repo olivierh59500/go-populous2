@@ -21,6 +21,7 @@ func TestHUDCommandsUseOriginalSlantedGridsAndLocalMode(t *testing.T) {
 		t.Fatal("category diamond did not select its panel", err)
 	}
 	g.World.Level.Players[0].Powers[engine.Trees] = true
+	g.World.Players[0].Mana = 10000
 	if handled, err := g.handleHUDClick(83, 149); !handled || err != nil || g.Category != engine.Plants {
 		t.Fatal("second category diamond differs", err)
 	}
@@ -38,8 +39,8 @@ func TestHUDDisabledPowerDoesNotChangeSelectionOrSpendMana(t *testing.T) {
 	g.Category = engine.Plants
 	before := g.World.Snapshot()
 	selected := g.Selected
-	if handled, err := g.handleHUDClick(50, 155); !handled || err == nil {
-		t.Fatal("disabled power was silently selected")
+	if handled, err := g.handleHUDClick(50, 155); !handled || err != nil {
+		t.Fatal("disabled power did not retain the original silent admission", err)
 	}
 	if g.World.Snapshot() != before || g.Selected != selected {
 		t.Fatal("disabled HUD power changed state")
@@ -57,5 +58,31 @@ func TestHUDOriginalMenuIconOpensWindowWithoutChangingGame(t *testing.T) {
 	}
 	if g.World.Snapshot() != before {
 		t.Fatal("opening HUD menu changed simulation")
+	}
+}
+
+func TestFireIconAdmissionAndBarsUseOriginalPanelPriceWithoutCasting(t *testing.T) {
+	g := browserGame(t)
+	g.Assets.HUD = &visualassets.HUDArt{}
+	g.Category = engine.Fire
+	g.World.Level.Players[0].Powers[engine.Achilles] = true
+	g.World.Level.Players[0].Powers[engine.Volcano] = true
+	g.World.Players[0].Experience = [6]uint8{}
+	g.World.Players[0].Mana = 39999
+	before, selected := g.World.Snapshot(), g.Selected
+	if handled, err := g.handleHUDClick(82, 171); !handled || err != nil || g.Selected != selected {
+		t.Fatal("original physical hero icon bypassed its panel-price gate", handled, err)
+	}
+	if g.World.Snapshot() != before {
+		t.Fatal("rejected icon selection changed the simulation")
+	}
+	g.World.Players[0].Mana = 40000
+	before = g.World.Snapshot()
+	if handled, err := g.handleHUDClick(82, 171); !handled || err != nil || g.Selected != engine.Achilles {
+		t.Fatal("Achilles icon used the higher creator price for panel admission", handled, err, g.Selected)
+	}
+	state := g.hudState(0, 0)
+	if state.Costs[engine.Achilles] != 10000 || state.Costs[engine.Volcano] != 20000 || g.World.Snapshot() != before {
+		t.Fatal("original physical bar costs were crossed or selecting cast a spell")
 	}
 }

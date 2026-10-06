@@ -29,6 +29,7 @@ const (
 // direction only when their animation transitions to its active phase.
 type EffectReservation struct {
 	Kind                         EffectKind
+	InspectionClass              EffectInspectionClass
 	Owner                        uint8
 	Generation                   uint64
 	LastVelocityX, LastVelocityY int
@@ -44,6 +45,9 @@ func (p *effectPool) allocate(kind EffectKind, owner uint8) int {
 	for id := range p.Slots {
 		if p.Slots[id].Kind == EffectNone {
 			p.Slots[id].Kind = kind
+			if class, assigned := inspectionClassAssigned(kind); assigned {
+				p.Slots[id].InspectionClass = class
+			}
 			p.Slots[id].Owner = owner
 			p.Slots[id].Generation++
 			return id

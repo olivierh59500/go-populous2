@@ -50,9 +50,6 @@ func (g *Game) updateBriefing(x, y int, clicked bool) error {
 		if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) && len(g.worldCodeInput) > 0 {
 			g.worldCodeInput = g.worldCodeInput[:len(g.worldCodeInput)-1]
 		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-			g.editingWorldCode = false
-		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 			g.acceptBriefingCode()
 		}

@@ -9,7 +9,8 @@ import (
 // effects and AI orders keep their independent admission rules.
 func (g *Game) applyTerrainClick(x, y int, lower bool) error {
 	target := engine.PowerTarget{X: x, Y: y, Lower: lower}
-	view := engine.Viewport{X: g.CameraX, Y: g.CameraY, Size: viewSize}
+	displayed := g.displayedGame()
+	view := engine.Viewport{X: displayed.CameraX, Y: displayed.CameraY, Size: viewSize}
 	if g.Network != nil {
 		kind := "terrain-click"
 		if lower {
@@ -20,5 +21,6 @@ func (g *Game) applyTerrainClick(x, y int, lower bool) error {
 	if lower && g.World.Sprog(g.playerSide(), x, y) {
 		return nil
 	}
-	return g.World.CastFromViewport(g.playerSide(), engine.RaiseLower, target, view)
+	rights := displayed.World.CursorTerrainRights(g.playerSide(), view)
+	return g.World.CastWithCursorTerrainRights(g.playerSide(), target, view, rights)
 }

@@ -29,15 +29,12 @@ func (g *Game) handleOriginalStartup(x, y int) (handled, quit bool, err error) {
 	}
 	switch menu.ActionAt(x, y) {
 	case visualassets.StartupProfile:
-		g.Screen = DeityProfile
+		g.openDeityProfile(MainMenu)
 	case visualassets.StartupConquest:
 		g.CustomGame = false
 		g.Screen = ConquestBriefing
 	case visualassets.StartupCustom:
-		g.CustomGame = true
-		if err = g.openOptions(); err == nil {
-			g.Options.Return = ConquestBriefing
-		}
+		err = g.startCustomGame()
 	case visualassets.StartupLoad:
 		err = g.openSaveBrowser(false)
 	case visualassets.StartupQuit:

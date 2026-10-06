@@ -13,7 +13,7 @@ func TestOriginalStartupActionsBindIndependentScreens(t *testing.T) {
 		screen Screen
 		quit   bool
 	}{
-		{visualassets.StartupProfile, DeityProfile, false}, {visualassets.StartupConquest, ConquestBriefing, false}, {visualassets.StartupCustom, OptionsScreen, false}, {visualassets.StartupLoad, SaveBrowserScreen, false}, {visualassets.StartupQuit, MainMenu, true},
+		{visualassets.StartupProfile, DeityProfile, false}, {visualassets.StartupConquest, ConquestBriefing, false}, {visualassets.StartupCustom, Playing, false}, {visualassets.StartupLoad, SaveBrowserScreen, false}, {visualassets.StartupQuit, MainMenu, true},
 	} {
 		g := menuTestGame(t)
 		g.Screen = MainMenu
@@ -23,8 +23,8 @@ func TestOriginalStartupActionsBindIndependentScreens(t *testing.T) {
 		if err != nil || !handled || quit != test.quit || g.Screen != test.screen {
 			t.Fatal("startup semantic binding differs", test.action, g.Screen, quit, err)
 		}
-		if test.action == visualassets.StartupCustom && (g.Options == nil || g.Options.Return != ConquestBriefing || !g.CustomGame) {
-			t.Fatal("custom startup did not prepare independent setup")
+		if test.action == visualassets.StartupCustom && (g.Options != nil || !g.CustomGame || g.CustomLevel == nil || g.World.Level.Players[0].Groups != 1 || g.World.Level.Players[0].Population != 50) {
+			t.Fatal("custom startup did not enter its original starting game directly")
 		}
 		if test.action == visualassets.StartupLoad && (g.SaveBrowser == nil || g.SaveBrowser.Saving || g.SaveBrowser.Return != MainMenu) {
 			t.Fatal("load startup did not open the independent load browser")

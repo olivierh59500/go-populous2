@@ -37,19 +37,38 @@ type networkSetupInput struct {
 
 func (g *Game) applyNetworkSetupInput(input networkSetupInput) {
 	if input.Clicked {
-		switch {
-		case input.Y >= 48 && input.Y < 65 && input.X >= 28 && input.X < 148:
-			g.networkHosting = true
-		case input.Y >= 48 && input.Y < 65 && input.X >= 172 && input.X < 292:
-			g.networkHosting = false
-		case input.Y >= 92 && input.Y < 117 && input.X >= 20 && input.X < 300:
-			g.editingConnection = true
-		case input.Y >= 171 && input.Y < 190 && input.X >= 20 && input.X < 120:
-			g.Screen = MainMenu
-			g.editingConnection = false
-			return
-		case input.Y >= 171 && input.Y < 190 && input.X >= 164 && input.X < 300:
-			input.Enter = true
+		if g.Assets != nil && g.Assets.NetworkLayout != nil {
+			switch g.Assets.NetworkLayout.ActionAt(input.X, input.Y) {
+			case "host":
+				g.networkHosting = true
+			case "join":
+				g.networkHosting = false
+			case "address":
+				g.editingConnection = true
+			case "connect":
+				input.Enter = true
+			case "cancel":
+				g.Screen = MainMenu
+				g.editingConnection = false
+				return
+			}
+			input.Clicked = false
+		}
+		if input.Clicked {
+			switch {
+			case input.Y >= 48 && input.Y < 65 && input.X >= 28 && input.X < 148:
+				g.networkHosting = true
+			case input.Y >= 48 && input.Y < 65 && input.X >= 172 && input.X < 292:
+				g.networkHosting = false
+			case input.Y >= 92 && input.Y < 117 && input.X >= 20 && input.X < 300:
+				g.editingConnection = true
+			case input.Y >= 171 && input.Y < 190 && input.X >= 20 && input.X < 120:
+				g.Screen = MainMenu
+				g.editingConnection = false
+				return
+			case input.Y >= 171 && input.Y < 190 && input.X >= 164 && input.X < 300:
+				input.Enter = true
+			}
 		}
 	}
 	if g.editingConnection {
@@ -116,6 +135,15 @@ func (g *Game) startConfiguredNetwork() error {
 }
 
 func (g *Game) drawNetworkSetup() {
+	if l := g.Assets.NetworkLayout; l != nil {
+		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(l.Palette[0]), image.Point{}, draw.Src)
+		mode := "HOST"
+		if !g.networkHosting {
+			mode = "JOIN"
+		}
+		l.Draw(g.framebuffer, g.Assets.Visual.Font, map[string]string{"mode": mode, "address": g.connectionAddress, "status": strings.ToUpper(g.Message)}, nil)
+		return
+	}
 	draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 	g.text("TWO PLAYERS", 116, 15)
 	host, join := "HOST A GAME", "JOIN A GAME"

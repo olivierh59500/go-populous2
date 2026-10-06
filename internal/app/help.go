@@ -26,18 +26,28 @@ func (g *Game) drawHelp() {
 	g.text("HOW TO PLAY", 116, 14)
 	for row, text := range []string{
 		"ARROWS: MOVE THE VIEW",
-		"TAB: CHOOSE A DIVINE POWER",
+		"CLICK PANEL POWER ICONS",
 		"1-4: SETTLE RALLY JOIN FIGHT",
 		"O: OPTIONS     P: MAP EDITOR",
 		"F9: LOAD       F10: SAVE",
 		"SPACE: PAUSE / RESUME",
 		"I: INSPECT GROUPS / TOWNS",
+		"F11 OVER AN ICON: SPELL HELP",
 	} {
 		g.text(text, 32, 32+row*10)
 	}
 	if power, ok := engine.PowerByID(g.Selected); ok {
-		g.text(strings.ToUpper(power.Name), 32, 105)
+		g.text(strings.ToUpper(power.Name), 32, 115)
 		text := powerHelp[g.Selected]
+		if g.Assets.SpellHelp != nil {
+			lines := strings.Split(g.Assets.SpellHelp.Descriptor.Descriptions[int(g.Selected)], "\n")
+			for i := range lines {
+				if len(lines[i]) > 32 {
+					lines[i] = lines[i][:32]
+				}
+			}
+			text = strings.Join(lines[:min(2, len(lines))], "\n")
+		}
 		if text == "" {
 			if _, hero := engine.HeroKindForPower(g.Selected); hero {
 				text = "TRANSFORM YOUR LEADER INTO\nA HERO USING EARNED MANA."
@@ -45,7 +55,7 @@ func (g *Game) drawHelp() {
 				text = "SELECT A TARGET PARCEL.\nTHE POWER USES YOUR MANA."
 			}
 		}
-		g.text(text, 32, 121)
+		g.text(text, 32, 129)
 	}
 	g.button("PREVIEW POWER", 96, 155, 128)
 	g.button("RETURN", 120, 174, 80)

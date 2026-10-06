@@ -151,7 +151,14 @@ func (w *World) paintWater(x, y int, code uint8) {
 }
 
 func (w *World) CastWhirlpool(owner, x, y int) error {
-	if owner < 0 || owner > 1 || !inside(x, y) {
+	if owner < 0 || owner > 1 {
+		return fmt.Errorf("invalid whirlpool owner")
+	}
+	return w.createWhirlpool(owner, x, y)
+}
+
+func (w *World) createWhirlpool(owner, x, y int) error {
+	if owner < 0 || owner > 2 || !inside(x, y) {
 		return fmt.Errorf("invalid whirlpool target")
 	}
 	for _, d := range whirlpoolFootprint {
@@ -163,7 +170,11 @@ func (w *World) CastWhirlpool(owner, x, y int) error {
 	if id < 0 {
 		return fmt.Errorf("whirlpool exhausted effect reservations")
 	}
-	w.Water.Whirlpools[id] = WhirlpoolEffect{Active: true, Owner: uint8(owner), X: x, Y: y, Life: 300 + int(w.Players[owner].Experience[Water]), Delay: 16}
+	xp := 0
+	if owner < 2 {
+		xp = int(w.Players[owner].Experience[Water])
+	}
+	w.Water.Whirlpools[id] = WhirlpoolEffect{Active: true, Owner: uint8(owner), X: x, Y: y, Life: 300 + xp, Delay: 16}
 	w.paintWhirlpool(&w.Water.Whirlpools[id])
 	return nil
 }
@@ -241,7 +252,14 @@ var tidalDirections = [4][2]int{{0, -1}, {1, 0}, {0, 1}, {-1, 0}}
 // CastTsunami starts a cardinal front on each adjacent water parcel. Its
 // center can be dry and the cast is admitted even when no front can spawn.
 func (w *World) CastTsunami(owner, x, y int) error {
-	if owner < 0 || owner > 1 || !inside(x, y) {
+	if owner < 0 || owner > 1 {
+		return fmt.Errorf("invalid tidal-wave owner")
+	}
+	return w.createTsunami(owner, x, y)
+}
+
+func (w *World) createTsunami(owner, x, y int) error {
+	if owner < 0 || owner > 2 || !inside(x, y) {
 		return fmt.Errorf("invalid tidal-wave target")
 	}
 	for direction, d := range tidalDirections {

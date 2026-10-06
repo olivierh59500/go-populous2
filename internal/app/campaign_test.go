@@ -17,6 +17,22 @@ func TestCampaignResultAwardsOnceAndRoutesExperienceAllocation(t *testing.T) {
 	if err := g.applyCampaignResult(); err != nil || g.Profile != before || g.LevelIndex != 17 {
 		t.Fatal("result was applied twice", err)
 	}
+	g.applyOriginalProfileAction("experience-2")
+	allocated := g.Profile
+	g.applyOriginalProfileAction("proceed")
+	if g.Screen != ConquestBriefing || g.LevelIndex != 17 || g.Profile != allocated {
+		t.Fatal("experience allocation did not continue directly to the next conquest")
+	}
+}
+
+func TestCampaignVictoryWithNoRemainingBoltsSkipsEmptyProfile(t *testing.T) {
+	g := &Game{World: &engine.World{Result: 1}, Profile: engine.Deity{Name: "PLAYER"}, LevelIndex: 12}
+	if err := g.applyCampaignResult(); err != nil {
+		t.Fatal(err)
+	}
+	if g.Screen != ConquestBriefing || g.Profile.Bolts != 0 || g.LevelIndex != 13 {
+		t.Fatal("empty experience allocation interrupted conquest", g.Screen, g.LevelIndex)
+	}
 }
 
 func TestFinalCampaignResultReturnsToMainMenu(t *testing.T) {

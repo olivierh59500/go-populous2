@@ -73,6 +73,7 @@ type Player struct {
 	RallyX, RallyY                int
 	Leader                        int
 	Computer                      bool
+	Assisted                      bool // Human control with automatic terrain expansion and town release.
 	Towns, Population, BattlesWon int
 }
 

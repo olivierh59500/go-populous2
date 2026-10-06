@@ -28,10 +28,49 @@ type Assets struct {
 	Result                                       *visualassets.ResultDescriptor
 	FileLayout, OverwriteLayout, FileErrorLayout *visualassets.RequesterLayout
 	InGameLayout                                 *visualassets.RequesterLayout
+	AboutLayout                                  *visualassets.RequesterLayout
+	EditorLayout                                 *visualassets.RequesterLayout
+	EditorPreview                                map[string]visualassets.Frame
+	NetworkLayout                                *visualassets.RequesterLayout
+	SpellHelp                                    *visualassets.SpellHelpArt
 	Levels                                       []engine.Level
 	Landscapes                                   [4]engine.Landscape
 	Music                                        *music.Bank
 	RulesID                                      string
+}
+
+// A playable build must carry the restored interface package. Older exports
+// remain readable for reference tools, but must not silently select substitute
+// controls in the ordinary launcher.
+func (a *Assets) requireOriginalInterface() error {
+	for _, item := range []struct {
+		name    string
+		present bool
+	}{
+		{"startup-menu.json", a.StartupMenu != nil},
+		{"pointers.json", a.Pointers != nil},
+		{"selected-panel.json", a.SelectionPanel != nil},
+		{"deity-layout.json", a.DeityLayout != nil},
+		{"deity-widgets.json", a.DeityWidgets != nil},
+		{"hud.json", a.HUD != nil},
+		{"conquest.json", a.Conquest != nil},
+		{"options.json", a.OptionsArt != nil},
+		{"result-layout.json", a.Result != nil},
+		{"in-game-layout.json", a.InGameLayout != nil},
+		{"about-layout.json", a.AboutLayout != nil},
+		{"editor-layout.json", a.EditorLayout != nil},
+		{"editor-preview.json", a.EditorPreview != nil},
+		{"network-layout.json", a.NetworkLayout != nil},
+		{"spell-help.json", a.SpellHelp != nil},
+		{"files-layout.json", a.FileLayout != nil},
+		{"overwrite-layout.json", a.OverwriteLayout != nil},
+		{"file-error-layout.json", a.FileErrorLayout != nil},
+	} {
+		if !item.present {
+			return fmt.Errorf("original interface asset %s is missing; regenerate assets with cmd/export-visual-assets", item.name)
+		}
+	}
+	return nil
 }
 
 func LoadAssets(files fs.FS) (*Assets, error) {
@@ -77,6 +116,26 @@ func LoadAssets(files fs.FS) (*Assets, error) {
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf("in-game menu: %w", err)
 	}
+	bundle.AboutLayout, err = visualassets.LoadRequesterLayout(files, "about-layout.json")
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("about window: %w", err)
+	}
+	bundle.EditorLayout, err = visualassets.LoadRequesterLayout(files, "editor-layout.json")
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("paint window: %w", err)
+	}
+	bundle.EditorPreview, err = visualassets.LoadEditorPreview(files)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("editor preview: %w", err)
+	}
+	bundle.NetworkLayout, err = visualassets.LoadRequesterLayout(files, "network-layout.json")
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("network window: %w", err)
+	}
+	bundle.SpellHelp, err = visualassets.LoadSpellHelpArt(files)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return nil, fmt.Errorf("spell help: %w", err)
+	}
 	bundle.Conquest, err = visualassets.LoadConquestArt(files)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf("conquest interface: %w", err)
@@ -116,7 +175,7 @@ func LoadAssets(files fs.FS) (*Assets, error) {
 		Levels     []engine.Level
 		Landscapes [4]engine.Landscape
 		Powers     []engine.Power
-	}{fmt.Sprintf("go-engine-4-snapshot-%d", engine.SnapshotVersion), bundle.Levels, bundle.Landscapes, engine.Powers})
+	}{fmt.Sprintf("go-engine-7-snapshot-%d-scenarios-%d", engine.SnapshotVersion, engine.ScenarioEventCapacity), bundle.Levels, bundle.Landscapes, engine.Powers})
 	if err != nil {
 		return nil, err
 	}

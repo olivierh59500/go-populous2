@@ -123,10 +123,21 @@ func (w *World) CastArmageddon(owner int) error {
 // Baptism uses the water experience tier to extend both its sampling divisor
 // and attempt count. It replaces only unoccupied fertile or road parcels.
 func (w *World) CastBaptism(owner, x, y int) error {
-	if owner < 0 || owner > 1 || !inside(x, y) {
+	if owner < 0 || owner > 1 {
+		return fmt.Errorf("invalid baptism owner")
+	}
+	return w.createBaptism(owner, x, y)
+}
+
+func (w *World) createBaptism(owner, x, y int) error {
+	if owner < 0 || owner > 2 || !inside(x, y) {
 		return fmt.Errorf("invalid baptism target")
 	}
-	base := 17 + int(w.Players[owner].Experience[Water]>>5)
+	xp := 0
+	if owner < 2 {
+		xp = int(w.Players[owner].Experience[Water] >> 5)
+	}
+	base := 17 + xp
 	count := int(w.random.next())%base + base/2
 	for attempt := 0; attempt <= count; attempt++ {
 		nx, ny, ok := w.natureSample(x, y)

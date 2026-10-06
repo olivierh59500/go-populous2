@@ -2,7 +2,7 @@ package app
 
 import "go-populous2/internal/engine"
 
-// FollowerSelectionReturn is local presentation state. Temporary hero/editor
+// FollowerSelectionReturn is local presentation state. Temporary hero/rally
 // inspection uses 100 main-frame presentations; simulation passes, Draw calls
 // and unrelated menus do not advance this countdown.
 type FollowerSelectionReturn struct {
@@ -52,7 +52,7 @@ func selectedFollowerExists(w *engine.World, id int) bool {
 	return w != nil && id > 0 && id < engine.FollowerCapacity && w.Followers[id].State != engine.Inactive
 }
 
-// selectFollowerTemporarily is used by the original hero/editor scan actions.
+// selectFollowerTemporarily is used by right-click hero/rally inspection.
 // Clicking a visible map actor sets SelectedFollower directly instead.
 func (g *Game) selectFollowerTemporarily(id int) {
 	if !selectedFollowerExists(g.World, id) {

@@ -80,6 +80,11 @@ func Encode(document *Document) ([]byte, error) {
 				byteAt(at+off, record[off])
 			}
 		}
+		inspectionKind, err := encodeInspectionClass(w.EffectiveInspectionClass(id))
+		if err != nil {
+			return nil, err
+		}
+		byteAt(at, inspectionKind)
 		link := w.Actors.Effects[id]
 		next, err := fileReference(link.Next)
 		if err != nil {
@@ -103,8 +108,14 @@ func Encode(document *Document) ([]byte, error) {
 		armageddon = 1
 	}
 	wordAt(0xf12, armageddon)
-	for i, value := range w.Level.WorldParameters {
-		byteAt(0xdde+i, value)
+	for index, event := range w.Scenario.Events {
+		record, err := engine.EncodeScenarioEvent(event)
+		if err != nil {
+			return nil, fmt.Errorf("GAM scenario event %d: %w", index, err)
+		}
+		for i, value := range record {
+			byteAt(0xdde+index*6+i, value)
+		}
 	}
 	for at, cell := range w.Tiles {
 		logical := w.Cell(at%64, at/64)

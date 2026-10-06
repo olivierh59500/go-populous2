@@ -30,8 +30,8 @@ func (g *Game) applyCampaignResult() error {
 	g.ResultProgress = progress
 	g.resultApplied = true
 	g.LevelIndex = progress.NextWorld
-	if progress.AllocateExperience {
-		g.Screen = DeityProfile
+	if progress.AllocateExperience && g.Profile.Bolts != 0 {
+		g.openDeityProfile(ConquestBriefing)
 	} else {
 		g.Screen = ConquestBriefing
 	}

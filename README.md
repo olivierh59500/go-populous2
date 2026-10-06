@@ -43,20 +43,27 @@ go run ./cmd/populous2 -connect 127.0.0.1:2468
 ```
 
 Display/input run at 50 PAL updates per second, with 12.5 simulation passes
-per second. Audio retains its own clock. Mouse controls on the left panel
-expose powers, tactical modes, the rally marker, help, options and saving.
+per second. Audio retains its own clock. The original panel retains its slanted
+power icons, tactical controls, mana indicator and population marks. The Roman
+amphitheatre shows the selected group or town with its original animation,
+weapon and population artwork. Conquest, deity creation, options, paint, spell
+help and file operations retain their original requester layouts. All menus
+are in English.
 
 | Action | Input |
 |---|---|
 | Raise land / release a town or lower land | Left / right click |
-| Choose an element and power | Tab, then the visible buttons |
+| Choose an element and power | Original element and power icons |
 | Settle / rally / join / fight | 1 / 2 / 3 / 4 |
 | Move the view | Arrow keys or world overview |
 | Directional powers | Q / E |
 | Lightning marker / activate / dismiss | Left click / Enter / right click |
 | Options / map editor / help | O / P / H |
 | Browse and load / browse and save | F9 / F10 |
-| Pause / return to the menu | Space / Escape |
+| Inspect a group or town | Original inspect icon, or I, then click |
+| Inspect existing heroes / center on the leader | Right click a hero icon / Rally |
+| Original animated spell help | F11 while pointing at an enabled power icon |
+| Pause / return to the menu | Space / original game-menu icon |
 
 The save browser confirms replacement of an existing file. Invalid loads leave
 the current game intact. JSON preserves the complete Go session; GAM translates
@@ -75,6 +82,11 @@ GAM continuation. An optional local reference comparison matches 160 no-input
 physics passes in world 12 for terrain, followers, mana and RNG. This is bounded
 fidelity evidence, not a claim that every combination in all worlds is identical.
 
+The [original interface guide](docs/ORIGINAL_INTERFACE.md) details framebuffer,
+hit-region and animation-phase comparisons, as well as the serial/TCP and
+copy-protection boundaries. The launcher requires a current full interface
+export; regenerate older portable packages with `cmd/export-visual-assets`.
+
 ```sh
 go test ./internal/engine ./internal/music ./internal/visualassets ./internal/gamcodec
 POPULOUS2_REFERENCE_COMPARE=1 go test ./internal/populous2 -run '^TestIndependentEngineCampaignReferenceOptional$' -count=1
@@ -87,8 +99,10 @@ requirements and older captures are documented in [FEATURES.md](docs/FEATURES.md
 The [engine guide](docs/GO_ENGINE.md) and [implementation audit](docs/GO_ENGINE_AUDIT.md)
 describe architecture, interoperability and precise verification limits.
 
-![Populous II gameplay reference](screenshots/game.png)
+![Independent Go gameplay with the original HUD and selected-town panel](screenshots/game.png)
 
-![Deity profile reference](screenshots/deity.png)
+![Original deity requester recreated in Go](screenshots/deity.png)
+
+![Original conquest requester recreated in Go](screenshots/conquest.png)
 
 ![Fire-column reference](screenshots/fire-columns.png)

@@ -62,9 +62,13 @@ func (w *World) syncEffectActor(id int) {
 		active, x, y = a.Active, a.X, a.Y
 	case EffectLightning:
 		if a := w.Air.Markers[id]; a.Active {
+			w.effects.Slots[id].InspectionClass = InspectLightningMarker
 			active, x, y = true, a.X, a.Y
 		} else {
 			a := w.Air.Bolts[id]
+			if a.Active {
+				w.effects.Slots[id].InspectionClass = InspectLightningBolt
+			}
 			active, x, y = a.Active, a.X, a.Y
 		}
 	case EffectStorm:

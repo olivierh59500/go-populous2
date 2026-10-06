@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-const SnapshotVersion = 2
+const SnapshotVersion = 3
 const maximumSnapshotBytes = 16 << 20
 
 // SavedWorld contains the World's exported, named simulation fields. Private
@@ -93,15 +93,26 @@ func ReadSnapshot(input io.Reader) (*World, error) {
 }
 
 func (s Snapshot) Restore() (*World, error) {
-	if s.Version != 1 && s.Version != SnapshotVersion {
+	if s.Version < 1 || s.Version > SnapshotVersion {
 		return nil, fmt.Errorf("unsupported snapshot version %d", s.Version)
 	}
-	if s.Version == SnapshotVersion && s.Construction != nil {
-		return nil, fmt.Errorf("version-two snapshot contains a retired construction cache")
+	if s.Version >= 2 && s.Construction != nil {
+		return nil, fmt.Errorf("snapshot contains a retired construction cache")
 	}
 	w := World(s.World)
+	if s.Version < 3 {
+		migrateLegacyWorldPowerIDs(&w)
+	}
 	w.random = randomState(s.Random)
 	w.effects.Slots = s.Reservations
+	if s.Version < 3 {
+		for id := range w.effects.Slots {
+			slot := &w.effects.Slots[id]
+			if slot.InspectionClass == InspectUnspecified {
+				slot.InspectionClass = w.EffectiveInspectionClass(id)
+			}
+		}
+	}
 	for id, motion := range s.Motion {
 		f := &w.Followers[id]
 		f.positionX, f.positionY = motion.PositionX, motion.PositionY
@@ -128,7 +139,7 @@ func validateSnapshotWorld(w *World) error {
 		return fmt.Errorf("snapshot scenario cursor is invalid")
 	}
 	for _, event := range w.Scenario.Events {
-		if event.Kind > ScenarioMonster || event.Direction > 3 || event.Time != 0 && !inside(int(event.X), int(event.Y)) {
+		if event.Kind > ScenarioRemoveActor || event.Direction > 3 || event.Time != 0 && !inside(int(event.X), int(event.Y)) {
 			return fmt.Errorf("snapshot scenario event is invalid")
 		}
 	}
@@ -156,6 +167,9 @@ func validateSnapshotWorld(w *World) error {
 		}
 	}
 	for owner, player := range w.Players {
+		if player.Computer && player.Assisted {
+			return fmt.Errorf("snapshot player %d combines computer and assisted control", owner)
+		}
 		request := w.AI[owner]
 		if request.WaterRequestFollower < 0 || request.WaterRequestFollower >= FollowerCapacity {
 			return fmt.Errorf("snapshot water request follower is invalid")
@@ -226,7 +240,7 @@ func validateSnapshotWorld(w *World) error {
 		}
 	}
 	for id, reservation := range w.effects.Slots {
-		if reservation.Kind > EffectPlague || reservation.Owner > 2 {
+		if reservation.Kind > EffectPlague || reservation.Owner > 2 || reservation.InspectionClass > InspectHurricane {
 			return fmt.Errorf("snapshot effect reservation %d is invalid", id)
 		}
 		if reservation.Kind == EffectNone {
