@@ -1126,3 +1126,18 @@ A regression test mutates a recounted population while the result child is
 pending and verifies that the next Advance preserves it, caller registers and
 raw borrow. The actual381E result controller and ending/reset children still
 require their own source comparison and concrete callback binding.
+
+## Physical runtime multiplayer transport
+
+NewTransport binds the original packet, handshake and resume controllers to
+one shared physical runtime and an actual ordered connection. Packet transfer
+retains prefixes and actual sender/receiver registers; mismatches require the
+genuine33B2 dialog and disconnect. Host ownership and CPU-delay inputs remain
+explicit, rather than claims of Amiga bus timing.
+
+Paired connection tests exchange raw eight-byte commands and RNG values.
+Another negotiates both original profiles, retains the two100000-iteration
+delay boundaries, then executes each real mode6 world constructor through
+encoded resources, panel and audio. Terrain, overlays and complete actor pools
+match between peers. This proves host/controller composition; live serial-menu
+wiring, session resumes and full two-player gameplay/save policy remain work.
