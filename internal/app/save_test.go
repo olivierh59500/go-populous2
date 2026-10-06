@@ -33,3 +33,19 @@ func TestSavedSessionRestoresProfileAndDetachedWorld(t *testing.T) {
 		t.Fatal("invalid session changed live game", err)
 	}
 }
+
+func TestLoadedCompletedGameReturnsToResultsWithoutAwarding(t *testing.T) {
+	g := browserGame(t)
+	g.World.Result = 1
+	g.World.Players[1].Statistics.ScenarioOptions = 1
+	profile := g.Profile
+	if err := g.saveGame(); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.loadGame(); err != nil {
+		t.Fatal(err)
+	}
+	if g.Screen != CampaignResult || g.resultApplied || g.Profile != profile {
+		t.Fatal("loading a completed game resumed play or granted rewards")
+	}
+}

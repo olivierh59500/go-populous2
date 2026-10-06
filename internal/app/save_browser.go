@@ -139,6 +139,9 @@ func (g *Game) updateSaveBrowser(x, y int, clicked bool) {
 		b.Name = b.Name[:len(b.Name)-1]
 		b.Confirm = false
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyDelete) || (ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyA)) {
+		b.Name, b.Confirm, b.Error = "", false, ""
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		g.acceptSaveBrowser()
 	}

@@ -86,4 +86,7 @@ func (g *Game) drawCampaignResult() {
 		g.text(line, 40, 52+index*15)
 	}
 	g.button("CONTINUE", 112, 150, 104)
+	if g.Updates < g.messageUntil {
+		g.drawMessage(181)
+	}
 }

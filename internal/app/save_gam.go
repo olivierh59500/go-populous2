@@ -54,6 +54,7 @@ func (g *Game) loadOriginalGame() error {
 	g.Paused, g.resultApplied, g.Screen = false, false, Playing
 	g.Selected, g.Direction = engine.RaiseLower, 0
 	g.AnimationSounds = AnimationSoundGate{}
+	g.finishWorld()
 	g.Message, g.messageUntil = "ORIGINAL GAME LOADED", g.Updates+100
 	return nil
 }

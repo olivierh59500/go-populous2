@@ -133,6 +133,7 @@ func (g *Game) loadGame() error {
 	g.CustomGame, g.Paused = session.CustomGame, session.Paused
 	g.LocalSide, g.OriginalSave = session.LocalSide, original
 	g.AnimationSounds = AnimationSoundGate{}
+	g.finishWorld()
 	g.Message = "GAME LOADED"
 	g.messageUntil = g.Updates + 100
 	return nil
