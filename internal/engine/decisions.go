@@ -17,6 +17,7 @@ var decisionNeighbours = [16][2]int{
 func (w *World) chooseMove(id int) (int, int, bool) {
 	f := &w.Followers[id]
 	owner := int(f.Owner)
+	f.RoadLeg = false
 	mode := w.Players[owner].Mode
 	if mode == Rally {
 		return w.chooseRally(id)
@@ -26,18 +27,43 @@ func (w *World) chooseMove(id int) (int, int, bool) {
 	selected := false
 	for _, d := range preferredSettlements[:count] {
 		x, y := int(f.X)+d[0], int(f.Y)+d[1]
-		if !inside(x, y) || w.Nature.BlocksWalking(x, y) {
+		if !inside(x, y) {
 			continue
 		}
-		other := int(w.Occupants[x+y*MapSize])
-		if other != 0 && other != id {
-			candidate := w.Followers[other]
-			matches := mode == Join && candidate.Owner == f.Owner && candidate.State != Town || mode == Fight && candidate.Owner != f.Owner
-			if matches {
-				return x, y, true
+		blocked, matched := false, false
+		head := w.Actors.Heads[x+y*MapSize]
+		if head.Kind != ActorNone {
+			for visits := 0; head.Kind != ActorNone && visits < 1200; visits++ {
+				if head.Kind == ActorScenery && w.Nature.Scenery[head.Index].Kind == SceneryBoulder {
+					blocked = true
+					break
+				}
+				if head.Kind == ActorFollower && int(head.Index) != id {
+					candidate := w.Followers[head.Index]
+					matches := mode == Join && candidate.Owner == f.Owner && candidate.State != Town || mode == Fight && candidate.Owner != f.Owner
+					if matches {
+						matched = true
+						break
+					}
+				}
+				head = w.Actors.Next(head)
+			}
+		} else {
+			if w.Nature.BlocksWalking(x, y) {
+				blocked = true
+			} else if other := int(w.Occupants[x+y*MapSize]); other != 0 && other != id {
+				candidate := w.Followers[other]
+				matched = mode == Join && candidate.Owner == f.Owner && candidate.State != Town || mode == Fight && candidate.Owner != f.Owner
 			}
 		}
-		if w.Cell(x, y).IsFlat() && w.NatureTownAllowed(owner, x, y) {
+		if blocked {
+			continue
+		}
+		if matched {
+			return x, y, true
+		}
+
+		if settlementLand(w.Cell(x, y).Code) && w.NatureTownAllowed(owner, x, y) {
 			selectedX, selectedY, selected = x, y, true
 			if mode == Settle {
 				break
@@ -53,7 +79,16 @@ func (w *World) chooseMove(id int) (int, int, bool) {
 	for offset := 0; offset < 8; offset++ {
 		d := decisionNeighbours[start+offset]
 		x, y := int(f.X)+d[0], int(f.Y)+d[1]
-		if !inside(x, y) || w.Cell(x, y).IsWater() || w.Nature.BlocksWalking(x, y) {
+		if !inside(x, y) || w.Cell(x, y).IsWater() {
+			continue
+		}
+		direction := decisionNeighbours[start+offset]
+		cardinal := direction[0] == 0 || direction[1] == 0
+		if roadCode(w.Cell(x, y).Code) && cardinal && direction != [2]int{-sign(f.velocityX), -sign(f.velocityY)} {
+			f.RoadLeg = true
+			return x, y, true
+		}
+		if w.Nature.BlocksWalking(x, y) {
 			continue
 		}
 		candidate := w.Pressure[x+y*MapSize]

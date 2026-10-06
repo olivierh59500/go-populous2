@@ -41,6 +41,7 @@ type Follower struct {
 	Stage                          uint8
 	LastDevelopedStage             uint8
 	ForceEmigration                bool
+	RoadLeg                        bool
 	Work                           uint16
 	FoundedAt                      uint64
 	SettleAfter                    uint64
@@ -118,6 +119,7 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 	}
 	w := &World{Level: level, Landscape: land, Scenario: scenario}
 	w.generate(level.Seed)
+	w.SetupScenery()
 	for owner := range w.Magnets {
 		w.Magnets[owner] = MagnetActor{X: 32*256 + 128, Y: 32*256 + 128, Owner: uint8(owner)}
 		w.Actors.Link(ActorRef{Kind: ActorMagnet, Index: uint16(owner)}, w.Magnets[owner].X, w.Magnets[owner].Y)
@@ -370,7 +372,18 @@ func (w *World) stepFollower(id int) {
 			return
 		}
 		x, y, ok := w.chooseMove(id)
-		if !ok || !w.beginSearchLeg(id, x, y) {
+		var began bool
+		if ok {
+			if f.RoadLeg {
+				oldSpeed := f.MovementSpeed
+				f.MovementSpeed = uint8(min(255, int(oldSpeed)+20))
+				began = w.beginSearchLeg(id, x, y)
+				f.MovementSpeed -= 20
+			} else {
+				began = w.beginSearchLeg(id, x, y)
+			}
+		}
+		if !began {
 			f.Frame = (f.Frame + 1) % 4
 			return
 		}
