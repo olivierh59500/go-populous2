@@ -64,6 +64,9 @@ func (w *World) writeNativeTownTile(x, y int, tile uint8) {
 }
 
 func (w *World) evaluateNativeTown(ref NativeRecordReference) (int, error) {
+	if w.nativeTownEvaluation != nil {
+		return w.nativeTownEvaluation(ref)
+	}
 	stage, err := w.TownEvaluator.Evaluate(ref, uint16(w.Core.GameTurn), w.nativeTownCallbacks())
 	return int(stage), err
 }

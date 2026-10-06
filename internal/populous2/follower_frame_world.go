@@ -117,6 +117,9 @@ func (w *World) nativeEntryFrameCallbacks(frame *NativeFrameRegisterContext, sta
 			}
 			cb := w.nativeTownCombatCallbacks()
 			cb.EvaluateTown = func(ref NativeRecordReference) (int, error) {
+				if w.nativeTownEvaluation != nil {
+					return w.nativeTownEvaluation(ref)
+				}
 				value, err := w.TownEvaluator.Evaluate(ref, clock, w.nativeTownCallbacks())
 				return int(value), err
 			}

@@ -141,7 +141,15 @@ func (w *World) nativeDestroyTown(ref NativeRecordReference) error {
 }
 
 func (w *World) nativeReformTown(ref, originalA0 NativeRecordReference) error {
-	_, err := w.TownCombat.Reform(ref, originalA0, uint16(w.Core.GameTurn), w.nativeTownCombatCallbacks())
+	clock := uint16(w.Core.GameTurn)
+	if w.nativeTownEvaluation != nil {
+		value, err := w.nativeCleanupMemory().Read16(0xf42)
+		if err != nil {
+			return err
+		}
+		clock = value
+	}
+	_, err := w.TownCombat.Reform(ref, originalA0, clock, w.nativeTownCombatCallbacks())
 	return err
 }
 

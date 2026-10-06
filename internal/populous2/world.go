@@ -89,6 +89,7 @@ type World struct {
 	NativeSelected           NativeRecordReference
 	nativeCallDepth          int
 	nativeTerrainPoint       func(*NativeCommandRegisterContext) error
+	nativeTownEvaluation     func(NativeRecordReference) (int, error)
 	nativeDirectSound        func(uint16) error
 	nativeEntryCrossing      func(int) FollowerEntryStep
 	NativeOverlays           [4096]uint8

@@ -36,27 +36,28 @@ type NativeFrameSession struct {
 	entryChecked  bool
 	exitChecked   bool
 
-	followerRules        *NativeFollowerFrameRules
-	wallRules            NativeWallRules
-	wallPlacement        NativeWallPlacementState
-	world                *World
-	outerBorrow          bool
-	failed               error
-	land                 []byte
-	bitmapResolver       func(uint32) ([]byte, error)
-	previousTerrainPoint func(*NativeCommandRegisterContext) error
-	palette              *NativeFramePaletteState
-	previousDirectSound  func(uint16) error
-	directSound          func(uint16) error
-	commandRules         NativeCommandRules
-	commandStates        [2]NativeCommandFrameState
-	commandPalettes      [2]*NativeFramePaletteState
-	imageAudioCode       *NativeImageAudioCodeAlias
-	inputPhase           uint32
-	requireInput         bool
-	followersCompleted   bool
-	resultPending        bool
-	resultIdentity       uint16
+	followerRules          *NativeFollowerFrameRules
+	wallRules              NativeWallRules
+	wallPlacement          NativeWallPlacementState
+	world                  *World
+	outerBorrow            bool
+	failed                 error
+	land                   []byte
+	bitmapResolver         func(uint32) ([]byte, error)
+	previousTerrainPoint   func(*NativeCommandRegisterContext) error
+	previousTownEvaluation func(NativeRecordReference) (int, error)
+	palette                *NativeFramePaletteState
+	previousDirectSound    func(uint16) error
+	directSound            func(uint16) error
+	commandRules           NativeCommandRules
+	commandStates          [2]NativeCommandFrameState
+	commandPalettes        [2]*NativeFramePaletteState
+	imageAudioCode         *NativeImageAudioCodeAlias
+	inputPhase             uint32
+	requireInput           bool
+	followersCompleted     bool
+	resultPending          bool
+	resultIdentity         uint16
 }
 
 type NativeFrameSessionCallbacks struct {
@@ -161,6 +162,8 @@ func (s *NativeFrameSession) begin(w *World, input NativeFrameRegisterContext, r
 	w.nativeCallDepth++
 	s.world = w
 	s.previousTerrainPoint = w.nativeTerrainPoint
+	s.previousTownEvaluation = w.nativeTownEvaluation
+	w.nativeTownEvaluation = s.evaluateFrameTown
 	s.previousDirectSound = w.nativeDirectSound
 	w.nativeDirectSound = func(raw uint16) error {
 		resource, err := s.Presentation.Memory(w.nativeCleanupMemory()).Read32(0x3b4)
@@ -213,6 +216,7 @@ func (s *NativeFrameSession) begin(w *World, input NativeFrameRegisterContext, r
 func (s *NativeFrameSession) finish(err error) {
 	if s.world != nil {
 		s.world.nativeTerrainPoint = s.previousTerrainPoint
+		s.world.nativeTownEvaluation = s.previousTownEvaluation
 		s.world.nativeDirectSound = s.previousDirectSound
 		s.world.nativeCallDepth--
 		if s.outerBorrow {
@@ -221,6 +225,7 @@ func (s *NativeFrameSession) finish(err error) {
 	}
 	s.world = nil
 	s.previousTerrainPoint = nil
+	s.previousTownEvaluation = nil
 	s.previousDirectSound = nil
 	s.directSound = nil
 	s.bitmapResolver = nil

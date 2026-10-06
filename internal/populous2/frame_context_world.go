@@ -18,7 +18,13 @@ type NativeFrameWorldBindings struct {
 }
 
 func (w *World) nativeFrameFXCallbacks(bindings NativeFrameWorldBindings) NativeFrameFXCallbacks {
-	return NativeFrameFXCallbacks{Memory: w.nativeCleanupMemory(), MapPoint: bindings.MapPoint, Tick: func(ref NativeRecordReference, c *NativeFrameRegisterContext) (NativeFrameFXStep, error) {
+	return NativeFrameFXCallbacks{Memory: w.nativeCleanupMemory(), WriteCode16: func(at int, value uint16) error {
+		if at < 0 || at&1 != 0 || at+2 > len(w.NativeAI.Code) {
+			return fmt.Errorf("native FX CODE word%x unavailable", at)
+		}
+		binary.BigEndian.PutUint16(w.NativeAI.Code[at:], value)
+		return nil
+	}, MapPoint: bindings.MapPoint, Tick: func(ref NativeRecordReference, c *NativeFrameRegisterContext) (NativeFrameFXStep, error) {
 		at := cleanupRecordAddress(ref)
 		state, e := w.nativeCleanupMemory().Read8(at + 22)
 		if e != nil {

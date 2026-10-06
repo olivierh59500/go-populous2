@@ -10,6 +10,10 @@ type NativeFrameFXStep struct {
 }
 type NativeFrameFXCallbacks struct {
 	Memory FollowerCleanupMemory
+	// WriteCode16 retains the source's mutable 15B7A color word before
+	// dispatch, including active actors that do not reach the drawing tail.
+	// Nil preserves the established standalone register-only ABI.
+	WriteCode16 func(int, uint16) error
 	// MapPoint executes actual $e196 pixels and register writes when present.
 	// Nil retains the established register-only standalone ABI.
 	MapPoint func(*NativeFrameRegisterContext) error
@@ -31,6 +35,11 @@ func (r *NativeCommandRules) TickFrameFX(c *NativeFrameRegisterContext, cb Nativ
 				return m.err
 			}
 			continue
+		}
+		if cb.WriteCode16 != nil {
+			if err := cb.WriteCode16(0x15b7a, 5); err != nil {
+				return err
+			}
 		}
 		state := m.byte(at + 22)
 		c.D[0] = 0

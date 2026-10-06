@@ -201,6 +201,9 @@ func TestNativeRuntimeHandshakeConstructsActualNegotiatedWorlds(t *testing.T) {
 				if done[side] {
 					continue
 				}
+				if hosts[side].Session.Phase == NativeFrameSessionRender && gameFrames[side].RenderChildren.actorActive {
+					nativeGameplayEnterProtectionAnswer(t, hosts[side], gameFrames[side])
+				}
 				if hosts[side].Session.Phase == NativeFrameSessionClock {
 					p := &hosts[side].Session.Presentation.Input
 					if _, err := hosts[side].Session.Presentation.VBlank(NativeMouseSample{CounterX: uint8(p.Mouse.CounterX), CounterY: uint8(p.Mouse.CounterY)}, hosts[side].Memory.BSS, &frames[side]); err != nil {
