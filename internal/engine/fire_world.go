@@ -103,18 +103,24 @@ func (w *World) CastVolcano(owner, x, y int) error {
 }
 
 func (w *World) tickFireEffects() {
-	h := worldFireHabitat{w}
 	for id := 0; id < EffectCapacity; id++ {
-		switch w.effects.Slots[id].Kind {
-		case EffectFireColumn:
-			w.Fire.TickColumn(id, h)
-		case EffectFireRain:
-			w.Fire.TickRain(id, h)
-		case EffectVolcano:
-			w.Fire.TickVolcano(id, h)
-		case EffectLava:
-			w.Fire.TickLava(id, w.Tick, h)
-		}
+		w.tickFireEffect(id)
+	}
+}
+
+// tickFireEffect lets the world's shared scheduler advance one reservation
+// in ascending pool order, including newborn actors in later free slots.
+func (w *World) tickFireEffect(id int) {
+	h := worldFireHabitat{w}
+	switch w.effects.Slots[id].Kind {
+	case EffectFireColumn:
+		w.Fire.TickColumn(id, h)
+	case EffectFireRain:
+		w.Fire.TickRain(id, h)
+	case EffectVolcano:
+		w.Fire.TickVolcano(id, h)
+	case EffectLava:
+		w.Fire.TickLava(id, w.Tick, h)
 	}
 }
 
