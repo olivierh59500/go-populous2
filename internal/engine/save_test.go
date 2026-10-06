@@ -1,0 +1,152 @@
+package engine
+
+import (
+	"bytes"
+	"encoding/json"
+	"reflect"
+	"strings"
+	"testing"
+)
+
+func TestSnapshotContinuesMotionAIAndSharedEffectsIdentically(t *testing.T) {
+	w := testFlatWorld()
+	w.random = 4311
+	w.Level.Players[0].Powers[FireColumn] = true
+	w.Level.Players[0].Powers[Fungus] = true
+	w.Players[0].Mana, w.Players[1].Mana = 1000000, 1000000
+	w.Players[0].RallyX, w.Players[0].RallyY = 10, 10
+	w.Players[1].RallyX, w.Players[1].RallyY = 50, 50
+	w.Players[1].Computer = true
+	a := addFollower(w, 32, 32, 0, 1000, Walking)
+	b := addFollower(w, 50, 50, 1, 900, Town)
+	w.Followers[b].Stage = 18
+	w.Players[0].Leader, w.Players[1].Leader = a, b
+	w.beginLeg(a, 33, 32)
+	w.advanceLeg(a)
+	w.terrainTargets[50+50*MapSize], w.terrainTargetSet[50+50*MapSize] = 1, true
+	w.developmentTarget[49+49*CornerSize], w.developmentTargetSet[49+49*CornerSize] = 1, true
+	if err := w.CastFireColumn(0, 20, 20); err != nil {
+		t.Fatal(err)
+	}
+	if err := w.CastFungus(0, 40, 40); err != nil {
+		t.Fatal(err)
+	}
+	// A separate water parcel gives basalt a live propagation controller.
+	for _, p := range [4][2]int{{5, 5}, {6, 5}, {5, 6}, {6, 6}} {
+		w.Heights[p[0]+p[1]*CornerSize] = 0
+	}
+	w.rebuildCells()
+	if !w.CreateBasalt(0, 5, 5, 1, 100) {
+		t.Fatal("basalt fixture was not admitted")
+	}
+	w.tickFireEffect(0)
+	var output bytes.Buffer
+	if err := WriteSnapshot(&output, w); err != nil {
+		t.Fatal(err)
+	}
+	restored, err := ReadSnapshot(bytes.NewReader(output.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(w, restored) {
+		t.Fatal("snapshot lost private motion, construction or effect state")
+	}
+	for tick := 0; tick < 60; tick++ {
+		w.Step()
+		restored.Step()
+		if !reflect.DeepEqual(w, restored) {
+			t.Fatalf("snapshot replay diverged at continuation tick%d", tick+1)
+		}
+	}
+}
+
+func TestSnapshotRejectsInvalidVersionsAndBrokenLinksWithoutMutatingLiveWorld(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+	id := addFollower(w, 32, 32, 0, 100, Walking)
+	before := *w
+	for name, corrupt := range map[string]func(*Snapshot){
+		"version":           func(s *Snapshot) { s.Version++ },
+		"height":            func(s *Snapshot) { s.World.Heights[0] = 9 },
+		"cycle":             func(s *Snapshot) { s.World.Followers[id].NextFollower = id },
+		"wrong-cell":        func(s *Snapshot) { s.World.Followers[id].X = 12 },
+		"invalid-motion":    func(s *Snapshot) { s.Motion[id].PositionX = -1 },
+		"absent-controller": func(s *Snapshot) { s.Reservations[0] = EffectReservation{Kind: EffectFireColumn, Owner: 0} },
+		"unreserved-controller": func(s *Snapshot) {
+			s.World.Fire.Columns[0] = FireEffect{Active: true, Owner: 0, X: 32 * 256, Y: 32 * 256}
+		},
+		"invalid-carry": func(s *Snapshot) {
+			s.World.Air.Carry[id] = AirCarryState{Phase: AirCarryFlying, Effect: 999, Frames: 12}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			s := w.Snapshot()
+			corrupt(&s)
+			data, err := json.Marshal(s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if candidate, err := ReadSnapshot(bytes.NewReader(data)); err == nil || candidate != nil {
+				t.Fatal("corrupt save returned a playable world")
+			}
+			if !reflect.DeepEqual(*w, before) {
+				t.Fatal("failed load changed the live world")
+			}
+		})
+	}
+}
+
+func TestSnapshotContinuesAirborneAndRetainedDeathState(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 40, 40
+	carried := addFollower(w, 32, 32, 0, 555, Walking)
+	dying := addFollower(w, 40, 40, 1, 100, Walking)
+	w.BurnFireCell(40, 40)
+	w.stepFollower(dying)
+	id := w.allocateEffect(EffectWhirlwind, 0)
+	w.Air.Whirlwinds[id] = WhirlwindEffect{Active: true, Owner: 0, X: 32*256 + 128, Y: 32*256 + 128, Phase: WhirlwindMoving, Life: 100, Timer: 20, VX: 24, VY: 0}
+	w.liftAirFollowers(id, 32, 32)
+	w.stepFollower(carried)
+	var output bytes.Buffer
+	if err := WriteSnapshot(&output, w); err != nil {
+		t.Fatal(err)
+	}
+	restored, err := ReadSnapshot(bytes.NewReader(output.Bytes()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for pass := 0; pass < 12; pass++ {
+		w.Step()
+		restored.Step()
+		if !reflect.DeepEqual(w, restored) {
+			t.Fatalf("retained lifecycle diverged at pass%d", pass+1)
+		}
+	}
+}
+
+func TestSnapshotStrictJSONAndWriterErrors(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+	var output bytes.Buffer
+	if err := WriteSnapshot(&output, w); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ReadSnapshot(strings.NewReader(output.String() + "{}")); err == nil {
+		t.Fatal("trailing JSON was accepted")
+	}
+	if _, err := ReadSnapshot(strings.NewReader(`{"version":1,"machineAddress":123}`)); err == nil {
+		t.Fatal("unknown save field was accepted")
+	}
+	if _, err := ReadSnapshot(strings.NewReader(`{"version":`)); err == nil {
+		t.Fatal("truncated JSON was accepted")
+	}
+	if _, err := ReadSnapshot(nil); err == nil {
+		t.Fatal("nil reader was accepted")
+	}
+	if err := WriteSnapshot(nil, w); err == nil {
+		t.Fatal("nil writer was accepted")
+	}
+}
