@@ -1055,3 +1055,17 @@ and verify matching follower/economy/win rules and rejection during a borrowed
 frame. NativeHostMouse supplies wrapping device counters to the original input
 routine, with bounded signed deltas and click coordinates after reaching the
 target. Cursor/button mutation remains owned by NativeInputState.
+
+## Concrete runtime input children
+
+NewInputChildren binds source terrain-height/admission/recentering, HUD/power
+selection, price admission, panel, direct audio and minimap bodies to the
+physical runtime. Required editor/export operations remain explicit external
+children until supplied. Audio/ownership callbacks borrow the caller's complete
+runtime access scope.
+
+An integrated terrain-click test uses the real projection/ray walk, original
+deity rule bits and mana admission, then verifies the raw delayed command and
+consumed click latch. It does not call World.Cast or execute the generated
+command in the same frame. The actual terrain wrappers separately match102
+complete CPU executions, including surviving address registers.
