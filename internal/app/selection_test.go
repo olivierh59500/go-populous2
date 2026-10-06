@@ -94,16 +94,19 @@ func TestSelectedGroupAndInspectModeSurviveSessionSave(t *testing.T) {
 	g := browserGame(t)
 	g.SelectedFollower = g.World.Players[0].Leader
 	g.Inspecting = true
+	g.SelectionReturn = FollowerSelectionReturn{BackupFollower: g.World.Players[1].Leader, FramesLeft: 57}
+	returnState := g.SelectionReturn
 	g.SavePath = filepath.Join(t.TempDir(), "selected.json")
 	id := g.SelectedFollower
 	if err := g.saveGame(); err != nil {
 		t.Fatal(err)
 	}
 	g.SelectedFollower, g.Inspecting = 0, false
+	g.SelectionReturn = FollowerSelectionReturn{}
 	if err := g.loadGame(); err != nil {
 		t.Fatal(err)
 	}
-	if g.SelectedFollower != id || !g.Inspecting {
+	if g.SelectedFollower != id || !g.Inspecting || g.SelectionReturn != returnState {
 		t.Fatal("saved selection or inspection mode was lost")
 	}
 }

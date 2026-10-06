@@ -26,13 +26,16 @@ func Encode(document *Document) ([]byte, error) {
 		return nil, fmt.Errorf("GAM cannot represent a scenario error state")
 	}
 	data := append([]byte(nil), document.Metadata.Original...)
-	if reflect.DeepEqual(snapshot, document.Metadata.initial) && document.Metadata.Profile == document.Metadata.initialProfile && document.Metadata.ProfileSide == document.Metadata.initialProfileSide && document.Metadata.GameMode == document.Metadata.initialGameMode && document.Metadata.CameraX == document.Metadata.initialCameraX && document.Metadata.CameraY == document.Metadata.initialCameraY {
+	if reflect.DeepEqual(snapshot, document.Metadata.initial) && document.Metadata.Profile == document.Metadata.initialProfile && document.Metadata.ProfileSide == document.Metadata.initialProfileSide && document.Metadata.GameMode == document.Metadata.initialGameMode && document.Metadata.CameraX == document.Metadata.initialCameraX && document.Metadata.CameraY == document.Metadata.initialCameraY && document.Metadata.SelectedFollower == document.Metadata.initialSelectedFollower && document.Metadata.BackupFollower == document.Metadata.initialBackupFollower && document.Metadata.SelectionReturnFrames == document.Metadata.initialSelectionReturnFrames {
 		return data, nil
 	}
 	byteAt := func(at int, value uint8) { data[at-fileStart] = value }
 	wordAt := func(at int, value uint16) { binary.BigEndian.PutUint16(data[at-fileStart:], value) }
 	longAt := func(at int, value uint32) { binary.BigEndian.PutUint32(data[at-fileStart:], value) }
 	metadata := document.Metadata
+	if err := encodeSelectionMetadata(data, metadata); err != nil {
+		return nil, err
+	}
 	if metadata.CameraX < 0 || metadata.CameraX > 56 || metadata.CameraY < 0 || metadata.CameraY > 56 {
 		return nil, fmt.Errorf("GAM camera lies outside the map viewport")
 	}

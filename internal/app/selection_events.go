@@ -7,6 +7,5 @@ func (g *Game) consumeSelectionTransfers() {
 		return
 	}
 	g.SelectedFollower = g.World.SelectionTransfers.Resolve(g.SelectedFollower)
-	g.SelectionReturn.BackupFollower = g.World.SelectionTransfers.Resolve(g.SelectionReturn.BackupFollower)
 	g.selectionTransferTick = g.World.Tick
 }

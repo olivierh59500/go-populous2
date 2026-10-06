@@ -54,9 +54,9 @@ func (g *Game) loadOriginalGame() error {
 	g.restoreCustomSetup()
 	g.Paused, g.resultApplied, g.Screen = false, false, Playing
 	g.Selected, g.Direction = engine.RaiseLower, 0
-	g.SelectedFollower, g.Inspecting = 0, false
+	g.SelectedFollower, g.Inspecting = meta.SelectedFollower, false
 	g.selectionTransferTick = g.World.Tick
-	g.SelectionReturn = FollowerSelectionReturn{}
+	g.SelectionReturn = FollowerSelectionReturn{BackupFollower: meta.BackupFollower, FramesLeft: meta.SelectionReturnFrames}
 	g.AnimationSounds = AnimationSoundGate{}
 	g.finishWorld()
 	g.Message, g.messageUntil = "ORIGINAL GAME LOADED", g.Updates+100
@@ -80,6 +80,9 @@ func (g *Game) saveOriginalGame() error {
 	document.World = g.World
 	document.Metadata.Profile, document.Metadata.ProfileSide = g.Profile, g.playerSide()
 	document.Metadata.CameraX, document.Metadata.CameraY = g.CameraX, g.CameraY
+	document.Metadata.SelectedFollower = g.SelectedFollower
+	document.Metadata.BackupFollower = g.SelectionReturn.BackupFollower
+	document.Metadata.SelectionReturnFrames = g.SelectionReturn.FramesLeft
 	if g.CustomGame {
 		document.Metadata.GameMode = 4
 	} else {

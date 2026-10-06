@@ -8,16 +8,9 @@ import (
 )
 
 func (g *Game) refreshSelectedFollower() {
-	if g.World == nil {
-		g.SelectedFollower = 0
-		return
-	}
-	if id := g.SelectedFollower; id > 0 && id < engine.FollowerCapacity && g.World.Followers[id].State != engine.Inactive {
-		return
-	}
-	// A missing or removed selection leaves the amphitheatre empty. Leader
-	// identity does not implicitly select an actor in the original interface.
-	g.SelectedFollower = 0
+	g.SelectedFollower = g.SelectionReturn.checked(g.SelectedFollower, func(id int) bool {
+		return selectedFollowerExists(g.World, id)
+	})
 }
 
 // pickFollower follows the original anchor-based inspect hit test. The first

@@ -28,15 +28,19 @@ type Catalog struct {
 // fields so a no-change export need not invent their values. These user-data
 // bytes are never interpreted as instructions or attached to the engine.
 type Metadata struct {
-	Original                            []byte
-	Profile                             engine.Deity
-	ProfileSide, GameMode               int
-	CameraX, CameraY                    int
-	initial                             engine.Snapshot
-	initialProfile                      engine.Deity
-	initialProfileSide, initialGameMode int
-	initialCameraX, initialCameraY      int
-	Catalog                             Catalog
+	Original                                       []byte
+	Profile                                        engine.Deity
+	ProfileSide, GameMode                          int
+	CameraX, CameraY                               int
+	SelectedFollower, BackupFollower               int
+	SelectionReturnFrames                          uint16
+	initial                                        engine.Snapshot
+	initialProfile                                 engine.Deity
+	initialProfileSide, initialGameMode            int
+	initialCameraX, initialCameraY                 int
+	initialSelectedFollower, initialBackupFollower int
+	initialSelectionReturnFrames                   uint16
+	Catalog                                        Catalog
 }
 type Document struct {
 	World    *engine.World
@@ -234,5 +238,8 @@ func Decode(data []byte, catalog Catalog) (*Document, error) {
 	}
 	profile.Experience = world.Players[side-1].Experience
 	metadata := Metadata{Original: append([]byte(nil), data[:FileSize]...), Profile: profile, ProfileSide: side - 1, GameMode: mode, CameraX: int(int16(r.word(0x5f44))), CameraY: int(int16(r.word(0x5f46))), initial: world.Snapshot(), initialProfile: profile, Catalog: catalog, initialProfileSide: side - 1, initialGameMode: mode, initialCameraX: int(int16(r.word(0x5f44))), initialCameraY: int(int16(r.word(0x5f46)))}
+	if err := decodeSelectionMetadata(r, &metadata); err != nil {
+		return nil, err
+	}
 	return &Document{World: world, Metadata: metadata}, nil
 }

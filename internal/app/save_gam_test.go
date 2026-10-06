@@ -67,6 +67,9 @@ func TestPrivateNewIndependentGameExportsAsOriginalSave(t *testing.T) {
 		world.Step()
 	}
 	g := &Game{Assets: assets, World: world, Profile: engine.NewDeity("GO PLAYER"), SavePath: filepath.Join(t.TempDir(), "new.GAM"), CameraX: 8, CameraY: 4}
+	g.SelectedFollower = world.Players[0].Leader
+	g.SelectionReturn = FollowerSelectionReturn{BackupFollower: world.Players[1].Leader, FramesLeft: 23}
+	selection, returnState := g.SelectedFollower, g.SelectionReturn
 	if err := g.saveGame(); err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +80,7 @@ func TestPrivateNewIndependentGameExportsAsOriginalSave(t *testing.T) {
 	if err := g.loadGame(); err != nil {
 		t.Fatal(err)
 	}
-	if g.World.Tick != tick || g.Profile.Name != "GO PLAYER" || g.CustomGame || g.CameraX != 8 || g.CameraY != 4 {
+	if g.World.Tick != tick || g.Profile.Name != "GO PLAYER" || g.CustomGame || g.CameraX != 8 || g.CameraY != 4 || g.SelectedFollower != selection || g.SelectionReturn != returnState {
 		t.Fatal("new original-format save lost its session")
 	}
 }
