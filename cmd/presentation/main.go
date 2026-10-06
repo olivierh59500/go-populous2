@@ -22,16 +22,17 @@ func main() {
 	seconds := flag.Int("seconds", 240, "presentation length at the normal PAL cadence")
 	checkpoints := flag.String("checkpoints", "", "optional directory for one PNG checkpoint every 30 seconds")
 	inspect := flag.Bool("inspect", false, "run the identical input sequence without encoding a video")
+	trace := flag.String("terrain-trace", "", "optional new JSONL file recording terrain mouse actions")
 	flag.Parse()
 	if *seconds < 10 || *seconds > 1800 {
 		log.Fatal("seconds must be between 10 and 1800")
 	}
-	if err := run(*output, *seconds, *checkpoints, *inspect); err != nil {
+	if err := run(*output, *seconds, *checkpoints, *inspect, *trace); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run(output string, seconds int, checkpoints string, inspect bool) error {
+func run(output string, seconds int, checkpoints string, inspect bool, trace string) error {
 	bundle, err := populous2.Load()
 	if err != nil {
 		return err
@@ -42,6 +43,20 @@ func run(output string, seconds int, checkpoints string, inspect bool) error {
 	}
 	defer g.Close()
 	pilot := game.NewNativePresentationPilot()
+	var traceError error
+	if trace != "" {
+		file, err := os.OpenFile(trace, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		encoder := json.NewEncoder(file)
+		pilot.TerrainEdit = func(edit game.NativePresentationTerrainEdit) {
+			if traceError == nil {
+				traceError = encoder.Encode(edit)
+			}
+		}
+	}
 	var recorder *recording.Recorder
 	if !inspect {
 		recorder, err = recording.New(output, 320, 200, 50, 44100)
@@ -61,6 +76,9 @@ func run(output string, seconds int, checkpoints string, inspect bool) error {
 		input, err := pilot.Next(g)
 		if err != nil {
 			return fmt.Errorf("pilot update %d: %w", tick, err)
+		}
+		if traceError != nil {
+			return traceError
 		}
 		rgba, err := g.StepNative(input)
 		if err != nil {

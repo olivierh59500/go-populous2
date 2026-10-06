@@ -110,6 +110,11 @@ PNGs for review. Recording ends ten seconds after the actual result appears,
 or at the requested duration. Generated recordings and capture checkpoints
 stay local.
 
+The construction pilot keeps a consistent terrain plan across neighboring
+settlements and preserves standing town foundations, including indirect
+changes caused by the original terrain propagation. `-terrain-trace /path/to/file.jsonl`
+records completed terrain clicks and their resulting vertex heights for review.
+
 The file requester uses the current working directory unless `-save-root`
 selects another existing directory. It writes only in response to the
 original Save action. Existing original requester overwrite/error behavior

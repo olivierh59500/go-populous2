@@ -17,6 +17,9 @@ type NativePresentationPilot struct {
 	Towns, OpponentTowns    int
 	Actions, TerrainActions int
 	SpellActions, Heroes    int
+	// TerrainEdit observes completed input actions for presentation review.
+	// It cannot change the runtime or the planner's decisions.
+	TerrainEdit func(NativePresentationTerrainEdit)
 
 	queue          []nativePilotAction
 	x, y           float64
@@ -34,6 +37,7 @@ type NativePresentationPilot struct {
 	finalBattle    bool
 	fightAttempt   int
 	expeditionDone bool
+	terrain        nativePilotTerrainPlan
 }
 
 type nativePilotAction struct {
@@ -44,6 +48,13 @@ type nativePilotAction struct {
 	ready        bool
 	vertex       int
 	beforeHeight int
+}
+
+// NativePresentationTerrainEdit records a mouse action and its resulting
+// vertex height. A failed click has equal Before and After heights.
+type NativePresentationTerrainEdit struct {
+	Tick, X, Y, Before, After int
+	Lower                     bool
 }
 
 type nativePilotActor struct {
@@ -57,6 +68,23 @@ type nativePilotBoard struct {
 	owner, cameraX, cameraY, view, tool, mode int
 	projectionX, projectionY                  int
 	god                                       int
+}
+
+// A town keeps its chosen altitude while it expands. Shared vertices retain
+// their owner until that town disappears, so neighboring plateaus cannot
+// repeatedly spend mana undoing each other's construction.
+type nativePilotTerrainProject struct {
+	x, y, altitude, radius, priority int
+	standing                         bool
+}
+
+type nativePilotTerrainPlan struct {
+	projects map[int]nativePilotTerrainProject
+	owners   [65 * 65]int
+	targets  [65 * 65]int
+	claimed  [65 * 65]bool
+	active   int
+	started  bool
 }
 
 func NewNativePresentationPilot() *NativePresentationPilot { return &NativePresentationPilot{} }
@@ -213,6 +241,9 @@ func (p *NativePresentationPilot) advanceAction(g *NativeGame) (NativeInput, err
 		} else {
 			p.TerrainActions++
 		}
+		if p.TerrainEdit != nil {
+			p.TerrainEdit(NativePresentationTerrainEdit{Tick: g.Updates, X: a.vertex % 65, Y: a.vertex / 65, Before: a.beforeHeight, After: h, Lower: a.right})
+		}
 	}
 	p.queue = p.queue[1:]
 	p.nextPlan = g.Updates + 6
@@ -305,73 +336,199 @@ func (p *NativePresentationPilot) center(x, y int) {
 	p.click(68+x-y, 4+(x+y)/2, true, -1, 0)
 }
 
-func (p *NativePresentationPilot) planLand(g *NativeGame, b nativePilotBoard) bool {
-	if p.Mana < 30 {
-		return false
+// sync assigns each vertex to one settlement project. Completed parcels remain
+// reserved as long as their settlement exists; a new neighboring town inherits
+// its existing borders instead of proposing the opposite edit there.
+func (p *NativePresentationPilot) syncTerrainPlan(b nativePilotBoard) [65 * 65]bool {
+	plan := &p.terrain
+	if !plan.started {
+		plan.started, plan.active = true, -1
+		plan.projects = make(map[int]nativePilotTerrainProject)
 	}
-	bestScore, bestX, bestY, bestTarget := -1, 0, 0, 0
+	live := make(map[int]nativePilotTerrainProject)
+	var protected [65 * 65]bool
 	for _, a := range b.actors {
-		if a.owner != b.owner || a.x < 2 || a.y < 2 || a.x > 61 || a.y > 61 {
+		if a.owner != b.owner || a.x < 0 || a.y < 0 || a.x >= 64 || a.y >= 64 {
 			continue
+		}
+		if a.state == 6 {
+			for _, delta := range [4]int{0, 1, 65, 66} {
+				protected[a.x+a.y*65+delta] = true
+			}
 		}
 		if a.state != 6 && a.kind != 2 {
 			continue
 		}
-		alt := b.heights[a.x+a.y*65]
-		if alt == 0 {
-			alt = 1
+		key := a.x + a.y*65
+		project, existed := plan.projects[key]
+		if !existed {
+			project = nativePilotTerrainProject{x: a.x, y: a.y, altitude: max(1, b.heights[key])}
 		}
-		radius := 3
-		if a.state != 6 {
-			radius = 1
-		}
-		for yy := max(0, a.y-radius); yy <= min(64, a.y+radius+1); yy++ {
-			for xx := max(0, a.x-radius); xx <= min(64, a.x+radius+1); xx++ {
-				v := xx + yy*65
-				if b.heights[v] == alt || p.failed[v] > g.Updates {
-					continue
-				}
-				// Preserve the four corners underneath a standing settlement.
-				if a.state == 6 && xx >= a.x && xx <= a.x+1 && yy >= a.y && yy <= a.y+1 {
-					continue
-				}
-				dist := abs(xx-a.x) + abs(yy-a.y)
-				score := 90 - dist*9 - abs(b.heights[v]-alt)*3
-				if a.state == 6 {
-					score += 25 + min(a.stage, 12)*2
-				}
-				if sx, sy, visible := b.project(xx, yy); visible && sx > 0 && sy > 0 {
-					score += 18
-				}
-				// Finishing flat adjacent parcels produces food immediately.
-				for ty := yy - 1; ty <= yy; ty++ {
-					for tx := xx - 1; tx <= xx; tx++ {
-						if tx < 0 || ty < 0 || tx >= 64 || ty >= 64 {
-							continue
-						}
-						matches := 0
-						for _, dv := range []int{0, 1, 65, 66} {
-							if tx+ty*65+dv != v && b.heights[tx+ty*65+dv] == alt {
-								matches++
-							}
-						}
-						if matches == 3 {
-							score += 22
-						}
+		project.radius, project.standing, project.priority = 1, a.state == 6, 90
+		if project.standing {
+			project.radius, project.priority = 3, 115+min(a.stage, 12)*2
+			// A disaster can move an entire standing town to another altitude.
+			// Adopt that new support level, rather than trying to rebuild the old
+			// level through the occupied parcel. Ordinary border edits never
+			// change these globally protected four corners.
+			alt := b.heights[key]
+			flat := alt > 0
+			for _, delta := range [4]int{0, 1, 65, 66} {
+				protected[key+delta] = true
+				flat = flat && b.heights[key+delta] == alt
+			}
+			if flat && project.altitude != alt {
+				project.altitude = alt
+				for v, owner := range plan.owners {
+					if plan.claimed[v] && owner == key {
+						plan.claimed[v] = false
 					}
-				}
-				if score > bestScore {
-					bestScore, bestX, bestY, bestTarget = score, xx, yy, alt
 				}
 			}
 		}
+		live[key] = project
 	}
-	if bestScore < 0 {
+	plan.projects = live
+	if _, ok := live[plan.active]; !ok {
+		plan.active = -1
+	}
+	for v, owner := range plan.owners {
+		project, exists := live[owner]
+		x, y := v%65, v/65
+		if !exists || x < project.x-project.radius || x > project.x+project.radius+1 || y < project.y-project.radius || y > project.y+project.radius+1 {
+			plan.claimed[v] = false
+		}
+	}
+	// Nearest support parcel wins new borders, with a coordinate tie-break.
+	// Population changes and actor enumeration cannot reverse that decision.
+	for y := 0; y <= 64; y++ {
+		for x := 0; x <= 64; x++ {
+			v := x + y*65
+			if plan.claimed[v] || protected[v] {
+				continue
+			}
+			best, distance := -1, 1000
+			for key, project := range live {
+				if x < project.x-project.radius || x > project.x+project.radius+1 || y < project.y-project.radius || y > project.y+project.radius+1 {
+					continue
+				}
+				d := max(project.x-x, 0, x-project.x-1) + max(project.y-y, 0, y-project.y-1)
+				if d < distance || d == distance && (best < 0 || key < best) {
+					best, distance = key, d
+				}
+			}
+			if best >= 0 {
+				plan.claimed[v], plan.owners[v], plan.targets[v] = true, best, live[best].altitude
+			}
+		}
+	}
+	return protected
+}
+
+// terrainEdit predicts the eight-neighbor slope propagation of one native
+// click. Every changed reserved vertex must move toward its own agreed target,
+// and none of the standing friendly towns may lose a supporting corner. This
+// prediction reads a copy: execution still goes through ordinary mouse input.
+func (p *NativePresentationPilot) terrainEdit(b nativePilotBoard, protected [65 * 65]bool, vertex, target int) ([65 * 65]int, bool) {
+	heights := b.heights
+	direction := 1
+	if heights[vertex] > target {
+		direction = -1
+	}
+	var edit func(int) bool
+	edit = func(v int) bool {
+		before, after := heights[v], heights[v]+direction
+		if after < 0 || after > 8 || protected[v] {
+			return false
+		}
+		if p.terrain.claimed[v] && abs(after-p.terrain.targets[v]) >= abs(before-p.terrain.targets[v]) {
+			return false
+		}
+		x, y := v%65, v/65
+		for _, delta := range [8][2]int{{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}} {
+			xx, yy := x+delta[0], y+delta[1]
+			if xx < 0 || yy < 0 || xx > 64 || yy > 64 {
+				continue
+			}
+			n := xx + yy*65
+			if direction*(after-heights[n]) > 1 && !edit(n) {
+				return false
+			}
+		}
+		heights[v] = after
+		return true
+	}
+	safe := edit(vertex)
+	return heights, safe
+}
+
+// terrainChoice finishes one town's useful parcels before moving to another.
+// A blocked border is left as a terrace; it is reconsidered when terrain or
+// settlement occupancy changes, not after an arbitrary retry delay.
+func (p *NativePresentationPilot) terrainChoice(b nativePilotBoard, tick int) (int, int, bool) {
+	protected := p.syncTerrainPlan(b)
+	plan := &p.terrain
+	bestVertex, bestScore, bestTarget, bestOwner := -1, -1, 0, -1
+	choose := func(activeOnly bool) {
+		for v, claimed := range plan.claimed {
+			if !claimed || protected[v] || b.heights[v] == plan.targets[v] || p.failed[v] > tick || activeOnly && plan.owners[v] != plan.active {
+				continue
+			}
+			x, y, target := v%65, v/65, plan.targets[v]
+			project := plan.projects[plan.owners[v]]
+			score := project.priority - (abs(x-project.x)+abs(y-project.y))*9 - abs(b.heights[v]-target)*3
+			if _, _, visible := b.project(x, y); visible {
+				score += 18
+			}
+			for yy := max(0, y-1); yy <= min(63, y); yy++ {
+				for xx := max(0, x-1); xx <= min(63, x); xx++ {
+					matches := 0
+					for _, delta := range [4]int{0, 1, 65, 66} {
+						corner := xx + yy*65 + delta
+						if corner != v && b.heights[corner] == target {
+							matches++
+						}
+					}
+					if matches == 3 {
+						score += 22
+					}
+				}
+			}
+			if score <= bestScore {
+				continue
+			}
+			if _, safe := p.terrainEdit(b, protected, v, target); !safe {
+				continue
+			}
+			bestVertex, bestScore, bestTarget, bestOwner = v, score, target, plan.owners[v]
+		}
+	}
+	if plan.active >= 0 {
+		choose(true)
+	}
+	if bestVertex < 0 {
+		choose(false)
+	}
+	if bestVertex < 0 {
+		plan.active = -1
+		return 0, 0, false
+	}
+	plan.active = bestOwner
+	return bestVertex, bestTarget, true
+}
+
+func (p *NativePresentationPilot) planLand(g *NativeGame, b nativePilotBoard) bool {
+	if p.Mana < 30 {
 		return false
 	}
-	sx, sy, visible := b.project(bestX, bestY)
+	vertex, target, ok := p.terrainChoice(b, g.Updates)
+	if !ok {
+		return false
+	}
+	x, y := vertex%65, vertex/65
+	sx, sy, visible := b.project(x, y)
 	if !visible {
-		p.center(bestX, bestY)
+		p.center(x, y)
 		p.Stage = "Moving to the next settlement"
 		return true
 	}
@@ -381,8 +538,8 @@ func (p *NativePresentationPilot) planLand(g *NativeGame, b nativePilotBoard) bo
 		p.Stage = "Selecting terrain construction"
 		return true
 	}
-	p.Stage = "Flattening land for larger settlements"
-	p.click(sx, sy, b.heights[bestX+bestY*65] > bestTarget, bestX+bestY*65, b.heights[bestX+bestY*65])
+	p.Stage = "Completing coherent settlement terraces"
+	p.click(sx, sy, b.heights[vertex] > target, vertex, b.heights[vertex])
 	return true
 }
 
