@@ -7,14 +7,15 @@ import "fmt"
 // resource and palette waits. It does not acknowledge unsupplied deity/file
 // or transport bodies.
 type NativeRuntimeDirector struct {
-	Startup   NativeStartupHostFrameState
-	Menu      *NativeStartupMenuHostFrameState
-	Selection *NativeCampaignSelectionFrameState
-	Children  NativeCampaignSelectionChildren
-	Blitter   NativeCampaignBlitterState
-	started   bool
-	failed    error
-	ready     bool
+	Startup     NativeStartupHostFrameState
+	Menu        *NativeStartupMenuHostFrameState
+	Selection   *NativeCampaignSelectionFrameState
+	Children    NativeCampaignSelectionChildren
+	Blitter     NativeCampaignBlitterState
+	started     bool
+	failed      error
+	ready       bool
+	deferCaches bool
 }
 
 type NativeRuntimeDirectorCallbacks struct {
@@ -91,8 +92,10 @@ func (s *NativeRuntimeDirector) Advance(h *NativeRuntimeHost, r *NativeStartupCa
 	}
 	out, failure = s.Startup.Advance(&r.Startup, cb)
 	if failure == nil && out.Complete && !s.ready {
-		if err := h.RefreshWorldCaches(); err != nil {
-			return out, err
+		if !s.deferCaches {
+			if err := h.RefreshWorldCaches(); err != nil {
+				return out, err
+			}
 		}
 		s.ready = true
 	}

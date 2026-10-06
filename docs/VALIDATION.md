@@ -1101,3 +1101,15 @@ remained blocked at macOS services and are not counted as graphical success.
 The native target remains an explicit integration command while required
 deity/file/result/transport operations are completed; it has not replaced the
 default inherited Game loop.
+
+## Retained command reset composition
+
+NativeRuntimeCommandChildren binds the original17500 UI/reset children to
+actual pause, resource, palette/minimap and startup/menu/chooser bodies. It
+retains one reset invocation across waits and preserves the parent's command
+register continuation. File/transport/deity operations remain genuine ports.
+
+A command restart test runs actual custom construction, panel and audio while
+the raw World is borrowed. Cache refresh is marked pending and occurs only
+after release, rather than overwriting a native reset from typed views. Live
+frame wiring and complete menu/file/result transitions remain integration work.
