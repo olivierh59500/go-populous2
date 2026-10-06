@@ -52,12 +52,13 @@ at actual creation, movement and removal points. Retained deaths clean up
 leaders, claims and statistics once while keeping their terminal artwork.
 These checks establish valid continuation, not complete original-game parity.
 
-A bounded whole-game comparison found differences in first-town work and AI
-terrain decisions. It also identified an unjustified passive mana increment.
-Initial terrain matches when compared with the reference's authoritative
-height field. The remaining first-divergence cases must be resolved before
-replacing the default application. Original GAM combat, death, AI and
-statistics coverage is being completed separately.
+A bounded comparison of world 12, landscape 0, seed `0x15b0`, now matches 160
+simulation passes for all 4,225 terrain corners, the 400 follower slots'
+identity/population/state/position/town stage, both mana balances and RNG.
+It found and corrected passive mana, contact waiting/completion and the search
+eligibility of cultivated land. This compares one physics pass at a time;
+it does not prove every input/render interaction, campaign world or effect
+combination. Original GAM continuation has separate active-state tests.
 
 ## Architecture
 
