@@ -324,6 +324,24 @@ func TestSnapshotAcceptsValidUnmappedControllerAndKeepsChainOrder(t *testing.T) 
 	}
 }
 
+func TestSnapshotRejectsInvalidCrossingTerrainObservation(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+	w.AI[0].TerrainRequestFollower, w.AI[0].TerrainRequestX, w.AI[0].TerrainRequestY = 1, 64, 20
+	if _, err := w.Snapshot().Restore(); err == nil {
+		t.Fatal("out-of-map pending terrain request was accepted")
+	}
+	w.AI[0].TerrainRequestFollower = 0
+	if _, err := w.Snapshot().Restore(); err != nil {
+		t.Fatal("unused stale terrain coordinates rejected a cleared request")
+	}
+	w.AI[0].WaterRequestFollower = FollowerCapacity
+	if _, err := w.Snapshot().Restore(); err == nil {
+		t.Fatal("out-of-range water request follower was accepted")
+	}
+}
+
 func TestSnapshotStrictJSONAndWriterErrors(t *testing.T) {
 	w := testFlatWorld()
 	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32

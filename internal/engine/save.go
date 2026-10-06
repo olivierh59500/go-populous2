@@ -153,6 +153,13 @@ func validateSnapshotWorld(w *World) error {
 		}
 	}
 	for owner, player := range w.Players {
+		request := w.AI[owner]
+		if request.WaterRequestFollower < 0 || request.WaterRequestFollower >= FollowerCapacity {
+			return fmt.Errorf("snapshot water request follower is invalid")
+		}
+		if request.TerrainRequestFollower < 0 || request.TerrainRequestFollower >= FollowerCapacity || request.TerrainRequestFollower != 0 && !inside(request.TerrainRequestX, request.TerrainRequestY) {
+			return fmt.Errorf("snapshot crossing terrain request is invalid")
+		}
 		if player.Mode > Fight || !inside(player.RallyX, player.RallyY) || player.Leader < 0 || player.Leader >= FollowerCapacity {
 			return fmt.Errorf("snapshot player %d is invalid", owner)
 		}

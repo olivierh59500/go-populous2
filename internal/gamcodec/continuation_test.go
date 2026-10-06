@@ -440,3 +440,37 @@ func TestGAMNeutralAndTimedScenarioContinueWithoutRestartingEvents(t *testing.T)
 		}
 	}
 }
+
+func TestGAMPendingCrossingObservationPreservesAIStateBeforePass(t *testing.T) {
+	catalog := continuationCatalog()
+	w := continuationWorld(t, catalog)
+	addCodecFollower(t, w, 1, 20, 20, 0, 500, engine.Walking)
+	addCodecFollower(t, w, 2, 50, 50, 1, 500, engine.Walking)
+	w.Players[0].Computer = true
+	w.AI[0].Reaction = 7
+	w.AI[0].TerrainRequestFollower, w.AI[0].TerrainRequestX, w.AI[0].TerrainRequestY = 1, 21, 20
+	w.AI[0].WaterRequestFollower = 1
+	document, err := NewDocument(w, catalog, engine.NewDeity("BLUE"), 0, 2, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := Encode(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, err := Decode(data, catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w.AI[0].WaterRequestFollower != restored.World.AI[0].WaterRequestFollower || w.AI[0].TerrainRequestFollower != restored.World.AI[0].TerrainRequestFollower || w.AI[0].TerrainRequestX != restored.World.AI[0].TerrainRequestX || w.AI[0].TerrainRequestY != restored.World.AI[0].TerrainRequestY {
+		t.Fatal("pending crossing observation was lost before the first pass")
+	}
+	for pass := 1; pass <= 12; pass++ {
+		w.Step()
+		restored.World.Step()
+		compareCodecContinuation(t, w, restored.World, pass)
+		if !reflect.DeepEqual(w.AI, restored.World.AI) {
+			t.Fatal("AI crossing observation diverged after GAM load")
+		}
+	}
+}

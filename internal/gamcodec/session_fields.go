@@ -44,6 +44,27 @@ func decodeAIStatistics(r fileReader, s *engine.Snapshot, owner int) error {
 	options.FixedMagnet = int16(magnet) >= 0
 	options.MagnetX, options.MagnetY = int(uint8(magnet>>8)), int(uint8(magnet))
 	a := &s.World.AI[owner]
+	request, err := reference(r.word(god + 0x32))
+	if err != nil {
+		return err
+	}
+	if request.Kind != engine.ActorNone && request.Kind != engine.ActorFollower {
+		return fmt.Errorf("GAM crossing terrain request references a non-follower")
+	}
+	if request.Kind == engine.ActorFollower {
+		a.TerrainRequestFollower = int(request.Index)
+	}
+	a.TerrainRequestX, a.TerrainRequestY = int(r.byte(god+0x35)), int(r.byte(god+0x34))
+	water, err := reference(r.word(god + 0x36))
+	if err != nil {
+		return err
+	}
+	if water.Kind != engine.ActorNone && water.Kind != engine.ActorFollower {
+		return fmt.Errorf("GAM water request references a non-follower")
+	}
+	if water.Kind == engine.ActorFollower {
+		a.WaterRequestFollower = int(water.Index)
+	}
 	a.Reaction = int(int16(r.word(god + 0x4c)))
 	a.ExpansionCooldown = int(int16(r.word(god + 0x2c)))
 	a.ReleaseCooldown = int(int16(r.word(god + 0x30)))
@@ -133,6 +154,31 @@ func encodeAIStatistics(data []byte, w *engine.World, owner int) error {
 	}
 	word(god+0x6e, magnet)
 	a := w.AI[owner]
+	request := engine.ActorRef{}
+	if a.TerrainRequestFollower != 0 {
+		if a.TerrainRequestFollower < 1 || a.TerrainRequestFollower >= engine.FollowerCapacity || a.TerrainRequestX < 0 || a.TerrainRequestX > 63 || a.TerrainRequestY < 0 || a.TerrainRequestY > 63 {
+			return fmt.Errorf("GAM crossing terrain request is invalid")
+		}
+		request = engine.ActorRef{Kind: engine.ActorFollower, Index: uint16(a.TerrainRequestFollower)}
+	}
+	requestRef, err := fileReference(request)
+	if err != nil {
+		return err
+	}
+	word(god+0x32, requestRef)
+	data[god+0x34-fileStart], data[god+0x35-fileStart] = byte(a.TerrainRequestY), byte(a.TerrainRequestX)
+	water := engine.ActorRef{}
+	if a.WaterRequestFollower != 0 {
+		if a.WaterRequestFollower < 1 || a.WaterRequestFollower >= engine.FollowerCapacity {
+			return fmt.Errorf("GAM water request follower is invalid")
+		}
+		water = engine.ActorRef{Kind: engine.ActorFollower, Index: uint16(a.WaterRequestFollower)}
+	}
+	waterRef, err := fileReference(water)
+	if err != nil {
+		return err
+	}
+	word(god+0x36, waterRef)
 	for offset, value := range map[int]int{0x4c: a.Reaction, 0x2c: a.ExpansionCooldown, 0x30: a.ReleaseCooldown, 0x28: a.MagnetCooldown, 0x20: a.BestPopulation, 0x26: a.ChoiceIndex * 4, 0x94: a.ChoiceCount, 0x96: a.LeaderChoiceCount} {
 		word(god+offset, uint16(int16(value)))
 	}

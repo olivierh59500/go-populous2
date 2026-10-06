@@ -1,6 +1,7 @@
 package gamcodec
 
 import (
+	"encoding/binary"
 	"reflect"
 	"testing"
 
@@ -12,7 +13,8 @@ func TestGAMAIAndCampaignStatisticsRoundTrip(t *testing.T) {
 	w.Players[0] = engine.Player{Mana: 2020, Computer: true, Towns: 17, Statistics: engine.CampaignStatistics{Population: 12345, PeakPopulation: 45678, PeakMana: 7890, Metric: 99, LeaderLosses: 3, BattleWins: 5, ScenarioOptions: 35, WeightedPowerUse: 7}}
 	w.Level.Players[0].ReactionDelay, w.Level.Players[0].ArmageddonDeadline = 7, 255
 	w.Level.Players[0].Scenario = engine.ScenarioOptions{BuildAnywhere: true, FatalWater: true, HideEnemy: true}
-	w.AI[0] = engine.AIState{Reaction: -2, ExpansionCooldown: 2, ReleaseCooldown: 7, MagnetCooldown: 250, BestTown: 3, BestPopulation: 1234, ExpansionTown: 4, ChoiceCount: 3, LeaderChoiceCount: 1, ChoiceIndex: 2, Prepared: true, PreparedPower: engine.Batholith, PreparedTarget: engine.PowerTarget{X: 32, Y: 33}}
+	w.AI[0] = engine.AIState{TerrainRequestFollower: 2, TerrainRequestX: 17, TerrainRequestY: 29, Reaction: -2, ExpansionCooldown: 2, ReleaseCooldown: 7, MagnetCooldown: 250, BestTown: 3, BestPopulation: 1234, ExpansionTown: 4, ChoiceCount: 3, LeaderChoiceCount: 1, ChoiceIndex: 2, Prepared: true, PreparedPower: engine.Batholith, PreparedTarget: engine.PowerTarget{X: 32, Y: 33}}
+	w.AI[0].WaterRequestFollower = 3
 	w.AI[0].Choices[1] = engine.AIPowerChoice{Power: engine.FireColumn, Target: engine.AITargetTown}
 	w.AI[0].Choices[2] = engine.AIPowerChoice{Power: engine.Batholith, Target: engine.AITargetPrepared}
 	w.AI[0].Choices[3] = engine.AIPowerChoice{Power: engine.Perseus, Target: engine.AITargetLeader}
@@ -55,5 +57,17 @@ func TestGAMCustomPlayerTemplateDoesNotRevertToCampaignDefaults(t *testing.T) {
 	}
 	if restored.World.Level.Players[0] != *options {
 		t.Fatalf("custom template reverted to campaign defaults: %+v / %+v", restored.World.Level.Players[0], *options)
+	}
+}
+
+func TestGAMAIObservationRejectsNonFollowerReference(t *testing.T) {
+	data := make([]byte, FileSize)
+	ref, err := fileReference(engine.ActorRef{Kind: engine.ActorEffect, Index: 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+	binary.BigEndian.PutUint16(data[0xe8a4+0x36-fileStart:], ref)
+	if err := decodeAIStatistics(fileReader{data}, &engine.Snapshot{}, 0); err == nil {
+		t.Fatal("water observation accepted an effect-pool reference")
 	}
 }
