@@ -35,8 +35,8 @@ func (g *Game) drawActiveBattle(id, x, y, land int) bool {
 }
 
 func (g *Game) drawMagnetAtCell(x, y, land int) {
-	for owner, p := range g.World.Players {
-		if p.RallyX != x || p.RallyY != y {
+	for owner, p := range g.World.Magnets {
+		if p.X/256 != x || p.Y/256 != y {
 			continue
 		}
 		name := fmt.Sprintf("magnet/%d", owner)
@@ -44,8 +44,8 @@ func (g *Game) drawMagnetAtCell(x, y, land int) {
 		if !ok || len(animation.Frames) == 0 {
 			continue
 		}
-		ax, ay := g.projectCorner(x, y)
-		g.animation(name, int(g.World.Tick)%len(animation.Frames), ax, ay+8, land)
+		ax, ay := g.projectActor(p.X, p.Y)
+		g.animation(name, int(g.World.Tick)%len(animation.Frames), ax, ay, land)
 	}
 }
 

@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"go-populous2/internal/engine"
 	"image/color"
-	"math"
 )
 
 func (g *Game) drawAirAtCell(x, y, land int) {
 	for id := 0; id < engine.EffectCapacity; id++ {
 		marker := g.World.Air.Markers[id]
 		if marker.Active && marker.X/256 == x && marker.Y/256 == y {
-			ax, ay := g.projectCorner(x, y)
+			ax, ay := g.projectActor(marker.X, marker.Y)
 			name := "lightning/active"
 			if marker.Phase == engine.LightningAppearing {
 				name = "lightning/appearing"
@@ -23,8 +22,7 @@ func (g *Game) drawAirAtCell(x, y, land int) {
 		}
 		effect := g.World.Air.Whirlwinds[id]
 		if effect.Active && effect.X/256 == x && effect.Y/256 == y {
-			ax := int(math.Round(192 + 16*(float64(effect.X-effect.Y)/256-float64(g.CameraX-g.CameraY))))
-			ay := int(math.Round(72+8*(float64(effect.X+effect.Y)/256-float64(g.CameraX+g.CameraY)))) - int(g.World.Heights[x+y*engine.CornerSize])*8
+			ax, ay := g.projectActor(effect.X, effect.Y)
 			name := "whirlwind/active"
 			if effect.Phase == engine.WhirlwindAppearing {
 				name = "whirlwind/appearing"
@@ -36,8 +34,7 @@ func (g *Game) drawAirAtCell(x, y, land int) {
 		}
 		wave := g.World.Water.Waves[id]
 		if wave.Active && wave.X/256 == x && wave.Y/256 == y {
-			ax := int(math.Round(192 + 16*(float64(wave.X-wave.Y)/256-float64(g.CameraX-g.CameraY))))
-			ay := int(math.Round(72+8*(float64(wave.X+wave.Y)/256-float64(g.CameraX+g.CameraY)))) - int(g.World.Heights[x+y*engine.CornerSize])*8
+			ax, ay := g.projectActor(wave.X, wave.Y)
 			name := [4]string{"north", "east", "south", "west"}[wave.Direction&3]
 			g.animation("tidal/"+name, wave.Frame, ax, ay, land)
 		}

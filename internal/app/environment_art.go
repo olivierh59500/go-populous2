@@ -3,7 +3,6 @@ package app
 import (
 	"image"
 	"image/draw"
-	"math"
 
 	"go-populous2/internal/engine"
 	"go-populous2/internal/visualassets"
@@ -54,15 +53,7 @@ func lavaAnimation(shape uint8, direction int) string {
 }
 
 func (g *Game) environmentAnchor(fixedX, fixedY int) (int, int) {
-	x, y := fixedX/256, fixedY/256
-	cell := g.World.Cell(x, y)
-	ax := int(math.Round(192 + 16*(float64(fixedX-fixedY)/256-float64(g.CameraX-g.CameraY))))
-	ay := int(math.Round(72+8*(float64(fixedX+fixedY)/256-float64(g.CameraX+g.CameraY)))) - int(cell.BaseAltitude)*8
-	// Centered fractions over flat terrain stand on the raised top surface.
-	if cell.Shape == 15 {
-		ay -= 8
-	}
-	return ax, ay
+	return g.projectActor(fixedX, fixedY)
 }
 
 func (g *Game) drawStormAtCell(x, y, land int) {
