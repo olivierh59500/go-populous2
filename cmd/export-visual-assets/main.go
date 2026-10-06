@@ -188,6 +188,12 @@ func export(files fs.FS, output string) error {
 		"death/fungus":         source.FungusHazards.OrdinaryAnimation,
 		"death/fire":           0x178,
 		"death/burning":        0x564,
+		"lightning/appearing":  0x6e0,
+		"lightning/active":     0x6f8,
+		"lightning/ending":     0x720,
+		"lightning/hit":        0x738,
+		"lightning/town-hit":   0x744,
+		"lightning/recovery":   0x750,
 		"scenery/burning-tree": 0xf10,
 		"fire-column/emerging": 0x1a0,
 		"fire-column/active":   0x4b8,
@@ -208,9 +214,23 @@ func export(files fs.FS, output string) error {
 		if err != nil {
 			return err
 		}
-		catalog.Animations[name] = animation(frames, name == "fire-column/active" || name == "death/burning" || strings.HasPrefix(name, "lava/"))
+		catalog.Animations[name] = animation(frames, name == "fire-column/active" || name == "death/burning" || name == "lightning/active" || name == "lightning/hit" || name == "lightning/town-hit" || strings.HasPrefix(name, "lava/"))
 	}
 	for hero, name := range heroes {
+		for _, entry := range []struct {
+			name  string
+			start int
+			loop  bool
+		}{{"lightning/hit/", source.LightningRules.HeroHit[hero], true}, {"lightning/recovery/", source.LightningRules.HeroRecovery[hero], false}} {
+			if entry.start == 0 {
+				continue
+			}
+			frames, err := populous2.DecodeAnimation(source.Executable, entry.start)
+			if err != nil {
+				return err
+			}
+			catalog.Animations[entry.name+name] = animation(frames, entry.loop)
+		}
 		if start := source.FireColumns.HeroDeath[hero]; start != 0 {
 			frames, err := populous2.DecodeAnimation(source.Executable, start)
 			if err != nil {

@@ -110,12 +110,12 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			}
 		}
 	}
-	for name, start := range map[string]int{"death/fungus": source.FungusHazards.OrdinaryAnimation, "death/swamp": source.FungusHazards.OrdinaryAnimation, "death/fire": 0x178, "death/burning": 0x564, "fire-column/emerging": 0x1a0, "fire-column/active": 0x4b8, "fire-column/ending": 0x660} {
+	for name, start := range map[string]int{"death/fungus": source.FungusHazards.OrdinaryAnimation, "death/swamp": source.FungusHazards.OrdinaryAnimation, "death/fire": 0x178, "death/burning": 0x564, "fire-column/emerging": 0x1a0, "fire-column/active": 0x4b8, "fire-column/ending": 0x660, "lightning/appearing": 0x6e0, "lightning/active": 0x6f8, "lightning/ending": 0x720, "lightning/hit": 0x738, "lightning/town-hit": 0x744, "lightning/recovery": 0x750} {
 		frames, err := populous2.DecodeAnimation(source.Executable, start)
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := animation(frames, name == "fire-column/active" || name == "death/burning")
+		want := animation(frames, name == "fire-column/active" || name == "death/burning" || name == "lightning/active" || name == "lightning/hit" || name == "lightning/town-hit")
 		if !reflect.DeepEqual(portable.Animations[name], want) {
 			t.Fatalf("semantic phase artwork changed: %s", name)
 		}

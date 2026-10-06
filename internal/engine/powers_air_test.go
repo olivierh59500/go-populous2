@@ -1,0 +1,291 @@
+package engine
+
+import (
+	"encoding/binary"
+	"encoding/hex"
+	"encoding/json"
+	"os"
+	"testing"
+)
+
+type airTestHabitat struct {
+	*fireTestHabitat
+	walls                    bool
+	strikes, lifts, released int
+}
+
+func newAirTestHabitat() *airTestHabitat {
+	return &airTestHabitat{fireTestHabitat: newFireTestHabitat()}
+}
+func (h *airTestHabitat) AirExperience(uint8) uint8          { return h.experience }
+func (h *airTestHabitat) StrikeLightning(int, int, int) bool { h.strikes++; return !h.walls }
+func (h *airTestHabitat) CreateWhirlpool(uint8, int, int)    {}
+func (h *airTestHabitat) LiftFollowers(int, int, int)        { h.lifts++ }
+func (h *airTestHabitat) ReleaseFollowers(int, int, int)     { h.released++ }
+
+func TestLightningMarkerAndBoltsMatchOriginalNumericTraces(t *testing.T) {
+	type snapshot struct {
+		MarkerReference uint16
+		Actors          []struct {
+			Slot int
+			Raw  string
+		}
+		RNG  uint32
+		Tick int
+	}
+	var catalog struct {
+		Fixtures []struct {
+			Name    string
+			XP      uint8
+			X, Y    int
+			Initial snapshot
+			Trace   []snapshot
+		}
+	}
+	data, err := os.ReadFile("../populous2/testdata/lightning_native.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(data, &catalog); err != nil {
+		t.Fatal(err)
+	}
+	if len(catalog.Fixtures) != 5 {
+		t.Fatal("original lightning lifecycle traces incomplete")
+	}
+	for _, f := range catalog.Fixtures {
+		t.Run(f.Name, func(t *testing.T) {
+			h, s := newAirTestHabitat(), &AirEffects{}
+			h.rng, h.useRNG, h.experience = 4311, true, f.XP
+			if f.Name == "full-pool" {
+				for id := 1; id < EffectCapacity; id++ {
+					h.pool.Slots[id] = EffectReservation{Kind: EffectStorm, Owner: 2}
+				}
+			}
+			if !s.PlaceLightning(0, f.X, f.Y, h) {
+				t.Fatal("marker placement failed")
+			}
+			s.ActivateLightning(0, h)
+			assert := func(want snapshot) {
+				t.Helper()
+				ref := 0
+				if s.MarkerSlots[0] > 0 {
+					ref = 20800 + (s.MarkerSlots[0]-1)*32
+				}
+				if ref != int(want.MarkerReference) || uint32(h.rng) != want.RNG {
+					t.Fatalf("tick%d marker/RNG differs %d/%d %x/%x", want.Tick, ref, want.MarkerReference, uint32(h.rng), want.RNG)
+				}
+				for _, raw := range want.Actors {
+					bytes, err := hex.DecodeString(raw.Raw)
+					if err != nil {
+						t.Fatal(err)
+					}
+					id := raw.Slot
+					var x, y, phase, animation, owner, life, first, parent, random int
+					if marker := s.Markers[id]; marker.Active || bytes[0] == 0x28 {
+						x, y, life = marker.X, marker.Y, marker.Life
+						phase, animation = 22, 1760+marker.Frame*4
+						if marker.Phase == LightningSteady {
+							animation = 1784 + marker.Frame*4
+						}
+						if marker.Phase == LightningDisappearing {
+							phase, animation = 26, 1824+marker.Frame*4
+						}
+						if marker.Active {
+							owner = int(marker.Owner) + 1
+						}
+						if marker.FirstBolt > 0 {
+							first = 20800 + (marker.FirstBolt-1)*32
+						}
+					} else if bytes[0] == 0x2a {
+						bolt := s.Bolts[id]
+						x, y, phase, random = bolt.X, bolt.Y, 24, int(bolt.Random)
+						if bolt.Active {
+							owner = int(bolt.Owner) + 1
+						}
+						if bolt.Next > 0 {
+							first = 20800 + (bolt.Next-1)*32
+						}
+						if bolt.Marker > 0 {
+							parent = 20800 + (bolt.Marker-1)*32
+						}
+					} else {
+						continue
+					}
+					word := func(at int) int { return int(binary.BigEndian.Uint16(bytes[at:])) }
+					if uint16(x) != uint16(word(6)) || uint16(y) != uint16(word(8)) || phase != int(bytes[22]) || animation != word(10) || owner != int(bytes[12]) || uint16(life) != uint16(word(24)) || first != word(26) || parent != word(28) || random != word(30) {
+						t.Fatalf("tick%d slot%d semanticstate differs: xy%d,%d phase%d frame%d owner%d life%d link%d/%d random%d; original%s", want.Tick, id, x, y, phase, animation, owner, life, first, parent, random, raw.Raw)
+					}
+				}
+			}
+			assert(f.Initial)
+			for _, step := range f.Trace {
+				if f.Name == "center-xp32" && step.Tick == 30 {
+					s.PlaceLightning(0, 35, 34, h)
+				}
+				for id := 0; id < EffectCapacity; id++ {
+					if h.pool.Slots[id].Kind == EffectLightning {
+						s.TickLightning(id, h)
+					}
+				}
+				assert(step)
+			}
+		})
+	}
+}
+
+func TestLightningMarkerPlacementAndDismissalKeepLifetimeAndIndependentSlots(t *testing.T) {
+	h, s := newAirTestHabitat(), &AirEffects{}
+	if !s.PlaceLightning(0, 32, 32, h) || h.randomAt != 0 {
+		t.Fatal("marker placement consumed randomness")
+	}
+	s.Markers[0].Life = 77
+	if !s.PlaceLightning(0, 35, 34, h) || s.Markers[0].Life != 77 {
+		t.Fatal("marker relocation restarted its lifetime")
+	}
+	if got := s.ActivateLightning(0, h); got != 2 || h.randomAt != 2 {
+		t.Fatal("base volley creation differs")
+	}
+	if got := s.ActivateLightning(0, h); got != 0 || h.randomAt != 2 {
+		t.Fatal("existing volley was duplicated")
+	}
+	s.DismissLightning(0, h)
+	if s.MarkerSlots[0] != 0 || s.Bolts[1].Active || s.Bolts[2].Active || !s.Markers[0].Active {
+		t.Fatal("dismissal failed to remove bolts while retaining marker outro")
+	}
+	for range 5 {
+		s.TickLightning(0, h)
+	}
+	if s.Markers[0].Active || h.pool.Slots[0].Kind != EffectNone {
+		t.Fatal("marker outro failed to release shared slot")
+	}
+}
+
+func TestWhirlwindMovementUsesDownhillRoutingAndTwoDrawTimer(t *testing.T) {
+	h, s := newAirTestHabitat(), &AirEffects{}
+	h.experience = 255
+	if !s.CreateWhirlwind(0, 32, 32, h) || h.randomAt != 0 || s.Whirlwinds[0].Life != 455 {
+		t.Fatal("whirlwind creation changed experience or RNG")
+	}
+	h.random = []uint16{0, 120, 1}
+	h.parcels[33+33*MapSize].Altitude = 0
+	s.TickWhirlwind(0, h)
+	if s.Whirlwinds[0].Frame != 1 || s.Whirlwinds[0].Life != 455 {
+		t.Fatal("whirlwind emergence consumed lifetime")
+	}
+	s.TickWhirlwind(0, h)
+	e := s.Whirlwinds[0]
+	if e.Phase != WhirlwindMoving || e.Life != 454 || e.Timer != 120 || h.randomAt != 3 || e.VX != 24 || e.VY != 24 || h.lifts != 1 {
+		t.Fatalf("whirlwind routing/move/interaction differs: %+v draws%d", e, h.randomAt)
+	}
+}
+
+func TestLightningVictimPopulationAndPhasesMatchOriginalNumericTraces(t *testing.T) {
+	type record struct {
+		Kind, Owner, Flags, State uint8
+		Animation                 uint16
+		Population                int32
+		Reference                 uint16
+		Calls                     []string
+	}
+	var catalog struct {
+		VictimFixtures []struct {
+			Input struct {
+				Name, Mode                string
+				Kind, State, Flags, Owner uint8
+				Hero                      int
+				Population                int32
+				BoltOwner, BoltKind       uint8
+				Animation                 uint16
+				Ticks                     int
+			}
+			Initial record
+			Trace   []record
+		}
+	}
+	data, err := os.ReadFile("../populous2/testdata/lightning_native.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(data, &catalog); err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, f := range catalog.VictimFixtures {
+		if f.Input.Mode == "bind" || f.Initial.State != 0x1c && f.Initial.State != 0x1e {
+			continue
+		}
+		t.Run(f.Input.Name, func(t *testing.T) {
+			hero := HeroNone
+			if f.Input.Flags&2 != 0 && f.Input.Hero >= 0 {
+				hero = HeroKind(f.Input.Hero + 1)
+			}
+			v := LightningVictimState{Phase: LightningVictimWalkingHit, Bolt: 1, Frames: 2, Hero: hero}
+			if f.Initial.State == 0x1e {
+				v.Phase = LightningVictimTownHit
+			}
+			base := lightningTestAnimationBase(v, f.Initial.State == 0x1e)
+			v.Frame = (int(f.Initial.Animation) - base) / 4
+			if v.Frame < 0 || v.Frame >= 2 {
+				return
+			}
+			population := int(f.Initial.Population)
+			for tick, want := range f.Trace {
+				transition := TickLightningVictim(&v, &population, int8(f.Input.BoltOwner) > 0)
+				state := uint8(0x1c)
+				if f.Initial.State == 0x1e {
+					state = 0x1e
+				}
+				if v.Phase == LightningVictimDeath {
+					state = 0x20
+				}
+				if v.Phase == LightningVictimRecovery {
+					state = 0x22
+				}
+				if transition == LightningVictimResume {
+					state = 2
+				}
+				animation := lightningTestAnimationBase(v, f.Initial.State == 0x1e) + v.Frame*4
+				if transition == LightningVictimRemove {
+					population = 0
+				}
+				if transition == LightningVictimReformTown {
+					if hero != HeroNone {
+						state = 2
+						animation = 0
+					} else {
+						state = 6
+					}
+				}
+				if int32(population) != want.Population || state != want.State || uint16(animation) != want.Animation {
+					t.Fatalf("tick%d population%d phase%x animation%x / original%d %x %x", tick+1, population, state, animation, want.Population, want.State, want.Animation)
+				}
+			}
+			checked++
+		})
+	}
+	if checked < 100 {
+		t.Fatalf("too few original victim timelines checked: %d", checked)
+	}
+}
+
+func lightningTestAnimationBase(v LightningVictimState, town bool) int {
+	if v.Sequence == LightningDeathSequence {
+		if v.Hero != HeroNone {
+			return 11220
+		}
+		return 1848
+	}
+	if v.Sequence == LightningRecoverySequence {
+		if v.Hero == HeroNone {
+			return 1872
+		}
+		return [6]int{11052, 11180, 11092, 11136, 0, 11008}[v.Hero-1]
+	}
+	if town {
+		return 1860
+	}
+	if v.Hero == HeroNone {
+		return 1848
+	}
+	return [6]int{10996, 10972, 3712, 0, 10984, 10960}[v.Hero-1]
+}
