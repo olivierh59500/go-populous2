@@ -186,6 +186,7 @@ func export(files fs.FS, output string) error {
 	for name, start := range map[string]int{
 		"death/swamp":          source.FungusHazards.OrdinaryAnimation,
 		"death/fungus":         source.FungusHazards.OrdinaryAnimation,
+		"scenery/burning-tree": 0xf10,
 		"fire-column/emerging": 0x1a0,
 		"fire-column/active":   0x4b8,
 		"fire-column/ending":   0x660,
@@ -214,6 +215,13 @@ func export(files fs.FS, output string) error {
 				return err
 			}
 			catalog.Animations["death/fungus/"+name] = animation(frames, false)
+		}
+		if start := source.CommonPrepass.Swamp[hero]; start != 0 {
+			frames, err := populous2.DecodeAnimation(source.Executable, int(start))
+			if err != nil {
+				return err
+			}
+			catalog.Animations["death/swamp/"+name] = animation(frames, false)
 		}
 	}
 	for side := range 2 {

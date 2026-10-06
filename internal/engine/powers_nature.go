@@ -1,6 +1,11 @@
 package engine
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrNatureNoChange = errors.New("nature cast created no scenery")
 
 const SceneryCapacity = 200
 
@@ -35,6 +40,7 @@ const (
 	GroundFungusDying
 	GroundFungusDead
 	GroundRestored
+	GroundScorched
 )
 
 type GroundParcel struct {
@@ -92,6 +98,8 @@ func (n *NatureState) TileCode(x, y int) (uint8, bool) {
 		return 168, true
 	case GroundRestored:
 		return 15, true
+	case GroundScorched:
+		return 95, true
 	case GroundFungusFresh, GroundFungusYoung, GroundFungusGrowing, GroundFungusMature, GroundFungusOld, GroundFungusDying, GroundFungusDead:
 		return 145 + uint8(n.Ground[x+y*MapSize].Mark-GroundFungusFresh), true
 	default:
@@ -148,6 +156,7 @@ func (w *World) CastTrees(owner, x, y int) error {
 	bits := int(w.random.next())
 	variant := uint8((bits % 8) / 2)
 	count := bits%14 + int(w.Players[owner].Experience[Plants]>>4)
+	planted := 0
 	for attempt := 0; attempt <= count; attempt++ {
 		nx, ny, ok := w.natureSample(x, y)
 		if !ok {
@@ -168,6 +177,9 @@ func (w *World) CastTrees(owner, x, y int) error {
 			}
 		}
 		if free < 0 {
+			if planted == 0 {
+				return ErrNatureNoChange
+			}
 			return nil
 		}
 		selected := variant
@@ -175,6 +187,10 @@ func (w *World) CastTrees(owner, x, y int) error {
 			selected = 0
 		}
 		w.Nature.Scenery[free] = SceneryActor{Kind: SceneryTree, X: uint8(nx), Y: uint8(ny), Age: 24, Variant: selected}
+		planted++
+	}
+	if planted == 0 {
+		return ErrNatureNoChange
 	}
 	return nil
 }
@@ -213,7 +229,7 @@ func (w *World) CastSwamp(owner, x, y int) error {
 			continue
 		}
 		mark := w.Nature.Ground[at].Mark
-		if mark != GroundNone && mark != GroundFlowers && mark != GroundRestored && mark != GroundFungusFresh && mark != GroundFungusDead {
+		if mark != GroundNone && mark != GroundFlowers && mark != GroundRestored && mark != GroundScorched && mark != GroundFungusFresh && mark != GroundFungusDead {
 			continue
 		}
 		w.Nature.Ground[at] = GroundParcel{Mark: GroundSwamp, Owner: uint8(owner)}
@@ -229,11 +245,11 @@ func (w *World) CastFungus(owner, x, y int) error {
 	}
 	at := x + y*MapSize
 	if !w.Tiles[at].IsFlat() {
-		return fmt.Errorf("fungus needs eligible flat ground")
+		return nil
 	}
 	mark := w.Nature.Ground[at].Mark
-	if mark != GroundNone && mark != GroundFlowers && mark != GroundRestored && mark != GroundFungusFresh && mark != GroundFungusDead {
-		return fmt.Errorf("ground cannot receive fungus")
+	if mark != GroundNone && mark != GroundFlowers && mark != GroundRestored && mark != GroundScorched && mark != GroundFungusFresh && mark != GroundFungusDead {
+		return nil
 	}
 	w.Nature.Ground[at] = GroundParcel{Mark: GroundFungusFresh, Owner: uint8(owner)}
 	if pending := w.Nature.PendingFungus[owner]; pending > 0 {
@@ -270,6 +286,34 @@ func (w *World) tickNature() {
 	for id := range w.Nature.Scenery {
 		a := &w.Nature.Scenery[id]
 		if a.Kind == SceneryNone {
+			continue
+		}
+		if a.Kind == SceneryBurningTree {
+			if a.Age != 0 {
+				magnitude := int(a.Age)
+				if magnitude < 0 {
+					magnitude = -magnitude
+				}
+				magnitude++
+				if magnitude == 24 {
+					*a = SceneryActor{}
+					continue
+				}
+				a.Age = -int8(magnitude)
+				a.Frame++
+				continue
+			}
+			a.Frame++
+			if a.Frame >= 4 {
+				a.Age = -1
+				a.Frame = 0
+				for _, d := range [...][2]int{{0, -1}, {0, 1}, {1, 0}, {-1, 0}} {
+					x, y := int(a.X)+d[0], int(a.Y)+d[1]
+					if inside(x, y) {
+						w.SpreadTreeFireCell(x, y)
+					}
+				}
+			}
 			continue
 		}
 		a.Frame++
@@ -351,7 +395,7 @@ func (w *World) generateFungus(id int, f *FungusController) {
 				continue
 			}
 			mark := w.Nature.Ground[at].Mark
-			eligible := mark == GroundNone || mark == GroundFlowers || mark == GroundRestored || mark >= GroundFungusFresh && mark <= GroundFungusDead
+			eligible := mark == GroundNone || mark == GroundFlowers || mark == GroundRestored || mark == GroundScorched || mark >= GroundFungusFresh && mark <= GroundFungusDead
 			if !eligible {
 				continue
 			}
@@ -403,8 +447,17 @@ func (w *World) EnterNatureHazard(id int) bool {
 		mark := w.Nature.Ground[int(f.X)+int(f.Y)*MapSize].Mark
 		switch {
 		case mark == GroundSwamp:
+			if f.ImmuneToSwamp() {
+				return false
+			}
 			death = NatureSwampDeath
+			if w.Level.Players[f.Owner].Scenario.ShallowSwamps {
+				w.Nature.Ground[int(f.X)+int(f.Y)*MapSize] = GroundParcel{Mark: GroundRestored}
+			}
 		case mark >= GroundFungusYoung && mark <= GroundFungusDying:
+			if f.ImmuneToFungus() {
+				return false
+			}
 			death = NatureFungusDeath
 		default:
 			return false
@@ -415,8 +468,11 @@ func (w *World) EnterNatureHazard(id int) bool {
 		return true
 	}
 	w.Nature.DeathFrames[id]++
-	// Ordinary swamp/fungus share two artwork frames followed by cleanup.
-	if w.Nature.DeathFrames[id] >= 2 {
+	hazard := HazardFungus
+	if death == NatureSwampDeath {
+		hazard = HazardSwamp
+	}
+	if int(w.Nature.DeathFrames[id]) >= f.HazardDeathFrames(hazard) {
 		w.remove(id)
 		w.Nature.Deaths[id] = NatureAlive
 		w.Nature.DeathFrames[id] = 0

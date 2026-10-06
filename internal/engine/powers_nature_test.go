@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"os"
 	"testing"
 )
@@ -53,7 +54,7 @@ func TestTreesUseSharedSceneryBudgetAndAge(t *testing.T) {
 	for id := range full.Nature.Scenery {
 		full.Nature.Scenery[id] = SceneryActor{Kind: SceneryBoulder, X: 1, Y: 1, Age: 24}
 	}
-	if err := full.CastTrees(0, 32, 32); err != nil || countTrees(full) != 0 {
+	if err := full.CastTrees(0, 32, 32); !errors.Is(err, ErrNatureNoChange) || countTrees(full) != 0 {
 		t.Fatal("forest exceeded shared scenery capacity")
 	}
 }
@@ -83,6 +84,46 @@ func TestForestBurialRecoversWithoutDeletingGeometry(t *testing.T) {
 	}
 	if !w.Tiles[10+10*MapSize].IsFlat() {
 		t.Fatal("tree removal altered terrain")
+	}
+}
+
+func TestBurningMatureForestSpreadsOnlyAfterItsFourFrames(t *testing.T) {
+	w := testFlatWorld()
+	w.Nature.Scenery[0] = SceneryActor{Kind: SceneryBurningTree, X: 32, Y: 32, Age: 0}
+	w.Nature.Scenery[1] = SceneryActor{Kind: SceneryTree, X: 31, Y: 32, Age: 0}
+	ordinary := addFollower(w, 32, 31, 0, 100, Walking)
+	hero := addFollower(w, 33, 32, 0, 100, Walking)
+	w.Followers[hero].Hero.Kind = HeroPerseus
+	for range 3 {
+		w.tickNature()
+	}
+	if w.Nature.Scenery[1].Kind != SceneryTree || w.Followers[ordinary].State != Walking {
+		t.Fatal("tree fire spread before ending")
+	}
+	w.tickNature()
+	if w.Nature.Scenery[0].Age != -1 || w.Nature.Scenery[1].Kind != SceneryBurningTree {
+		t.Fatal("mature tree did not spread to cardinal neighbour")
+	}
+	if w.Followers[ordinary].State != Ruin || w.Followers[hero].State != Walking {
+		t.Fatal("tree spread failed ordinary damage or hero exemption")
+	}
+	for range 23 {
+		w.tickNature()
+	}
+	if w.Nature.Scenery[0].Kind != SceneryNone {
+		t.Fatal("burned scenery did not complete removal")
+	}
+}
+
+func TestImmatureBurningForestRemovesWithoutSpreading(t *testing.T) {
+	w := testFlatWorld()
+	w.Nature.Scenery[0] = SceneryActor{Kind: SceneryBurningTree, X: 32, Y: 32, Age: 10}
+	w.Nature.Scenery[1] = SceneryActor{Kind: SceneryTree, X: 31, Y: 32, Age: 0}
+	for range 14 {
+		w.tickNature()
+	}
+	if w.Nature.Scenery[0].Kind != SceneryNone || w.Nature.Scenery[1].Kind != SceneryTree {
+		t.Fatal("immature burning tree used mature spread sequence")
 	}
 }
 
@@ -229,6 +270,79 @@ func TestMatureGroundHazardsRetainAndThenCleanUpFollower(t *testing.T) {
 	w.Nature.Ground[32+32*MapSize] = GroundParcel{Mark: GroundFungusFresh}
 	if w.EnterNatureHazard(id) {
 		t.Fatal("fresh fungus killed a follower")
+	}
+}
+
+func TestNatureHeroImmunityAndDeathTiming(t *testing.T) {
+	for _, mark := range []GroundMark{GroundSwamp, GroundFungusYoung} {
+		for kind := HeroPerseus; kind <= HeroHelen; kind++ {
+			w := testFlatWorld()
+			id := addFollower(w, 32, 32, 0, 100, Walking)
+			w.Followers[id].Hero.Kind = kind
+			w.Nature.Ground[32+32*MapSize] = GroundParcel{Mark: mark}
+			entered := w.EnterNatureHazard(id)
+			if kind == HeroAdonis {
+				if entered || w.Followers[id].State != Walking {
+					t.Fatal("Adonis lost nature immunity")
+				}
+				continue
+			}
+			if !entered {
+				t.Fatal("vulnerable hero ignored nature hazard")
+			}
+			hazard := HazardFungus
+			if mark == GroundSwamp {
+				hazard = HazardSwamp
+			}
+			duration := w.Followers[id].HazardDeathFrames(hazard)
+			for frame := 1; frame < duration; frame++ {
+				w.EnterNatureHazard(id)
+				if w.Followers[id].State == Inactive {
+					t.Fatal("hero death ended too early")
+				}
+			}
+			w.EnterNatureHazard(id)
+			if w.Followers[id].State != Inactive {
+				t.Fatal("hero did not leave pool after death sequence")
+			}
+		}
+	}
+}
+
+func TestShallowSwampUsesVictimScenarioAndRestoresOnlyItsParcel(t *testing.T) {
+	w := testFlatWorld()
+	w.Level.Players[1].Scenario.ShallowSwamps = true
+	blue := addFollower(w, 31, 32, 0, 100, Walking)
+	red := addFollower(w, 32, 32, 1, 100, Walking)
+	for _, x := range []int{31, 32} {
+		w.Nature.Ground[x+32*MapSize] = GroundParcel{Mark: GroundSwamp, Owner: 0}
+	}
+	if !w.EnterNatureHazard(blue) || !w.EnterNatureHazard(red) {
+		t.Fatal("swamp did not admit its victims")
+	}
+	if w.Nature.Ground[31+32*MapSize].Mark != GroundSwamp {
+		t.Fatal("swamp used caster or opposite-side scenario")
+	}
+	if p := w.Nature.Ground[32+32*MapSize]; p.Mark != GroundRestored || w.Cell(32, 32).Code != 15 {
+		t.Fatal("shallow swamp did not restore underlying land")
+	}
+	if w.Followers[red].State != Ruin {
+		t.Fatal("shallow swamp incorrectly rescued victim")
+	}
+}
+
+func TestEmptyGroundCastsSucceedButEmptyForestIsNotAdmitted(t *testing.T) {
+	w := &World{}
+	if err := w.CastTrees(0, 32, 32); !errors.Is(err, ErrNatureNoChange) {
+		t.Fatal("empty forest charge admission differs")
+	}
+	for _, cast := range []func(int, int, int) error{w.CastFlowers, w.CastSwamp, w.CastFungus} {
+		if err := cast(0, 32, 32); err != nil {
+			t.Fatal("valid ground cast was not an admitted no-op")
+		}
+		if err := cast(2, 32, 32); err == nil {
+			t.Fatal("invalid player cast accepted")
+		}
 	}
 }
 
