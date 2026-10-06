@@ -128,3 +128,43 @@ func (w *World) EditorClearCell(x, y int) error {
 	w.summarize()
 	return nil
 }
+
+// EditorSetTerrain replaces a complete corner-height preset in one operation.
+// Heights and all eight neighbouring slopes are validated before any state
+// changes. Existing actors keep their normal lifecycle: edits invalidate only
+// changed ground, while the next simulation pass handles terrain hazards.
+func (w *World) EditorSetTerrain(heights [CornerSize * CornerSize]uint8) error {
+	for y := 0; y < CornerSize; y++ {
+		for x := 0; x < CornerSize; x++ {
+			height := heights[x+y*CornerSize]
+			if height > 8 {
+				return fmt.Errorf("editor terrain height %d at %d,%d exceeds eight", height, x, y)
+			}
+			// Four forward neighbours cover every horizontal, vertical and diagonal
+			// pair once, including the east and south boundary vertices.
+			for _, d := range [4][2]int{{1, 0}, {0, 1}, {1, 1}, {-1, 1}} {
+				nx, ny := x+d[0], y+d[1]
+				if insideCorner(nx, ny) && abs(int(height)-int(heights[nx+ny*CornerSize])) > 1 {
+					return fmt.Errorf("editor terrain slope between %d,%d and %d,%d exceeds one", x, y, nx, ny)
+				}
+			}
+		}
+	}
+	before := w.Heights
+	w.Heights = heights
+	for y := 0; y < MapSize; y++ {
+		for x := 0; x < MapSize; x++ {
+			at := x + y*CornerSize
+			if before[at] == heights[at] && before[at+1] == heights[at+1] && before[at+CornerSize] == heights[at+CornerSize] && before[at+CornerSize+1] == heights[at+CornerSize+1] {
+				continue
+			}
+			w.ClearFireTerrain(x, y)
+			w.ClearEarthTerrain(x, y)
+			w.ClearWaterTerrain(x, y)
+			w.Nature.Ground[x+y*MapSize] = GroundParcel{}
+			w.Pressure[x+y*MapSize] = 0
+		}
+	}
+	w.rebuildCells()
+	return nil
+}

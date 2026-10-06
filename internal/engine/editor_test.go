@@ -1,6 +1,9 @@
 package engine
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestEditorTerrainIgnoresCampaignRestrictionsWithoutSpendingMana(t *testing.T) {
 	w := testFlatWorld()
@@ -58,4 +61,64 @@ func TestEditorClearsSharedEffectReservationAndWallLeaderChain(t *testing.T) {
 	if w.effects.Slots[slot].Kind != EffectNone || w.Air.MarkerSlots[0] != 0 || w.Earth.WallHeads[0] != 2 || w.Earth.Walls[0].Active || !w.Earth.Walls[1].Active {
 		t.Fatalf("editor left stale effects: kind%d marker%d head%d wallActive%v/%v", w.effects.Slots[slot].Kind, w.Air.MarkerSlots[0], w.Earth.WallHeads[0], w.Earth.Walls[0].Active, w.Earth.Walls[1].Active)
 	}
+}
+
+func TestBulkEditorRejectsInvalidHeightsAndDiagonalSlopesAtomically(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Nature.Ground[20+20*MapSize] = GroundParcel{Mark: GroundFlowers}
+	w.Pressure[20+20*MapSize] = 64
+	before := w.Snapshot()
+	for _, invalid := range []struct {
+		at     int
+		height uint8
+	}{{64 + 64*CornerSize, 9}, {21 + 21*CornerSize, 3}} {
+		heights := w.Heights
+		heights[invalid.at] = invalid.height
+		if err := w.EditorSetTerrain(heights); err == nil {
+			t.Fatal("invalid terrain was accepted")
+		}
+		if !reflect.DeepEqual(w.Snapshot(), before) || w.Followers[id].State == Inactive {
+			t.Fatal("rejected bulk edit changed simulation state")
+		}
+	}
+}
+
+func TestBulkEditorRebuildsGeometryOnceAndKeepsActorCleanupDeferred(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Nature.Ground[20+20*MapSize] = GroundParcel{Mark: GroundFlowers}
+	w.Pressure[20+20*MapSize] = 64
+	w.Nature.Ground[10+10*MapSize] = GroundParcel{Mark: GroundSwamp}
+	w.Pressure[10+10*MapSize] = 80
+	w.Water.Painted[21+20*MapSize] = true
+	w.Water.Tiles[21+20*MapSize] = 224
+	before := w.Heights
+	heights := w.Heights
+	for y := 19; y <= 22; y++ {
+		for x := 19; x <= 22; x++ {
+			heights[x+y*CornerSize] = 0
+		}
+	}
+	if err := w.EditorSetTerrain(heights); err != nil {
+		t.Fatal(err)
+	}
+	if w.Heights != heights || !w.Cell(20, 20).IsWater() || w.Cell(20, 20).TileIndex(1, 0, 0) != 32 {
+		t.Fatal("bulk geometry or water atlas bank")
+	}
+	if w.Nature.Ground[20+20*MapSize].Mark != GroundNone || w.Pressure[20+20*MapSize] != 0 || w.Nature.Ground[10+10*MapSize].Mark != GroundSwamp || w.Pressure[10+10*MapSize] != 80 {
+		t.Fatal("bulk edit did not invalidate only changed parcels")
+	}
+	if !w.Water.Painted[21+20*MapSize] || w.Water.Tiles[21+20*MapSize] != 224 {
+		t.Fatal("bulk edit discarded persistent basalt")
+	}
+	if w.Followers[id].State != Walking || w.Occupants[20+20*MapSize] != uint16(id) {
+		t.Fatal("bulk edit prematurely removed actors")
+	}
+	w.Level.Players[0].Scenario.FatalWater = true
+	w.stepFollower(id)
+	if w.Followers[id].State != Ruin || !w.Followers[id].TerrainDeath.Active {
+		t.Fatal("edited terrain bypassed normal actor hazard cleanup")
+	}
+	_ = before
 }
