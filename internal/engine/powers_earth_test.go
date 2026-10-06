@@ -130,7 +130,7 @@ func TestWallPoolAndUnsuitableGroundRemoval(t *testing.T) {
 	}
 }
 
-func TestWallCrossingRetainsStrictSideDependentThresholds(t *testing.T) {
+func TestWallCrossingUsesOriginalMovementThresholds(t *testing.T) {
 	for owner := range 2 {
 		for _, xp := range []uint8{0, 32, 255} {
 			w := testFlatWorld()
@@ -138,11 +138,11 @@ func TestWallCrossingRetainsStrictSideDependentThresholds(t *testing.T) {
 			w.Earth.Walls[wall] = WallActor{Active: true, Owner: uint8(owner ^ 1), X: 32, Y: 32}
 			id := addFollower(w, 31, 32, owner, 1, Walking)
 			w.Players[owner].Experience[Earth] = xp
-			bonus := ([2]int{256, 512}[owner] + int(xp)) * 128
+			bonus := int(xp) * 128
 			for _, c := range []struct {
 				population int
 				want       WallCrossing
-			}{{bonus + 3000, WallBlocked}, {bonus + 3001, WallClimb}, {bonus + 20000, WallClimb}, {bonus + 20001, WallBreak}} {
+			}{{bonus + 2999, WallBlocked}, {bonus + 3000, WallClimb}, {bonus + 20000, WallClimb}, {bonus + 20001, WallBreak}} {
 				w.Followers[id].Population = c.population
 				if got := w.DecideWallCrossing(id, wall); got != c.want {
 					t.Fatal("wall threshold differs", owner, xp, c.population, got, c.want)

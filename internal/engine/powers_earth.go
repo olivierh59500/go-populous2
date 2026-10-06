@@ -234,8 +234,8 @@ const (
 	WallBreak
 )
 
-// The historical sides have different defensive thresholds. Express the
-// observed arithmetic as named side strength instead of a partial register.
+// Ordinary movement uses the crossing prepass's strict break comparison and
+// inclusive climb threshold. The deity's experience belongs to the walker.
 func (w *World) DecideWallCrossing(followerID, wallID int) WallCrossing {
 	if followerID <= 0 || followerID >= FollowerCapacity || wallID < 0 || wallID >= WallCapacity {
 		return WallBlocked
@@ -244,12 +244,11 @@ func (w *World) DecideWallCrossing(followerID, wallID int) WallCrossing {
 	if !a.Active || a.Broken || f.Owner == a.Owner {
 		return WallPass
 	}
-	base := [2]int{256, 512}[f.Owner]
-	bonus := (base + int(w.Players[f.Owner].Experience[Earth])) * 128
+	bonus := int(w.Players[f.Owner].Experience[Earth]) * 128
 	if f.Population > 20000+bonus {
 		return WallBreak
 	}
-	if f.Population > 3000+bonus {
+	if f.Population >= 3000+bonus {
 		return WallClimb
 	}
 	return WallBlocked
