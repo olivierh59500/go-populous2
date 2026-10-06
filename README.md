@@ -111,8 +111,9 @@ directory must already exist; existing files are preserved.
 The native deity editor preserves original portrait parts, experience/bolt
 controls and password format, including raw name/password text editing.
 
-The default window is 960 × 720, with a 640 × 480 logical display and doubled
-Amiga artwork. Input updates at 60 Hz; the simulation uses the nominal PAL
+The inherited command uses a 960 × 720 window with a 640 × 480 logical
+display and doubled Amiga artwork. The native integration command instead
+uses the original320 × 200 display at50 updates/s. Input updates at 60 Hz; the simulation uses the nominal PAL
 VBlank cadence of 50 updates per second. `-simulation-rate` selects a diagnostic
 rate. Original CPU-bound throughput and special idle pacing remain comparison
 targets; the viewport-size value eight is not a simulation-rate setting.
@@ -131,9 +132,11 @@ go run ./cmd/populous2 -whirlwinds -frames 180 -capture-update 12 -screenshot /t
 ```
 
 The screenshot path must not exist. Native pickup/release, town collapse and
-child whirlpools are still being converted; the current whirlwind does not
-substitute generic area damage for those interactions. Campaign movement and
-opponent pacing remain incomplete and can produce unusually early results.
+child whirlpools have translated source controllers with independent CPU
+comparisons. These diagnostic inherited-command presentations are separate
+from full campaign fidelity; their pacing is not evidence of original gameplay.
+The native integration target is validated against complete source main-frame
+sequences, with remaining coverage tracked in docs/FEATURES.md.
 
 ## Controls
 
