@@ -277,6 +277,17 @@ func (g *Game) drawWorld() {
 				f := w.Followers[id]
 				ax, ay := g.projectCorner(x, y)
 				ay += 8
+				if f.Neutral.Kind != engine.NeutralNone || f.Neutral.VictimTime > 0 {
+					name := "neutral/monster-victim"
+					if f.Neutral.Kind != engine.NeutralNone {
+						name = "neutral/" + neutralNames[f.Neutral.Kind]
+						if f.Neutral.Paired && f.Neutral.Kind == engine.NeutralLandLowerer {
+							name = "neutral/land-lowerer-paired"
+						}
+					}
+					g.animation(name, int(f.Frame), ax, ay, land)
+					continue
+				}
 				if f.Conversion.Active {
 					key := "conversion/blue"
 					if f.Conversion.SourceOwner != 0 {
@@ -367,6 +378,7 @@ func (g *Game) drawPowerMenu() {
 }
 
 var heroNames = [7]string{"", "perseus", "adonis", "heracles", "odysseus", "achilles", "helen"}
+var neutralNames = [7]string{"", "road-maker", "land-lowerer", "whirlwind-maker", "tree-planter", "fire-maker", "monster"}
 
 func (g *Game) fireAtCell(x, y, land int) {
 	for _, effect := range g.World.Water.Basalt {
