@@ -34,3 +34,57 @@ func TestEffectsShareCapacityAndRetainGenerationOnReuse(t *testing.T) {
 		t.Fatal("invalid owner reserved a slot")
 	}
 }
+
+func TestWorldEffectPassAdvancesCrossFamilyNewbornOnlyInLaterSlot(t *testing.T) {
+	for _, lowerSlot := range []bool{false, true} {
+		t.Run(map[bool]string{false: "later", true: "earlier"}[lowerSlot], func(t *testing.T) {
+			w := &World{}
+			parent := 0
+			if lowerSlot {
+				for range 6 {
+					w.allocateEffect(EffectLightning, 0)
+				}
+				w.releaseEffect(0)
+				parent = 5
+				w.effects.Slots[parent].Kind = EffectLava
+			} else {
+				parent = w.allocateEffect(EffectLava, 0)
+			}
+			// A supported lava parcel has a water parcel directly to its east.
+			w.Tiles[20+20*MapSize] = Cell{Corners: [4]uint8{1, 1, 1, 1}, Shape: 15, Code: 15}
+			w.Fire.Lava[parent] = FireEffect{Active: true, Owner: 0, X: 20 * 256, Y: 20 * 256, Direction: 1, Timer: 1, Life: 10, Phase: LavaFlowing}
+			w.Step()
+			child := -1
+			for id, reservation := range w.effects.Slots {
+				if reservation.Kind == EffectBasalt {
+					child = id
+					break
+				}
+			}
+			if child < 0 {
+				t.Fatal("lava did not create its basalt child")
+			}
+			expected := 99
+			if lowerSlot {
+				expected = 100
+			}
+			if got := w.Water.Basalt[child].Life; got != expected {
+				t.Fatalf("child slot%d parent%d life%d; want%d", child, parent, got, expected)
+			}
+		})
+	}
+}
+
+func TestWorldProcessesFollowersBeforeFireAndSceneryAfterEffects(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	slot := w.allocateEffect(EffectFireRain, 1)
+	w.Fire.Rain[slot] = FireEffect{Active: true, Owner: 1, X: 20 * 256, Y: 20 * 256, Phase: MeteorFalling, Life: 3, Frame: 0}
+	w.Step()
+	if w.Followers[id].State != Ruin || w.FireDamage.Deaths[id].Frame != 0 {
+		t.Fatal("fire victim advanced before the follower phase ended")
+	}
+	if w.Followers[id].FoundedAt != 1 {
+		t.Fatal("fire ran before the walking follower could found its town")
+	}
+}

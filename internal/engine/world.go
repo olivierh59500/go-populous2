@@ -163,27 +163,35 @@ func (w *World) Step() {
 		return
 	}
 	w.Tick++
-	w.tickNature()
-	w.tickFireEffects()
-	w.tickWaterEffects()
 	for owner := range w.Players {
 		if w.Tick&1 == 0 && w.Players[owner].Mana < 32767 {
 			w.Players[owner].Mana++
 		}
+	}
+	// Source simulation phases process followers, AI, the shared effect pool,
+	// and scenery in that order. A newborn in a later slot runs this pass;
+	// a reused lower slot waits for the following pass.
+	for id := 1; id < FollowerCapacity; id++ {
+		if w.Followers[id].State != Inactive {
+			w.stepFollower(id)
+		}
+	}
+	for owner := range w.Players {
 		if w.Players[owner].Computer && w.Tick%4 == 0 {
 			w.computerLand(owner)
 		}
 	}
-	// New emigrants are processed on the next pass, avoiding a pool-index bias.
-	var active [FollowerCapacity]bool
-	for id := 1; id < len(w.Followers); id++ {
-		active[id] = w.Followers[id].State != Inactive
-	}
-	for id := 1; id < len(w.Followers); id++ {
-		if active[id] {
-			w.stepFollower(id)
+	for id := 0; id < EffectCapacity; id++ {
+		switch w.effects.Slots[id].Kind {
+		case EffectFungus:
+			w.tickNatureEffect(id)
+		case EffectFireColumn, EffectFireRain, EffectVolcano, EffectLava:
+			w.tickFireEffect(id)
+		case EffectBasalt, EffectWhirlpool:
+			w.tickWaterEffect(id)
 		}
 	}
+	w.tickNatureScenery()
 	w.repaintFarms()
 	w.summarize()
 	if w.Tick > 25 {
