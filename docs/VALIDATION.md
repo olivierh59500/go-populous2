@@ -1560,3 +1560,22 @@ gameplay are outside this corpus. Full tests, complete environment race
 comparisons and vet pass. Native road properties exclude road tiles197..216
 from Fungus's27/37 masks; this is the actual rule, rather than an inferred
 generic barrier.
+
+## Actual TCP failures and explicit host retry
+
+A real TCP peer drop after four native packet bytes runs the complete33B2
+requester, genuine palette/OK/fade,1826E three-record fallback and retained
+1744C command return. The source received prefix is consumed once and a
+subsequent local main frame completes. A drop during181C0 preserves the
+original corrupt RTS00011234/incomplete outcome rather than a fabricated
+normal return. Full tests, real TCP normal/race runs and vet pass.
+
+The desktop can replace an EOF stream only at entry into the original
+serial requester after source fallback reaches local mode and all packet,
+handshake, resume, IO, palette and error continuations have returned. Ordinary
+polling never retries. The configured bound listen address and381-byte receive
+history survive replacement; source indices start fresh and original baud/
+handshake operations remain responsible for native control state. Real TCP
+retry/history and pending-operation rejection tests, full tests, vet and build
+pass for this boundary. Initial dial and write-only failures are validated
+separately before broad retry coverage is claimed.
