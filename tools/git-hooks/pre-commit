@@ -4,7 +4,7 @@ git diff --cached --name-only --diff-filter=ACMR |
 while IFS= read -r path; do
     case "$path" in
         assets/amiga/GENERATED.txt) ;;
-        assets/amiga/*)
+        assets/amiga/*|assets/generated/*)
             printf '%s\n' "Original game assets must remain local: $path" >&2
             exit 1
             ;;

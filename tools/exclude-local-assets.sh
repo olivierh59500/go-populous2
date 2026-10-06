@@ -5,6 +5,9 @@ exclude=$(git rev-parse --git-path info/exclude)
 if ! grep -Fqx '/assets/amiga/*' "$exclude"; then
     printf '\n/assets/amiga/*\n!/assets/amiga/GENERATED.txt\n' >> "$exclude"
 fi
+if ! grep -Fqx '/assets/generated/' "$exclude"; then
+    printf '\n/assets/generated/\n' >> "$exclude"
+fi
 previous=$(git config --get core.hooksPath || true)
 if [ -n "$previous" ] && [ "$previous" != 'tools/git-hooks' ]; then
     printf '%s\n' 'Existing Git hook directory retained; original asset exclusions are installed.'
