@@ -24,6 +24,7 @@ func (g *Game) startConquest() error {
 		return err
 	}
 	g.World, g.Screen = world, Playing
+	world.Players[0].Experience = g.Profile.Experience
 	leader := world.Players[0].Leader
 	if leader > 0 {
 		f := world.Followers[leader]
@@ -41,6 +42,21 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	w := g.World
 	if g.Updates%4 == 0 {
 		w.Step()
+	}
+	if g.PickingPower {
+		if clicked {
+			if mouseY >= 47 && mouseY < 63 && mouseX >= 24 && mouseX < 296 {
+				g.Category = engine.Element(min(5, (mouseX-24)/45))
+			}
+			row := (mouseY - 77) / 19
+			if mouseX >= 40 && mouseX < 280 && mouseY >= 77 && row >= 0 && row < 5 {
+				id := engine.PowerID(int(g.Category)*6 + row)
+				if power, ok := engine.PowerByID(id); ok && power.Implemented {
+					g.Selected, g.PickingPower = id, false
+				}
+			}
+		}
+		return nil
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
 		g.CameraX = max(0, g.CameraX-1)
@@ -235,6 +251,29 @@ func (g *Game) drawWorld() {
 	}
 	if g.Updates < g.messageUntil {
 		g.text("ACTION UNAVAILABLE", 144, 191)
+	}
+	if g.PickingPower {
+		g.drawPowerMenu()
+	}
+}
+
+func (g *Game) drawPowerMenu() {
+	draw.Draw(g.framebuffer, image.Rect(16, 29, 304, 183), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
+	g.text("DIVINE POWERS", 104, 32)
+	for index, label := range [6]string{"PEOP", "PLNT", "EARTH", "AIR", "FIRE", "WATER"} {
+		g.button(label, 24+index*45, 47, 43)
+	}
+	for row := 0; row < 5; row++ {
+		id := engine.PowerID(int(g.Category)*6 + row)
+		power, ok := engine.PowerByID(id)
+		if !ok {
+			continue
+		}
+		name := strings.ToUpper(power.Name)
+		if !power.Implemented {
+			name += " - UNAVAILABLE"
+		}
+		g.button(name, 40, 77+row*19, 240)
 	}
 }
 

@@ -32,9 +32,13 @@ type Game struct {
 	Screen                       Screen
 	LevelIndex                   int
 	CameraX, CameraY             int
-	PortraitParts                [3]uint8
-	DeityName                    string
+	Profile                      engine.Deity
+	editingProfileName           bool
+	editingProfileCode           bool
+	profileCodeInput             string
 	Selected                     engine.PowerID
+	Category                     engine.Element
+	PickingPower                 bool
 	Direction                    uint8
 	Message                      string
 	messageUntil                 int
@@ -59,7 +63,7 @@ func New(assets *Assets) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Game{Assets: assets, DeityName: "BLUE", framebuffer: image.NewRGBA(image.Rect(0, 0, 320, 200)), image: ebiten.NewImage(320, 200), music: replay}, nil
+	return &Game{Assets: assets, Profile: engine.NewDeity("BLUE"), framebuffer: image.NewRGBA(image.Rect(0, 0, 320, 200)), image: ebiten.NewImage(320, 200), music: replay}, nil
 }
 
 func (g *Game) Update() error {
@@ -103,13 +107,7 @@ func (g *Game) Update() error {
 			}
 		}
 	case DeityProfile:
-		if clicked && y >= 166 && y < 191 {
-			g.Screen = MainMenu
-		}
-		if clicked && x >= 160 && x < 255 && y >= 50 && y < 130 {
-			part := min(2, max(0, (y-50)/24))
-			g.PortraitParts[part] = (g.PortraitParts[part] + 1) % 8
-		}
+		g.updateProfile(x, y, clicked)
 	case ConquestBriefing:
 		if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
 			g.LevelIndex = max(0, g.LevelIndex-1)
@@ -123,6 +121,9 @@ func (g *Game) Update() error {
 			}
 		}
 	case Playing:
+		if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
+			g.PickingPower = !g.PickingPower
+		}
 		if err := g.updateWorld(x, y, clicked); err != nil {
 			return err
 		}
@@ -177,15 +178,7 @@ func (g *Game) drawFrame() {
 		g.button("CREATE YOUR DEITY", 78, 85, 168)
 		g.button("CONQUEST", 78, 102, 168)
 	case DeityProfile:
-		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
-		g.text("YOUR DEITY", 112, 15)
-		g.text(g.DeityName, 38, 54)
-		portrait, err := g.Assets.Visual.Portrait(g.PortraitParts)
-		if err == nil {
-			draw.Draw(g.framebuffer, image.Rect(202, 36, 234, 132), portrait, image.Point{}, draw.Over)
-		}
-		g.text("CLICK FACE TO CHANGE", 64, 146)
-		g.button("BACK", 120, 169, 80)
+		g.drawProfile()
 	case ConquestBriefing:
 		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 		g.text("CONQUEST", 128, 15)

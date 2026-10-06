@@ -68,12 +68,12 @@ type PowerTarget struct {
 var ErrPowerUnavailable = errors.New("power is not implemented by this engine yet")
 
 var Powers = []Power{
-	{RaiseLower, "Raise / lower", People, 5, true}, {PapalMagnet, "Papal magnet", People, 25, true}, {Perseus, "Perseus", People, 10750, false}, {Plague, "Plague", People, 30000, false}, {Armageddon, "Armageddon", People, 65524, false},
-	{Trees, "Trees", Plants, 250, true}, {Flowers, "Flowers", Plants, 500, true}, {Swamp, "Swamp", Plants, 1750, true}, {Fungus, "Fungus", Plants, 2000, true}, {Adonis, "Adonis", Plants, 11000, false},
-	{Road, "Road", Earth, 25, false}, {Wall, "Wall", Earth, 62, false}, {Earthquake, "Earthquake", Earth, 10000, false}, {Batholith, "Batholith", Earth, 11250, false}, {Heracles, "Heracles", Earth, 11000, false},
-	{Lightning, "Lightning", Air, 50, false}, {Whirlwind, "Whirlwind", Air, 2750, false}, {Storm, "Storm", Air, 5250, false}, {Odysseus, "Odysseus", Air, 11000, false}, {Wind, "Wind", Air, 23000, false},
-	{FireColumn, "Fire column", Fire, 5625, true}, {FireRain, "Fire rain", Fire, 7500, true}, {Volcano, "Volcano", Fire, 10000, false}, {Achilles, "Achilles", Fire, 20000, false},
-	{Basalt, "Basalt", Water, 250, true}, {Whirlpool, "Whirlpool", Water, 1000, false}, {Baptism, "Baptism", Water, 6250, false}, {Helen, "Helen", Water, 7500, false}, {Tsunami, "Tsunami", Water, 25000, false},
+	{RaiseLower, "Raise / lower", People, 5, true}, {PapalMagnet, "Papal magnet", People, 25, true}, {Perseus, "Perseus", People, 10750, true}, {Plague, "Plague", People, 30000, false}, {Armageddon, "Armageddon", People, 65524, false},
+	{Trees, "Trees", Plants, 250, true}, {Flowers, "Flowers", Plants, 500, true}, {Swamp, "Swamp", Plants, 1750, true}, {Fungus, "Fungus", Plants, 2000, true}, {Adonis, "Adonis", Plants, 11000, true},
+	{Road, "Road", Earth, 25, false}, {Wall, "Wall", Earth, 62, false}, {Earthquake, "Earthquake", Earth, 10000, false}, {Batholith, "Batholith", Earth, 11250, false}, {Heracles, "Heracles", Earth, 11000, true},
+	{Lightning, "Lightning", Air, 50, false}, {Whirlwind, "Whirlwind", Air, 2750, false}, {Storm, "Storm", Air, 5250, false}, {Odysseus, "Odysseus", Air, 11000, true}, {Wind, "Wind", Air, 23000, false},
+	{FireColumn, "Fire column", Fire, 5625, true}, {FireRain, "Fire rain", Fire, 7500, true}, {Volcano, "Volcano", Fire, 10000, false}, {Achilles, "Achilles", Fire, 20000, true},
+	{Basalt, "Basalt", Water, 250, true}, {Whirlpool, "Whirlpool", Water, 1000, false}, {Baptism, "Baptism", Water, 6250, false}, {Helen, "Helen", Water, 7500, true}, {Tsunami, "Tsunami", Water, 25000, false},
 }
 
 func PowerByID(id PowerID) (Power, bool) {
@@ -166,6 +166,12 @@ func (w *World) Cast(owner int, id PowerID, target PowerTarget) error {
 		w.Players[owner].Mana -= w.PowerCost(owner, id)
 	case Basalt:
 		if err := w.CastBasalt(owner, target.X, target.Y, int(target.Direction)); err != nil {
+			return err
+		}
+		w.Players[owner].Mana -= w.PowerCost(owner, id)
+	case Perseus, Adonis, Heracles, Odysseus, Achilles, Helen:
+		kind, _ := HeroKindForPower(id)
+		if _, err := w.CreateHero(owner, kind); err != nil {
 			return err
 		}
 		w.Players[owner].Mana -= w.PowerCost(owner, id)
