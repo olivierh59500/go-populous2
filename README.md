@@ -27,8 +27,10 @@ step after a campaign victory. Winning the final world plays the supplied Zeus
 animation and original scrolltext at its native PAL cadence. Original result
 requester is displayed after 101 PAL VBlanks. The deity screen and game options
 use their original layouts, masked artwork, experience strips and controls;
-The original file and Conquest world requesters are connected to the game;
-in-game/serial routing and power-help preview animation remain under conversion.
+The native integration target connects the original file and Conquest
+requesters, in-game/options/serial routing and power-help preview children.
+Their complete interactive combinations and longer gameplay remain under
+validation.
 Whirlwinds now lift, transport and release native followers, collapse town farms
 and create original water children. Their complete retained controllers replace
 the former motion-only World handler.
@@ -37,9 +39,10 @@ rocks use original age-dependent emergence/burial rectangles when drawn.
 The ten-record native scenario script now creates its original disasters,
 plantings and neutral inventions, one due event per simulation update.
 
-**The complete original feature set is still being converted.** Several
-powers, hero movement, native combat, campaign progression and
-multiplayer remain incomplete. [The feature inventory](docs/FEATURES.md)
+**The complete original feature set is still being converted.** Translated
+native controllers now cover all29 power handlers and the follower/combat/
+result state families. Full campaign pacing, broader combined interactions
+and complete multiplayer/interactive fidelity remain under validation. [The feature inventory](docs/FEATURES.md)
 distinguishes native translations from provisional behavior.
 
 ![Go Populous II](screenshots/game.png)
