@@ -1,10 +1,10 @@
-# Populous II conversion status
+# Original-reference implementation status
 
 The supplied Amiga executable has 29 active power slots. The number 26 refers
 to the external resource catalog, not the number of spells. The Go program is
-playable through a translation that still depends on that executable. An
-independent Go engine using only original asset data remains unfinished; see
-[GO_ENGINE.md](GO_ENGINE.md). Source-controller and
+playable by default through the independent Go engine described in
+[GO_ENGINE.md](GO_ENGINE.md). This document records the earlier translation,
+retained as `cmd/populous2-native` for comparison. Source-controller and
 whole-main comparisons establish the documented scenarios; a selectable
 power alone is not used as evidence of original behavior.
 

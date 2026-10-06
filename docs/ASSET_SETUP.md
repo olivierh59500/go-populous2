@@ -5,12 +5,10 @@ validation fixtures. It does not distribute the original Amiga executable,
 graphics, samples or campaign files. Supply your own Populous II disk images
 before building the game.
 
-The current game also requires executable-based reference tables and
-controllers. Removing the original files from Git does not remove that runtime
-dependency. The asset-only Go engine replacement is tracked in
-[GO_ENGINE.md](GO_ENGINE.md). Inventory and unpacking of the 26 external data
-files already work without the executable; the playable engine and sprite
-reference export do not yet have that independence.
+The default game uses an independent Go engine and a portable exported asset
+package. The original executable is read only by local asset exporters and
+reference tools; it is not loaded by the playing application. The architecture
+and compatibility boundaries are described in [GO_ENGINE.md](GO_ENGINE.md).
 
 ## Import the two original disks
 
@@ -40,12 +38,15 @@ go run ./cmd/import-assets \
   -adf "/path/to/Populous II disk A.adf" \
   -adf "/path/to/Populous II disk B.adf"
 go run ./cmd/assetcheck
+go run ./cmd/export-visual-assets -output assets/runtime/data
+go run ./cmd/export-audio-assets -output assets/runtime/data/audio
 go run ./cmd/populous2
 ```
 
 The default output is `assets/amiga/`. This directory's original game files
-are local build inputs. They are embedded in the game when it is compiled;
-existing matching files are reused and differing files are never overwritten.
+are local import/reference inputs. Exported art, music and campaign data in
+`assets/runtime/data/` are embedded in the game when compiled. Existing matching
+imported files are reused and differing files are never overwritten.
 
 The recognized boot-disk executable is missing a `HUNK_END` structural word
 between its CODE relocations and the next BSS hunk. The importer inserts this
@@ -81,13 +82,16 @@ An installation can be generated outside `assets/amiga` and loaded at runtime:
 go run ./cmd/import-assets \
   -adf "/path/to/disk A.adf" -adf "/path/to/disk B.adf" \
   -output "/path/to/private/populous2-data"
-POPULOUS2_DATA_DIR="/path/to/private/populous2-data" go run ./cmd/populous2
+POPULOUS2_DATA_DIR="/path/to/private/populous2-data" go run ./cmd/export-visual-assets -output /path/to/portable-assets
+POPULOUS2_DATA_DIR="/path/to/private/populous2-data" go run ./cmd/export-audio-assets -output /path/to/portable-assets/audio
+go run ./cmd/populous2 -data /path/to/portable-assets
 go run ./cmd/assetcheck -data "/path/to/private/populous2-data"
 ```
 
-`POPULOUS2_DATA_DIR` is used consistently by the game, its native resource
-loader and asset-dependent tests. A clean clone can compile the inspection
-and import tools without game data. Running the game requires prepared data.
+`POPULOUS2_DATA_DIR` selects original import/reference resources. The independent
+game selects portable resources with `-data`, or embeds them locally. A clean
+clone can compile the game and import tools without original data. Playing
+requires the prepared portable package.
 Original-reference tests also require the corresponding reference revision.
 
 ## Identified revisions

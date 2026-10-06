@@ -1,148 +1,53 @@
 # Independent Go engine
 
-The current playable application is implemented in Go but still depends on
-`populous.ii` at runtime. The intended architecture is a standalone Go game,
-using the original graphics, samples, music sequences and campaign data only.
-`go-populous` provides the reference organization: a data loader, explicit
-simulation state, ordinary Go rules, Ebitengine drawing and Go audio replay.
+The default `cmd/populous2` application uses ordinary Go state and rules,
+Ebitengine rendering and a Go PCM sequencer. It does not load `populous.ii`,
+HUNK segments, instruction dumps, relocated memory or CPU register contexts.
+The old translation remains available as `cmd/populous2-native` for comparison.
+`cmd/populous2-go` is an alias of the independent desktop launcher.
 
-## Current dependency
+## Architecture
 
-`Bundle.Executable` holds the parsed HUNK executable. `LoadFS` reads its resource
-and sprite descriptors, gameplay constants, animation definitions and sound
-sequences. `NativeRuntimeHost` then relocates its segments and exposes CODE/BSS
-through shared memory aliases. Menus, rendering, input, audio and simulation
-controllers retain original offsets and register contexts.
-
-Production does not use the local 68000 analysis interpreter. Nevertheless,
-requiring CODE bytes and their instruction/address layout is an executable
-dependency, even when the operation itself is written in Go. Selecting the
-older `cmd/populous2-legacy` command does not remove this dependency: its bundle
-and several World rules also read the executable.
-
-## Replacement boundaries
-
-| Area | Required independent implementation |
+| Package | Responsibility |
 |---|---|
-| Asset loading | Fixed Go file catalog and decoders for packed graphics, sprite differences, landscape and campaign files; explicit image/font/sample/music metadata |
-| Game state | Go terrain, follower, town, deity, projectile and environmental state; no relocated memory ownership or self-modifying CODE aliases |
-| Simulation | Named movement, founding, growth, combat, AI and power operations; explicit deterministic order and timing |
-| Presentation | Go menus/widgets, picking and compositor using decoded art; callbacks identify actions rather than executable procedure addresses |
-| Audio | Go sample mixer and music sequencer using extracted audio data, without executable driver or CIA/register-controller dependency |
-| Campaign | Go world selection, progression, score, experience, awards and ending state |
-| Persistence/network | Explicit Go save and multiplayer state; original GAM compatibility remains a separate codec |
-| Reference validation | Original executable, HUNK addresses and CPU comparisons restricted to optional analysis tools and reference tests |
+| `internal/engine` | Terrain, followers, towns, six heroes, all 29 powers, AI, scenarios, campaign rules and semantic snapshots |
+| `internal/app` | Menus, input, isometric compositor, profile/campaign presentation, save browser and asynchronous network UI |
+| `internal/visualassets` | PNG atlases, palettes, fonts, named animation compositions and original ending playback data |
+| `internal/music` | Semantic musical events, signed PCM and Go replay/mixing |
+| `internal/gamcodec` | Original user-save file conversion at a strict boundary |
+| `internal/network` | Validated snapshots, ordered player commands and TCP lockstep |
+| `assets/runtime` | Locally embedded portable asset package |
+| `internal/desktop` | Shared desktop command configuration and Ebitengine startup |
 
-Original graphics, fonts, palettes, sprite metadata and music sequences that
-happen to be stored inside the original executable can be extracted locally
-as ordinary typed asset data. Executable instructions, procedure dispatch
-addresses and emulated memory images must not become runtime data under
-another filename. Game rules belong in maintainable Go definitions and code.
+The engine owns checked actor IDs and geometric cells. Mixed cell membership
+preserves actual insertion, movement and removal order. Effects share a bounded
+250-slot pool; followers have 399 usable slots, scenery and walls 200 each.
+Game behavior is expressed with named fields, deterministic phase order and
+ordinary Go operations. File-format token conversion remains inside GAM
+interoperability and never selects runtime instruction bodies.
 
-## Completion checks
+## Prepare assets and run
 
-The independent application must build and run after `populous.ii` and all
-HUNK/CODE dumps have been removed from its prepared runtime assets. Its
-production dependency graph must exclude executable parsing, relocation,
-register-machine callbacks and address-based instruction dispatch. It must
-retain all original powers, heroes, campaign, menus, audio, save/load and
-multiplayer behavior through ordinary Go subsystems.
-
-The existing translation and finite reference corpora remain useful for
-comparing results during migration. They must not be mistaken for completion
-of the independent engine. Each replacement is validated before the default
-launcher switches to the new engine.
-
-The first boundary now has a Go resource-file catalog. `LoadResourceSetFS`
-lists and unpacks the 26 external files without opening `populous.ii`.
-`cmd/assetcheck` inventory and `-decode` use this path. Its separate `-images`
-reference export still needs executable-based sprite metadata.
-
-Tests open a data filesystem that rejects executable reads and verify the four
-landscapes, tile banks, sprite differences and 1,000 campaign records. This is a
-preparatory change; the complete game still needs the remaining replacements
-above. The next playable slice is an independent menu and early conquest,
-including terrain sculpting, founding and growth, followers, mana and AI.
-
-## Independent application in progress
-
-`cmd/populous2-go` is a separate migration target. Its production dependencies
-are `internal/app`, `internal/engine`, `internal/visualassets` and
-`internal/music`; they do not import the original-executable readers or the
-register-based translation. It loads a directory of PNG atlases, semantic
-animation/music metadata, signed PCM and decoded campaign/landscape data.
-
-Prepare the private assets once with the import tools, then run the new target:
+The import tools may inspect the original disks/executable locally to recover
+actual art, fonts, animation compositions, samples, music and campaign data.
+Their portable output contains no instruction stream or CPU memory image.
+Original resources and generated assets stay excluded from Git.
 
 ```sh
-go run ./cmd/export-visual-assets -output assets/generated
-go run ./cmd/export-audio-assets -output assets/generated/audio
-go run ./cmd/populous2-go -data assets/generated
-```
-
-For a self-contained desktop or mobile build, export the same assets into the
-dedicated runtime package before compiling:
-
-```sh
+sh tools/exclude-local-assets.sh
+go run ./cmd/import-assets -adf "/path/to/disk A.adf" -adf "/path/to/disk B.adf"
 go run ./cmd/export-visual-assets -output assets/runtime/data
 go run ./cmd/export-audio-assets -output assets/runtime/data/audio
-go build -o bin/populous2-go ./cmd/populous2-go
+go build -o bin/populous2 ./cmd/populous2
 ```
 
-The built game embeds only the exported art, music and campaign files. It can
-run outside the repository. A clean source checkout contains a placeholder;
-original assets in this build directory are excluded locally and rejected by
-the repository's asset-protection hook.
+This build can run outside the repository. A clean checkout contains an
+embeddable placeholder so source tools and the game compile before import.
+For an external asset installation, export to another directory and launch
+`go run ./cmd/populous2 -data /path/to/portable-assets`.
+See [ASSET_SETUP.md](ASSET_SETUP.md) for supported disk revisions.
 
-The independent slice currently has Go menus/profile/world selection,
-isometric rendering and picking, the 1,000 campaign records, four landscapes,
-propagated terrain changes, settlement founding/economy, ordinary followers,
-opposing land AI, tactical modes and Go music/sample replay. Terrain-generation
-digests and sample-replay comparisons establish specific migrated behavior.
-Further follower decisions, effects, rendering layers and campaign presentation
-still require migration and fidelity checks.
-
-All 29 power commands are admitted by the independent dispatcher, including
-six hero conversions. This describes their migrated command paths, not full
-game completion: interactions, simulation and presentation remain subject to
-the concrete gaps in [GO_ENGINE_AUDIT.md](GO_ENGINE_AUDIT.md).
-
-The application now has deity profiles and passwords, campaign scores and
-progression, original ending playback, options, a detached map editor, semantic
-JSON saves and asynchronous two-player TCP sessions. Original GAM
-interoperability is being added as a separate file codec. The default
-`cmd/populous2` still uses the reference translation until the independent
-application passes all completion checks.
-
-Generated artwork and audio remain local and excluded from Git. Import tools
-may inspect the original executable to recover its actual art/music data; the
-independent game neither opens that file nor receives a substitute instruction
-or memory image.
-
-## Subsequent simulation slices
-
-The follower layer now uses continuous fixed-point positions, explicit motion
-legs, ordered search rings, occupancy pressure and reciprocal combat state.
-Tests compare terrain digests and selected numeric movement/damage results;
-whole-game follower parity is still being expanded.
-
-Nature and fire controllers are being migrated into named Go effect states.
-All families reserve from one 250-slot effect budget, while scenery has its
-separate 200-slot budget. Their presence in source does not make a power
-available: admission stays disabled until the world interactions, victim states,
-rendering and full casting path have been bound and checked.
-
-| Family | Current independent boundary | Remaining integration |
-|---|---|---|
-| Nature | Sampled forest/restoration/swamp placement and timed fungus generations; original central fungus maps compared | Hero immunity, complete scenario options, border semantics and presentation/admission |
-| Fire | Fixed-point columns, rain, volcano and lava controllers with typed habitat callbacks; original column traces compared | Shared terrain damage, burning victims, heroes, linked environmental interactions and presentation/admission |
-| Followers | Typed movement, ordered decisions, towns, pressure and reciprocal combat | Remaining special followers, complete contact/hero/hazard compositions and fidelity coverage |
-
-The early independent menu intentionally exposes the migrated conquest path;
-missing editor, results, network or other modes are not simulated by acknowledging
-unimplemented actions.
-
-## Independent controls
+## Controls
 
 | Action | Input |
 |---|---|
@@ -153,36 +58,57 @@ unimplemented actions.
 | Activate the lightning marker | Enter |
 | Move the viewport | Arrows or click the overview |
 | Deity profile / world / multiplayer | Main menu |
-| Options / detached map editor | O / P |
-| Browse/load / browse/save the session | F9 / F10; Load Game in the main menu |
-| Help / return to menu | H / Escape |
+| Options / detached map editor | O / P; EDIT in options |
+| Browse/load / browse/save | F9 / F10; Load Game in the main menu |
+| Pause / help / return | Space / H / Escape |
 
-Desktop two-player sessions can also be started with `-listen address:port`
-and `-connect address:port`. A waiting or interrupted connection keeps the
-window responsive and pauses simulation. Cosmetic audio/framebuffer state is
-separate from the synchronized world.
+The gameplay panel also offers mouse controls. The options/editor operate on
+validated detached drafts; Cancel preserves the live game. Power help creates
+an isolated, paced demonstration using the real effect controllers.
 
-The left gameplay panel also provides mouse controls for powers, tactical
-modes, the rally marker, help, options and saving. Save filenames can be edited
-in the browser; Delete clears the field, and an existing destination requires
-a separate replacement confirmation. The browser accepts semantic JSON
-sessions and original `.GAM` files. Original-save import/export uses the
-separate `internal/gamcodec` boundary and never supplies executable state to
-the simulation. Unsupported original records report an error and leave the
-current game intact.
+## Persistence and multiplayer
 
-## Original GAM interoperability
+The save browser lists JSON/GAM files and requires confirmation before replacing
+an existing destination. Invalid files cannot replace the current world. JSON
+preserves the full semantic Go session, profile, campaign position, local camp,
+camera, selected power, direction, custom setup and pause state.
 
-The GAM codec preserves the original 56,690-byte file layout and keeps reserved
-user-save fields outside the simulation. Supported mappings include campaign
-and custom-player settings, profile and camera metadata, AI choices/cooldowns,
-statistics, mixed actor links, effect controllers, appearance variants, hero
-claims, contact waits, retained deaths and their cleanup state. Tests cover an
-unchanged original-file byte roundtrip and continued Go simulation after import.
+GAM uses the original 56,690-byte file layout. Supported mappings include custom
+player settings, profile/camera, AI choices/cooldowns/requests, statistics, mixed
+actor links, effects, appearance variants, hero claims, contact waits and retained
+deaths. Reserved user-save fields remain outside the simulation. Original GAM
+cannot represent pending Go input orders or an active deferred settlement deadline
+as separate fields; export rejects these states and suggests lossless JSON.
+Unknown original records and missing artwork mappings are also explicit errors.
 
-Semantic JSON is the lossless format for independent Go sessions. Original GAM
-cannot store a pending Go input order or an active deferred settlement deadline
-as a separate field. Export rejects these states explicitly, along with unknown
-original records or missing artwork-token mappings; it does not reuse reserved
-bytes or discard active state. Save as JSON, or finish the pending action before
-exporting GAM.
+Two-player sessions use `-listen address:port` and `-connect address:port`, or the
+menu. The background network worker owns a detached world and only publishes a
+completed round. A failed or mismatched connection pauses simulation and shows
+an error; automatic reconnection/resynchronization is not implemented. Leave
+the session before saving/loading or editing live rules.
+
+## Verification boundaries
+
+The default and alias launchers have dependency tests rejecting the original
+translation and executable loaders. The standalone build is checked outside the
+repository. Source comparisons cover terrain, town support/economy, movement,
+contacts, heroes, effects, campaign arithmetic, art/anchors/depth and audio.
+All 29 effects are exercised through complete lifetimes and saved continuation.
+
+The optional integrated reference comparison uses world 12, landscape 0,
+seed `0x15b0`, with 160 complete no-input main frames, including rendering,
+clock, simulation and deferred commands. It compares all terrain corners,
+follower identity/population/state/fractional position/town stage, mana,
+foundation metrics and RNG. A separate mixed lava case covers follower, tree,
+wall and magnet. These are reproducible bounded checks, not exhaustive proof
+of every combination in all 1,000 worlds.
+
+```sh
+POPULOUS2_REFERENCE_COMPARE=1 go test ./internal/populous2 -run '^TestIndependentEngineCampaignReferenceOptional$' -count=1 -v
+```
+
+The display/input cadence is 50 PAL updates per second; simulation advances at
+12.5 passes per second. Audio and ending presentation retain separate clocks.
+The rendering tests compare original masked pixels, fractional surfaces,
+340 traversal cases, high-object overlap and 162 terrain-edge backdrop cases.
+Original assets used by these optional checks are not distributed.

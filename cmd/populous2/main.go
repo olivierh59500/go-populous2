@@ -1,5 +1,5 @@
 package main
 
-import "go-populous2/internal/nativeapp"
+import "go-populous2/internal/desktop"
 
-func main() { nativeapp.Run() }
+func main() { desktop.Run() }
