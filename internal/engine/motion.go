@@ -100,6 +100,7 @@ func (w *World) advanceLeg(id int) {
 		}
 
 		if !f.IsHero() && f.Hero.CaptiveOf == 0 && w.Players[f.Owner].Mode != Rally && w.Tick >= f.SettleAfter && settlementLand(w.Cell(x, y).Code) {
+			w.RecordFoundingAttempt(int(f.Owner))
 			if stage := w.EvaluateTown(id); stage > 0 {
 				f.State = Town
 				f.Stage = uint8(stage)

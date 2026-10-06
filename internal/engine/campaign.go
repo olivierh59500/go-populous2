@@ -89,3 +89,11 @@ func (w *World) RecordPowerUse(owner int, id PowerID) {
 		w.Players[owner].Statistics.WeightedPowerUse += uint16(id)%6 + 1
 	}
 }
+
+// RecordFoundingAttempt records the source entry-to-settlement boundary.
+// The attempt counts even when the subsequent support evaluation fails.
+func (w *World) RecordFoundingAttempt(owner int) {
+	if owner >= 0 && owner < len(w.Players) {
+		w.Players[owner].Statistics.Metric++
+	}
+}

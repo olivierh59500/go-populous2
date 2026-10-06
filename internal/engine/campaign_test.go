@@ -69,3 +69,32 @@ func TestCampaignInvalidResultDoesNotChangeProfile(t *testing.T) {
 		}
 	}
 }
+
+func TestFoundingAttemptMetricCountsRejectedAndSuccessfulEntries(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Players[0].Statistics.Metric = 65535
+	// A boulder rejects support after the source entry boundary is reached.
+	w.Nature.Scenery[0] = SceneryActor{Kind: SceneryBoulder, X: 21, Y: 20}
+	w.syncSceneryActor(0)
+	w.beginLeg(id, 21, 20)
+	for range 7 {
+		w.advanceLeg(id)
+	}
+	if w.Players[0].Statistics.Metric != 0 || w.Followers[id].State == Town {
+		t.Fatal("failed founding attempt did not count with word wrap")
+	}
+	w = testFlatWorld()
+	id = addFollower(w, 20, 20, 0, 100, Walking)
+	w.beginLeg(id, 21, 20)
+	for range 7 {
+		w.advanceLeg(id)
+	}
+	if w.Followers[id].State != Town || w.Players[0].Statistics.Metric != 1 {
+		t.Fatal("successful founding attempt did not increment once")
+	}
+	w.Step()
+	if w.Players[0].Statistics.Metric != 1 {
+		t.Fatal("existing town counted as a repeated founding attempt")
+	}
+}
