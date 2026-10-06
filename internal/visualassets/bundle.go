@@ -81,6 +81,7 @@ type Catalog struct {
 	Animations     map[string]Animation      `json:"animations,omitempty"`
 	Towns          *TownArt                  `json:"towns,omitempty"`
 	EndingSequence *EndingDescriptor         `json:"ending_sequence,omitempty"`
+	TileRasters    [256]uint8                `json:"tile_rasters"`
 }
 
 type Bundle struct {
@@ -95,6 +96,7 @@ type Bundle struct {
 	Animations                  map[string]Animation
 	Towns                       *TownArt
 	EndingSequence              *EndingSequence
+	TileRasters                 [256]uint8
 }
 
 // Portrait assembles independently selectable headpiece, eyes and mouth.

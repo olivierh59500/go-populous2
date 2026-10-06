@@ -65,6 +65,7 @@ func export(files fs.FS, output string) error {
 	}
 	catalog := visualassets.Catalog{Version: visualassets.SchemaVersion, Background: "background.png", Startup: "startup.png", Ending: "ending.png", Animations: make(map[string]visualassets.Animation)}
 	catalog.StartupPalette = presentation.StartupPalette
+	catalog.TileRasters = source.RenewNative.Raster
 	catalog.Towns = &visualassets.TownArt{PopulationDivisors: source.TownCenterArt.PopulationDivisors, FlagSprites: [2][2]int{{89, 90}, {91, 92}}, FlagHeight: 24}
 	for i, offset := range source.TownEvaluator.OverlayOffsets {
 		x := int(int8(uint8(offset)))
@@ -352,6 +353,16 @@ func export(files fs.FS, output string) error {
 			return err
 		}
 		catalog.Animations[name] = animation(frames, false)
+	}
+	for name, start := range map[string]int{
+		"neutral/road-maker": 0x2cc, "neutral/land-lowerer": 0x53c, "neutral/land-lowerer-paired": 0x550,
+		"neutral/whirlwind-maker": 0xa98, "neutral/tree-planter": 0xab4, "neutral/fire-maker": 0x2bfc, "neutral/monster": 0x2c18, "neutral/monster-victim": 0x2c34,
+	} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[name] = animation(frames, true)
 	}
 	data, err := json.MarshalIndent(catalog, "", "  ")
 	if err != nil {

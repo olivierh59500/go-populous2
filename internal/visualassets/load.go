@@ -132,7 +132,7 @@ func loadFS(files fs.FS) (*Bundle, error) {
 		return nil, fmt.Errorf("unsupported visual catalog version %d", catalog.Version)
 	}
 	loader := imageLoader{files: files, images: make(map[string]image.Image)}
-	b := &Bundle{Animations: catalog.Animations, StartupPalette: catalog.StartupPalette}
+	b := &Bundle{Animations: catalog.Animations, StartupPalette: catalog.StartupPalette, TileRasters: catalog.TileRasters}
 	for land, bank := range catalog.Landscapes {
 		if len(bank.Tiles) == 0 || len(bank.Tiles) > maxTiles || len(bank.Sprites) == 0 || len(bank.Sprites) > maxSprites {
 			return nil, fmt.Errorf("invalid landscape %d artwork count", land)

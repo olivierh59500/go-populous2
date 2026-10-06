@@ -139,6 +139,18 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			t.Fatal("wall artwork differs", name)
 		}
 	}
+	if portable.TileRasters != source.RenewNative.Raster {
+		t.Fatal("tile surface metadata changed during import")
+	}
+	for name, start := range map[string]int{"neutral/road-maker": 0x2cc, "neutral/land-lowerer": 0x53c, "neutral/land-lowerer-paired": 0x550, "neutral/whirlwind-maker": 0xa98, "neutral/tree-planter": 0xab4, "neutral/fire-maker": 0x2bfc, "neutral/monster": 0x2c18, "neutral/monster-victim": 0x2c34} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(portable.Animations[name], animation(frames, true)) {
+			t.Fatal("neutral artwork import changed", name)
+		}
+	}
 	for stage := range source.TownCenterArt.Frames {
 		for owner := range 2 {
 			for _, population := range []uint32{0, 1, 100, 4000, 1 << 24} {
