@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
-	"math"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -30,11 +29,6 @@ func (g *Game) startConquest() error {
 	if err != nil {
 		return err
 	}
-	g.World, g.Screen = world, Playing
-	g.LocalSide, g.OriginalSave = 0, nil
-	g.Paused = false
-	g.AnimationSounds = AnimationSoundGate{}
-	g.resultApplied = false
 	world.Players[0].Experience = g.Profile.Experience
 	if g.CustomGame && g.CustomLevel != nil {
 		world.Players[0].Computer, world.Players[1].Computer = g.CustomComputer[0], g.CustomComputer[1]
@@ -45,6 +39,11 @@ func (g *Game) startConquest() error {
 			return err
 		}
 	}
+	g.World, g.Screen = world, Playing
+	g.LocalSide, g.OriginalSave = 0, nil
+	g.Paused = false
+	g.AnimationSounds = AnimationSoundGate{}
+	g.resultApplied = false
 	leader := world.Players[0].Leader
 	if leader > 0 {
 		f := world.Followers[leader]
@@ -64,6 +63,9 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 		g.advanceNetwork()
 	} else if !g.Paused && g.Updates%4 == 0 {
 		w.Step()
+		if w.Scenario.Err != "" {
+			g.Message, g.messageUntil = "WORLD EVENT: "+w.Scenario.Err, g.Updates+200
+		}
 		if w.Result != 0 {
 			g.finishWorld()
 			return nil
@@ -268,7 +270,7 @@ func (g *Game) drawWorld() {
 				if scenery.Kind == engine.SceneryBoulder {
 					name = "boulder"
 				}
-				ax, ay := g.projectCorner(x, y)
+				ax, ay := g.projectActor(x*256+128, y*256+128)
 				key := fmt.Sprintf("scenery/%s/%d", name, scenery.Variant)
 				if scenery.Kind == engine.SceneryBurningTree {
 					key = "scenery/burning-tree"
@@ -294,13 +296,12 @@ func (g *Game) drawWorld() {
 				if wall.Broken {
 					key = fmt.Sprintf("wall/broken/%d", wall.Variant)
 				}
-				ax, ay := g.projectCorner(x, y)
+				ax, ay := g.projectActor(x*256+128, y*256+128)
 				g.animation(key, int(wall.Frame), ax, ay+8, land)
 			}
 			for id := g.visibleFollowers[dx+dy*viewSize]; id != 0; id = g.visibleNext[id] {
 				f := w.Followers[id]
-				ax, ay := g.projectCorner(x, y)
-				ay += 8
+				ax, ay := g.followerRenderAnchor(f)
 				if state := f.CombatAftermath; state.Kind != engine.CombatAftermathNone {
 					key := "combat/death"
 					switch state.Kind {
@@ -383,9 +384,7 @@ func (g *Game) drawWorld() {
 					}
 					g.animation(key, int(w.Nature.DeathFrames[id]), ax, ay, land)
 				} else {
-					mapX, mapY := f.Position()
-					ax = int(math.Round(192 + 16*(mapX-float64(g.CameraX)-mapY+float64(g.CameraY))))
-					ay = int(math.Round(72+8*(mapX-float64(g.CameraX)+mapY-float64(g.CameraY)))) - int(w.Heights[x+y*engine.CornerSize])*8
+					ax, ay = g.followerRenderAnchor(f)
 					name := fmt.Sprintf("follower/%d/0/%s", f.Owner, compassNames[f.Direction&7])
 					if f.IsHero() {
 						name = fmt.Sprintf("hero/%s/%s", heroNames[f.Hero.Kind], compassNames[f.Direction&7])
@@ -407,6 +406,9 @@ func (g *Game) drawWorld() {
 	g.text(fmt.Sprintf("MANA %d", summary.Mana), 8, 191)
 	if power, ok := engine.PowerByID(g.Selected); ok {
 		g.text(strings.ToUpper(power.Name), 144, 181)
+	}
+	if g.Selected == engine.Basalt || g.Selected == engine.Earthquake || g.Selected == engine.Wind {
+		g.text("DIRECTION "+[4]string{"NORTH", "EAST", "SOUTH", "WEST"}[g.Direction&3], 144, 191)
 	}
 	if g.Updates < g.messageUntil {
 		g.drawMessage(178)
@@ -432,8 +434,10 @@ func (g *Game) drawPowerMenu() {
 			continue
 		}
 		name := strings.ToUpper(power.Name)
-		if !power.Implemented {
-			name += " - UNAVAILABLE"
+		if !g.World.Level.Players[g.playerSide()].Powers[id] {
+			name += " OFF"
+		} else {
+			name += fmt.Sprintf(" %d", g.World.PowerCost(g.playerSide(), id))
 		}
 		g.button(name, 40, 77+row*19, 240)
 	}
@@ -445,8 +449,8 @@ var neutralNames = [7]string{"", "road-maker", "land-lowerer", "whirlwind-maker"
 func (g *Game) fireAtCell(x, y, land int) {
 	for _, effect := range g.World.Water.Basalt {
 		if effect.Active && effect.X == x && effect.Y == y {
-			ax, ay := g.projectCorner(x, y)
-			g.animation("fire-impact/water", effect.Frame, ax, ay+8, land)
+			ax, ay := g.projectActor(x*256+128, y*256+128)
+			g.animation("fire-impact/water", effect.Frame, ax, ay, land)
 		}
 	}
 	for id := 0; id < engine.EffectCapacity; id++ {
@@ -455,9 +459,7 @@ func (g *Game) fireAtCell(x, y, land int) {
 			if !effect.Active || effect.X/256 != x || effect.Y/256 != y {
 				continue
 			}
-			mapX, mapY := float64(effect.X)/256, float64(effect.Y)/256
-			ax := int(math.Round(192 + 16*(mapX-float64(g.CameraX)-mapY+float64(g.CameraY))))
-			ay := int(math.Round(72+8*(mapX-float64(g.CameraX)+mapY-float64(g.CameraY)))) - int(g.World.Heights[x+y*engine.CornerSize])*8
+			ax, ay := g.projectActor(effect.X, effect.Y)
 			name := "fire-column/active"
 			if bank == 0 {
 				switch effect.Phase {

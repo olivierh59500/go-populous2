@@ -112,3 +112,17 @@ func TestNetworkSetupJoinReceivesTheHostsSelectedWorld(t *testing.T) {
 	}
 	t.Fatal("join setup did not publish the host world")
 }
+
+func TestFailedNetworkStartDoesNotReplaceLiveGame(t *testing.T) {
+	assets := menuTestGame(t).Assets
+	controller, err := NewNetworkController("127.0.0.1:2468", "", "test-rules")
+	if err != nil {
+		t.Fatal(err)
+	}
+	controller.Close()
+	world := controllerWorld(t)
+	g := &Game{Assets: assets, World: world, Screen: ConquestBriefing, Network: controller}
+	if err := g.startConquest(); err == nil || g.World != world || g.Screen != ConquestBriefing {
+		t.Fatal("failed connection setup replaced the displayed game")
+	}
+}
