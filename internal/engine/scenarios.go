@@ -116,3 +116,20 @@ func (w *World) advanceWater(id int) bool {
 	}
 	return true
 }
+
+// Sprog requests a town's next emigration cycle. It precedes the lower-ground
+// prohibition in the original right-click command and does not spend mana.
+func (w *World) Sprog(owner, x, y int) bool {
+	if owner < 0 || owner > 1 || !inside(x, y) || w.Level.Players[owner].Scenario.DisableEmigration {
+		return false
+	}
+	var occupants [FollowerCapacity]int
+	for _, id := range occupants[:w.FollowersAt(x, y, occupants[:])] {
+		f := &w.Followers[id]
+		if int(f.Owner) == owner && f.State == Town {
+			f.ForceEmigration = true
+			return true
+		}
+	}
+	return false
+}

@@ -169,7 +169,7 @@ func (w *World) executeAIOrders() {
 		case AILower:
 			w.LowerAt(owner, order.X, order.Y)
 		case AIReleaseTown:
-			w.Evacuate(order.Follower)
+			w.Sprog(owner, order.X, order.Y)
 		case AICastPower:
 			_ = w.Cast(owner, order.Power, order.Target)
 		case AISetMode:

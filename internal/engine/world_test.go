@@ -251,3 +251,43 @@ func TestEvacuateReleasesTownWithoutDuplicatingPopulation(t *testing.T) {
 		t.Fatal("evacuation immediately recreated town or duplicated people")
 	}
 }
+
+func TestTownEmigrantStartsAtParentPositionAndRightClickIsDeferred(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Town)
+	w.Followers[id].Work = 7
+	w.Followers[id].positionX = 20*256 + 135
+	w.Followers[id].positionY = 20*256 + 147
+	w.Followers[id].positionSet = true
+	if !w.Sprog(0, 20, 20) || !w.Followers[id].ForceEmigration {
+		t.Fatal("right-click sprog")
+	}
+	beforeMana := w.Players[0].Mana
+	w.stepFollower(id)
+	child := id + 1
+	if w.Followers[child].State != Walking || w.Followers[child].positionX != 20*256+135 || w.Followers[child].positionY != 20*256+147 || w.Followers[id].ForceEmigration {
+		t.Fatal("newborn did not retain parent position or clear request")
+	}
+	if w.Players[0].Mana != beforeMana+w.Landscape.ManaAdd[18] {
+		t.Fatal("sprog spent extra mana")
+	}
+}
+
+func TestRareTownBirthCreatesNeutralInventionAtSourceSlot(t *testing.T) {
+	w := testFlatWorld()
+	parent := 1
+	w.Followers[parent] = Follower{Owner: 0, X: 32, Y: 32, State: Town, Stage: 18, Population: 4000, MovementSpeed: 20, Work: 7, positionSet: true, positionX: 32*256 + 128, positionY: 32*256 + 128}
+	w.Occupants[32+32*MapSize] = uint16(parent)
+	for id := 2; id < 250; id++ {
+		w.Followers[id] = Follower{Owner: 0, State: Ruin, Population: 1}
+	}
+	w.Tick = 1
+	w.random = randomState(4311)
+	expected := w.random
+	expected.next()
+	bits := expected.next()
+	w.stepFollower(parent)
+	if w.Followers[250].State != Walking || w.Followers[251].Owner != 2 || w.Followers[251].Neutral.Kind != NeutralKind(((bits%12)&^1)/2+1) || w.NeutralBirthDeadline != 51 || w.random != expected {
+		t.Fatal("rare neutral birth slot, selector, deadline or RNG")
+	}
+}

@@ -40,6 +40,7 @@ type Follower struct {
 	Frame                          uint16
 	Stage                          uint8
 	LastDevelopedStage             uint8
+	ForceEmigration                bool
 	Work                           uint16
 	FoundedAt                      uint64
 	SettleAfter                    uint64
@@ -73,10 +74,8 @@ type Summary struct{ Population, Towns, Groups, BattlesWon, Mana int }
 // World owns simulation state. All arrays have a geometric or game meaning;
 // none represents CPU memory, a register bank, or a relocated executable.
 type World struct {
-	terrainTargets       [MapSize * MapSize]uint8
-	terrainTargetSet     [MapSize * MapSize]bool
-	developmentTarget    [CornerSize * CornerSize]uint8
-	developmentTargetSet [CornerSize * CornerSize]bool
+	BirthBlocked         bool
+	NeutralBirthDeadline uint64
 	Scenario             ScenarioState
 	Level                Level
 	Landscape            Landscape
@@ -202,6 +201,7 @@ func (w *World) Step() {
 	}
 	w.Tick++
 	w.beginAIObservations()
+	w.BirthBlocked = false
 	for owner := range w.Players {
 		if w.Tick&1 == 0 && w.Players[owner].Mana < 32767 {
 			w.Players[owner].Mana++
@@ -318,28 +318,41 @@ func (w *World) stepFollower(id int) {
 			return
 		}
 		f.Work = 0
-		w.Players[f.Owner].Mana += w.Landscape.ManaAdd[stage]
-		grown := f.Population + w.Landscape.PopulationAdd[stage]
-		if grown <= w.Landscape.PopulationLimit[stage] {
+		if !f.Disease.Infected {
+			w.Players[f.Owner].Mana = int(uint32(w.Players[f.Owner].Mana) + uint32(w.Landscape.ManaAdd[stage]))
+		}
+		grown := int(int32(uint32(f.Population) + uint32(w.Landscape.PopulationAdd[stage])))
+		if grown <= w.Landscape.PopulationLimit[stage] && !f.ForceEmigration || w.BirthBlocked {
 			f.Population = grown
 			return
 		}
-		emigrant := grown / w.Landscape.EmigrationDivisor[stage]
-		if emigrant <= 0 || emigrant >= f.Population {
+		f.ForceEmigration = false
+		emigrant := int(uint16(grown))
+		divisor := w.Landscape.EmigrationDivisor[stage]
+		if quotient := uint32(grown) / uint32(divisor); quotient <= 65535 {
+			emigrant = int(quotient)
+		}
+		if emigrant < 0 {
 			return
 		}
-		// An emigrant must have a real adjacent destination. The parent is left
-		// unchanged if the follower pool or the surrounding land is full.
-		x, y, ok := w.emptyNeighbour(int(f.X), int(f.Y))
-		if !ok {
-			return
-		}
-		child := Follower{Disease: f.Disease, Owner: f.Owner, X: uint8(x), Y: uint8(y), PreviousX: uint8(f.X), PreviousY: uint8(f.Y), State: Walking, Population: emigrant, Weapons: stage, Search: stage * 2, MovementSpeed: f.MovementSpeed}
+		// The newborn starts at the parent's exact fractional position. Its
+		// ordinary search runs later in the ascending follower pass.
+		child := Follower{Disease: f.Disease, Owner: f.Owner, X: f.X, Y: f.Y, PreviousX: f.X, PreviousY: f.Y, State: Walking, Population: emigrant, Weapons: stage, Search: stage * 2, MovementSpeed: f.MovementSpeed, positionSet: true, positionX: f.positionX, positionY: f.positionY}
+
 		next := w.allocate(child)
 		if next == 0 {
+			w.BirthBlocked = true
 			return
 		}
 		f.Population -= emigrant
+		if next == 250 && w.Tick >= w.NeutralBirthDeadline {
+			w.NeutralBirthDeadline = w.Tick + 50
+			w.random.next()
+			bits := w.random.next()
+			selector := (bits % 12) &^ 1
+			kind := NeutralKind(selector/2 + 1)
+			_, _ = w.CreateNeutral(kind, int(selector+2), int(bits&63))
+		}
 		w.linkFollower(next)
 		if w.Players[f.Owner].Leader == id {
 			w.Players[f.Owner].Leader = next
