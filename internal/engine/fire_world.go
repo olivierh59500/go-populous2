@@ -207,10 +207,14 @@ func (w *World) damageFireParcel(x, y int, treeSpread bool) int {
 		}
 		death := FireVictimDeath{Mode: FireVictimDying, Frames: 9}
 		if f.State == Town {
-			stage := min(TownStages-1, int(f.Stage))
-			death.Mode, death.TownStage, death.Frames = FireVictimTownRuin, f.Stage, fireTownDeathFrames[stage]
-			w.clearBurntTownFarms(id)
+			// Direct fire and combat call the same retained town-collapse
+			// lifecycle: its animation spreads cardinal damage, then ruins
+			// remain allocated for their separate 400-pass lifetime.
+			w.destroyCombatTown(id)
+			hits++
+			continue
 		}
+		w.PrepareFollowerDeath(id)
 		f.Population, f.State, f.Frame = 0, Ruin, 0
 		f.moving, f.BattleWith, f.BattleAggressor = false, 0, false
 		w.FireDamage.Deaths[id] = death
@@ -284,7 +288,10 @@ func (w *World) pushFireParcel(x, y, dx, dy int) {
 			continue
 		}
 		if f.State == Town {
-			w.clearBurntTownFarms(id)
+			// Lava invokes the same town destruction first, then transfers
+			// that already cleaned, zero-population record to burning state.
+			w.destroyCombatTown(id)
+			f.CombatAftermath = CombatAftermathState{}
 		}
 		if w.FireDamage.Deaths[id].Mode != FireVictimBurning {
 			frames := 21
@@ -300,15 +307,10 @@ func (w *World) pushFireParcel(x, y, dx, dy int) {
 			w.remove(id)
 			continue
 		}
-		old := int(f.X) + int(f.Y)*MapSize
-		if w.Occupants[old] == uint16(id) {
-			w.Occupants[old] = 0
+		if int(f.X) != nx>>8 || int(f.Y) != ny>>8 {
+			w.moveFollowerCell(id, nx>>8, ny>>8)
 		}
 		f.positionX, f.positionY = nx, ny
-		f.X, f.Y = uint8(nx>>8), uint8(ny>>8)
-		at := int(f.X) + int(f.Y)*MapSize
-		if w.Occupants[at] == 0 {
-			w.Occupants[at] = uint16(id)
-		}
+		w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, nx, ny)
 	}
 }
