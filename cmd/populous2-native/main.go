@@ -17,6 +17,7 @@ func main() {
 	listen := flag.String("listen", "", "listen for native serial bytes over TCP at this address")
 	connect := flag.String("connect", "", "connect native serial bytes over TCP to this address")
 	saveRoot := flag.String("save-root", "", "existing directory used by the original file requester")
+	exportRoot := flag.String("export-root", "", "existing directory for original editor ILBM screen exports")
 	flag.Parse()
 	bundle, err := populous2.Load()
 	if err != nil {
@@ -32,6 +33,11 @@ func main() {
 	}
 	if *saveRoot != "" {
 		if err := g.SetSaveRoot(*saveRoot); err != nil {
+			log.Fatal(err)
+		}
+	}
+	if *exportRoot != "" {
+		if err := g.SetScreenExportRoot(*exportRoot); err != nil {
 			log.Fatal(err)
 		}
 	}

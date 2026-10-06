@@ -53,6 +53,7 @@ type NativeGame struct {
 	DeityEditor    populous2.NativeRuntimeDeity
 	Result         populous2.NativeRuntimeResultHost
 	Progression    populous2.NativeRuntimeProgressionState
+	ScreenExport   *populous2.NativeRuntimeScreenExport
 
 	interruptsInstalled bool
 }
@@ -134,6 +135,7 @@ func (g *NativeGame) createFrame() error {
 	frame, err := h.NewFrame(populous2.NativeRuntimeFrameBindings{Audio: operations,
 		RenderChildren: populous2.NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return g.beam, nil }, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, Sound: sound},
 		InputChildren:  populous2.NativeGameplayHUDHostCallbacks{Campaign: g.Startup.Campaign, Ownership: g.Startup.Ownership, Audio: operations},
+		InputOther:     g.inputOther,
 		Menu:           populous2.NativeInGameHostCallbacks{Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Sound: sound, Call: g.menuChild}, SerialTransport: g.serialChild},
 		Session: populous2.NativeFrameSessionCallbacks{CommandChild: g.Commands.Call, ResultAdvance: g.resultAdvance, Transport: func(caller int, mode uint8, c *populous2.NativeCommandRegisterContext, phase *uint32) (bool, error) {
 			if err := g.networkReady(); err != nil {
@@ -303,6 +305,9 @@ func (g *NativeGame) Close() {
 	}
 	if g.Files != nil {
 		g.Files.Close()
+	}
+	if g.ScreenExport != nil {
+		g.ScreenExport.Close()
 	}
 	if g.interruptsInstalled {
 		_ = g.Host.Access.Execute(func() error {
