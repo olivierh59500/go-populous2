@@ -40,6 +40,7 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 		f.Work = word(20)
 	case 14, 16:
 		f.State = engine.Fighting
+		f.BattleWasTown = record[0] == 4
 		f.BattleAggressor = state == 14
 		contact, err := reference(word(30))
 		if err != nil {
@@ -130,6 +131,9 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 			f.Hero.ClaimedBy = int(claim.Index)
 		}
 	}
+	if f.State == engine.Ruin && f.Population <= 0 && (snapshot.World.FireDamage.Deaths[id].Mode != engine.FireVictimAlive || f.TerrainDeath.Active || f.CombatAftermath.Kind != engine.CombatAftermathNone) {
+		f.CleanupPrepared = true
+	}
 	if record[13]&0x20 != 0 {
 		f.Disease.Infected = true
 	}
@@ -158,6 +162,9 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 		if strings.HasPrefix(role.Name, "death/water") || strings.HasPrefix(role.Name, "death/fatal") {
 			f.State = engine.Ruin
 			f.TerrainDeath = engine.TerrainDeathState{Active: true, Frame: uint16(role.Frame), Frames: uint16(catalogAnimationLength(catalog, role.Name))}
+		}
+		if f.State == engine.Ruin && f.Population <= 0 && (snapshot.World.FireDamage.Deaths[id].Mode != engine.FireVictimAlive || f.TerrainDeath.Active || f.CombatAftermath.Kind != engine.CombatAftermathNone) {
+			f.CleanupPrepared = true
 		}
 		switch f.State {
 		case engine.Airborne:

@@ -147,6 +147,9 @@ func encodeFollowerLifecycle(record []byte, w *engine.World, id int, catalog Cat
 		}
 	} else if f.State == engine.Fighting {
 		record[0], record[22] = 2, 16
+		if f.BattleWasTown {
+			record[0] = 4
+		}
 		if f.BattleAggressor {
 			record[22] = 14
 		}
