@@ -28,13 +28,15 @@ type Catalog struct {
 // fields so a no-change export need not invent their values. These user-data
 // bytes are never interpreted as instructions or attached to the engine.
 type Metadata struct {
-	Original              []byte
-	Profile               engine.Deity
-	ProfileSide, GameMode int
-	CameraX, CameraY      int
-	initial               engine.Snapshot
-	initialProfile        engine.Deity
-	Catalog               Catalog
+	Original                            []byte
+	Profile                             engine.Deity
+	ProfileSide, GameMode               int
+	CameraX, CameraY                    int
+	initial                             engine.Snapshot
+	initialProfile                      engine.Deity
+	initialProfileSide, initialGameMode int
+	initialCameraX, initialCameraY      int
+	Catalog                             Catalog
 }
 type Document struct {
 	World    *engine.World
@@ -102,6 +104,20 @@ func Decode(data []byte, catalog Catalog) (*Document, error) {
 	snapshot.World.Landscape = catalog.Landscapes[land]
 	snapshot.World.Tick = uint64(r.long(0xf40))
 	snapshot.Random = r.long(0xeb28)
+	for i := range snapshot.World.Level.WorldParameters {
+		snapshot.World.Level.WorldParameters[i] = r.byte(0xdde + i)
+	}
+	if events, err := engine.DecodeScenarioEvents(snapshot.World.Level.WorldParameters); err == nil {
+		snapshot.World.Scenario = events
+	} else {
+		return nil, fmt.Errorf("GAM scenario table: %w", err)
+	}
+	cursor := r.word(0xf0a)
+	if cursor%6 != 0 || cursor > 60 {
+		return nil, fmt.Errorf("GAM scenario cursor is invalid")
+	}
+	snapshot.World.Scenario.Cursor = uint8(cursor / 6)
+	snapshot.World.Armageddon = r.word(0xf12) != 0
 	snapshot.World.Followers = [engine.FollowerCapacity]engine.Follower{}
 	snapshot.Motion = [engine.FollowerCapacity]engine.FollowerMotionSnapshot{}
 	snapshot.World.Actors = engine.ActorRegistry{}
@@ -214,6 +230,6 @@ func Decode(data []byte, catalog Catalog) (*Document, error) {
 		profile.FaceParts[i] = r.byte(god + 0x4e + i)
 	}
 	profile.Experience = world.Players[side-1].Experience
-	metadata := Metadata{Original: append([]byte(nil), data[:FileSize]...), Profile: profile, ProfileSide: side - 1, GameMode: mode, CameraX: int(int16(r.word(0x5f44))), CameraY: int(int16(r.word(0x5f46))), initial: world.Snapshot(), initialProfile: profile, Catalog: catalog}
+	metadata := Metadata{Original: append([]byte(nil), data[:FileSize]...), Profile: profile, ProfileSide: side - 1, GameMode: mode, CameraX: int(int16(r.word(0x5f44))), CameraY: int(int16(r.word(0x5f46))), initial: world.Snapshot(), initialProfile: profile, Catalog: catalog, initialProfileSide: side - 1, initialGameMode: mode, initialCameraX: int(int16(r.word(0x5f44))), initialCameraY: int(int16(r.word(0x5f46)))}
 	return &Document{World: world, Metadata: metadata}, nil
 }

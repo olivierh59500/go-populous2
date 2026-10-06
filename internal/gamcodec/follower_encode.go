@@ -113,6 +113,49 @@ func encodeFollowerLifecycle(record []byte, w *engine.World, id int, catalog Cat
 		record[0], record[22] = 4, 0x28
 		name = fmt.Sprintf("ruin/town/%d", f.Stage)
 		frame = int(f.CombatAftermath.Frame)
+	} else if f.CombatAftermath.Kind != engine.CombatAftermathNone {
+		record[0], record[22] = 2, 0x18
+		name = "combat/death"
+		frame = int(f.CombatAftermath.Frame)
+		if f.CombatAftermath.Kind == engine.CombatHeroDefeated {
+			record[22] = 0x40
+			name = "combat/hero-death"
+		}
+		if f.CombatAftermath.Kind == engine.CombatVictorious {
+			record[22] = 0x42
+			name = "combat/victory-blue"
+			if f.Owner == 1 {
+				name = "combat/victory-red"
+			}
+		}
+		if f.CombatAftermath.Kind == engine.CombatCollateralDeath {
+			record[0], record[22] = 6, 8
+			name = "death/fire"
+		}
+	} else if f.TerrainDeath.Active {
+		record[0], record[22] = 2, 0x32
+		name = "death/water"
+		frame = int(f.TerrainDeath.Frame)
+		if f.IsHero() {
+			name += "/" + heroNames[f.Hero.Kind]
+		}
+	} else if f.State == engine.Drowning {
+		record[0], record[22] = 2, 0x16
+		name = "swimming/follower"
+		if f.IsHero() {
+			name = "swimming/" + heroNames[f.Hero.Kind]
+		}
+	} else if f.State == engine.Fighting {
+		record[0], record[22] = 2, 16
+		if f.BattleAggressor {
+			record[22] = 14
+		}
+		name = "combat/attack"
+		ref, err := fileReference(engine.ActorRef{Kind: engine.ActorFollower, Index: uint16(f.BattleWith)})
+		if err != nil {
+			return err
+		}
+		word(30, int(ref))
 	} else if f.State != engine.Walking && f.State != engine.Town {
 		return fmt.Errorf("GAM follower%d lifecycle is not mapped yet", id)
 	}

@@ -47,6 +47,19 @@ func TestPrivateOriginalGAMOrdinaryState(t *testing.T) {
 	if !bytes.Equal(roundtrip, data[:FileSize]) {
 		t.Fatal("unchanged original GAM did not roundtrip byte for byte")
 	}
+	document.Metadata.CameraX, document.Metadata.CameraY, document.Metadata.ProfileSide, document.Metadata.GameMode = 9, 7, 1, 4
+	edited, err := Encode(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	session, err := Decode(edited, catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if session.Metadata.CameraX != 9 || session.Metadata.CameraY != 7 || session.Metadata.ProfileSide != 1 || session.Metadata.GameMode != 4 {
+		t.Fatal("metadata-only edits were lost through the unchanged export path")
+	}
+	document.Metadata.CameraX, document.Metadata.CameraY, document.Metadata.ProfileSide, document.Metadata.GameMode = 8, 4, 0, 2
 	if _, err := w.Snapshot().Restore(); err != nil {
 		t.Fatal(err)
 	}
@@ -71,6 +84,105 @@ func TestPrivateOriginalGAMOrdinaryState(t *testing.T) {
 		actual := reloaded.World.Followers[id]
 		if follower.State != actual.State || follower.Population != actual.Population || follower.X != actual.X || follower.Y != actual.Y {
 			t.Fatalf("continued GAM lost follower%d", id)
+		}
+	}
+}
+
+func TestFreshGAMDocumentRoundTripPreservesNamedSessionState(t *testing.T) {
+	land := engine.Landscape{}
+	for stage := 1; stage < engine.TownStages; stage++ {
+		land.WorkTicks[stage] = 8
+		land.EmigrationDivisor[stage] = 3
+		land.PopulationLimit[stage] = 1000
+		land.PopulationAdd[stage] = 1
+	}
+	level := engine.Level{Seed: 4311}
+	for owner := range level.Players {
+		level.Players[owner] = engine.PlayerOptions{Mana: 1000, ReactionDelay: 7}
+	}
+	w, err := engine.NewWorld(level, land)
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog := Catalog{Levels: []engine.Level{level}}
+	for i := range catalog.Landscapes {
+		catalog.Landscapes[i] = land
+	}
+	for i := 0; i < 32; i++ {
+		catalog.Geometry[i] = uint8(i % 16)
+	}
+	profile := engine.NewDeity("BLUE")
+	document, err := NewDocument(w, catalog, profile, 0, 2, 8, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := Encode(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := Decode(encoded, catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(encoded) != FileSize || decoded.Metadata.CameraX != 8 || decoded.Metadata.CameraY != 4 || decoded.World.Players[0].Mana != 1000 || decoded.Metadata.Profile.Name != "BLUE" {
+		t.Fatal("fresh GAM lost named session fields")
+	}
+	for range 20 {
+		w.Step()
+		decoded.World.Step()
+	}
+	if w.Tick != decoded.World.Tick || w.Players[0].Mana != decoded.World.Players[0].Mana {
+		t.Fatal("fresh GAM replay did not retain the basic continuation")
+	}
+}
+
+func TestFreshGAMWithFollowersContinuesWithoutLosingMotionOrAI(t *testing.T) {
+	land := engine.Landscape{}
+	for stage := 1; stage < engine.TownStages; stage++ {
+		land.WorkTicks[stage] = 8
+		land.EmigrationDivisor[stage] = 3
+		land.PopulationLimit[stage] = 1000
+		land.PopulationAdd[stage] = 1
+		land.ManaAdd[stage] = 2
+	}
+	level := engine.Level{Seed: 4311}
+	for owner := range level.Players {
+		level.Players[owner] = engine.PlayerOptions{Groups: 2, Population: 500, Mana: 10000, MovementSpeed: 20, ReactionDelay: 7}
+	}
+	w, err := engine.NewWorld(level, land)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for range 3 {
+		w.Step()
+	}
+	catalog := Catalog{Levels: []engine.Level{level}}
+	for i := range catalog.Landscapes {
+		catalog.Landscapes[i] = land
+	}
+	for i := 0; i < 256; i++ {
+		catalog.Geometry[i] = uint8(i % 16)
+	}
+	document, err := NewDocument(w, catalog, engine.NewDeity("BLUE"), 0, 2, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := Encode(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, err := Decode(data, catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for pass := 0; pass < 20; pass++ {
+		w.Step()
+		restored.World.Step()
+		for id, f := range w.Followers {
+			got := restored.World.Followers[id]
+			if f.State != got.State || f.Population != got.Population || f.X != got.X || f.Y != got.Y {
+				t.Fatalf("fresh GAM follower%d diverged at pass%d", id, pass+1)
+			}
 		}
 	}
 }

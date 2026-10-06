@@ -17,13 +17,32 @@ func Encode(document *Document) ([]byte, error) {
 	if _, err := snapshot.Restore(); err != nil {
 		return nil, err
 	}
+	for owner, ai := range w.AI {
+		if ai.Order.Kind != engine.AINoOrder {
+			return nil, fmt.Errorf("GAM cannot represent player%d's pending input order; save between completed game passes", owner)
+		}
+	}
+	if w.Scenario.Err != "" {
+		return nil, fmt.Errorf("GAM cannot represent a scenario error state")
+	}
 	data := append([]byte(nil), document.Metadata.Original...)
-	if reflect.DeepEqual(snapshot, document.Metadata.initial) && document.Metadata.Profile == document.Metadata.initialProfile {
+	if reflect.DeepEqual(snapshot, document.Metadata.initial) && document.Metadata.Profile == document.Metadata.initialProfile && document.Metadata.ProfileSide == document.Metadata.initialProfileSide && document.Metadata.GameMode == document.Metadata.initialGameMode && document.Metadata.CameraX == document.Metadata.initialCameraX && document.Metadata.CameraY == document.Metadata.initialCameraY {
 		return data, nil
 	}
 	byteAt := func(at int, value uint8) { data[at-fileStart] = value }
 	wordAt := func(at int, value uint16) { binary.BigEndian.PutUint16(data[at-fileStart:], value) }
 	longAt := func(at int, value uint32) { binary.BigEndian.PutUint32(data[at-fileStart:], value) }
+	metadata := document.Metadata
+	if metadata.CameraX < 0 || metadata.CameraX > 56 || metadata.CameraY < 0 || metadata.CameraY > 56 {
+		return nil, fmt.Errorf("GAM camera lies outside the map viewport")
+	}
+	if metadata.GameMode != 2 && metadata.GameMode != 4 && metadata.GameMode != 6 && metadata.GameMode != 8 && metadata.GameMode != 10 {
+		return nil, fmt.Errorf("unsupported GAM game mode")
+	}
+	wordAt(0x5f44, uint16(metadata.CameraX))
+	wordAt(0x5f46, uint16(metadata.CameraY))
+	wordAt(0xeb42, uint16(metadata.ProfileSide+1))
+	wordAt(0xeb44, uint16(metadata.GameMode))
 	profile := document.Metadata.Profile
 	if len(profile.Name) > 15 || document.Metadata.ProfileSide < 0 || document.Metadata.ProfileSide > 1 {
 		return nil, fmt.Errorf("GAM profile does not fit its file fields")
@@ -75,6 +94,15 @@ func Encode(document *Document) ([]byte, error) {
 	longAt(0xeb28, snapshot.Random)
 	wordAt(0xeb22, uint16(w.Level.Landscape))
 	wordAt(0xeb46, uint16(w.Level.Number))
+	wordAt(0xf0a, uint16(w.Scenario.Cursor)*6)
+	armageddon := uint16(0)
+	if w.Armageddon {
+		armageddon = 1
+	}
+	wordAt(0xf12, armageddon)
+	for i, value := range w.Level.WorldParameters {
+		byteAt(0xdde+i, value)
+	}
 	for at, cell := range w.Tiles {
 		logical := w.Cell(at%64, at/64)
 		byteAt(0xf44+at*4, (data[0xf44+at*4-fileStart]&0xf8)|(cell.BaseAltitude&7))
@@ -232,6 +260,9 @@ func Encode(document *Document) ([]byte, error) {
 		wordAt(at+14, ownerNext)
 	}
 	for owner, player := range w.Players {
+		if err := encodeAIStatistics(data, w, owner); err != nil {
+			return nil, err
+		}
 		god := 0xe76a + (owner+1)*314
 		longAt(god, uint32(int32(player.Mana)))
 		longAt(god+20, uint32(w.Level.Players[owner].Attrition))

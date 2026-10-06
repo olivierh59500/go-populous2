@@ -38,6 +38,28 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 	case 6:
 		f.State = engine.Town
 		f.Work = word(20)
+	case 14, 16:
+		f.State = engine.Fighting
+		f.BattleAggressor = state == 14
+		contact, err := reference(word(30))
+		if err != nil {
+			return f, motion, err
+		}
+		if contact.Kind != engine.ActorFollower {
+			return f, motion, fmt.Errorf("GAM combat partner is not a follower")
+		}
+		f.BattleWith = int(contact.Index)
+	case 0x16:
+		f.State = engine.Drowning
+	case 0x18, 0x2c, 0x2e, 0x32, 0x38, 0x3e, 0x40:
+		f.State = engine.Ruin
+	case 0x42:
+		f.State = engine.Walking
+	case 0x24, 0x26:
+		f.State = engine.Walking
+	case 0x34:
+		f.State = engine.Walking
+		f.Hero.Phase = engine.HeroCaptive
 	case 0x14, 0x1a:
 		f.State = engine.Airborne
 		effect, err := effectIndex(word(32))
@@ -121,6 +143,22 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 			return f, motion, fmt.Errorf("GAM follower%d phase%d animation%d has no semantic catalog role", id, state, word(10))
 		}
 		f.Frame = uint16(role.Frame)
+		if strings.HasPrefix(role.Name, "combat/death") {
+			f.State = engine.Ruin
+			f.CombatAftermath = engine.CombatAftermathState{Kind: engine.CombatDefeated, Frame: uint16(role.Frame), Frames: uint16(catalogAnimationLength(catalog, role.Name))}
+		}
+		if strings.HasPrefix(role.Name, "combat/hero-death") {
+			f.State = engine.Ruin
+			f.CombatAftermath = engine.CombatAftermathState{Kind: engine.CombatHeroDefeated, Frame: uint16(role.Frame), Frames: uint16(catalogAnimationLength(catalog, role.Name))}
+		}
+		if strings.HasPrefix(role.Name, "combat/victory") {
+			f.State = engine.Walking
+			f.CombatAftermath = engine.CombatAftermathState{Kind: engine.CombatVictorious, Frame: uint16(role.Frame), Frames: uint16(catalogAnimationLength(catalog, role.Name))}
+		}
+		if strings.HasPrefix(role.Name, "death/water") || strings.HasPrefix(role.Name, "death/fatal") {
+			f.State = engine.Ruin
+			f.TerrainDeath = engine.TerrainDeathState{Active: true, Frame: uint16(role.Frame), Frames: uint16(catalogAnimationLength(catalog, role.Name))}
+		}
 		switch f.State {
 		case engine.Airborne:
 			carry := &snapshot.World.Air.Carry[id]
@@ -160,6 +198,7 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 
 func followerAnimationRole(roles []AnimationRole, state uint8) (AnimationRole, bool) {
 	prefix := ""
+	aftermath := false
 	switch state {
 	case 0x14:
 		prefix = "airborne/"
@@ -181,8 +220,22 @@ func followerAnimationRole(roles []AnimationRole, state uint8) (AnimationRole, b
 		prefix = "death/"
 	case 0x44:
 		prefix = "neutral/"
+	case 14, 16:
+		prefix = "combat/attack"
+	case 0x16:
+		prefix = "swimming/"
+	case 0x18, 0x2c, 0x2e, 0x32, 0x38, 0x3e, 0x40:
+		prefix = ""
+		aftermath = true
+	case 0x42:
+		prefix = "combat/victory"
+	case 0x24, 0x26, 0x34:
+		prefix = "hero/"
 	}
 	for _, role := range roles {
+		if aftermath && (strings.HasPrefix(role.Name, "combat/death") || strings.HasPrefix(role.Name, "combat/hero-death") || strings.HasPrefix(role.Name, "death/water") || strings.HasPrefix(role.Name, "death/fatal")) {
+			return role, true
+		}
 		if (strings.HasPrefix(role.Name, prefix) || state == 0x20 && role.Name == "lightning/hit") && prefix != "" {
 			return role, true
 		}
@@ -258,6 +311,9 @@ func decodePlayers(r fileReader, s *engine.Snapshot) error {
 			return err
 		}
 		s.World.Nature.PendingFungus[owner] = uint16(pending)
+		if err := decodeAIStatistics(r, s, owner); err != nil {
+			return err
+		}
 	}
 	return nil
 }

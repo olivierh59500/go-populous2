@@ -73,3 +73,41 @@ func TestGAMAdvancedFollowerLifecyclesUseSemanticArtworkRoles(t *testing.T) {
 		})
 	}
 }
+
+func TestGAMCombatAndTerrainDeathsRoundTripNamedContinuations(t *testing.T) {
+	catalog := Catalog{AnimationRoles: map[uint16][]AnimationRole{100: {{Name: "combat/attack", Frame: 1}}, 200: {{Name: "combat/death", Frame: 3}}, 204: {{Name: "combat/death", Frame: 11}}, 300: {{Name: "combat/victory-blue", Frame: 4}}, 304: {{Name: "combat/victory-blue", Frame: 13}}, 400: {{Name: "death/water", Frame: 1}}, 404: {{Name: "death/water", Frame: 2}}}}
+	for _, name := range []string{"combat", "defeated", "victorious", "water-death"} {
+		t.Run(name, func(t *testing.T) {
+			w := &engine.World{}
+			id := 1
+			w.Followers[id] = engine.Follower{Owner: 0, X: 32, Y: 33, State: engine.Walking, Population: 1000, Frame: 1}
+			switch name {
+			case "combat":
+				w.Followers[id].State = engine.Fighting
+				w.Followers[id].BattleWith = 2
+				w.Followers[id].BattleAggressor = true
+			case "defeated":
+				w.Followers[id].State = engine.Ruin
+				w.Followers[id].CombatAftermath = engine.CombatAftermathState{Kind: engine.CombatDefeated, Frame: 3, Frames: 12}
+			case "victorious":
+				w.Followers[id].CombatAftermath = engine.CombatAftermathState{Kind: engine.CombatVictorious, Frame: 4, Frames: 14}
+			case "water-death":
+				w.Followers[id].State = engine.Ruin
+				w.Followers[id].TerrainDeath = engine.TerrainDeathState{Active: true, Frame: 1, Frames: 3}
+			}
+			record := make([]byte, 52)
+			record[0], record[12], record[22], record[6], record[8] = 2, 1, 2, 32, 33
+			binary.BigEndian.PutUint32(record[26:], 1000)
+			if err := encodeFollowerLifecycle(record, w, id, catalog); err != nil {
+				t.Fatal(err)
+			}
+			got, _, err := decodeFollower(record, id, &engine.Snapshot{}, catalog)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got.State != w.Followers[id].State || got.CombatAftermath != w.Followers[id].CombatAftermath || got.TerrainDeath != w.Followers[id].TerrainDeath || got.BattleWith != w.Followers[id].BattleWith || got.BattleAggressor != w.Followers[id].BattleAggressor {
+				t.Fatalf("combat/death continuation changed: %+v", got)
+			}
+		})
+	}
+}
