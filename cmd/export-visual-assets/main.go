@@ -324,6 +324,13 @@ func export(files fs.FS, output string) error {
 		}
 		catalog.Animations[fmt.Sprintf("wall/broken/%d", variant*2)] = animation(frames, false)
 	}
+	for name, start := range map[string]int{"conversion/blue": 0xbd8, "conversion/red": 0xc0c, "conversion/hero": 0xc0c} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[name] = animation(frames, false)
+	}
 	data, err := json.MarshalIndent(catalog, "", "  ")
 	if err != nil {
 		return err
