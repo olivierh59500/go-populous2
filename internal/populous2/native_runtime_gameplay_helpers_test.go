@@ -46,7 +46,7 @@ func nativeRuntimeGameplayStart(t *testing.T, snapshot nativeStockSnapshot, poll
 			}
 			return
 		}
-		if _, err := h.Session.Presentation.VBlank(NativeMouseSample{CounterX: s.X, CounterY: s.Y, Left: s.Left}, h.Memory.BSS, frame); err != nil {
+		if _, err := h.Session.Presentation.VBlank(NativeMouseSample{CounterX: s.X, CounterY: s.Y, Left: s.Left, Right: s.Right}, h.Memory.BSS, frame); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -74,6 +74,30 @@ func nativeRuntimeGameplayStart(t *testing.T, snapshot nativeStockSnapshot, poll
 }
 func nativeRuntimeGameplayCheck(t *testing.T, h *NativeRuntimeHost, want nativeStockSnapshot, d [8]uint32) {
 	t.Helper()
+	if len(want.Heights) > 0 {
+		if len(want.Heights) != 9 {
+			t.Fatal("native corner neighborhood truncated")
+		}
+		rules, err := DecodeNativeRenderFrameRules(h.Bundle.Executable)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := rules.BindCode(h.Memory.Code, h.Code.Logical().Read32); err != nil {
+			t.Fatal(err)
+		}
+		for i, expected := range want.Heights {
+			c := NativeFrameRegisterContext{D: [8]uint32{uint32(want.HeightOrigin[0] + i%3), uint32(want.HeightOrigin[1] + i/3)}, AddressBase: h.Memory.BSSBase}
+			if err := rules.TerrainHeight(h.Memory.BSS, &c); err != nil || int32(c.D[2]) != expected {
+				t.Fatalf("native tick%d corner%d height differs:got%d want%d err%v", want.Tick, i, int32(c.D[2]), expected, err)
+			}
+		}
+		for i, at := range []int{0x5f4c, 0x5f4e} {
+			got, err := h.Memory.BSS.Read16(at)
+			if err != nil || got != want.Picked[i] {
+				t.Fatal("native mouse surface selection differs", got, want.Picked, err)
+			}
+		}
+	}
 	check := func(want nativeStockSnapshot, d [8]uint32) {
 		if d != want.D {
 			t.Fatalf("stock tick%d D differs: got%x want%x", want.Tick, d, want.D)

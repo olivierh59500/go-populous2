@@ -7,9 +7,10 @@ import (
 )
 
 type nativeStockSample struct {
-	X, Y uint8
-	Key  uint8
-	Left bool
+	X, Y  uint8
+	Key   uint8
+	Left  bool
+	Right bool
 }
 type nativeStockSnapshot struct {
 	Tick                                                        int
@@ -19,6 +20,9 @@ type nativeStockSnapshot struct {
 	BSSHash, CodeHash, ChipHash, PointerHash, HeapHash, LowHash string
 	Samples                                                     []nativeStockSample
 	Polls                                                       []int
+	Heights                                                     []int32
+	HeightOrigin                                                [2]int
+	Picked                                                      [2]uint16
 }
 
 // The fixture runs the original stock custom menu and complete E94 main,
