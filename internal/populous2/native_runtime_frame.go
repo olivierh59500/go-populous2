@@ -71,6 +71,9 @@ func (h *NativeRuntimeHost) NewFrame(bindings NativeRuntimeFrameBindings) (*Nati
 	menuBindings := bindings.Menu
 	menuBindings.Code, menuBindings.Memory, menuBindings.CodeBase = h.Memory.Code, h.Memory.BSS, h.Memory.CodeBase
 	menuBindings.Presentation, menuBindings.Bitmap = h.Session.Presentation, h.Bitmap
+	if menuBindings.Sprite == nil {
+		menuBindings.Sprite = render.Sprites.Paint
+	}
 	menuBindings.Audio.Command, menuBindings.Audio.MusicCommand = bindings.Audio.Command, bindings.Audio.MusicCommand
 	menuBindings.Audio.CodeBase = h.Memory.CodeBase
 	cb.Menu = h.Session.MenuFrame(&s.MenuRules, &s.MenuState, menuBindings)
