@@ -204,7 +204,7 @@ func (s *NativeRuntimeResultState) prepareRequester(h *NativeRuntimeHost, c *Nat
 		return err
 	}
 	c.Word(0, uint16(c.D[0])+1)
-	if err := frameDivide(c, 0, uint16(c.D[1])); err != nil {
+	if err := nativeResultScoreDivide(h, c); err != nil {
 		return err
 	}
 	c.Word(3, uint16(c.D[0]))

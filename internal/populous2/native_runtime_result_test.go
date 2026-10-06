@@ -9,7 +9,7 @@ import (
 
 type nativeRuntimeResultFixture struct {
 	Input struct {
-		Audio, Music                                 bool
+		Audio, Music, ExceptionHandler               bool
 		Name, Mode                                   string
 		Selected, Eliminated, GameMode, World, Score uint16
 		Ticks                                        uint32
@@ -34,7 +34,7 @@ func TestNativeRuntimeResultAgainstOriginalParentCPU(t *testing.T) {
 		t.Fatal(err)
 	}
 	var catalog struct{ Cases []nativeRuntimeResultFixture }
-	if err = json.Unmarshal(data, &catalog); err != nil || len(catalog.Cases) != 40 {
+	if err = json.Unmarshal(data, &catalog); err != nil || len(catalog.Cases) != 48 {
 		t.Fatal("original result parent corpus incomplete", err)
 	}
 	frames, initialWaits, progression, reset := 0, 0, 0, 0
@@ -46,6 +46,12 @@ func TestNativeRuntimeResultAgainstOriginalParentCPU(t *testing.T) {
 			h := nativeRuntimeHostTest(t)
 			if err = h.Memory.Code.Write16(0x3ea, 0); err != nil {
 				t.Fatal(err)
+			}
+			if f.Input.ExceptionHandler {
+				boot := NativeFrameRegisterContext{AddressBase: h.Memory.BSSBase}
+				if _, err := RunNativeInterruptVectors(0x39e, NativeInterruptVectorCallbacks{RAM: h.Memory.RAM, Memory: h.Memory.BSS, CodeBase: h.Memory.CodeBase, Frame: &boot, ReadHardware16: func(uint32) (uint16, error) { return 0, nil }}); err != nil {
+					t.Fatal(err)
+				}
 			}
 			if _, err = h.InitializePresentation(NativeMouseSample{}); err != nil {
 				t.Fatal(err)
@@ -222,7 +228,7 @@ func TestNativeRuntimeResultAgainstOriginalParentCPU(t *testing.T) {
 
 		})
 	}
-	if frames != 4540 || initialWaits != 4040 || progression != 20 || reset != 20 {
+	if frames != 5380 || initialWaits != 4848 || progression != 28 || reset != 20 {
 		t.Fatalf("result coverage changed: frames%d initial waits%d progression%d reset%d", frames, initialWaits, progression, reset)
 	}
 }
