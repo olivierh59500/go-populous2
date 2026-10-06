@@ -64,6 +64,22 @@ type AirEffects struct {
 	Markers     [EffectCapacity]LightningMarker
 	Bolts       [EffectCapacity]LightningBolt
 	Whirlwinds  [EffectCapacity]WhirlwindEffect
+	Carry       [FollowerCapacity]AirCarryState
+}
+
+type AirCarryPhase uint8
+
+const (
+	AirCarryNone AirCarryPhase = iota
+	AirCarryFlying
+	AirCarryLanding
+)
+
+type AirCarryState struct {
+	Phase  AirCarryPhase
+	Effect int // Shared slot plus one.
+	Frame  int
+	Frames int
 }
 
 type LightningVictimPhase uint8

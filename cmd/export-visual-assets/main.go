@@ -194,6 +194,10 @@ func export(files fs.FS, output string) error {
 		"lightning/hit":        0x738,
 		"lightning/town-hit":   0x744,
 		"lightning/recovery":   0x750,
+		"whirlwind/appearing":  0x4c8,
+		"whirlwind/active":     0x4c8,
+		"whirlwind/ending":     0x6cc,
+		"airborne/landing":     0x68c,
 		"scenery/burning-tree": 0xf10,
 		"fire-column/emerging": 0x1a0,
 		"fire-column/active":   0x4b8,
@@ -214,7 +218,18 @@ func export(files fs.FS, output string) error {
 		if err != nil {
 			return err
 		}
-		catalog.Animations[name] = animation(frames, name == "fire-column/active" || name == "death/burning" || name == "lightning/active" || name == "lightning/hit" || name == "lightning/town-hit" || strings.HasPrefix(name, "lava/"))
+		catalog.Animations[name] = animation(frames, name == "fire-column/active" || name == "death/burning" || name == "lightning/active" || name == "lightning/hit" || name == "lightning/town-hit" || name == "whirlwind/active" || strings.HasPrefix(name, "lava/"))
+	}
+	airborneRules, err := populous2.DecodeWhirlwindFollowerRules(source.Executable)
+	if err != nil {
+		return err
+	}
+	for role, start := range map[string]int{"airborne/follower": 0x4d4, "airborne/perseus": source.Whirlwinds.PickupAnimations[0], "airborne/adonis": source.Whirlwinds.PickupAnimations[1], "airborne/heracles": source.Whirlwinds.PickupAnimations[2], "airborne/achilles": source.Whirlwinds.PickupAnimations[4], "airborne/helen": source.Whirlwinds.PickupAnimations[5]} {
+		frames := make([]populous2.AnimationFrame, airborneRules.SequenceLengths[start])
+		for i := range frames {
+			frames[i] = airborneRules.Frames[start+i*4]
+		}
+		catalog.Animations[role] = animation(frames, true)
 	}
 	for hero, name := range heroes {
 		for _, entry := range []struct {

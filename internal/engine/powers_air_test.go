@@ -289,3 +289,91 @@ func lightningTestAnimationBase(v LightningVictimState, town bool) int {
 	}
 	return [6]int{10996, 10972, 3712, 0, 10984, 10960}[v.Hero-1]
 }
+
+func TestWhirlwindMovementMatchesOriginalNumericTraces(t *testing.T) {
+	type actor struct {
+		Kind, Owner, Phase, Speed             uint8
+		FixedX, FixedY, Animation             uint16
+		VelocityX, VelocityY, MoveTimer, Life int16
+	}
+	var catalog struct {
+		Fixtures []struct {
+			Name       string
+			Seed       uint32
+			Experience uint8
+			Target     [2]int
+			Initial    actor
+			InitialRNG uint32
+			Trace      []struct {
+				Tick  int
+				Actor actor
+				RNG   uint32
+			}
+		}
+	}
+	data, err := os.ReadFile("../populous2/testdata/whirlwind_native.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(data, &catalog); err != nil {
+		t.Fatal(err)
+	}
+	if len(catalog.Fixtures) != 12 {
+		t.Fatal("original whirlwind motion traces incomplete")
+	}
+	for _, f := range catalog.Fixtures {
+		t.Run(f.Name, func(t *testing.T) {
+			h, s := newAirTestHabitat(), &AirEffects{}
+			h.experience, h.rng, h.useRNG = f.Experience, randomState(f.Seed), true
+			for i := range h.parcels {
+				h.parcels[i].Altitude = 0
+				h.parcels[i].ExtraRise = true
+			}
+			if f.Name == "water" {
+				for i := range h.parcels {
+					h.parcels[i] = FireParcel{Water: true}
+				}
+			}
+			if f.Name == "uphill" {
+				for y := 0; y < MapSize; y++ {
+					for x := 0; x < MapSize; x++ {
+						height := 1 + max(0, min(7, x-28))
+						rise := true
+						if x < 28 || x >= 35 {
+							height--
+						}
+						h.parcels[x+y*MapSize].Altitude = uint8(height)
+						h.parcels[x+y*MapSize].ExtraRise = rise
+					}
+				}
+			}
+			if !s.CreateWhirlwind(0, f.Target[0], f.Target[1], h) {
+				t.Fatal("whirlwind cast failed")
+			}
+			assert := func(tick int, want actor, rng uint32) {
+				t.Helper()
+				e := s.Whirlwinds[0]
+				phase, animation := uint8(8), 1224+e.Frame*4
+				if e.Phase == WhirlwindMoving {
+					phase = 10
+				}
+				if e.Phase == WhirlwindDisappearing {
+					phase, animation = 12, 1740+e.Frame*4
+				}
+				owner := uint8(0)
+				if e.Active {
+					owner = 1
+				}
+				got := actor{Kind: 32, Owner: owner, Phase: phase, Speed: 24, FixedX: uint16(e.X), FixedY: uint16(e.Y), Animation: uint16(animation), VelocityX: int16(e.VX), VelocityY: int16(e.VY), MoveTimer: int16(e.Timer), Life: int16(e.Life)}
+				if got != want || uint32(h.rng) != rng {
+					t.Fatalf("tick%d %+v/original%+v RNG%x/%x", tick, got, want, uint32(h.rng), rng)
+				}
+			}
+			assert(0, f.Initial, f.InitialRNG)
+			for _, step := range f.Trace {
+				s.TickWhirlwind(0, h)
+				assert(step.Tick, step.Actor, step.RNG)
+			}
+		})
+	}
+}

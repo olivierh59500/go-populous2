@@ -5,9 +5,19 @@ import "fmt"
 type worldAirHabitat struct{ world *World }
 
 func (h worldAirHabitat) Reserve(kind EffectKind, owner uint8) int {
-	return h.world.allocateEffect(kind, owner)
+	id := h.world.allocateEffect(kind, owner)
+	if id >= 0 && kind == EffectWhirlwind {
+		previous := h.world.effects.Slots[id]
+		h.world.Air.Whirlwinds[id].VX, h.world.Air.Whirlwinds[id].VY = previous.LastVelocityX, previous.LastVelocityY
+	}
+	return id
 }
-func (h worldAirHabitat) Release(id int) { h.world.releaseEffect(id) }
+func (h worldAirHabitat) Release(id int) {
+	if id >= 0 && id < EffectCapacity && h.world.effects.Slots[id].Kind == EffectWhirlwind {
+		h.world.effects.Slots[id].LastVelocityX, h.world.effects.Slots[id].LastVelocityY = h.world.Air.Whirlwinds[id].VX, h.world.Air.Whirlwinds[id].VY
+	}
+	h.world.releaseEffect(id)
+}
 func (h worldAirHabitat) Random() uint16 { return h.world.random.next() }
 func (h worldAirHabitat) AirExperience(owner uint8) uint8 {
 	if owner > 1 {
@@ -20,6 +30,9 @@ func (h worldAirHabitat) Scorch(x, y int)            { h.world.scorchFireParcel(
 func (h worldAirHabitat) StrikeLightning(bolt, x, y int) bool {
 	if !inside(x, y) {
 		return true
+	}
+	if h.world.WallBlocksLightning(x, y) {
+		return false
 	}
 	var followers [FollowerCapacity]int
 	count := h.world.FollowersAt(x, y, followers[:])
@@ -38,13 +51,28 @@ func (h worldAirHabitat) StrikeLightning(bolt, x, y int) bool {
 	return true
 }
 
-// Whirlwind interactions are separate from the lightning slice. Its controller
-// remains unavailable to public Cast until carrying and water birth are bound.
-func (h worldAirHabitat) CreateWhirlpool(uint8, int, int) {
-	panic("whirlwind water birth is not bound")
+func (h worldAirHabitat) CreateWhirlpool(owner uint8, x, y int) {
+	w := h.world
+	for _, d := range whirlpoolFootprint {
+		if !inside(x+d[0], y+d[1]) || w.Cell(x+d[0], y+d[1]).Code != 0 {
+			return
+		}
+	}
+	id := w.allocateEffect(EffectWhirlpool, owner)
+	if id < 0 {
+		return
+	}
+	life := 300
+	if owner < 2 {
+		life += int(w.Players[owner].Experience[Water])
+	}
+	w.Water.Whirlpools[id] = WhirlpoolEffect{Active: true, Owner: owner, X: x, Y: y, Life: life, Delay: 16}
+	w.paintWhirlpool(&w.Water.Whirlpools[id])
 }
-func (h worldAirHabitat) LiftFollowers(int, int, int)    { panic("whirlwind carrying is not bound") }
-func (h worldAirHabitat) ReleaseFollowers(int, int, int) { panic("whirlwind release is not bound") }
+func (h worldAirHabitat) LiftFollowers(effect, x, y int) { h.world.liftAirFollowers(effect, x, y) }
+func (h worldAirHabitat) ReleaseFollowers(effect, x, y int) {
+	h.world.releaseAirFollowers(effect, x, y)
+}
 
 // PlaceLightning creates or moves the targeting marker without charging mana.
 func (w *World) PlaceLightning(owner, x, y int) error {
@@ -87,6 +115,8 @@ func (w *World) DismissLightning(owner int) bool {
 func (w *World) tickAirEffect(id int) {
 	if w.effects.Slots[id].Kind == EffectLightning {
 		w.Air.TickLightning(id, worldAirHabitat{w})
+	} else if w.effects.Slots[id].Kind == EffectWhirlwind {
+		w.Air.TickWhirlwind(id, worldAirHabitat{w})
 	}
 }
 
@@ -135,5 +165,117 @@ func (w *World) AdvanceLightningVictim(id int) bool {
 		*v = LightningVictimState{}
 		f.State, f.Frame = Walking, 0
 	}
+	return true
+}
+
+func (w *World) CastWhirlwind(owner, x, y int) error {
+	if owner < 0 || owner > 1 || !inside(x, y) {
+		return fmt.Errorf("invalid whirlwind target")
+	}
+	if !w.Air.CreateWhirlwind(uint8(owner), x, y, worldAirHabitat{w}) {
+		return fmt.Errorf("whirlwind exhausted effect reservations")
+	}
+	return nil
+}
+
+func (w *World) liftAirFollowers(effect, x, y int) {
+	var followers [FollowerCapacity]int
+	count := w.FollowersAt(x, y, followers[:])
+	for _, id := range followers[:count] {
+		f := &w.Followers[id]
+		if f.State == Inactive || f.State == Ruin || f.Consecrated || f.Hero.Kind == HeroOdysseus || w.Air.Carry[id].Phase == AirCarryFlying {
+			continue
+		}
+		if f.State == Town {
+			w.clearLiftedTownFarms(id)
+		}
+		frames := 12
+		if f.IsHero() {
+			frames = 4
+		}
+		f.State, f.Frame, f.Weapons, f.moving = Airborne, 0, 1, false
+		w.Air.Carry[id] = AirCarryState{Phase: AirCarryFlying, Effect: effect + 1, Frames: frames}
+	}
+}
+
+func (w *World) clearLiftedTownFarms(id int) {
+	f := w.Followers[id]
+	limit := 9
+	if f.Stage >= 10 {
+		limit = 25
+	}
+	if f.Stage >= 18 {
+		limit = 49
+	}
+	for _, d := range townFootprint[:limit] {
+		x, y := int(f.X)+d[0], int(f.Y)+d[1]
+		if inside(x, y) && w.Farms[x+y*MapSize] == f.Owner+1 {
+			w.Farms[x+y*MapSize] = 0
+		}
+	}
+}
+
+// releaseAirFollowers uses semantic adjacent destinations. Undefined record-
+// layout aliasing in the original release routine does not become a game rule.
+func (w *World) releaseAirFollowers(effect, x, y int) {
+	var followers [FollowerCapacity]int
+	count := w.FollowersAt(x, y, followers[:])
+	for _, id := range followers[:count] {
+		carry := &w.Air.Carry[id]
+		if carry.Phase != AirCarryFlying {
+			continue
+		}
+		d := fireNeighbors[int(w.random.next()&14)/2]
+		nx, ny, valid := offsetFireParcel(x, y, d[0], d[1])
+		if !valid {
+			w.remove(id)
+			continue
+		}
+		w.moveFollowerCell(id, nx, ny)
+		f := &w.Followers[id]
+		f.positionX, f.positionY, f.positionSet = nx*256+128, ny*256+128, true
+		f.Frame = 0
+		carry.Phase, carry.Frame, carry.Frames = AirCarryLanding, 0, 7
+	}
+}
+
+// AdvanceAirCarry follows the carrier's fractional position without advancing
+// its lifetime. Landing retains identity for seven ordinary passes before the
+// follower may make its next movement decision.
+func (w *World) AdvanceAirCarry(id int) bool {
+	if id <= 0 || id >= FollowerCapacity {
+		return false
+	}
+	carry := &w.Air.Carry[id]
+	if carry.Phase == AirCarryNone {
+		return false
+	}
+	f := &w.Followers[id]
+	if f.State == Inactive {
+		*carry = AirCarryState{}
+		return false
+	}
+	if carry.Phase == AirCarryLanding {
+		if carry.Frame+1 >= carry.Frames {
+			carry.Phase = AirCarryNone
+			f.State, f.Frame = Walking, 0
+		} else {
+			carry.Frame++
+			f.Frame = uint16(carry.Frame)
+		}
+		return true
+	}
+	carry.Frame = (carry.Frame + 1) % carry.Frames
+	f.Frame = uint16(carry.Frame)
+	source := w.Air.Whirlwinds[carry.Effect-1]
+	x, y := source.X, source.Y
+	if !inside(x>>8, y>>8) {
+		w.remove(id)
+		return true
+	}
+	if int(f.X) != x>>8 || int(f.Y) != y>>8 {
+		w.moveFollowerCell(id, x>>8, y>>8)
+	}
+	f.positionX, f.positionY, f.positionSet = x, y, true
 	return true
 }
