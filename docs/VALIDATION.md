@@ -1316,3 +1316,24 @@ clicks when the original314A protection requester appears. Correct submission
 runs its source fade and LAND reload; no protection flag or child success is
 injected. Full tests, configured gameplay race tests, ownership/error tests,
 paired frame race tests and vet pass.
+
+## Original divide-exception continuation
+
+The original39E setup installs physical vector5 at14 to CODE43E/RTE and
+saves previous divide/IRQ handlers in BSS2/6. Its370 operation swaps the
+saved and active handlers exactly. Nine original installer cases yield27
+snapshots with matching data registers, low RAM, BSS and hardware writes.
+
+A stock original custom game, with no mode, options, mana, experience or seed
+patches, reaches a natural result after2,499 complete main frames. After the
+real101-interrupt result delay,39A8 divides by zero. The installed handler
+returns to39AA with all data registers, SR and stack preserved; the genuine
+requester then displays score7,500. Eighteen exception/RTE contexts confirm
+that no dividend or divisor replacement is required.
+
+The result's Go continuation now recognizes this return only when the live
+physical vector points to the actual43E/RTE opcode. Missing, restored or
+incorrect handlers still fail explicitly; other division sites retain their
+contracts. The parent corpus includes eight such source paths, bringing it
+to48 scenarios and5,380 complete snapshots. Full tests, focused race tests,
+vet and the native desktop build pass.
