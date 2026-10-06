@@ -12,6 +12,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"go-populous2/internal/engine"
+	"go-populous2/internal/gamcodec"
 	"go-populous2/internal/music"
 )
 
@@ -37,6 +38,8 @@ const (
 type Game struct {
 	Assets                       *Assets
 	World                        *engine.World
+	OriginalSave                 *gamcodec.Document
+	LocalSide                    int
 	Network                      *NetworkController
 	Options                      *OptionsState
 	Editor                       *EditorState
@@ -214,7 +217,7 @@ func (g *Game) Update() error {
 	case CampaignResult:
 		if g.Updates-g.resultAt >= 101 && (inpututil.IsKeyJustPressed(ebiten.KeyEnter) || clicked) {
 			if err := g.applyCampaignResult(); err != nil {
-				return err
+				g.Message, g.messageUntil = err.Error(), g.Updates+150
 			}
 		}
 	case EndingScreen:

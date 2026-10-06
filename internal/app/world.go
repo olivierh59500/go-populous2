@@ -31,6 +31,7 @@ func (g *Game) startConquest() error {
 		return err
 	}
 	g.World, g.Screen = world, Playing
+	g.LocalSide, g.OriginalSave = 0, nil
 	g.Paused = false
 	g.AnimationSounds = AnimationSoundGate{}
 	g.resultApplied = false
@@ -127,7 +128,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 		if g.Network != nil {
 			err = g.submitNetwork(network.Command{Kind: "lightning-activate"})
 		} else {
-			err = w.ActivateLightning(0)
+			err = w.ActivateLightning(g.playerSide())
 		}
 		if err != nil {
 			g.Message, g.messageUntil = err.Error(), g.Updates+100
@@ -145,7 +146,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 			if g.Network != nil {
 				_ = g.submitNetwork(network.Command{Kind: "mode", Mode: mode})
 			} else {
-				w.SetMode(0, mode)
+				w.SetMode(g.playerSide(), mode)
 			}
 		}
 	}
@@ -182,7 +183,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 				}
 				err = g.submitNetwork(network.Command{Kind: kind, Power: g.Selected, Target: target})
 			} else {
-				err = w.Cast(0, g.Selected, target)
+				err = w.Cast(g.playerSide(), g.Selected, target)
 			}
 			if err == nil {
 				g.music.TriggerCue(78)

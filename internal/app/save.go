@@ -7,6 +7,9 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"go-populous2/internal/gamcodec"
 )
 
 type savedSession struct {
@@ -19,6 +22,8 @@ type savedSession struct {
 	Direction        uint8
 	CustomGame       bool
 	Paused           bool
+	LocalSide        int
+	OriginalGAM      []byte `json:"original_gam,omitempty"`
 }
 
 func (g *Game) saveGame() error {
@@ -28,7 +33,14 @@ func (g *Game) saveGame() error {
 	if g.World == nil || g.SavePath == "" {
 		return fmt.Errorf("no save location or game")
 	}
+	if strings.EqualFold(filepath.Ext(g.SavePath), ".gam") {
+		return g.saveOriginalGame()
+	}
 	session := savedSession{Version: 1, World: g.World.Snapshot(), Profile: g.Profile, CameraX: g.CameraX, CameraY: g.CameraY, LevelIndex: g.LevelIndex, Selected: g.Selected, Direction: g.Direction, CustomGame: g.CustomGame, Paused: g.Paused}
+	session.LocalSide = g.playerSide()
+	if g.OriginalSave != nil {
+		session.OriginalGAM = append([]byte(nil), g.OriginalSave.Metadata.Original...)
+	}
 	if _, err := session.World.Restore(); err != nil {
 		return err
 	}
@@ -66,6 +78,9 @@ func (g *Game) loadGame() error {
 	if g.SavePath == "" {
 		return fmt.Errorf("no save location")
 	}
+	if strings.EqualFold(filepath.Ext(g.SavePath), ".gam") {
+		return g.loadOriginalGame()
+	}
 	file, err := os.Open(g.SavePath)
 	if err != nil {
 		return err
@@ -87,7 +102,7 @@ func (g *Game) loadGame() error {
 	if err := decoder.Decode(new(any)); err != io.EOF {
 		return fmt.Errorf("saved session has trailing data")
 	}
-	if session.Version != 1 || session.LevelIndex < 0 || session.LevelIndex >= len(g.Assets.Levels) || session.CameraX < 0 || session.CameraX > 56 || session.CameraY < 0 || session.CameraY > 56 || session.Direction > 3 {
+	if session.Version != 1 || session.LevelIndex < 0 || session.LevelIndex >= len(g.Assets.Levels) || session.CameraX < 0 || session.CameraX > 56 || session.CameraY < 0 || session.CameraY > 56 || session.Direction > 3 || session.LocalSide < 0 || session.LocalSide > 1 {
 		return fmt.Errorf("unsupported or invalid saved session")
 	}
 	if len(session.Profile.Name) > 16 {
@@ -105,9 +120,18 @@ func (g *Game) loadGame() error {
 	if err != nil {
 		return err
 	}
+	var original *gamcodec.Document
+	if len(session.OriginalGAM) != 0 {
+		original, err = gamcodec.Decode(session.OriginalGAM, g.gamCatalog())
+		if err != nil {
+			return fmt.Errorf("saved GAM compatibility metadata: %w", err)
+		}
+		original.World = world
+	}
 	g.World, g.Profile, g.CameraX, g.CameraY, g.LevelIndex, g.Selected, g.Direction = world, session.Profile, session.CameraX, session.CameraY, session.LevelIndex, session.Selected, session.Direction
 	g.Screen, g.resultApplied = Playing, false
 	g.CustomGame, g.Paused = session.CustomGame, session.Paused
+	g.LocalSide, g.OriginalSave = session.LocalSide, original
 	g.AnimationSounds = AnimationSoundGate{}
 	g.Message = "GAME LOADED"
 	g.messageUntil = g.Updates + 100

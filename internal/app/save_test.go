@@ -13,7 +13,7 @@ func TestSavedSessionRestoresProfileAndDetachedWorld(t *testing.T) {
 		w.Landscape.WorkTicks[stage] = 1
 		w.Landscape.EmigrationDivisor[stage] = 2
 	}
-	g := &Game{Assets: &Assets{Levels: make([]engine.Level, 1000)}, World: w, Profile: engine.NewDeity("PLAYER"), SavePath: filepath.Join(t.TempDir(), "game.json"), CameraX: 12, CameraY: 8, LevelIndex: 7, Selected: engine.Basalt, Direction: 2}
+	g := &Game{Assets: &Assets{Levels: make([]engine.Level, 1000)}, World: w, Profile: engine.NewDeity("PLAYER"), SavePath: filepath.Join(t.TempDir(), "game.json"), CameraX: 12, CameraY: 8, LevelIndex: 7, Selected: engine.Basalt, Direction: 2, LocalSide: 1}
 	if err := g.saveGame(); err != nil {
 		t.Fatal(err)
 	}
@@ -22,7 +22,7 @@ func TestSavedSessionRestoresProfileAndDetachedWorld(t *testing.T) {
 	if err := g.loadGame(); err != nil {
 		t.Fatal(err)
 	}
-	if g.Profile.Name != "PLAYER" || g.CameraX != 12 || g.LevelIndex != 7 || g.Selected != engine.Basalt || g.World == w {
+	if g.Profile.Name != "PLAYER" || g.CameraX != 12 || g.LevelIndex != 7 || g.Selected != engine.Basalt || g.World == w || g.playerSide() != 1 {
 		t.Fatal("saved session lost presentation or detached state")
 	}
 	before := g.World

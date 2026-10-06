@@ -316,5 +316,5 @@ func (g *Game) playerSide() int {
 			return side
 		}
 	}
-	return 0
+	return g.LocalSide
 }

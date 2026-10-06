@@ -23,7 +23,10 @@ func (g *Game) applyCampaignResult() error {
 		g.resultApplied, g.Screen = true, MainMenu
 		return nil
 	}
-	progress, err := engine.AdvanceCampaign(g.LevelIndex, g.World.Result == 1, g.ResultScore.Value, &g.Profile)
+	if g.ResultScoreError != "" {
+		return fmt.Errorf("campaign score: %s", g.ResultScoreError)
+	}
+	progress, err := engine.AdvanceCampaign(g.LevelIndex, g.World.Result == g.playerSide()+1, g.ResultScore.Value, &g.Profile)
 	if err != nil {
 		return err
 	}
