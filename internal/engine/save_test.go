@@ -278,6 +278,52 @@ func TestSnapshotPreservesRetainedTownRuinCountdown(t *testing.T) {
 	}
 }
 
+func TestSnapshotMixedRegistryRejectsInactiveActorsAndStalePositions(t *testing.T) {
+	for name, corrupt := range map[string]func(*World){
+		"inactive-scenery": func(w *World) { w.Actors.Link(ActorRef{ActorScenery, 0}, 20*256+128, 20*256+128) },
+		"inactive-effect":  func(w *World) { w.Actors.Link(ActorRef{ActorEffect, 0}, 20*256+128, 20*256+128) },
+		"inactive-wall":    func(w *World) { w.Actors.Link(ActorRef{ActorWall, 0}, 20*256+128, 20*256+128) },
+		"stale-follower-position": func(w *World) {
+			id := addFollower(w, 20, 20, 0, 100, Walking)
+			w.Actors.Move(ActorRef{ActorFollower, uint16(id)}, 20*256+140, 20*256+128)
+		},
+		"waiting-meteor-mapped": func(w *World) {
+			w.effects.Slots[0] = EffectReservation{Kind: EffectFireRain, Owner: 0}
+			w.Fire.Rain[0] = FireEffect{Active: true, Owner: 0, X: 20*256 + 128, Y: 20*256 + 128, Phase: MeteorWaiting, Life: 24}
+			w.Actors.Link(ActorRef{ActorEffect, 0}, 20*256+128, 20*256+128)
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			w := testFlatWorld()
+			w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+			w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+			corrupt(w)
+			if _, err := w.Snapshot().Restore(); err == nil {
+				t.Fatal("live-pool registry mismatch was accepted")
+			}
+		})
+	}
+}
+
+func TestSnapshotAcceptsValidUnmappedControllerAndKeepsChainOrder(t *testing.T) {
+	w := testFlatWorld()
+	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
+	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
+	w.effects.Slots[0] = EffectReservation{Kind: EffectVolcano, Owner: 0}
+	w.Fire.Volcano[0] = FireEffect{Active: true, Owner: 0, X: 20 * 256, Y: 20 * 256, Phase: VolcanoGrowing, Stage: 3}
+	addFollower(w, 20, 20, 0, 100, Walking)
+	w.Nature.Scenery[0] = SceneryActor{Kind: SceneryTree, X: 20, Y: 20}
+	w.Actors.Link(ActorRef{ActorScenery, 0}, 20*256+129, 20*256+143)
+	before := w.Actors
+	restored, err := w.Snapshot().Restore()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if restored.Actors != before {
+		t.Fatal("validation rebuilt chronological actor chains")
+	}
+}
+
 func TestSnapshotStrictJSONAndWriterErrors(t *testing.T) {
 	w := testFlatWorld()
 	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32

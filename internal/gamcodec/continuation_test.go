@@ -309,6 +309,7 @@ func TestGAMContactWaitingAndArrivalContinueMergeAndBattle(t *testing.T) {
 			s.World.Followers[1].ContactWith, s.World.Followers[1].ContactFriendly = 2, !enemy
 			s.World.Followers[2].ContactWaiting, s.World.Followers[2].ContactWait = true, 4
 			s.Motion[1] = engine.FollowerMotionSnapshot{PositionX: 20*256 + 168, PositionY: 20*256 + 128, VelocityX: -20, LegRemaining: 2, PositionSet: true, Moving: true}
+			s.World.Actors.Move(engine.ActorRef{Kind: engine.ActorFollower, Index: 1}, 20*256+168, 20*256+128)
 			w, err := s.Restore()
 			if err != nil {
 				t.Fatal(err)

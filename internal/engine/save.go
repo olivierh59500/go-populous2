@@ -118,6 +118,9 @@ func validateSnapshotWorld(w *World) error {
 	if err := validateActorRegistry(&w.Actors); err != nil {
 		return err
 	}
+	if err := validateLiveActorRegistry(w); err != nil {
+		return err
+	}
 	if int(w.Scenario.Cursor) > len(w.Scenario.Events) {
 		return fmt.Errorf("snapshot scenario cursor is invalid")
 	}
@@ -366,6 +369,85 @@ func validateActorRegistry(registry *ActorRegistry) error {
 			if !node.Linked && (!validEmpty(node.Next) || !validEmpty(node.Previous)) {
 				return fmt.Errorf("snapshot detached actor retains occupancy links")
 			}
+		}
+	}
+	return nil
+}
+
+func validateLiveActorRegistry(w *World) error {
+	check := func(ref ActorRef, active bool, x, y int, exact bool) error {
+		node := w.Actors.node(ref)
+		if node == nil || !node.Linked {
+			return nil
+		}
+		if !active {
+			return fmt.Errorf("snapshot mixed registry links an inactive actor kind%d index%d", ref.Kind, ref.Index)
+		}
+		if exact && (node.X != x || node.Y != y) || !exact && (node.X>>8 != x || node.Y>>8 != y) {
+			return fmt.Errorf("snapshot mixed registry position differs for kind%d index%d: registry(%d,%d), actor(%d,%d), exact=%t", ref.Kind, ref.Index, node.X, node.Y, x, y, exact)
+		}
+		return nil
+	}
+	for id := 1; id < FollowerCapacity; id++ {
+		f := w.Followers[id]
+		x, y := f.Position()
+		if err := check(ActorRef{ActorFollower, uint16(id)}, f.State != Inactive, int(x*256), int(y*256), true); err != nil {
+			return err
+		}
+	}
+	for id, a := range w.Nature.Scenery {
+		if err := check(ActorRef{ActorScenery, uint16(id)}, a.Kind != SceneryNone, int(a.X), int(a.Y), false); err != nil {
+			return err
+		}
+	}
+	for id, a := range w.Earth.Walls {
+		if err := check(ActorRef{ActorWall, uint16(id)}, a.Active, a.X, a.Y, false); err != nil {
+			return err
+		}
+	}
+	for id, a := range w.Magnets {
+		if err := check(ActorRef{ActorMagnet, uint16(id)}, a.Owner < 2, a.X, a.Y, true); err != nil {
+			return err
+		}
+	}
+	for id, reservation := range w.effects.Slots {
+		mapped, active, x, y := false, false, 0, 0
+		switch reservation.Kind {
+		case EffectFireColumn:
+			a := w.Fire.Columns[id]
+			mapped, active, x, y = true, a.Active, a.X, a.Y
+		case EffectFireRain:
+			a := w.Fire.Rain[id]
+			mapped, active, x, y = true, a.Active && a.Phase != MeteorWaiting, a.X, a.Y
+		case EffectLava:
+			a := w.Fire.Lava[id]
+			mapped, active, x, y = true, a.Active, a.X, a.Y
+		case EffectWhirlwind:
+			a := w.Air.Whirlwinds[id]
+			mapped, active, x, y = true, a.Active, a.X, a.Y
+		case EffectLightning:
+			if a := w.Air.Markers[id]; a.Active {
+				mapped, active, x, y = true, true, a.X, a.Y
+			} else {
+				a := w.Air.Bolts[id]
+				mapped, active, x, y = true, a.Active, a.X, a.Y
+			}
+		case EffectStorm:
+			a := w.Air.Storms[id]
+			mapped, active, x, y = true, a.Active, a.X, a.Y
+		case EffectBasalt:
+			a := w.Water.Basalt[id]
+			mapped, active, x, y = true, a.Active, a.X*256+128, a.Y*256+128
+		case EffectTidalWave:
+			a := w.Water.Waves[id]
+			mapped, active, x, y = true, a.Active, a.X, a.Y
+		}
+		ref := ActorRef{ActorEffect, uint16(id)}
+		if !mapped && w.Actors.Effects[id].Linked {
+			return fmt.Errorf("snapshot mixed registry links an unmapped effect controller")
+		}
+		if err := check(ref, mapped && active, x, y, true); err != nil {
+			return err
 		}
 	}
 	return nil
