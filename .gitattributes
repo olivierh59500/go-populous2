@@ -6,3 +6,4 @@ assets/amiga/*.pif export-ignore
 assets/amiga/populous.ii export-ignore
 assets/generated/** export-ignore
 assets/runtime/data/** export-ignore
+assets/runtime/data/GENERATED.txt -export-ignore
