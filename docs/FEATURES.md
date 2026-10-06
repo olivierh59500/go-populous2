@@ -16,7 +16,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
 | Followers | 399 usable records; all 35 active native state families in the register-bearing World dispatcher; 452 native follower passes and 168 composed main-physics/session comparisons, including filled pools | Replacement of the live inherited Game scheduler; full cross-effect/campaign behavior |
 | Towns | 19 stages, native mixed support/cache, 49-cell compositor and native founding/economy/emigration in World; rare births allocate original neutral actors | Complete land AI, all neutral/environmental interactions and end-to-end campaign parity |
-| Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Remaining combined environmental, wall-climb and animation interactions |
+| Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Broader environment and transport combinations outside the native comparison corpora |
 | Audio | 31 samples, 133 patterns, native four-channel device/CIA replay, raster DMA transport and shared CODE access; native desktop sound/queue/pause/resume integration | Original beam/CIA phase and analog/PWM fidelity, complete animation-triggered cues and interactive timing comparison |
 | Saving | Raw GAM DOS save/load/list/overwrite with actual filesystem counts, partial operations and source pointer ownership; idle cache refresh without World regeneration; legacy typed APIs remain | Interactive save/load and two-player/cross-effect interoperability |
 | Interface | Original raw initial menu/chooser/in-game/options/serial/profile/panel/input/editor/protection and deity/name/password controllers; complete physical file browser; native desktop menu/terrain/protection/deity/file captures | Broader interactive save/network/terrain transition validation |
@@ -42,7 +42,7 @@ the remaining simulation routines.
 | Fungus | 9 | 26 | Complete raw native collection/generation and shared-pool reuse, signed period/cadence, actual adjacent-BSS edge accesses and mature mortality through native follower dispatch; full World memory/RNG and old-save continuation comparisons pass |
 | Adonis | 10 | 58 | Complete native creation, shared routing/combat and verified native post-victory split/full-pool behavior; combined interactions pending |
 | Roads | 12 | 42 | Continuous painting/removal and native connected/slope tile art; walking-speed and fungus-barrier interactions pending |
-| City walls | 13 | 34 | Native placement/art/gates, saves, sculpt protection, crossing thresholds and terminal break art; fractional climb/hero attack states pending |
+| City walls | 13 | 34 | Native linked placement, connected art/gates, sculpt protection, signed breaking and unsigned passage thresholds, fractional movement and terminal break art; live neighbor pointers retain source stale entries. Controlled cases cover blocked/admitted/breaking crossings; broader environment/gate combinations remain |
 | Earthquake | 14 | 40 | Native directed creation, fissure branching, original terrain reconstruction and fade; raw slot/full-pool aliases retained and World comparisons pass |
 | Batholith | 15 | 48 | Native sampled raising/boulder allocation with oracle references and held-button use; remaining destruction interactions pending |
 | Heracles | 16 | 60 | Complete native creation, wrapping population doubling, capped speed bonus and shared native combat/routing; combined interactions pending |
@@ -58,7 +58,7 @@ the remaining simulation routines.
 | Whirlpool | 31 | 24 | Native four-water admission, terrain animation, motion, direct coast lowering, lifetime and ordered shared-pool execution; broader terrain/actor interactions pending |
 | Basalt | 30 | 74 | Native linked propagation actors, four cardinal directions, persistent terrain prefix and original sculpture shapes; remaining environmental interactions pending |
 | Baptismal fonts | 32 | 52 | Complete native sampled placement, original delayed conversion and hero tables, leader release and fractional movement; full World memory/RNG comparisons pass |
-| Helen | 33 | 70 | Capture without faith conversion, follower chain, release on death and water immunity; exact subpixel routing/collateral death animation pending |
+| Helen | 33 | 70 | Native targeting/capture without owner conversion, fractional captive routing/link repair, cleanup/release and water immunity; complete controlled capture→removal comparisons. Broader collateral/environment combinations remain |
 | Tidal wave | 34 | 56 | Native four adjacent-water fronts, fixed fractional speed, lateral cloning/newborn cadence, shore lowering and height/Basalt barriers; World pool/map/height and saved continuation comparisons pass; drowning uses the shared native water prepass |
 
 The independent Challenge executable and its scenario extension are separate

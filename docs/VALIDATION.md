@@ -1472,3 +1472,24 @@ vectors. The result host preserves the borrowed follower continuation and
 refreshes decoded LAND rules before the same-frame AI/effects resume. Full
 tests, focused stock race comparisons and vet pass. This is one original
 stock custom session, not full campaign or every interactive path coverage.
+
+## Hero, captive, neutral and wall interactions
+
+A controlled corpus of144 original runs across four landscapes and two
+seeds verifies31,392 simulation/command checkpoints plus144 startup states.
+All six hero creation commands run into original contact/combat/aftermath;
+Helen capture and targeted removal release the victim through native cleanup.
+Neutral actors retain their own movement/water/death bodies. Wall cases cover
+blocked, admitted and breaking crossings with the original population
+thresholds. Eighteen follower state values occur; sixteen transient11680
+wall-break entries are counted separately. State2C is attrition/starvation
+death from13118, not a wall-climbing state.
+
+Every checkpoint agrees on full data registers, BSS/RNG, live CODE, screens
+and heap. Explicit flat-grid/sparse actor, mana/experience and mode8 inputs
+are controlled fixtures; they do not claim unmodified full-game coverage.
+The cases exposed omitted16350/1635A neighbor-pointer stores at CODE1647C.
+The runtime now derives physical pointers from the current relocated LEA
+operand, preserving skipped/stale entries and partial callback-error writes.
+Legacy wall references, full tests, focused family/wall race tests and vet
+pass. Broader environment, transport and campaign combinations remain work.

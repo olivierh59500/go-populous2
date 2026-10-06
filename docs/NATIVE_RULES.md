@@ -249,14 +249,18 @@ Contact at `$12ade` replaces ordinary combat with captive links for Helen.
 The victim's owner remains unchanged. State `$34` follows the preceding living
 captive or hero, repairs links to Helen, and releases the victim if she dies.
 The Go adapter preserves those ownership and lifecycle rules, including saves.
-Its tile-based following still awaits the original fractional movement timing.
+The raw dispatcher follows the original fractional planner and13126 motion.
+State34 retains its native target address through backlink repair and releases
+through original cleanup when its captor is removed.
 
 Helen uses ordinary enemy targeting at `$14414`, excluding already charmed
 victims. No separate nearest-sea destination was found. The water-animation
 table at `$20a60` gives Helen a zero entry: she can cross water while captives
 can drown. The swamp-animation table at `$20a54` similarly gives Heracles a
-zero entry. Both immunities are applied. Death animations and Helen's native
-southeastern collateral footprint remain independent state-machine work.
+zero entry. Both immunities are applied. Native death and cleanup sequences have independent
+CPU comparisons. These do not establish every combined environmental or
+collateral interaction; coverage remains bounded by its individual and composed
+reference cases.
 
 ## Natural scenery and forest planting
 
