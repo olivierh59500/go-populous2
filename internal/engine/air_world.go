@@ -247,6 +247,7 @@ func (w *World) releaseAirFollowers(effect, x, y int) {
 		w.moveFollowerCell(id, nx, ny)
 		f := &w.Followers[id]
 		f.positionX, f.positionY, f.positionSet = nx*256+128, ny*256+128, true
+		w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, f.positionX, f.positionY)
 		f.Frame = 0
 		carry.Phase, carry.Frame, carry.Frames = AirCarryLanding, 0, 7
 	}
@@ -290,6 +291,7 @@ func (w *World) AdvanceAirCarry(id int) bool {
 		w.moveFollowerCell(id, x>>8, y>>8)
 	}
 	f.positionX, f.positionY, f.positionSet = x, y, true
+	w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, x, y)
 	return true
 }
 

@@ -168,6 +168,7 @@ func (w *World) advanceConversion(id int) bool {
 		f.State = Converting
 		f.positionX, f.positionY = int(f.X)*256+128, int(f.Y)*256+128
 		f.positionSet = true
+		w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, f.positionX, f.positionY)
 		f.moving = false
 		f.Frame = 0
 		if wasTown {
@@ -200,6 +201,7 @@ func (w *World) advanceConversion(id int) bool {
 	fixedX, fixedY := x*256+(f.positionX&255), y*256+(f.positionY&255)
 	w.moveFollowerCell(id, x, y)
 	f.positionX, f.positionY = fixedX, fixedY
+	w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, fixedX, fixedY)
 	f.PreviousX, f.PreviousY = f.X, f.Y
 	w.repaintFarms()
 	return true

@@ -101,3 +101,42 @@ func TestBasaltCreatorLinksMappedImpactAndTerminalUnlinks(t *testing.T) {
 		t.Fatal("terminal basalt removed permanent terrain")
 	}
 }
+
+func TestWindMovesLightningMarkerInFixedCoordinates(t *testing.T) {
+	w := testFlatWorld()
+	w.Level.Players[0].Powers[Lightning] = true
+	if err := w.PlaceLightning(0, 20, 20); err != nil {
+		t.Fatal(err)
+	}
+	id := w.Air.MarkerSlots[0] - 1
+	ref := ActorRef{Kind: ActorEffect, Index: uint16(id)}
+	if !w.moveActor(ref, 20*256+151, 20*256+143) {
+		t.Fatal("marker wind movement")
+	}
+	marker := w.Air.Markers[id]
+	x, y, linked := w.Actors.Position(ref)
+	if !linked || marker.X != 20*256+151 || marker.Y != 20*256+143 || x != marker.X || y != marker.Y {
+		t.Fatal("lightning marker lost fractional coordinates")
+	}
+}
+
+func TestCarryAndConversionCommitFractionalRegistryPositions(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Air.Whirlwinds[0] = WhirlwindEffect{Active: true, X: 20*256 + 173, Y: 20*256 + 147}
+	w.Air.Carry[id] = AirCarryState{Phase: AirCarryFlying, Effect: 1, Frames: 4}
+	w.AdvanceAirCarry(id)
+	x, y, linked := w.Actors.Position(ActorRef{Kind: ActorFollower, Index: uint16(id)})
+	if !linked || x != w.Followers[id].positionX || y != w.Followers[id].positionY {
+		t.Fatal("fractional carry left stale registry coordinates")
+	}
+	w.Air.Carry[id] = AirCarryState{}
+	w.Followers[id].State = Walking
+	w.Water.Painted[20+20*MapSize] = false
+	w.Nature.Ground[20+20*MapSize] = GroundParcel{Mark: GroundBaptism}
+	w.advanceConversion(id)
+	x, y, linked = w.Actors.Position(ActorRef{Kind: ActorFollower, Index: uint16(id)})
+	if !linked || x != 20*256+128 || y != 20*256+128 || x != w.Followers[id].positionX || y != w.Followers[id].positionY {
+		t.Fatal("conversion centering left stale registry coordinates")
+	}
+}

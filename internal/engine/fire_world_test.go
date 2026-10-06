@@ -352,3 +352,26 @@ func TestFireWorldLavaCreatesBasaltImmediatelyAtBaseLifetime(t *testing.T) {
 		t.Fatal("lava's basalt handoff did not paint the parcel immediately")
 	}
 }
+
+func TestLavaTraversesMixedMarkersSceneryAndFollowerChains(t *testing.T) {
+	w := testFlatWorld()
+	follower := addFollower(w, 20, 20, 0, 1000, Walking)
+	w.Nature.Scenery[0] = SceneryActor{Kind: SceneryTree, X: 20, Y: 20, Age: 0}
+	w.Actors.Link(ActorRef{Kind: ActorScenery, Index: 0}, 20*256+128, 20*256+128)
+	w.Magnets[0] = MagnetActor{Owner: 0, X: 20*256 + 128, Y: 20*256 + 128}
+	w.Actors.Link(ActorRef{Kind: ActorMagnet, Index: 0}, w.Magnets[0].X, w.Magnets[0].Y)
+	w.pushFireParcel(20, 20, 20, 0)
+	if w.Magnets[0].X != 20*256+148 || w.Nature.Scenery[0].Kind != SceneryBurningTree || w.FireDamage.Deaths[follower].Mode != FireVictimBurning || w.Followers[follower].positionX != 20*256+148 {
+		t.Fatal("lava omitted non-follower mixed parcel actors")
+	}
+}
+
+func TestFireDamageUsesActualMixedMembershipWithoutTouchingUnmappedActors(t *testing.T) {
+	w := testFlatWorld()
+	a := addFollower(w, 20, 20, 0, 100, Walking)
+	b := w.allocate(Follower{Owner: 1, X: 20, Y: 20, State: Walking, Population: 100})
+	// The second actor is allocated but has not been inserted into any parcel.
+	if hits := w.damageFireParcel(20, 20, false); hits != 1 || w.Followers[a].Population != 0 || w.Followers[b].Population != 100 {
+		t.Fatal("fire scanned pool coordinates instead of actual map membership")
+	}
+}

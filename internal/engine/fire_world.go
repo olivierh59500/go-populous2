@@ -190,35 +190,36 @@ func (w *World) damageFireParcel(x, y int, treeSpread bool) int {
 	if !inside(x, y) {
 		return 0
 	}
-	for id := range w.Nature.Scenery {
-		a := &w.Nature.Scenery[id]
-		if a.Kind == SceneryTree && int(a.X) == x && int(a.Y) == y {
-			a.Kind, a.Frame = SceneryBurningTree, 0
-		}
-	}
 	hits := 0
-	for id := 1; id < FollowerCapacity; id++ {
-		f := &w.Followers[id]
-		if f.State == Inactive || f.State == Ruin || int(f.X) != x || int(f.Y) != y {
-			continue
+	ref := w.Actors.Heads[x+y*MapSize]
+	for visits := 0; ref.Kind != ActorNone && visits < 1100; visits++ {
+		if ref.Kind == ActorScenery {
+			a := &w.Nature.Scenery[ref.Index]
+			if a.Kind == SceneryTree {
+				a.Kind = SceneryBurningTree
+				a.Frame = 0
+			}
 		}
-		if f.State != Town && (f.Consecrated || f.Conversion.Active || f.ImmuneToBurning() || treeSpread && f.IsHero()) {
-			continue
+		if ref.Kind == ActorFollower {
+			id := int(ref.Index)
+			f := &w.Followers[id]
+			if f.State != Inactive && f.State != Ruin && !(f.State != Town && (f.Consecrated || f.Conversion.Active || f.ImmuneToBurning() || treeSpread && f.IsHero())) {
+				if f.State == Town {
+					w.destroyCombatTown(id)
+					hits++
+				} else {
+					w.PrepareFollowerDeath(id)
+					f.State = Ruin
+					f.Frame = 0
+					f.moving = false
+					f.BattleWith = 0
+					f.BattleAggressor = false
+					w.FireDamage.Deaths[id] = FireVictimDeath{Mode: FireVictimDying, Frames: 9}
+					hits++
+				}
+			}
 		}
-		death := FireVictimDeath{Mode: FireVictimDying, Frames: 9}
-		if f.State == Town {
-			// Direct fire and combat call the same retained town-collapse
-			// lifecycle: its animation spreads cardinal damage, then ruins
-			// remain allocated for their separate 400-pass lifetime.
-			w.destroyCombatTown(id)
-			hits++
-			continue
-		}
-		w.PrepareFollowerDeath(id)
-		f.Population, f.State, f.Frame = 0, Ruin, 0
-		f.moving, f.BattleWith, f.BattleAggressor = false, 0, false
-		w.FireDamage.Deaths[id] = death
-		hits++
+		ref = w.Actors.Next(ref)
 	}
 	return hits
 }
@@ -282,35 +283,60 @@ func (w *World) AdvanceFireDeath(id int) bool {
 }
 
 func (w *World) pushFireParcel(x, y, dx, dy int) {
-	for id := 1; id < FollowerCapacity; id++ {
-		f := &w.Followers[id]
-		if f.State == Inactive || int(f.X) != x || int(f.Y) != y || f.Consecrated || f.Conversion.Active || f.ImmuneToBurning() {
-			continue
-		}
-		if f.State == Town {
-			// Lava invokes the same town destruction first, then transfers
-			// that already cleaned, zero-population record to burning state.
-			w.destroyCombatTown(id)
-			f.CombatAftermath = CombatAftermathState{}
-		}
-		if w.FireDamage.Deaths[id].Mode != FireVictimBurning {
-			frames := 21
-			if f.IsHero() {
-				frames = 9
-			}
-			w.FireDamage.Deaths[id] = FireVictimDeath{Mode: FireVictimBurning, Frames: frames}
-			f.State, f.Frame, f.moving = Ruin, 0, false
-		}
-		f.initialisePosition()
-		nx, ny := f.positionX+dx, f.positionY+dy
-		if nx < 0 || ny < 0 || nx >= MapSize*256 || ny >= MapSize*256 {
-			w.remove(id)
-			continue
-		}
-		if int(f.X) != nx>>8 || int(f.Y) != ny>>8 {
-			w.moveFollowerCell(id, nx>>8, ny>>8)
-		}
-		f.positionX, f.positionY = nx, ny
-		w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, nx, ny)
+	if !inside(x, y) {
+		return
 	}
+	ref := w.Actors.Heads[x+y*MapSize]
+	for visits := 0; ref.Kind != ActorNone && visits < 1100; visits++ {
+		id := int(ref.Index)
+		if ref.Kind == ActorEffect {
+			ref = w.Actors.Next(ref)
+			continue
+		}
+		if ref.Kind == ActorScenery && w.Nature.Scenery[id].Kind == SceneryTree {
+			w.Nature.Scenery[id].Kind = SceneryBurningTree
+			w.Nature.Scenery[id].Frame = 0
+		}
+		if ref.Kind == ActorFollower {
+			f := &w.Followers[id]
+			if f.Consecrated || f.Conversion.Active || f.ImmuneToBurning() {
+				ref = w.Actors.Next(ref)
+				continue
+			}
+			if f.State == Town {
+				w.destroyCombatTown(id)
+				f.CombatAftermath = CombatAftermathState{}
+			}
+			if w.FireDamage.Deaths[id].Mode != FireVictimBurning {
+				frames := 21
+				if f.IsHero() {
+					frames = 9
+				}
+				w.FireDamage.Deaths[id] = FireVictimDeath{Mode: FireVictimBurning, Frames: frames}
+				f.State = Ruin
+				f.Frame = 0
+				f.moving = false
+			}
+		}
+		px, py, linked := w.Actors.Position(ref)
+		if !linked {
+			return
+		}
+		if !w.moveActor(ref, px+dx, py+dy) {
+			return
+		}
+		ref = w.Actors.Next(ref)
+	}
+}
+
+// ApplyLavaParcel applies the directional contact of a lava front to the
+// actual mixed parcel chain. It is shared with the lava controller and useful
+// for editor previews without allocating an additional moving effect.
+func (w *World) ApplyLavaParcel(x, y, direction int) error {
+	if !inside(x, y) || direction < 0 || direction > 3 {
+		return fmt.Errorf("invalid lava parcel or direction")
+	}
+	d := [4][2]int{{0, -20}, {20, 0}, {0, 20}, {-20, 0}}[direction]
+	w.pushFireParcel(x, y, d[0], d[1])
+	return nil
 }

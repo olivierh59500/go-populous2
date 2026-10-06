@@ -33,7 +33,7 @@ func testFlatWorld() *World {
 }
 func addFollower(w *World, x, y, owner, population int, state FollowerState) int {
 	id := w.allocate(Follower{Owner: uint8(owner), X: uint8(x), Y: uint8(y), PreviousX: uint8(x), PreviousY: uint8(y), State: state, Population: population, MovementSpeed: 20})
-	w.Occupants[x+y*MapSize] = uint16(id)
+	w.linkFollower(id)
 	return id
 }
 
@@ -238,6 +238,7 @@ func BenchmarkWorldStep(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
+	w.Editor = true
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

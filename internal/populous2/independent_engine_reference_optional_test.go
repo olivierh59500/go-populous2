@@ -189,3 +189,87 @@ func independentReferenceCodeWord(h *NativeRuntimeHost, a int) uint16 {
 	v, _ := h.Memory.Code.Read16(a)
 	return v
 }
+
+func TestIndependentEngineMixedLavaReferenceOptional(t *testing.T) {
+	if os.Getenv("POPULOUS2_REFERENCE_COMPARE") != "1" {
+		t.Skip("optional local reference comparison")
+	}
+	f := lavaFixture{}
+	f.Input.Mode = "tick"
+	f.Input.Tile = 15
+	f.Input.Owner = 1
+	f.Input.X = 20
+	f.Input.Y = 20
+	f.Input.Timer = 2
+	f.Input.Life = 100
+	f.Input.Direction = 2
+	f.Input.Fraction = 128
+	f.Input.Seed = 4311
+	v, _, _ := lavaFixtureMemory(t, f)
+	m := v.m
+	targets := []struct {
+		at          int
+		kind, owner uint8
+	}{{0x76f4, 2, 1}, {0x6bd0, 22, 3}, {0x5f50, 26, 1}, {0xe74e, 20, 1}}
+	for _, actor := range targets {
+		ref := NativeRecordReference(actor.at - 0x76c0)
+		_ = m.unlink(ref)
+		m.putByte(actor.at, actor.kind)
+		m.putByte(actor.at+12, actor.owner)
+		m.putWord(actor.at+6, 20*256+128)
+		m.putWord(actor.at+8, 20*256+128)
+		if actor.kind == 2 {
+			m.putByte(actor.at+22, 2)
+			_ = m.write32(actor.at+26, 1000)
+		}
+		if err := m.insert(ref); err != nil {
+			t.Fatal(err)
+		}
+	}
+	callbacks := lavaCompleteCallbacks(t, v, 1)
+	head := NativeRecordReference(m.word(0xf44 + (20+20*64)*4 + 2))
+	for visits := 0; head != 0 && visits < 20; visits++ {
+		if err := v.lava.push(head, 1, callbacks); err != nil {
+			t.Fatal(err)
+		}
+		head = NativeRecordReference(m.word(cleanupRecordAddress(head) + 2))
+	}
+	land, err := engine.DecodeLandscape(testBundle(t).Raw["land0.dat"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := &engine.World{Editor: true, Landscape: land}
+	var heights [engine.CornerSize * engine.CornerSize]uint8
+	for at := range heights {
+		heights[at] = 1
+	}
+	if err = w.EditorSetTerrain(heights); err != nil {
+		t.Fatal(err)
+	}
+	if err = w.EditorPlaceFollower(0, 20, 20, 1000); err != nil {
+		t.Fatal(err)
+	}
+	if err = w.EditorPlaceScenery(engine.SceneryTree, 20, 20); err != nil {
+		t.Fatal(err)
+	}
+	w.Earth.Walls[0] = engine.WallActor{Active: true, Owner: 0, X: 20, Y: 20}
+	w.Actors.Link(engine.ActorRef{Kind: engine.ActorWall, Index: 0}, 20*256+128, 20*256+128)
+	w.Magnets[0] = engine.MagnetActor{Owner: 0, X: 20*256 + 128, Y: 20*256 + 128}
+	w.Actors.Link(engine.ActorRef{Kind: engine.ActorMagnet, Index: 0}, w.Magnets[0].X, w.Magnets[0].Y)
+	if err = w.ApplyLavaParcel(20, 20, 1); err != nil {
+		t.Fatal(err)
+	}
+	refs := []engine.ActorRef{{Kind: engine.ActorFollower, Index: 1}, {Kind: engine.ActorScenery, Index: 0}, {Kind: engine.ActorWall, Index: 0}, {Kind: engine.ActorMagnet, Index: 0}}
+	for index, actor := range targets {
+		x, y, linked := w.Actors.Position(refs[index])
+		if !linked || x != int(m.word(actor.at+6)) || y != int(m.word(actor.at+8)) {
+			t.Fatalf("actor kind%d Go%d,%d reference%d,%d", actor.kind, x, y, m.word(actor.at+6), m.word(actor.at+8))
+		}
+	}
+	if w.Nature.Scenery[0].Kind != engine.SceneryBurningTree || m.byte(0x6bd0) != 30 {
+		t.Fatal("mixed lava tree transition differs")
+	}
+	if w.Followers[1].Population != 1000 || int32(func() uint32 { v, _ := m.read32(0x76f4 + 26); return v }()) != 1000 || w.FireDamage.Deaths[1].Mode != engine.FireVictimBurning || m.byte(0x76f4+22) != 60 {
+		t.Fatal("mixed lava follower retention differs")
+	}
+}

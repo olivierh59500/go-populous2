@@ -112,6 +112,7 @@ func TestBurningMatureForestSpreadsOnlyAfterItsFourFrames(t *testing.T) {
 	w := testFlatWorld()
 	w.Nature.Scenery[0] = SceneryActor{Kind: SceneryBurningTree, X: 32, Y: 32, Age: 0}
 	w.Nature.Scenery[1] = SceneryActor{Kind: SceneryTree, X: 31, Y: 32, Age: 0}
+	w.Actors.Link(ActorRef{Kind: ActorScenery, Index: 1}, 31*256+128, 32*256+128)
 	ordinary := addFollower(w, 32, 31, 0, 100, Walking)
 	hero := addFollower(w, 33, 32, 0, 100, Walking)
 	w.Followers[hero].Hero.Kind = HeroPerseus

@@ -166,7 +166,7 @@ func (w *World) moveEffectActor(id, x, y int) {
 		w.Air.Storms[id].X, w.Air.Storms[id].Y = x, y
 	case EffectLightning:
 		if w.Air.Markers[id].Active {
-			w.Air.Markers[id].X, w.Air.Markers[id].Y = x>>8, y>>8
+			w.Air.Markers[id].X, w.Air.Markers[id].Y = x, y
 		} else {
 			w.Air.Bolts[id].X, w.Air.Bolts[id].Y = x, y
 		}
