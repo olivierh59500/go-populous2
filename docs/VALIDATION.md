@@ -992,3 +992,24 @@ prelude up to its outstanding main menu, then invokes the real chooser as an
 explicit separate operation and retains its first video/input gate. It does
 not prefill resource banks or manufacture cache bits. This establishes the
 bound chooser prefix, not a completed initial-menu/campaign startup path.
+
+## Native gameplay input suffix
+
+NativeGameplayInputState translates the complete110E..1BD6 controller after
+deferred commands. It preserves source keyboard priority, camera/overview
+coordinates, command selection, terrain picking and next-frame command writes.
+Real panel, help, admission and terrain operations remain explicit retained
+children with separate completion and zero-condition results.
+
+Six hundred and two original CPU executions match all eight data registers,
+seven address registers, full BSS/CODE and905 actual child-entry contexts.
+Each is replayed with immediate and suspended child returns. The reference
+uses declared preserving or clobbering child envelopes; it proves the caller
+and branches, not the substituted child bodies. Coverage includes keyboard
+priority, zoom boundaries, all three dispatch tables, both mouse buttons,
+terrain admission and successful/failed child conditions. Missing operations
+preserve their completed prefix and fail explicitly.
+
+The input suffix still needs concrete child composition and attachment after
+the native session's deferred stage. These tests do not establish live Game
+input or full interactive gameplay.
