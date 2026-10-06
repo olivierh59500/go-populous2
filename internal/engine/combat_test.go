@@ -209,3 +209,39 @@ func TestConqueredTownReformsWinnerAtCentreAndKeepsWorkCounter(t *testing.T) {
 		t.Fatalf("reformed town %+v", f)
 	}
 }
+
+func TestHeroTownVictoryUsesCollapseAndFourCardinalCollateral(t *testing.T) {
+	w := testFlatWorld()
+	hero := addFollower(w, 20, 20, 0, 1000, Walking)
+	town := addFollower(w, 20, 20, 1, 1, Town)
+	ordinary := addFollower(w, 21, 20, 1, 100, Walking)
+	immune := addFollower(w, 20, 21, 1, 100, Walking)
+	w.Followers[hero].Hero.Kind = HeroPerseus
+	w.Followers[town].Stage = 18
+	w.Followers[immune].Hero.Kind = HeroPerseus
+	w.beginBattle(hero, town)
+	w.finishBattle(hero, town)
+	if w.Followers[town].CombatAftermath.Kind != CombatTownCollapse || w.Followers[town].CombatAftermath.Frames != 13 {
+		t.Fatal("nineteenth-stage town collapse")
+	}
+	w.advanceCombatAftermath(town)
+	if w.Followers[ordinary].CombatAftermath.Kind != CombatCollateralDeath || w.Followers[ordinary].Population != 0 || w.Followers[immune].Population != 100 {
+		t.Fatal("cardinal collateral or hero immunity")
+	}
+	for range 12 {
+		w.advanceCombatAftermath(town)
+	}
+	if w.Followers[town].CombatAftermath.Kind != CombatTownRuin || w.Followers[town].CombatAftermath.RuinTime != 399 || w.Followers[town].State != Ruin {
+		t.Fatal("town did not retain its ruin after collapse")
+	}
+	for range 398 {
+		w.advanceCombatAftermath(town)
+	}
+	if w.Followers[town].State == Inactive {
+		t.Fatal("ruin timer ended early")
+	}
+	w.advanceCombatAftermath(town)
+	if w.Followers[town].State != Inactive {
+		t.Fatal("ruin timer cleanup")
+	}
+}

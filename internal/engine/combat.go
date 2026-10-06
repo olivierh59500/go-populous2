@@ -94,7 +94,7 @@ func (w *World) finishBattle(winner, loser int) {
 	f.Frame = 0
 	if f.IsHero() {
 		if l.BattleWasTown {
-			w.clearTownFarms(loser)
+			w.destroyCombatTown(loser)
 		}
 		f.State = Walking
 		f.Hero.Phase = HeroFindTarget
@@ -147,11 +147,15 @@ const (
 	CombatDefeated
 	CombatHeroDefeated
 	CombatVictorious
+	CombatTownCollapse
+	CombatTownRuin
+	CombatCollateralDeath
 )
 
 type CombatAftermathState struct {
 	Kind          CombatAftermathKind
 	Frame, Frames uint16
+	RuinTime      int
 }
 
 func (w *World) battleReward(loser int) uint16 {
@@ -177,6 +181,19 @@ func (w *World) advanceCombatAftermath(id int) bool {
 	if a.Kind == CombatAftermathNone {
 		return false
 	}
+	if a.Kind == CombatTownRuin {
+		before := a.RuinTime
+		a.RuinTime--
+		if before <= 1 || w.Cell(int(f.X), int(f.Y)).Shape != 15 {
+			w.remove(id)
+		}
+		return true
+	}
+	if a.Kind == CombatTownCollapse {
+		a.RuinTime = 400
+		w.damageCollapseNeighbors(id)
+	}
+
 	a.Frame++
 	f.Frame = a.Frame
 	if a.Frame < a.Frames {
@@ -184,6 +201,10 @@ func (w *World) advanceCombatAftermath(id int) bool {
 	}
 	kind := a.Kind
 	f.CombatAftermath = CombatAftermathState{}
+	if kind == CombatTownCollapse {
+		f.CombatAftermath = CombatAftermathState{Kind: CombatTownRuin, RuinTime: 399}
+		return true
+	}
 	if kind == CombatVictorious {
 		f.State = Walking
 		f.Frame = 0
@@ -192,4 +213,62 @@ func (w *World) advanceCombatAftermath(id int) bool {
 		w.remove(id)
 	}
 	return true
+}
+
+// destroyCombatTown retains a collapsing settlement and its later ruin timer.
+// Its former farms become bad land; cardinal collateral is applied by the
+// collapse phase, with heroes exempt from ordinary follower destruction.
+func (w *World) destroyCombatTown(id int) {
+	f := &w.Followers[id]
+	if f.State == Inactive || f.CombatAftermath.Kind == CombatTownRuin {
+		return
+	}
+	stage := min(TownStages-1, int(f.Stage))
+	w.clearTownFarms(id)
+	limit := 9
+	if stage >= 10 {
+		limit = 25
+	}
+	if stage == 18 {
+		limit = 49
+	}
+	for _, d := range townFootprint[:limit] {
+		x, y := int(f.X)+d[0], int(f.Y)+d[1]
+		if inside(x, y) && settlementLand(w.Cell(x, y).Code) {
+			w.paintNature(x+y*MapSize, GroundParcel{Mark: GroundScorched})
+		}
+	}
+	f.State = Ruin
+	f.Population = 0
+	f.moving = false
+	f.Frame = 0
+	w.clearHeroLinks(id)
+	f.CombatAftermath = CombatAftermathState{Kind: CombatTownCollapse, Frames: uint16(fireTownDeathFrames[stage]), RuinTime: 400}
+}
+
+func (w *World) damageCollapseNeighbors(id int) {
+	f := w.Followers[id]
+	for _, d := range [4][2]int{{0, -1}, {1, 0}, {0, 1}, {-1, 0}} {
+		x, y := int(f.X)+d[0], int(f.Y)+d[1]
+		if !inside(x, y) {
+			continue
+		}
+		var actors [FollowerCapacity]int
+		for _, other := range actors[:w.FollowersAt(x, y, actors[:])] {
+			g := &w.Followers[other]
+			if g.State == Town {
+				w.destroyCombatTown(other)
+			} else if g.State == Walking && !g.IsHero() {
+				g.State = Ruin
+				g.Population = 0
+				g.Frame = 0
+				g.CombatAftermath = CombatAftermathState{Kind: CombatCollateralDeath, Frames: 9}
+				w.clearHeroLinks(other)
+			}
+		}
+		if scenery := w.Nature.sceneryAt(x, y); scenery >= 0 && w.Nature.Scenery[scenery].Kind == SceneryTree {
+			w.Nature.Scenery[scenery].Kind = SceneryBurningTree
+			w.Nature.Scenery[scenery].Frame = 0
+		}
+	}
 }
