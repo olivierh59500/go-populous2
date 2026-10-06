@@ -296,3 +296,31 @@ func TestRareTownBirthCreatesNeutralInventionAtSourceSlot(t *testing.T) {
 		t.Fatal("rare neutral birth slot, selector, deadline or RNG")
 	}
 }
+
+func TestFreshFollowerAppearanceUsesOriginalSlotVariant(t *testing.T) {
+	w := testFlatWorld()
+	for slot := 1; slot <= 17; slot++ {
+		id := w.allocate(Follower{Owner: 0, X: 20, Y: 20, State: Walking, Population: 100, MovementSpeed: 20})
+		if id != slot || w.Followers[id].AppearanceVariant != uint8((slot&14)/2) {
+			t.Fatalf("slot%d variant%d", slot, w.Followers[id].AppearanceVariant)
+		}
+	}
+	if err := w.EditorPlaceFollower(1, 30, 30, 100); err != nil {
+		t.Fatal(err)
+	}
+	if w.Followers[18].AppearanceVariant != 1 {
+		t.Fatal("editor follower did not use fresh source variant")
+	}
+}
+
+func TestHeroConversionPreservesOrdinaryAppearanceData(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Followers[id].AppearanceVariant = 7
+	if err := w.ConvertHero(id, HeroPerseus); err != nil {
+		t.Fatal(err)
+	}
+	if w.Followers[id].AppearanceVariant != 7 {
+		t.Fatal("hero conversion destroyed retained appearance metadata")
+	}
+}

@@ -36,6 +36,7 @@ type Follower struct {
 	State                          FollowerState
 	Population, Weapons, Search    int
 	MovementSpeed                  uint8
+	AppearanceVariant              uint8
 	Direction                      uint8
 	Frame                          uint16
 	Stage                          uint8
@@ -177,6 +178,9 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 func (w *World) allocate(f Follower) int {
 	for id := 1; id < len(w.Followers); id++ {
 		if w.Followers[id].State == Inactive {
+			if !f.IsHero() {
+				f.AppearanceVariant = uint8((id & 14) / 2)
+			}
 			f.initialisePosition()
 			w.Followers[id] = f
 			return id
