@@ -104,7 +104,11 @@ func compareCodecContinuation(t *testing.T, a, b *engine.World, pass int) {
 	}
 	for id, f := range a.Followers {
 		g := b.Followers[id]
-		if f.Owner != g.Owner || f.State != g.State || f.Population != g.Population || f.X != g.X || f.Y != g.Y || f.CleanupPrepared != g.CleanupPrepared || sa.Motion[id] != sb.Motion[id] {
+		motionA, motionB := sa.Motion[id], sb.Motion[id]
+		if f.ContactWaiting && g.ContactWaiting {
+			motionA.LegRemaining, motionB.LegRemaining = 0, 0
+		}
+		if f.Owner != g.Owner || f.State != g.State || f.Population != g.Population || f.X != g.X || f.Y != g.Y || f.CleanupPrepared != g.CleanupPrepared || f.ContactWait != g.ContactWait || f.ContactWaiting != g.ContactWaiting || motionA != motionB {
 			t.Fatalf("pass%d follower%d continuation differs: %+v/%+v", pass, id, f, g)
 		}
 	}
@@ -278,5 +282,53 @@ func TestGAMActiveAIContinuesReactionAndTownEconomy(t *testing.T) {
 		if !reflect.DeepEqual(w.AI, restored.World.AI) {
 			t.Fatalf("AI state differs at continuation pass%d", pass)
 		}
+	}
+}
+
+func TestGAMContactWaitingAndArrivalContinueMergeAndBattle(t *testing.T) {
+	for _, enemy := range []bool{false, true} {
+		t.Run(map[bool]string{false: "friendly-merge", true: "opposing-battle"}[enemy], func(t *testing.T) {
+			catalog := continuationCatalog()
+			for frame := 0; frame < 2; frame++ {
+				catalog.AnimationRoles[3276+uint16(frame*4)] = []AnimationRole{{Name: "contact/waiting", Frame: frame}}
+			}
+			for frame := 0; frame < 4; frame++ {
+				catalog.AnimationRoles[456+uint16(frame*4)] = []AnimationRole{{Name: "combat/attack", Frame: frame}}
+			}
+			w := continuationWorld(t, catalog)
+			owner := 0
+			if enemy {
+				owner = 1
+			}
+			addCodecFollower(t, w, 1, 20, 20, 0, 500, engine.Walking)
+			addCodecFollower(t, w, 2, 20, 20, owner, 700, engine.Walking)
+			addCodecFollower(t, w, 3, 50, 50, 1, 500, engine.Walking)
+			s := w.Snapshot()
+			s.World.Players[0].Mode, s.World.Players[1].Mode = engine.Rally, engine.Rally
+			s.World.Followers[1].ContactWith, s.World.Followers[1].ContactFriendly = 2, !enemy
+			s.World.Followers[2].ContactWaiting, s.World.Followers[2].ContactWait = true, 4
+			s.Motion[1] = engine.FollowerMotionSnapshot{PositionX: 20*256 + 168, PositionY: 20*256 + 128, VelocityX: -20, LegRemaining: 2, PositionSet: true, Moving: true}
+			w, err := s.Restore()
+			if err != nil {
+				t.Fatal(err)
+			}
+			document, err := NewDocument(w, catalog, engine.NewDeity("BLUE"), 0, 2, 0, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			data, err := Encode(document)
+			if err != nil {
+				t.Fatal(err)
+			}
+			restored, err := Decode(data, catalog)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for pass := 1; pass <= 12; pass++ {
+				w.Step()
+				restored.World.Step()
+				compareCodecContinuation(t, w, restored.World, pass)
+			}
+		})
 	}
 }

@@ -35,6 +35,10 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 	case 2, 18:
 	case 4:
 		motion.Moving = true
+	case 10:
+		f.ContactWaiting = true
+		f.ContactWait = int(int16(word(20)))
+	case 12:
 	case 6:
 		f.State = engine.Town
 		f.Work = word(20)
@@ -143,6 +147,15 @@ func decodeFollower(record []byte, id int, snapshot *engine.Snapshot, catalog Ca
 	}
 	if state != 2 && state != 4 && state != 6 && state != 18 && state != 0x30 && state != 0x46 && state != 0x3a {
 		role, ok := followerAnimationRole(catalog.AnimationRoles[word(10)], state)
+		if state == 10 && f.IsHero() {
+			ok = false
+			for _, candidate := range catalog.AnimationRoles[word(10)] {
+				if candidate.Name == "contact/"+heroNames[f.Hero.Kind] {
+					role, ok = candidate, true
+					break
+				}
+			}
+		}
 		if !ok {
 			return f, motion, fmt.Errorf("GAM follower%d phase%d animation%d has no semantic catalog role", id, state, word(10))
 		}
@@ -229,6 +242,10 @@ func followerAnimationRole(roles []AnimationRole, state uint8) (AnimationRole, b
 		prefix = "neutral/"
 	case 14, 16:
 		prefix = "combat/attack"
+	case 10:
+		prefix = "contact/waiting"
+	case 12:
+		prefix = "follower/"
 	case 0x16:
 		prefix = "swimming/"
 	case 0x18, 0x2c, 0x2e, 0x32, 0x38, 0x3e, 0x40:
@@ -434,6 +451,43 @@ func decodeWall(record []byte, catalog Catalog) (engine.WallActor, error) {
 		w.Next = next.Index + 1
 	}
 	return w, nil
+}
+
+func decodeContacts(r fileReader, s *engine.Snapshot) error {
+	for id := 1; id < engine.FollowerCapacity; id++ {
+		f := &s.World.Followers[id]
+		if f.State == engine.Inactive {
+			continue
+		}
+		record := r.record(0x76c0, id, 52)
+		state := record[22]
+		if state != 12 && !(state == 4 && record[23] == 12) {
+			continue
+		}
+		friendly, enemy := 0, 0
+		for current, visits := int(s.World.Occupants[int(f.X)+int(f.Y)*64]), 0; current != 0 && visits < engine.FollowerCapacity; visits++ {
+			if current != id {
+				g := s.World.Followers[current]
+				if g.State == engine.Walking || g.State == engine.Town {
+					if g.Owner == f.Owner {
+						friendly = current
+					} else {
+						enemy = current
+					}
+				}
+			}
+			current = s.World.Followers[current].NextFollower
+		}
+		target := friendly
+		if target == 0 {
+			target = enemy
+		}
+		if target == 0 {
+			return fmt.Errorf("GAM arriving contact follower%d has no represented target", id)
+		}
+		f.ContactWith, f.ContactFriendly = target, friendly != 0
+	}
+	return nil
 }
 
 func wallAnimationRole(roles []AnimationRole) (AnimationRole, bool) {

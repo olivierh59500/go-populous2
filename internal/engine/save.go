@@ -168,6 +168,9 @@ func validateSnapshotWorld(w *World) error {
 		if f.Conversion.Active && (f.Conversion.SourceOwner > 1 || f.Conversion.Frame >= 12) {
 			return fmt.Errorf("snapshot follower %d conversion is invalid", id)
 		}
+		if f.ContactWaiting && (f.ContactWait < -32768 || f.ContactWait > 32767) {
+			return fmt.Errorf("snapshot contact waiting timer is invalid")
+		}
 		if f.TerrainDeath.Active && (f.TerrainDeath.Frames < 1 || f.TerrainDeath.Frame >= f.TerrainDeath.Frames) {
 			return fmt.Errorf("snapshot terrain-death lifecycle is invalid")
 		}

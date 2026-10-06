@@ -111,3 +111,34 @@ func TestGAMCombatAndTerrainDeathsRoundTripNamedContinuations(t *testing.T) {
 		})
 	}
 }
+
+func TestGAMArrivingContactWithoutRepresentedTargetRejects(t *testing.T) {
+	data := make([]byte, FileSize)
+	at := 0x76c0 + 52 - fileStart
+	data[at], data[at+12], data[at+22], data[at+23] = 2, 1, 4, 12
+	var snapshot engine.Snapshot
+	snapshot.World.Followers[1] = engine.Follower{Owner: 0, X: 20, Y: 20, State: engine.Walking}
+	snapshot.World.Occupants[20+20*64] = 1
+	if err := decodeContacts(fileReader{data}, &snapshot); err == nil {
+		t.Fatal("unrepresented arriving contact was silently reset")
+	}
+}
+
+func TestGAMHeroContactWaitingPreservesSilentReplyFrame(t *testing.T) {
+	catalog := Catalog{AnimationRoles: map[uint16][]AnimationRole{900: {{Name: "contact/perseus", Frame: 1}}, 904: {{Name: "contact/perseus", Frame: 3}}}}
+	w := &engine.World{}
+	w.Followers[1] = engine.Follower{Owner: 0, X: 20, Y: 20, State: engine.Walking, Population: 500, Frame: 1, ContactWaiting: true, ContactWait: 7, Hero: engine.HeroState{Kind: engine.HeroPerseus}}
+	record := make([]byte, 52)
+	record[0], record[12], record[22], record[6], record[8], record[13] = 2, 1, 2, 20, 20, 2
+	binary.BigEndian.PutUint32(record[26:], 500)
+	if err := encodeFollowerLifecycle(record, w, 1, catalog); err != nil {
+		t.Fatal(err)
+	}
+	got, _, err := decodeFollower(record, 1, &engine.Snapshot{}, catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.ContactWaiting || got.ContactWait != 7 || got.Frame != 1 || got.Hero.Kind != engine.HeroPerseus {
+		t.Fatal("hero waiting reply changed during GAM conversion")
+	}
+}

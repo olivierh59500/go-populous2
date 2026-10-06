@@ -217,6 +217,9 @@ func Decode(data []byte, catalog Catalog) (*Document, error) {
 	if err := decodeChains(r, &snapshot); err != nil {
 		return nil, err
 	}
+	if err := decodeContacts(r, &snapshot); err != nil {
+		return nil, err
+	}
 	world, err := snapshot.Restore()
 	if err != nil {
 		return nil, fmt.Errorf("GAM typed world validation: %w", err)

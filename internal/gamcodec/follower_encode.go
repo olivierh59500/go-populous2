@@ -30,7 +30,25 @@ func encodeFollowerLifecycle(record []byte, w *engine.World, id int, catalog Cat
 	word := func(at int, value int) { binary.BigEndian.PutUint16(record[at:], uint16(value)) }
 	name := ""
 	frame := int(f.Frame)
-	if f.Neutral.Kind != engine.NeutralNone {
+	if f.ContactWaiting {
+		record[0], record[22] = 2, 10
+		word(20, f.ContactWait)
+		name = "contact/waiting"
+		if f.IsHero() {
+			name = "contact/" + heroNames[f.Hero.Kind]
+		}
+	}
+	if f.ContactWith > 0 {
+		record[0], record[22], record[23] = 2, 12, 12
+		if w.Snapshot().Motion[id].Moving {
+			record[22] = 4
+		}
+		return nil
+	}
+	if f.ContactWaiting {
+		// The waiting sequence is separate from the arriving follower's
+		// ordinary motion and is resolved below from semantic artwork.
+	} else if f.Neutral.Kind != engine.NeutralNone {
 		record[0], record[12], record[22] = 0x3c, 3, 0x44
 		word(40, int(f.Neutral.Kind)*2)
 		name = "neutral/" + [7]string{"", "road-maker", "land-lowerer", "whirlwind-maker", "tree-planter", "fire-maker", "monster"}[f.Neutral.Kind]
