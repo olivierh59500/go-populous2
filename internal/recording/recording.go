@@ -37,11 +37,21 @@ type Recorder struct {
 // sampleRate must divide evenly by fps; PCM is signed 16-bit little-endian
 // stereo. An existing output is never overwritten, even if created later.
 func New(path string, width, height, fps, sampleRate int) (*Recorder, error) {
+	return NewSized(path, width, height, outputWidth, outputHeight, fps, sampleRate)
+}
+
+// NewSized exports an MP4 with explicit source and output dimensions. Both
+// output dimensions must be even for the widely supported YUV 4:2:0 format.
+// The source retains its aspect ratio and uses nearest-neighbor scaling.
+func NewSized(path string, width, height, destinationWidth, destinationHeight, fps, sampleRate int) (*Recorder, error) {
 	if path == "" {
 		return nil, errors.New("recording: an output path is required")
 	}
 	if width <= 0 || height <= 0 || width > 16384 || height > 16384 {
 		return nil, errors.New("recording: source dimensions must be between 1 and 16384")
+	}
+	if destinationWidth <= 0 || destinationHeight <= 0 || destinationWidth > 16384 || destinationHeight > 16384 || destinationWidth%2 != 0 || destinationHeight%2 != 0 {
+		return nil, errors.New("recording: output dimensions must be even and between 2 and 16384")
 	}
 	if fps <= 0 || fps > 240 || sampleRate < 8000 || sampleRate > 192000 || sampleRate%fps != 0 {
 		return nil, errors.New("recording: sample rate must divide evenly by a frame rate between 1 and 240")
@@ -76,7 +86,7 @@ func New(path string, width, height, fps, sampleRate int) (*Recorder, error) {
 		r.Abort()
 		return nil, fmt.Errorf("recording audio: %w", err)
 	}
-	filter := fmt.Sprintf("scale=%d:%d:force_original_aspect_ratio=decrease:force_divisible_by=2:flags=neighbor,pad=%d:%d:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1", outputWidth, outputHeight, outputWidth, outputHeight)
+	filter := fmt.Sprintf("scale=%d:%d:force_original_aspect_ratio=decrease:force_divisible_by=2:flags=neighbor,pad=%d:%d:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1", destinationWidth, destinationHeight, destinationWidth, destinationHeight)
 	r.encoder = exec.Command(ffmpeg,
 		"-hide_banner", "-loglevel", "error", "-nostdin", "-n",
 		"-f", "rawvideo", "-pixel_format", "rgba", "-video_size", fmt.Sprintf("%dx%d", width, height),
