@@ -41,6 +41,7 @@ type Follower struct {
 	Stage                          uint8
 	LastDevelopedStage             uint8
 	ForceEmigration                bool
+	CleanupPrepared                bool
 	RoadLeg                        bool
 	Work                           uint16
 	FoundedAt                      uint64
@@ -410,7 +411,7 @@ func (w *World) emptyNeighbour(x, y int) (int, int, bool) {
 }
 
 func (w *World) remove(id int) {
-	w.clearHeroLinks(id)
+	w.PrepareFollowerDeath(id)
 	f := w.Followers[id]
 	w.unlinkFollower(id)
 	if f.State != Inactive && f.Owner < 2 && w.Players[f.Owner].Leader == id {

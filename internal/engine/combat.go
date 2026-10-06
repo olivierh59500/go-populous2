@@ -70,12 +70,9 @@ func (w *World) finishBattle(winner, loser int) {
 			remaining = uint32(w.Players[enemy].Mana) - uint32(reward)
 		}
 		w.Players[enemy].Mana = int(remaining)
-		if w.Players[enemy].Leader == loser {
-			w.Players[enemy].Statistics.LeaderLosses++
-			w.Players[enemy].Leader = 0
-		}
+
 	}
-	w.clearHeroLinks(loser)
+	w.PrepareFollowerDeath(loser)
 	l.Population = 0
 	l.State = Ruin
 	l.moving = false
@@ -224,7 +221,6 @@ func (w *World) destroyCombatTown(id int) {
 		return
 	}
 	stage := min(TownStages-1, int(f.Stage))
-	w.clearTownFarms(id)
 	limit := 9
 	if stage >= 10 {
 		limit = 25
@@ -232,17 +228,23 @@ func (w *World) destroyCombatTown(id int) {
 	if stage == 18 {
 		limit = 49
 	}
+	var owned [49][2]int
+	ownedCount := 0
 	for _, d := range townFootprint[:limit] {
 		x, y := int(f.X)+d[0], int(f.Y)+d[1]
-		if inside(x, y) && settlementLand(w.Cell(x, y).Code) {
-			w.paintNature(x+y*MapSize, GroundParcel{Mark: GroundScorched})
+		if inside(x, y) && w.Farms[x+y*MapSize] == f.Owner+1 {
+			owned[ownedCount] = [2]int{x, y}
+			ownedCount++
 		}
 	}
+	w.clearTownFarms(id)
+	for _, parcel := range owned[:ownedCount] {
+		w.paintNature(parcel[0]+parcel[1]*MapSize, GroundParcel{Mark: GroundScorched})
+	}
+	w.PrepareFollowerDeath(id)
 	f.State = Ruin
-	f.Population = 0
 	f.moving = false
 	f.Frame = 0
-	w.clearHeroLinks(id)
 	f.CombatAftermath = CombatAftermathState{Kind: CombatTownCollapse, Frames: uint16(fireTownDeathFrames[stage]), RuinTime: 400}
 }
 
