@@ -1509,3 +1509,25 @@ match. Shared replay helpers also retain the earlier stock2,499-frame natural
 result/reset proof. Full tests, focused stock/campaign race comparisons and
 vet pass. This covers six original campaign configurations, not completion
 of every world or every player-driven terrain/effect combination.
+
+## Healthy paired gameplay over actual TCP
+
+Two configured sessions now execute the desktop Listen/Dial endpoint and
+NativeSerialConn adapters with the actual handshake/director, menu resume,
+main renderer/input suffix, serial records and ordered delayed commands.
+The baseline runs2,048 paired frames; a campaign-password and native deity
+setup runs4,096 paired frames with naturally earned mana. Transport addresses,
+profile/baud/control records and seed are explicit test configuration.
+
+Both runtimes match terrain, overlays, all actor pools, RNG and simulation
+clock after every frame. The mixed case matches complete deity gameplay
+bytes except the two source-rendered view-permission bits at God+4B. The
+baseline's profile-specific power availability and10E90 command-policy fields
+are checked against original CODE/CONQUEST bytes instead of being repaired.
+
+Each mixed host executes Road-42 ten times and wall34 five times, debits
+roads ten times and walls once, paints five actual road changes and allocates
+one wall. Both populations remain alive. Real loopback normal/race runs, full
+tests and vet pass; sandbox socket skips are not counted as TCP execution.
+This does not establish two desktop windows, keyboard-generated network
+commands, connection-failure recovery or paired save interoperability.
