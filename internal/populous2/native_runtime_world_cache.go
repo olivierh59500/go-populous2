@@ -13,6 +13,24 @@ func (h *NativeRuntimeHost) RefreshWorldCaches() error {
 	if h == nil || h.World == nil || h.Session == nil || h.Memory == nil || h.World.nativeCallDepth != 0 || h.Session.world != nil {
 		return fmt.Errorf("native world cache refresh requires idle ownership")
 	}
+	return h.refreshDecodedWorldCaches()
+}
+
+// RefreshResultWorldCaches updates only decoded LAND/session rules at the
+// original result-return boundary. Raw memory and the retained follower pass
+// remain owned by the current frame; no typed projection is flushed or
+// hydrated before the following AI/effect routines consume the new LAND.
+func (h *NativeRuntimeHost) RefreshResultWorldCaches() error {
+	if h == nil || h.World == nil || h.Session == nil || h.Memory == nil ||
+		h.World.nativeCallDepth != 1 || h.Session.world != h.World ||
+		h.Session.Phase != NativeFrameSessionPhysics || h.Session.Pass.Stage != NativeFrameFollowers ||
+		!h.Session.followersCompleted || !h.Session.resultPending {
+		return fmt.Errorf("native result cache refresh requires the retained result boundary")
+	}
+	return h.refreshDecodedWorldCaches()
+}
+
+func (h *NativeRuntimeHost) refreshDecodedWorldCaches() error {
 	world, err := h.Memory.BSS.Read16(0xeb46)
 	if err != nil {
 		return err
