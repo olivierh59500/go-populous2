@@ -17,6 +17,7 @@ type airTestHabitat struct {
 func newAirTestHabitat() *airTestHabitat {
 	return &airTestHabitat{fireTestHabitat: newFireTestHabitat()}
 }
+func (h *airTestHabitat) DamageStorm(x, y int) int           { return h.Damage(x, y) }
 func (h *airTestHabitat) AirExperience(uint8) uint8          { return h.experience }
 func (h *airTestHabitat) StrikeLightning(int, int, int) bool { h.strikes++; return !h.walls }
 func (h *airTestHabitat) CreateWhirlpool(uint8, int, int)    {}
@@ -375,5 +376,126 @@ func TestWhirlwindMovementMatchesOriginalNumericTraces(t *testing.T) {
 				assert(step.Tick, step.Actor, step.RNG)
 			}
 		})
+	}
+}
+
+func TestStormCreationMatchesOriginalNumericCases(t *testing.T) {
+	var catalog struct {
+		Cases []struct {
+			Input struct {
+				Name, Mode                   string
+				Owner                        uint16
+				X, Y                         uint8
+				Seed                         uint32
+				FreeStart, FreeCount, Caller int
+				Initial                      []struct {
+					Address, Width int
+					Value          uint32
+				}
+			}
+			Admitted              bool
+			RandomDraws, Attempts int
+			Changes               []struct {
+				Address int
+				Value   uint8
+			}
+			RNG uint32
+		}
+	}
+	data, err := os.ReadFile("../populous2/testdata/storm_native.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(data, &catalog); err != nil {
+		t.Fatal(err)
+	}
+	checked := 0
+	for _, f := range catalog.Cases {
+		input := f.Input
+		if input.Mode != "create" || input.Owner < 1 || input.Owner > 3 {
+			continue
+		}
+		t.Run(input.Name, func(t *testing.T) {
+			h, s := newAirTestHabitat(), &AirEffects{}
+			h.rng, h.useRNG = randomState(input.Seed), true
+			for id := 0; id < EffectCapacity; id++ {
+				if id < input.FreeStart || id >= input.FreeStart+input.FreeCount {
+					h.pool.Slots[id] = EffectReservation{Kind: EffectFireColumn, Owner: 0}
+				}
+			}
+			for _, p := range input.Initial {
+				if p.Address == 0xe76a+int(input.Owner)*314+0x55 {
+					h.experience = uint8(p.Value)
+				}
+			}
+			admitted := s.CreateStorm(uint8(input.Owner-1), int(input.X), int(input.Y), h)
+			if admitted != f.Admitted || h.randomAt != f.RandomDraws || uint32(h.rng) != f.RNG {
+				t.Fatalf("creation admission/RNG differs %v/%v draws%d/%d state%x/%x", admitted, f.Admitted, h.randomAt, f.RandomDraws, uint32(h.rng), f.RNG)
+			}
+			memory := make([]byte, EffectCapacity*32)
+			for id := 0; id < EffectCapacity; id++ {
+				for off := 0; off < 32; off++ {
+					memory[id*32+off] = uint8(id*32 + off + 7)
+				}
+				memory[id*32+12] = 1
+				if id >= input.FreeStart && id < input.FreeStart+input.FreeCount {
+					memory[id*32+12] = 0
+				}
+			}
+			for _, p := range input.Initial {
+				at := p.Address - 0xc800
+				if at >= 0 && at+p.Width <= len(memory) {
+					switch p.Width {
+					case 1:
+						memory[at] = uint8(p.Value)
+					case 2:
+						binary.BigEndian.PutUint16(memory[at:], uint16(p.Value))
+					case 4:
+						binary.BigEndian.PutUint32(memory[at:], p.Value)
+					}
+				}
+			}
+			for _, change := range f.Changes {
+				at := change.Address - 0xc800
+				if at >= 0 && at < len(memory) {
+					memory[at] = change.Value
+				}
+			}
+			for id, e := range s.Storms {
+				if !e.Active {
+					continue
+				}
+				raw := memory[id*32:]
+				if uint16(e.X) != binary.BigEndian.Uint16(raw[6:]) || uint16(e.Y) != binary.BigEndian.Uint16(raw[8:]) || uint16(e.Life) != binary.BigEndian.Uint16(raw[24:]) || uint16(3300+e.Frame*4) != binary.BigEndian.Uint16(raw[10:]) || raw[12] != uint8(input.Owner) {
+					t.Fatalf("cloud%d namedcreation differs %+v", id, e)
+				}
+			}
+			checked++
+		})
+	}
+	if checked != 164 {
+		t.Fatalf("insufficient original storm creation cases: %d", checked)
+	}
+}
+
+func TestStormStrikeCooldownAndEmptyImpactRemainDistinct(t *testing.T) {
+	h, s := newAirTestHabitat(), &AirEffects{}
+	s.Storms[0] = StormEffect{Active: true, Owner: 0, X: 32*256 + 128, Y: 32*256 + 128, Life: 200}
+	h.random = []uint16{97, 1, 1}
+	s.TickStorm(0, h)
+	if s.Storms[0].Timer != 2 || !s.Storms[0].ImpactActive || len(h.damaged) != 2 || len(h.scorched) != 1 || h.randomAt != 2 {
+		t.Fatal("successful empty strike lost original cooldown or double scan")
+	}
+	s.TickStorm(0, h)
+	if s.Storms[0].Timer != 1 || len(h.damaged) != 3 || h.randomAt != 2 {
+		t.Fatal("positive cooldown failed to scan without a random strike draw")
+	}
+	s.TickStorm(0, h)
+	if s.Storms[0].Timer != 0 || len(h.damaged) != 4 || h.randomAt != 2 {
+		t.Fatal("last cooldown pass failed to scan")
+	}
+	s.TickStorm(0, h)
+	if h.randomAt != 3 || len(h.damaged) != 4 {
+		t.Fatal("failed thunder draw incorrectly damaged victims")
 	}
 }

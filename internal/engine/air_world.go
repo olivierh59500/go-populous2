@@ -27,6 +27,7 @@ func (h worldAirHabitat) AirExperience(owner uint8) uint8 {
 }
 func (h worldAirHabitat) Parcel(x, y int) FireParcel { return worldFireHabitat{h.world}.Parcel(x, y) }
 func (h worldAirHabitat) Scorch(x, y int)            { h.world.scorchFireParcel(x, y) }
+func (h worldAirHabitat) DamageStorm(x, y int) int   { return h.world.damageFireParcel(x, y, false) }
 func (h worldAirHabitat) StrikeLightning(bolt, x, y int) bool {
 	if !inside(x, y) {
 		return true
@@ -117,6 +118,8 @@ func (w *World) tickAirEffect(id int) {
 		w.Air.TickLightning(id, worldAirHabitat{w})
 	} else if w.effects.Slots[id].Kind == EffectWhirlwind {
 		w.Air.TickWhirlwind(id, worldAirHabitat{w})
+	} else if w.effects.Slots[id].Kind == EffectStorm {
+		w.Air.TickStorm(id, worldAirHabitat{w})
 	}
 }
 
@@ -278,4 +281,14 @@ func (w *World) AdvanceAirCarry(id int) bool {
 	}
 	f.positionX, f.positionY, f.positionSet = x, y, true
 	return true
+}
+
+func (w *World) CastStorm(owner, x, y int) error {
+	if owner < 0 || owner > 1 || !inside(x, y) {
+		return fmt.Errorf("invalid storm target")
+	}
+	if !w.Air.CreateStorm(uint8(owner), x, y, worldAirHabitat{w}) {
+		return fmt.Errorf("storm exhausted effect reservations")
+	}
+	return nil
 }

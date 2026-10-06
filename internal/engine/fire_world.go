@@ -153,6 +153,8 @@ func (w *World) directFireTerrain(x, y int, raise bool) {
 			at := cx + cy*CornerSize
 			if before[at] != w.Heights[at] || before[at+1] != w.Heights[at+1] || before[at+CornerSize] != w.Heights[at+CornerSize] || before[at+CornerSize+1] != w.Heights[at+CornerSize+1] {
 				w.ClearFireTerrain(cx, cy)
+				w.ClearEarthTerrain(cx, cy)
+				w.ClearWaterTerrain(cx, cy)
 				w.Nature.Ground[cx+cy*MapSize] = GroundParcel{}
 				w.Pressure[cx+cy*MapSize] = 0
 			}
@@ -167,6 +169,9 @@ func (w *World) scorchFireParcel(x, y int) {
 	}
 	c := w.Cell(x, y)
 	if c.Shape == 15 && (c.Code < 220 || c.Code > 223) {
+		w.ClearEarthTerrain(x, y)
+		w.Water.Painted[x+y*MapSize] = false
+		w.ClearFireTerrain(x, y)
 		w.Nature.Ground[x+y*MapSize] = GroundParcel{Mark: GroundScorched}
 	}
 }

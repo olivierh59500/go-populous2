@@ -11,6 +11,7 @@ type AirHabitat interface {
 	Parcel(x, y int) FireParcel
 	StrikeLightning(bolt, x, y int) bool // False means a wall stopped the scan.
 	Scorch(x, y int)
+	DamageStorm(x, y int) int
 	CreateWhirlpool(owner uint8, x, y int)
 	LiftFollowers(effect, x, y int)
 	ReleaseFollowers(effect, x, y int)
@@ -65,6 +66,90 @@ type AirEffects struct {
 	Bolts       [EffectCapacity]LightningBolt
 	Whirlwinds  [EffectCapacity]WhirlwindEffect
 	Carry       [FollowerCapacity]AirCarryState
+	Storms      [EffectCapacity]StormEffect
+}
+type StormEffect struct {
+	Active, Ending            bool
+	Owner                     uint8
+	X, Y                      int
+	Life, Timer, Frame        int
+	ImpactActive, WaterImpact bool
+	ImpactFrame               int
+}
+
+func (s *AirEffects) CreateStorm(owner uint8, x, y int, h AirHabitat) bool {
+	count := int(h.Random()%48) + 12
+	admitted := false
+	for attempt := 0; attempt <= count; attempt++ {
+		id := h.Reserve(EffectStorm, owner)
+		if id < 0 {
+			return false
+		}
+		bits := h.Random()
+		nx, ny, valid := offsetFireParcel(x, y, int(bits&7), int(bits>>8&7))
+		if !valid {
+			h.Release(id)
+			admitted = true
+			continue
+		}
+		life := 200
+		if owner < 2 {
+			life += int(h.AirExperience(owner))
+		}
+		s.Storms[id] = StormEffect{Active: true, Owner: owner, X: nx*256 + 128, Y: ny*256 + 128, Life: life, Frame: int(bits&12) / 4}
+		admitted = true
+	}
+	return admitted
+}
+
+func (s *AirEffects) TickStorm(id int, h AirHabitat) {
+	e := &s.Storms[id]
+	if !e.Active {
+		return
+	}
+	remove := func() { e.Active = false; h.Release(id) }
+	if e.Ending {
+		remove()
+		return
+	}
+	previousLife := e.Life
+	e.Life = int(int16(uint16(e.Life) - 1))
+	if previousLife <= 1 {
+		e.Ending = true
+		if e.Frame+1 >= 4 {
+			remove()
+		} else {
+			e.Frame++
+		}
+		return
+	}
+	e.Frame = (e.Frame + 1) % 4
+	if e.ImpactActive {
+		if e.ImpactFrame+1 >= 4 {
+			e.ImpactActive = false
+		} else {
+			e.ImpactFrame++
+		}
+	}
+	previousTimer := e.Timer
+	e.Timer = int(int16(uint16(e.Timer) - 1))
+	x, y := e.X>>8, e.Y>>8
+	if previousTimer >= 1 {
+		h.DamageStorm(x, y)
+		return
+	}
+	e.Timer = 0
+	if h.Random()%97 != 0 {
+		return
+	}
+	e.Timer = int(h.Random()%2) + 1
+	e.ImpactActive = false
+	h.Scorch(x, y)
+	if h.DamageStorm(x, y) != 0 {
+		return
+	}
+	e.ImpactActive, e.ImpactFrame, e.WaterImpact = true, 0, h.Parcel(x, y).Water
+	h.DamageStorm(x, y)
 }
 
 type AirCarryPhase uint8

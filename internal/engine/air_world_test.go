@@ -273,3 +273,15 @@ func TestWhirlwindCarryingAndLandingMatchOriginalNumericFixtures(t *testing.T) {
 		t.Fatalf("checked %d transport/landing fixtures, want10", checked)
 	}
 }
+
+func TestStormWorldUsesDirectFireVictimsWithoutReplacingItsRandomStrike(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 32, 32, 1, 1000, Walking)
+	w.Air.Storms[0] = StormEffect{Active: true, Owner: 0, X: 32*256 + 128, Y: 32*256 + 128, Life: 200, Timer: 1}
+	w.effects.Slots[0] = EffectReservation{Kind: EffectStorm, Owner: 0}
+	rng := w.random
+	w.tickAirEffect(0)
+	if w.Followers[id].Population != 0 || w.FireDamage.Deaths[id].Mode != FireVictimDying || w.random != rng {
+		t.Fatal("storm cooldown damage lost its separate direct-death lifecycle")
+	}
+}
