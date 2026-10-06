@@ -73,6 +73,11 @@ func newPowerPreview(assets *Assets, id engine.PowerID) (*PowerPreview, error) {
 	}
 	preview := &PowerPreview{World: w, Power: id, CameraX: 27, CameraY: 27}
 	target := engine.PowerTarget{X: 31, Y: 31, Direction: 1}
+	if id == engine.Flowers {
+		if err := w.Cast(0, engine.Swamp, engine.PowerTarget{X: 31, Y: 33}); err != nil {
+			return nil, err
+		}
+	}
 	switch id {
 	case engine.Trees, engine.Flowers, engine.Swamp, engine.Fungus, engine.Baptism:
 		target.X, target.Y = 31, 33
@@ -113,6 +118,23 @@ func newPowerPreview(assets *Assets, id engine.PowerID) (*PowerPreview, error) {
 	if id == engine.Lightning {
 		if err := w.ActivateLightning(0); err != nil {
 			return nil, err
+		}
+	}
+	if id == engine.Fungus {
+		for _, p := range [][2]int{{30, 33}, {32, 33}} {
+			if err := w.Cast(0, id, engine.PowerTarget{X: p[0], Y: p[1]}); err != nil {
+				return nil, err
+			}
+		}
+	}
+	if id == engine.Swamp || id == engine.Baptism {
+		for at, parcel := range w.Nature.Ground {
+			if id == engine.Swamp && parcel.Mark == engine.GroundSwamp || id == engine.Baptism && parcel.Mark == engine.GroundBaptism {
+				if err := w.EditorPlaceFollower(1, at%engine.MapSize, at/engine.MapSize, 100); err != nil {
+					return nil, err
+				}
+				break
+			}
 		}
 	}
 	return preview, nil
