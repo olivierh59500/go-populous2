@@ -156,6 +156,14 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 		t.Fatal("save artwork compatibility aliases missing")
 	}
 	for _, entry := range portable.FileCompatibility.AnimationTokens {
+		if strings.HasPrefix(entry.Animation, "contact/") || entry.Animation == "follower/waiting" {
+			want := source.FollowerEntry.WaitingFrames[int(entry.Token)]
+			want.SoundCue = 0
+			if !reflect.DeepEqual(portable.Animations[entry.Animation].Frames[entry.Frame], animation([]populous2.AnimationFrame{want}, false).Frames[0]) {
+				t.Fatal("silent contact artwork alias differs", entry)
+			}
+			continue
+		}
 		// Each token is a record value from the historical save-file format.
 		// Its referenced image/cue entry is art metadata, not executable code.
 		if strings.HasPrefix(entry.Animation, "hero/") {
@@ -278,8 +286,3 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 		}
 	}
 }
-		if strings.HasPrefix(entry.Animation,"contact/")||entry.Animation=="follower/waiting"{
-			want:=source.FollowerEntry.WaitingFrames[int(entry.Token)];want.SoundCue=0
-			if !reflect.DeepEqual(portable.Animations[entry.Animation].Frames[entry.Frame],animation([]populous2.AnimationFrame{want},false).Frames[0]){t.Fatal("silent contact artwork alias differs",entry)}
-			continue
-		}
