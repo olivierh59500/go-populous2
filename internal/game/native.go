@@ -44,6 +44,7 @@ type NativeGame struct {
 	Commands       *populous2.NativeRuntimeCommandChildren
 	Network        *populous2.NativeNetworkEndpoint
 	Transport      *populous2.NativeRuntimeTransport
+	LocalResume    populous2.NativeTransportResumeState
 	NetworkStartup *populous2.NativeRuntimeDirector
 	networkRefresh bool
 	Files          *populous2.NativeRuntimeFileStore
@@ -121,7 +122,7 @@ func (g *NativeGame) createFrame() error {
 	frame, err := h.NewFrame(populous2.NativeRuntimeFrameBindings{Audio: operations,
 		RenderChildren: populous2.NativeRuntimeRenderChildrenCallbacks{Beam: func() (uint16, error) { return g.beam, nil }, Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, Sound: sound},
 		InputChildren:  populous2.NativeGameplayHUDHostCallbacks{Campaign: g.Startup.Campaign, Ownership: g.Startup.Ownership, Audio: operations},
-		Menu:           populous2.NativeInGameHostCallbacks{Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Sound: sound}, SerialTransport: g.serialChild},
+		Menu:           populous2.NativeInGameHostCallbacks{Ownership: func(bool, *populous2.NativeFrameRegisterContext) error { return nil }, NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Sound: sound, Call: g.menuChild}, SerialTransport: g.serialChild},
 		Session: populous2.NativeFrameSessionCallbacks{CommandChild: g.Commands.Call, Transport: func(caller int, mode uint8, c *populous2.NativeCommandRegisterContext, phase *uint32) (bool, error) {
 			if err := g.networkReady(); err != nil {
 				return false, err

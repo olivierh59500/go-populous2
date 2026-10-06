@@ -123,21 +123,47 @@ func TestNativeRuntimeHandshakeConstructsActualNegotiatedWorlds(t *testing.T) {
 			}
 		}
 	}
-	deadline = time.Now().Add(time.Second)
-	for !transports[0].Resume.Finished || !transports[1].Resume.Finished {
-		if time.Now().After(deadline) {
-			t.Fatal("negotiated actual runtime resume stalled")
+	// Two independent menu visits must each exchange the actual resume
+	// packet. A completed controller from the first visit cannot stand in
+	// for the second call; the peer's changed state must arrive again.
+	for visit := 0; visit < 2; visit++ {
+		var menu [2]NativeInGameHostState
+		var done [2]bool
+		menuRules, err := DecodeNativeInGameHostRules(hosts[0].Bundle.Executable)
+		if err != nil {
+			t.Fatal(err)
 		}
-		for side := range transports {
-			step, err := transports[side].AdvanceResume(&frames[side])
-			if err != nil {
+		for side, h := range hosts {
+			if err := h.Memory.BSS.Write16(0xe90c, uint16(70+visit*10+side)); err != nil {
 				t.Fatal(err)
 			}
-			if step.CorruptReturn {
-				t.Fatal("healthy peer stream entered corrupt source return")
+		}
+		deadline = time.Now().Add(time.Second)
+		for !done[0] || !done[1] {
+			if time.Now().After(deadline) {
+				t.Fatalf("actual menu resume visit%d stalled", visit)
+			}
+			for side := range hosts {
+				if done[side] {
+					continue
+				}
+				result, err := menu[side].AdvanceChild(&menuRules, NativeInGameHostCallbacks{NativeFileFrameCallbacks: NativeFileFrameCallbacks{Call: transports[side].ResumeMenuChild}}, NativeFileFrameCall{Routine: 0x181c0, Frame: &frames[side]}, &menu[side].Menu.ChildPhase)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if result.Complete && !result.Zero {
+					t.Fatal("menu lost the actual resume condition flags")
+				}
+				done[side] = result.Complete
+			}
+			time.Sleep(100 * time.Microsecond)
+		}
+		for side, h := range hosts {
+			got, err := h.Memory.BSS.Read16(0xe90c)
+			if err != nil || got != uint16(70+visit*10+1-side) {
+				t.Fatal("menu resume did not exchange the new peer state", side, visit, got, err)
 			}
 		}
-		time.Sleep(100 * time.Microsecond)
 	}
 	var gameFrames [2]*NativeRuntimeFrame
 	var err error

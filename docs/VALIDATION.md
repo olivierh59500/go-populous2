@@ -1212,3 +1212,18 @@ menu. No raw profile fields or resource cache bits are synthesized. A bounded
 desktop run completed0 and its framebuffer portrait/experience/password screen
 was visually inspected. Full controller input/caret/password behavior has
 separate284-run CPU evidence.
+
+## Native menu resume integration
+
+The desktop in-game menu calls the genuine181C0 resume controller. Local
+mode executes its original immediate return. Network mode retains the actual
+ten-byte packet and source register/condition outputs until completion; each
+new menu visit starts a new invocation. A corrupt native RTS remains an
+explicit failure rather than a successful child return.
+
+The negotiated-world test resumes through the concrete menu child twice,
+changing peer state between visits and verifying that both exchanges occur.
+It then advances the existing120 paired complete gameplay frames. Focused
+regressions also check local caller registers and the original failed-receive
+stack return. Focused normal/race tests, vet and a native desktop build
+pass on the isolated change.

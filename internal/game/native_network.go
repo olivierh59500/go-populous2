@@ -91,3 +91,26 @@ func (g *NativeGame) serialChild(call populous2.NativeSerialFrameCall, phase *ui
 	}
 	return g.Transport.SerialChild(call, phase)
 }
+
+func (g *NativeGame) menuChild(call populous2.NativeFileFrameCall, phase *uint32) (populous2.NativeCommandFrameResult, error) {
+	if call.Routine != 0x181c0 || call.Frame == nil || phase == nil {
+		return populous2.NativeCommandFrameResult{}, fmt.Errorf("native menu source child%x unavailable", call.Routine)
+	}
+	if err := g.networkReady(); err != nil {
+		return populous2.NativeCommandFrameResult{}, err
+	}
+	if g.Transport != nil {
+		return g.Transport.ResumeMenuChild(call, phase)
+	}
+	// The original body returns immediately for local game modes; running
+	// that body also preserves its actual D0 and condition flags.
+	if *phase == 0 {
+		g.LocalResume = populous2.NativeTransportResumeState{}
+		*phase = 1
+	}
+	step, err := g.LocalResume.Advance(populous2.NativeTransportFrameCallbacks{NativeFileFrameCallbacks: populous2.NativeFileFrameCallbacks{Frame: call.Frame, Memory: g.Host.Memory.BSS, Code: g.Host.Memory.Code, CodeBase: g.Host.Memory.CodeBase}})
+	if err != nil {
+		return populous2.NativeCommandFrameResult{}, err
+	}
+	return populous2.NativeCommandFrameResult{Complete: step.Complete, Zero: step.Zero}, nil
+}
