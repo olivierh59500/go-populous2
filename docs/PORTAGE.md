@@ -2,9 +2,8 @@
 
 This is a conversion in progress. The native integration target executes Go
 translations of the original register-bearing startup, rendering, input,
-simulation, menus, audio and result/progression controllers. The inherited
-playable command remains available until complete original-game validation
-supports replacing it.
+simulation, menus, audio and result/progression controllers. The original-game runtime is the default command; the inherited diagnostic
+engine remains separately available as cmd/populous2-legacy.
 [FEATURES.md](FEATURES.md) tracks the complete original feature inventory and
 all 29 powers. [NATIVE_RULES.md](NATIVE_RULES.md) records the newer translations.
 
@@ -58,7 +57,7 @@ not establish full original-game fidelity.
 - Complete winning result/award/deity/reset continuation and long campaign
   scoring, pacing, scenario and opponent behavior.
 - Interactive native terrain/picking, menus, statistics and final-sequence
-  transitions before making the native command the default.
+  transitions in the default native runtime.
 - Animation-triggered audio timing and remaining hardware/analog fidelity.
 - Interactive original GAM save/load and longer paired serial/TCP gameplay,
   including connection failure and save interoperability.

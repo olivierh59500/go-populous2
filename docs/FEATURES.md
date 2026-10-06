@@ -10,11 +10,11 @@ power is not sufficient evidence that its original behavior has been ported.
 | Area | Current implementation | Remaining work |
 |---|---|---|
 | Resources | Original compression, masks, sprite differences, relocated descriptors, actual allocations/encoded filesystem and retained error retries; native startup/load/reload composition | Broader cross-effect/resource interaction and final end-to-end validation |
-| Native rendering | Complete normal/alternate rendering, HUD, selected panel, hardware cursor, editor/debug text and retained protection waits; active-table CPU/DMA comparisons; shared physical owners; native desktop integration target runs original menu and terrain | Full interactive comparison, remaining UI/result children and default-loop replacement |
+| Native rendering | Complete normal/alternate rendering, HUD, selected panel, hardware cursor, editor/debug text and retained protection waits; active-table CPU/DMA comparisons; shared physical owners; native desktop integration target runs original menu and terrain | Final interactive host-input and paired save/load validation |
 | Campaign | 1,000 worlds, passwords, actual raw campaign loads/chooser/help/opponent, initial-menu→conquest/custom startup composition, world creators/templates and scripted events | Long conquest pacing and broader scenario/opponent validation |
 | Terrain | Native four-hill generation and shared tree/boulder actor pool; complete native reference comparisons | Later environmental simulation and full linked actor occupancy |
 | Terrain editing | Native height permissions, per-side prohibitions/enemy-land protection, propagated debit and picking | Remaining effect/editor-mode interactions |
-| Followers | 399 usable records; all 35 active native state families in the register-bearing World dispatcher; 452 native follower passes and 168 composed main-physics/session comparisons, including filled pools | Replacement of the live inherited Game scheduler; full cross-effect/campaign behavior |
+| Followers | 399 usable records; all 35 active native state families in the register-bearing World dispatcher; 452 native follower passes and 168 composed main-physics/session comparisons, including filled pools | Final completion audit of native dispatch and composed gameplay evidence |
 | Towns | 19 stages, native mixed support/cache, 49-cell compositor and native founding/economy/emigration in World; rare births allocate original neutral actors | Complete land AI, all neutral/environmental interactions and end-to-end campaign parity |
 | Hero creation | Complete native leader conversion, marker relocation, town farm cleanup, attributes and retained fields; native routing/combat, Adonis splitting, Helen captivity and verified water/swamp immunities | Broader environment and transport combinations outside the native comparison corpora |
 | Audio | 31 samples, 133 patterns, native four-channel device/CIA replay, raster DMA transport and shared CODE access; native desktop sound/queue/pause/resume integration | Original beam/CIA phase and analog/PWM fidelity, complete animation-triggered cues and interactive timing comparison |
@@ -74,15 +74,15 @@ complete Amiga gameplay parity.
 
 ## Live runtime integration
 
-The default command still uses the inherited playable Game loop. The separate
-`cmd/populous2-native` target runs the assembled register-bearing session,
+The default `cmd/populous2` command and its `cmd/populous2-native` alias run
+the assembled register-bearing session,
 physical resource host, original screen/input and four-channel audio. Bounded
 desktop captures verify its initial menu, terrain and protection requester.
 The raw result, award and ending controllers and animation decoder are
 verified against the original CPU and bound in the native desktop. Complete
 stock/campaign pacing and broader interactive
-validation remain necessary before this target replaces the default and
-before full original-game fidelity can be established.
+validation remain part of the final fidelity audit. The inherited diagnostic
+engine remains available as `cmd/populous2-legacy`.
 
 The [original instruction manual](https://ts.popre.net/Archive/Downloads/Docs/populous2.pdf)
 provides the player-facing behavior; the supplied executable determines the

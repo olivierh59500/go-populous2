@@ -1595,3 +1595,18 @@ the picked vertex. The center rises0→1 and returns1→0 while the native slope
 raster keeps neighboring corners consistent. Full tests, focused terrain/
 stock/campaign race comparisons and vet pass; no production correction was
 needed in this native path. The inherited renderer remains a separate target.
+
+## Default native launcher
+
+The main populous2 command now launches the register-bearing runtime, original
+320×200 display and50-update cadence. The native alias shares exactly the
+same launcher. The inherited diagnostic command is retained as populous2-legacy.
+The current working directory is the default native file-requester root; a
+configured existing save root overrides it, with source overwrite/error
+handling and no startup save. Screen export remains explicitly configured.
+
+Full tests, vet and both native/legacy builds pass on the isolated launcher
+change. A bounded native-default desktop run exits0 and its original menu
+framebuffer was visually inspected. This promotion follows stock/campaign/
+result/terrain CPU parity and native TCP validation, but is not itself a claim
+that the final host-input and paired-save audit has completed.
