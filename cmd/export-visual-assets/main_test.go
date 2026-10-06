@@ -278,3 +278,8 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 		}
 	}
 }
+		if strings.HasPrefix(entry.Animation,"contact/")||entry.Animation=="follower/waiting"{
+			want:=source.FollowerEntry.WaitingFrames[int(entry.Token)];want.SoundCue=0
+			if !reflect.DeepEqual(portable.Animations[entry.Animation].Frames[entry.Frame],animation([]populous2.AnimationFrame{want},false).Frames[0]){t.Fatal("silent contact artwork alias differs",entry)}
+			continue
+		}

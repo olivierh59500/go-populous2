@@ -437,6 +437,27 @@ func export(files fs.FS, output string) error {
 	}
 	catalog.Animations["marker/leader-blue"] = visualassets.Animation{Frames: []visualassets.Frame{{Layers: []visualassets.SpriteLayer{{Sprite: 93}}}}}
 	catalog.Animations["marker/leader-red"] = visualassets.Animation{Frames: []visualassets.Frame{{Layers: []visualassets.SpriteLayer{{Sprite: 94}}}}}
+	contactFrames := make([]populous2.AnimationFrame, 2)
+	for frame := range contactFrames {
+		contactFrames[frame] = source.FollowerEntry.WaitingFrames[0xccc+frame*4]
+		contactFrames[frame].SoundCue = 0
+	}
+	catalog.Animations["contact/waiting"] = animation(contactFrames, true)
+	catalog.Animations["follower/waiting"] = animation(contactFrames, true)
+	for hero, start := range source.FollowerEntry.ReplyAnimations {
+		var frames []populous2.AnimationFrame
+		for offset := start; ; offset += 4 {
+			frame, ok := source.FollowerEntry.WaitingFrames[offset]
+			if !ok {
+				break
+			}
+			frame.SoundCue = 0
+			frames = append(frames, frame)
+		}
+		if len(frames) > 0 {
+			catalog.Animations["contact/"+heroes[hero]] = animation(frames, true)
+		}
+	}
 	catalog.FileCompatibility = exportSaveCompatibility(source, catalog)
 	data, err := json.MarshalIndent(catalog, "", "  ")
 	if err != nil {
@@ -474,6 +495,11 @@ func exportSaveCompatibility(source *populous2.Bundle, catalog visualassets.Cata
 	add("scenery/burning-tree", 0xf10)
 	add("scenery/removal-start", source.Scenery.RemovalStart)
 	add("scenery/removal-end", source.Scenery.RemovalEnd)
+	add("contact/waiting", 0xccc)
+	add("follower/waiting", 0xccc)
+	for hero, start := range source.FollowerEntry.ReplyAnimations {
+		add("contact/"+[]string{"perseus", "adonis", "heracles", "odysseus", "achilles", "helen"}[hero], start)
+	}
 	for side, variants := range source.FollowerMotion.VariantBases {
 		for variant, start := range variants {
 			for direction, offset := range source.FollowerMotion.DirectionOffsets {
