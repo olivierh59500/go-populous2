@@ -50,3 +50,25 @@ func TestNativeShowcasePilotToursMenusAndStartsPlayableConquest(t *testing.T) {
 		t.Fatal("the opening presentation unexpectedly finished the campaign world")
 	}
 }
+
+func TestNativeShowcasePilotActionCaptionRemainsReadable(t *testing.T) {
+	p := NewNativeShowcasePilot()
+	p.gameAt = 3000
+	g := &NativeGame{Updates: 9600}
+	p.player.Stage = "Rallying a strong expedition"
+	p.observeAction(g)
+	caption := p.gameCaption(g.Updates - p.gameAt)
+	if !strings.Contains(caption, "magnet") {
+		t.Fatalf("actual rally action was not described: %q", caption)
+	}
+	p.player.Stage = "Moving to the next settlement"
+	g.Updates += 250
+	p.observeAction(g)
+	if got := p.gameCaption(g.Updates - p.gameAt); got != caption {
+		t.Fatalf("a transient planner stage interrupted the explanation: %q", got)
+	}
+	g.Updates += 400
+	if got := p.gameCaption(g.Updates - p.gameAt); got == caption {
+		t.Fatal("action caption remained after its twelve-second reading period")
+	}
+}

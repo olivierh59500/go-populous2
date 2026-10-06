@@ -9,14 +9,16 @@ import (
 // the regular, input-only settlement player. Captions follow the visible
 // controller rather than an assumed sequence of loading times.
 type NativeShowcasePilot struct {
-	Caption string
-	player  *NativePresentationPilot
-	phase   int
-	since   int
-	clicked bool
-	help    bool
-	gameAt  int
-	heroAt  int
+	Caption       string
+	player        *NativePresentationPilot
+	phase         int
+	since         int
+	clicked       bool
+	help          bool
+	gameAt        int
+	actionCaption string
+	actionUntil   int
+	seenActions   map[string]bool
 }
 
 func NewNativeShowcasePilot() *NativeShowcasePilot {
@@ -46,9 +48,7 @@ func (p *NativeShowcasePilot) Next(g *NativeGame) (NativeInput, error) {
 			p.gameAt = g.Updates
 		}
 		input, err := p.player.Next(g)
-		if p.heroAt == 0 && (strings.Contains(p.player.Stage, "hero") || strings.Contains(p.player.Stage, "Hero")) {
-			p.heroAt = g.Updates
-		}
+		p.observeAction(g)
 		p.Caption = p.gameCaption(g.Updates - p.gameAt)
 		return input, err
 	}
@@ -192,24 +192,64 @@ func (p *NativeShowcasePilot) helpPosition(g *NativeGame) (int, int, bool, error
 }
 
 func (p *NativeShowcasePilot) gameCaption(age int) string {
+	if p.actionCaption != "" && p.gameAt+age < p.actionUntil {
+		return p.actionCaption
+	}
 	switch {
 	case age < 500:
 		return "Our followers need level ground to build homes.\nThe minimap locates both populations across the world."
 	case age < 1800:
 		return "Raise or lower the terrain to create useful building space.\nNeighboring settlements keep their own stable plateaus."
-	case age < 3000:
+	case age < 2800:
 		return "More homes support a growing population.\nProductive settlements supply the mana needed for divine powers."
-	case age < 4500:
+	case age < 3800:
 		return "Expand steadily and protect established towns.\nLand shaping is deliberate: each action spends real game resources."
-	case p.heroAt != 0 && p.gameAt+age-p.heroAt < 600:
-		return "A hero can turn your followers' strength into an offensive force.\nPrepare the expedition while maintaining the settlement economy."
-	case p.player.SpellActions > 0 && age < 11000:
-		return "Divine powers consume mana, so timing matters.\nPressure the opponent while keeping your own settlements productive."
-	case age < 8000:
+	case age < 4800:
 		return "Watch the enemy while your population and mana increase.\nA strong economy makes the next divine intervention possible."
+	case age < 5800:
+		return "Settlements need room to expand, so finish one plateau at a time.\nKeep established homes supported while creating new building space."
+	case age < 6800:
+		return "A growing population can support an expedition.\nKeep productive towns behind to fund further divine powers."
+	case age < 7800:
+		return "The magnet directs your leader and gathering followers.\nConcentrating a force gives you more control over the next advance."
+	case age < 8800:
+		return "The enemy keeps building while our followers move across the world.\nUse the overview to follow the expedition and inspect opposing towns."
+	case age < 9800:
+		return "Followers have distinct modes for settling, rallying and fighting.\nChoose the behavior that matches the current tactical situation."
+	case age < 10800:
+		return "Spells need a target and enough earned mana.\nReserve resources for construction while putting pressure on the enemy."
 	case age < 12000:
 		return "Balance expansion with divine intervention.\nThe world continues at its normal gameplay cadence throughout."
+	case age < 13300:
+		return "Keep the settlement economy growing while the expedition advances.\nPopulation, mana and position all shape your next decision."
 	default:
 		return "This is the opening of a conquest, with much more still to explore.\nBuild, cast powers, lead heroes and progress through the campaign."
+	}
+}
+
+func (p *NativeShowcasePilot) observeAction(g *NativeGame) {
+	if p.seenActions == nil {
+		p.seenActions = make(map[string]bool)
+	}
+	stage := p.player.Stage
+	if p.seenActions[stage] {
+		return
+	}
+	caption := ""
+	switch stage {
+	case "Rallying a strong expedition":
+		caption = "Place the magnet near the leader and switch followers to rally mode.\nGather a strong expedition while your towns keep producing."
+	case "Leading the expedition towards the opponent":
+		caption = "Move the magnet towards an enemy settlement.\nThe gathered followers now advance towards the opposing population."
+	case "Engaging the opponent while towns keep producing":
+		caption = "Switch the expedition to fight mode.\nFollowers engage the enemy while settlements support the campaign."
+	case "Spending earned mana on the opponent":
+		caption = "Select an available offensive power and target an enemy town.\nThe spell spends earned mana rather than bypassing the game rules."
+	case "Creating Perseus from the rallied leader":
+		caption = "Turn the rallied leader into Perseus using an unlocked divine power.\nHeroes provide another way to confront the opposing god."
+	}
+	if caption != "" {
+		p.seenActions[stage] = true
+		p.actionCaption, p.actionUntil = caption, g.Updates+600
 	}
 }
