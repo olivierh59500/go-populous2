@@ -162,11 +162,15 @@ func (w *World) advanceConversion(id int) bool {
 			return false
 		}
 		f.Conversion = ConversionState{Active: true, SourceOwner: f.Owner, Hero: f.IsHero()}
+		wasTown := f.State == Town
 		f.State = Converting
 		f.positionX, f.positionY = int(f.X)*256+128, int(f.Y)*256+128
 		f.positionSet = true
 		f.moving = false
 		f.Frame = 0
+		if wasTown {
+			w.repaintFarms()
+		}
 	}
 	f.Conversion.Frame++
 	length := 11
@@ -195,7 +199,6 @@ func (w *World) advanceConversion(id int) bool {
 	w.moveFollowerCell(id, x, y)
 	f.positionX, f.positionY = fixedX, fixedY
 	f.PreviousX, f.PreviousY = f.X, f.Y
-	f.SettleAfter = w.Tick + 1
 	w.repaintFarms()
 	return true
 }
