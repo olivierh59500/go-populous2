@@ -182,6 +182,28 @@ func export(files fs.FS, output string) error {
 	catalog.Animations["scenery/removal-start"] = animation(source.Scenery.Frames[source.Scenery.RemovalStart], false)
 	catalog.Animations["scenery/removal-end"] = animation(source.Scenery.Frames[source.Scenery.RemovalEnd], false)
 	catalog.Animations["plague"] = animation(source.PlagueAnimation, true)
+	for name, start := range map[string]int{
+		"death/swamp":          source.FungusHazards.OrdinaryAnimation,
+		"death/fungus":         source.FungusHazards.OrdinaryAnimation,
+		"fire-column/emerging": 0x1a0,
+		"fire-column/active":   0x4b8,
+		"fire-column/ending":   0x660,
+	} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[name] = animation(frames, name == "fire-column/active")
+	}
+	for hero, name := range heroes {
+		if start := source.FungusHazards.HeroDeath[hero]; start != 0 {
+			frames, err := populous2.DecodeAnimation(source.Executable, start)
+			if err != nil {
+				return err
+			}
+			catalog.Animations["death/fungus/"+name] = animation(frames, false)
+		}
+	}
 	for side := range 2 {
 		for stage := range source.TownCenterArt.Frames {
 			frame, ok := source.TownCenterArt.Frame(stage, uint8(side+1), 0, 0)
