@@ -35,6 +35,29 @@ default launcher switch and release packaging still require the assembled
 independent target to pass those checks. A catalogue flag or isolated test is
 not a substitute for those final integration checks.
 
+### Assembled-engine verification
+
+The standalone build embeds the exported asset package and has been run from
+outside the repository without any original executable or disk-image path.
+Mouse controls now expose powers, tactical modes, help, options and the save
+browser. Save replacement requires confirmation; invalid or oversized files
+cannot replace the live world. Original GAM import is connected through a
+separate file codec, and an original campaign save has been loaded, advanced,
+exported and reloaded through the independent interface.
+
+All 29 powers pass a lifecycle test covering more than 400 simulation passes
+and three saved continuation checkpoints. Mixed actor membership is updated
+at actual creation, movement and removal points. Retained deaths clean up
+leaders, claims and statistics once while keeping their terminal artwork.
+These checks establish valid continuation, not complete original-game parity.
+
+A bounded whole-game comparison found differences in first-town work and AI
+terrain decisions. It also identified an unjustified passive mana increment.
+Initial terrain matches when compared with the reference's authoritative
+height field. The remaining first-divergence cases must be resolved before
+replacing the default application. Original GAM combat, death, AI and
+statistics coverage is being completed separately.
+
 ## Architecture
 
 The independent runtime loads PNG atlases, named animation compositions,
