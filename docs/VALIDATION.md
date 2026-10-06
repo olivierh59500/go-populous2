@@ -1337,3 +1337,26 @@ incorrect handlers still fail explicitly; other division sites retain their
 contracts. The parent corpus includes eight such source paths, bringing it
 to48 scenarios and5,380 complete snapshots. Full tests, focused race tests,
 vet and the native desktop build pass.
+
+## Controlled ground-effect and captivity interactions
+
+One hundred and four independent original CPU scenarios produce16,632
+checkpoints after actual encoded startup. Their explicit test configuration
+resets actor pools and uses a flat parcel grid, sparse numeric actors, mode8,
+1,000,000 mana and six255 experience bytes. Source17500 packets still enforce
+original admission; occupied swamp/font casts are correctly rejected. Actors
+enter genuinely created ground effects through the original graph insertion.
+Low-population Plague cases explicitly set population1 after admission while
+retaining the native animation pointer.
+
+Full data registers, BSS/RNG, live CODE, screen allocations and heap agree for
+swamp death, font conversion, Helen captivity, town Lightning recovery, Fungus
+growth and Plague mortality. Fourteen follower state values and five FX state
+values occur in this group; this is not full-game or all-family coverage.
+
+The mixed runs exposed omitted Fungus scratch writes at150BC..150C2. Optional
+CODE byte/word callbacks now execute initialization and survivor updates in
+source order, including the partial prefix on a callback error; standalone
+nil-callback behavior remains compatible. The old1,465-case Fungus corpus,
+previous124 simulation cases, full tests, focused race tests and vet pass.
+Both configured corpora use one shared fixture runner.
