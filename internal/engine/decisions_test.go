@@ -209,3 +209,26 @@ func TestOrdinaryDecisionsOriginalNumericalCorpus(t *testing.T) {
 		})
 	}
 }
+
+func TestOrdinarySearchDoesNotTreatOwnedFarmAsUnclaimedSettlement(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	for _, d := range preferredSettlements[:8] {
+		at := 20 + d[0] + (20+d[1])*MapSize
+		w.Tiles[at].Code = 47
+		w.Farms[at] = 1
+	}
+	w.Tiles[21+20*MapSize].Code = 6
+	w.Pressure[21+20*MapSize] = 0
+	for _, d := range preferredSettlements[:8] {
+		at := 20 + d[0] + (20+d[1])*MapSize
+		if at != 21+20*MapSize {
+			w.Pressure[at] = 248
+		}
+	}
+	before := w.random
+	x, y, ok := w.chooseMove(id)
+	if !ok || x != 21 || y != 20 || w.random == before {
+		t.Fatal("owned farms bypassed source pressure search")
+	}
+}

@@ -63,7 +63,7 @@ func (w *World) chooseMove(id int) (int, int, bool) {
 			return x, y, true
 		}
 
-		if settlementLand(w.Cell(x, y).Code) && w.NatureTownAllowed(owner, x, y) {
+		if searchSettlementLand(w.Cell(x, y).Code) {
 			selectedX, selectedY, selected = x, y, true
 			if mode == Settle {
 				break
@@ -124,4 +124,8 @@ func (w *World) chooseRally(id int) (int, int, bool) {
 		}
 	}
 	return 0, 0, false
+}
+
+func searchSettlementLand(code uint8) bool {
+	return code == 15 || code == 31 || code == 151 || code == 245
 }
