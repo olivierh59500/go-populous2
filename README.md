@@ -119,9 +119,9 @@ controls and password format, including raw name/password text editing.
 
 The inherited command uses a 960 × 720 window with a 640 × 480 logical
 display and doubled Amiga artwork. The native integration command instead
-uses the original320 × 200 display at50 updates/s. Input updates at 60 Hz; the simulation uses the nominal PAL
-VBlank cadence of 50 updates per second. `-simulation-rate` selects a diagnostic
-rate. Original CPU-bound throughput and special idle pacing remain comparison
+uses the original320 × 200 display and nominal PAL input/simulation cadence
+of50 updates/s. The legacy input loop runs at60Hz with a50Hz simulation;
+its `-simulation-rate` option selects a diagnostic rate. Original CPU-bound throughput and special idle pacing remain comparison
 targets; the viewport-size value eight is not a simulation-rate setting.
 
 `-custom` currently exposes all 29 Amiga powers for testing. It does not yet
@@ -260,8 +260,9 @@ the marker does not debit mana; activation uses the native power price and can
 create a partial volley when the effect pool fills. A victim remains allocated
 through its stun/recovery/death sequence, including signed population results.
 Town support and farm repaint now use the native compositor, including all
-49 cells at the largest stage. Founding/contact dispatch and remaining
-water/hero handlers still need their complete World integrations.
+49 cells at the largest stage. Native founding/contact dispatch and complete
+water/hero handlers run through the raw register-bearing World/session
+adapters, with independent and composed original-machine comparisons.
 
 The deity screen uses the original three-part face artwork, eight variants per
 part, five starting bolts and one experience unit per allocated bolt. Click the
@@ -291,9 +292,10 @@ random states. Other checks cover original resource integrity, graphics,
 wide follower IDs, mana, hero attributes, save continuation, audio and slopes.
 Ordinary follower tests compare 72 native movement traces and retain the
 original per-owner animation banks, including high-speed facing quirks.
-Target selection, waiting, swimming, hero movement and combat still use
-inherited adapters. These checks establish the tested routines; they do not establish complete
-original-game parity.
+Target selection, waiting, swimming, hero movement and combat use translated
+native controllers in the default runtime. Their source comparison corpora and
+complete stock/campaign main-frame proofs are described in the validation
+document, with explicit inputs and host-boundary limits.
 
 [Native rules](docs/NATIVE_RULES.md), [conversion notes](docs/PORTAGE.md),
 [validation](docs/VALIDATION.md) and [provenance](docs/PROVENANCE.md) document
@@ -322,5 +324,6 @@ Choose Conquest from the original startup menu, then select a world by its
 code before proceeding. The requester displays the live scenario rules and
 available powers; click the opponent name for the original biography and face,
 or a power icon for its original help text. World codes load the original
-250-byte campaign record without clearing the retained session. The power-help
-preview animations and source-exact text-input timing are still being integrated.
+250-byte campaign record without clearing the retained session. Power-help
+preview animation, biography/portrait, palette and original text-input/caret
+controllers are bound to shared native memory and independently compared.
