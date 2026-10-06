@@ -3,6 +3,10 @@ package engine
 const combatPopulationDivisor = 100
 
 func (w *World) beginBattle(attacker, defender int) {
+	if !w.Followers[attacker].IsHero() && w.Followers[defender].IsHero() {
+		attacker, defender = defender, attacker
+	}
+	w.clearHeroLinks(attacker)
 	a, d := &w.Followers[attacker], &w.Followers[defender]
 	a.State, d.State = Fighting, Fighting
 	a.BattleWith, d.BattleWith = defender, attacker
@@ -59,6 +63,9 @@ func (w *World) finishBattle(winner, loser int) {
 	f.BattleWith = 0
 	f.BattleAggressor = false
 	f.Frame = 0
+	if f.IsHero() {
+		f.Hero.Phase = HeroFindTarget
+	}
 }
 
 // combatQuotient preserves the original word-sized quotient used by battle

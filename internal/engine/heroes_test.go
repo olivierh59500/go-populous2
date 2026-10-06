@@ -154,3 +154,107 @@ func TestHeroCreationOriginalNumericalCorpus(t *testing.T) {
 		})
 	}
 }
+
+func TestHeroSelectionThenPursuitRetainsSourcePassBoundary(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 1000, Walking)
+	enemy := addFollower(w, 24, 20, 1, 100, Town)
+	w.Followers[id].Hero.Kind = HeroPerseus
+	w.Level.Players[0].Attrition = 3
+	beforeRandom := w.random
+	w.stepFollower(id)
+	f := &w.Followers[id]
+	if f.Hero.Target != enemy || f.Hero.Phase != HeroPursuing || f.Population != 1000 || f.moving {
+		t.Fatal("target selection did not end its pass")
+	}
+	w.stepFollower(id)
+	if f.Population != 997 || f.positionX != 20*256+148 || f.positionY != 20*256+128 || f.legRemaining != 11 || !f.moving || w.random != beforeRandom {
+		t.Fatalf("first pursuit differs: %+v", f)
+	}
+}
+
+func TestHeroPlannerUsesOrderedAlternativeAndExcludesReverse(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 1000, Walking)
+	enemy := addFollower(w, 24, 20, 1, 100, Town)
+	w.Followers[id].Hero = HeroState{Kind: HeroPerseus, Phase: HeroPursuing, Target: enemy}
+	w.Tiles[21+20*MapSize] = Cell{}
+	w.stepHero(id)
+	if f := w.Followers[id]; f.velocityX != 20 || f.velocityY != 20 {
+		t.Fatalf("east fallback did not prefer southeast: %d,%d", f.velocityX, f.velocityY)
+	}
+	// With all forward alternatives blocked, source consumes a centered leg
+	// with zero velocity instead of reversing into the previous direction.
+	w = testFlatWorld()
+	id = addFollower(w, 20, 20, 0, 1000, Walking)
+	enemy = addFollower(w, 24, 20, 1, 100, Town)
+	w.Followers[id].Hero = HeroState{Kind: HeroPerseus, Phase: HeroPursuing, Target: enemy}
+	for _, d := range directions {
+		if d == [2]int{-1, 0} {
+			continue
+		}
+		w.Tiles[20+d[0]+(20+d[1])*MapSize] = Cell{}
+	}
+	w.stepHero(id)
+	if f := w.Followers[id]; f.velocityX != 0 || f.velocityY != 0 || !f.moving || f.legRemaining != 11 {
+		t.Fatal("blocked planner reversed or discarded source zero-velocity leg")
+	}
+}
+
+func TestHeroNoEnemyWaitsTwentyPassesAndRetargets(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 1000, Walking)
+	w.Followers[id].Hero = HeroState{Kind: HeroPerseus, Phase: HeroPursuing}
+	w.stepHero(id)
+	if w.Followers[id].Hero.Wait != 20 || w.Followers[id].Hero.Phase != HeroWaiting {
+		t.Fatal("no-target wait")
+	}
+	enemy := addFollower(w, 24, 20, 1, 100, Town)
+	for range 20 {
+		w.stepHero(id)
+	}
+	if w.Followers[id].Hero.Phase != HeroWaiting {
+		t.Fatal("wait expired early")
+	}
+	w.stepHero(id)
+	if w.Followers[id].Hero.Target != enemy || w.Followers[id].Hero.Phase != HeroPursuing {
+		t.Fatal("wait did not redispatch selection")
+	}
+}
+
+func TestHeroDeathClearsReciprocalClaimsBeforePoolReuse(t *testing.T) {
+	w := testFlatWorld()
+	hero := addFollower(w, 20, 20, 0, 100, Walking)
+	enemy := addFollower(w, 22, 20, 1, 100, Town)
+	w.Followers[hero].Hero.Kind = HeroPerseus
+	w.SelectHeroTarget(hero)
+	w.remove(enemy)
+	if w.Followers[hero].Hero.Target != 0 {
+		t.Fatal("dead target retained hero claim")
+	}
+	next := addFollower(w, 30, 30, 1, 100, Walking)
+	if next != enemy || w.Followers[next].Hero.ClaimedBy != 0 {
+		t.Fatal("pool reuse inherited target claim")
+	}
+	w.SelectHeroTarget(hero)
+	w.remove(hero)
+	if w.Followers[next].Hero.ClaimedBy != 0 {
+		t.Fatal("dead hero retained enemy backlink")
+	}
+}
+
+func TestHeroReachesEnemyAndBecomesAggressor(t *testing.T) {
+	w := testFlatWorld()
+	hero := addFollower(w, 20, 20, 0, 1000, Walking)
+	enemy := addFollower(w, 22, 20, 1, 100, Town)
+	w.Followers[hero].Hero.Kind = HeroHeracles
+	for pass := 0; pass < 40 && w.Followers[hero].State != Fighting; pass++ {
+		w.stepFollower(hero)
+	}
+	if w.Followers[hero].State != Fighting || !w.Followers[hero].BattleAggressor || w.Followers[hero].BattleWith != enemy {
+		t.Fatal("hero did not contact its enemy")
+	}
+	if w.Followers[enemy].Hero.ClaimedBy != 0 || w.Followers[hero].Hero.Target != 0 {
+		t.Fatal("contact retained chase claim")
+	}
+}

@@ -177,3 +177,144 @@ func (w *World) SelectHeroTarget(id int) int {
 	}
 	return preferred
 }
+
+// These ordered alternatives retain the hero planner's preference after an
+// obstacle. Each row corresponds to the desired horizontal/vertical signs.
+var heroAlternatives = [9][8][2]int{
+	{{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}},
+	{{-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}},
+	{{-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}},
+	{{1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}},
+	{{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}},
+	{{-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}},
+	{{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}},
+	{{1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}},
+	{{0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}},
+}
+
+func (w *World) validHeroTarget(id, target int) bool {
+	if target <= 0 || target >= FollowerCapacity {
+		return false
+	}
+	a, b := w.Followers[id], w.Followers[target]
+	return b.State != Inactive && b.Population > 0 && a.Owner != b.Owner
+}
+
+// stepHero separates initial target selection from pursuit. Finding an enemy
+// ends that pass; pursuing subtracts attrition before planning another leg.
+func (w *World) stepHero(id int) {
+	f := &w.Followers[id]
+	if f.Hero.Phase == HeroFindTarget {
+		w.SelectHeroTarget(id)
+		return
+	}
+	if f.Hero.Phase == HeroWaiting {
+		f.Hero.Wait--
+		if f.Hero.Wait < 0 {
+			f.Hero.Phase = HeroFindTarget
+			w.SelectHeroTarget(id)
+		}
+		return
+	}
+	if f.moving {
+		w.advanceLeg(id)
+		return
+	}
+	f.Population = int(int32(uint32(f.Population) - uint32(w.Level.Players[f.Owner].Attrition)))
+	if f.Population <= 0 {
+		w.remove(id)
+		return
+	}
+	if !w.validHeroTarget(id, f.Hero.Target) {
+		w.SelectHeroTarget(id)
+	}
+	if !w.validHeroTarget(id, f.Hero.Target) {
+		f.Hero.Phase = HeroWaiting
+		f.Hero.Wait = 20
+		f.Frame = 0
+		return
+	}
+	target := w.Followers[f.Hero.Target]
+	dx, dy := sign(int(target.X)-int(f.X)), sign(int(target.Y)-int(f.Y))
+	if dx == 0 && dy == 0 {
+		w.beginBattle(id, f.Hero.Target)
+		return
+	}
+	if !w.heroCanEnter(id, int(f.X)+dx, int(f.Y)+dy) {
+		selected := false
+		for _, d := range heroAlternatives[3*dx+dy+4] {
+			if d == [2]int{-dx, -dy} {
+				continue
+			}
+			if w.heroCanEnter(id, int(f.X)+d[0], int(f.Y)+d[1]) {
+				dx, dy, selected = d[0], d[1], true
+				break
+			}
+		}
+		if !selected && !w.heroCanEnter(id, int(f.X)+dx, int(f.Y)+dy) {
+			dx, dy = 0, 0
+		}
+	}
+	f.initialisePosition()
+	f.positionX = int(f.X)*256 + 128
+	f.positionY = int(f.Y)*256 + 128
+	if f.MovementSpeed == 0 {
+		return
+	}
+	f.velocityX, f.velocityY = dx*int(f.MovementSpeed), dy*int(f.MovementSpeed)
+	f.legRemaining = 256 / int(f.MovementSpeed)
+	f.moving = true
+	f.Hero.Phase = HeroPursuing
+	f.PreviousX, f.PreviousY = f.X, f.Y
+	f.MoveProgress = 0
+	for direction, d := range directions {
+		if d == [2]int{dx, dy} {
+			f.Direction = uint8(direction)
+			break
+		}
+	}
+	// Source pursuit redispatches its new motion immediately.
+	w.advanceLeg(id)
+}
+
+func (w *World) heroCanEnter(id, x, y int) bool {
+	if !inside(x, y) || w.Nature.BlocksWalking(x, y) {
+		return false
+	}
+	if w.Cell(x, y).IsWater() && !w.Followers[id].ImmuneToDrowning() {
+		return false
+	}
+	// Perseus requests terrain before entering destructive ground, whereas
+	// the other heroes reach the common hazard prepass and use their immunity.
+	if w.Followers[id].Hero.Kind == HeroPerseus {
+		mark := w.Nature.Ground[x+y*MapSize].Mark
+		if mark == GroundSwamp || mark >= GroundFungusFresh && mark <= GroundFungusDying || mark == GroundScorched {
+			return false
+		}
+	}
+	return true
+}
+
+// clearHeroLinks keeps typed reciprocal references consistent on death or
+// conversion. Captives retain their faith and resume ordinary walking.
+func (w *World) clearHeroLinks(id int) {
+	if id <= 0 || id >= FollowerCapacity {
+		return
+	}
+	source := &w.Followers[id]
+	if target := source.Hero.Target; target > 0 && target < FollowerCapacity && w.Followers[target].Hero.ClaimedBy == id {
+		w.Followers[target].Hero.ClaimedBy = 0
+	}
+	if claimant := source.Hero.ClaimedBy; claimant > 0 && claimant < FollowerCapacity && w.Followers[claimant].Hero.Target == id {
+		w.Followers[claimant].Hero.Target = 0
+	}
+	for other := 1; other < FollowerCapacity; other++ {
+		if w.Followers[other].Hero.CaptiveOf == id {
+			w.Followers[other].Hero.CaptiveOf = 0
+			w.Followers[other].Hero.Phase = HeroFindTarget
+			w.Followers[other].State = Walking
+		}
+	}
+	source.Hero.Target = 0
+	source.Hero.ClaimedBy = 0
+}

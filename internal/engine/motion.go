@@ -61,7 +61,7 @@ func (w *World) advanceLeg(id int) {
 	}
 	nx, ny := f.positionX+f.velocityX, f.positionY+f.velocityY
 	x, y := nx/256, ny/256
-	if nx < 0 || ny < 0 || !inside(x, y) || w.Tiles[x+y*MapSize].IsWater() {
+	if nx < 0 || ny < 0 || !inside(x, y) || w.Tiles[x+y*MapSize].IsWater() && !f.ImmuneToDrowning() {
 		f.moving = false
 		f.MoveProgress = 0
 		return

@@ -25,6 +25,7 @@ const (
 type Follower struct {
 	Owner                       uint8
 	Hero                        HeroState
+	Consecrated                 bool
 	X, Y                        uint8
 	State                       FollowerState
 	Population, Weapons, Search int
@@ -210,6 +211,10 @@ func (w *World) stepFollower(id int) {
 		w.stepBattle(id)
 		return
 	}
+	if f.IsHero() {
+		w.stepHero(id)
+		return
+	}
 	if f.State == Town {
 		stage := w.TownStage(int(f.Owner), int(f.X), int(f.Y), id)
 		if stage == 0 || w.Players[f.Owner].Mode != Settle {
@@ -302,6 +307,7 @@ func (w *World) emptyNeighbour(x, y int) (int, int, bool) {
 }
 
 func (w *World) remove(id int) {
+	w.clearHeroLinks(id)
 	f := w.Followers[id]
 	at := int(f.X) + int(f.Y)*MapSize
 	if w.Occupants[at] == uint16(id) {
