@@ -175,7 +175,7 @@ func TestUnavailablePowersAreHonestAndDoNotConsumeMana(t *testing.T) {
 }
 
 func TestDeterministicTwoMinuteSimulation(t *testing.T) {
-	level := Level{Seed: 4311, Players: [2]PlayerOptions{{Groups: 3, Population: 100, Mana: 1000, MovementSpeed: 20}, {Groups: 3, Population: 100, Mana: 1000, MovementSpeed: 20}}}
+	level := Level{Seed: 4311, Players: [2]PlayerOptions{{Groups: 3, Population: 100, Mana: 1000, MovementSpeed: 20}, {Groups: 3, Population: 100, Mana: 1000, MovementSpeed: 20, ReactionDelay: 30}}}
 	a, err := NewWorld(level, testLandscape())
 	if err != nil {
 		t.Fatal(err)

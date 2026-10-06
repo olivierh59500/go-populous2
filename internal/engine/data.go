@@ -23,6 +23,7 @@ type PlayerOptions struct {
 	Scenario                                     ScenarioOptions
 	Groups, Population, Weapons, Mana, Attrition int
 	MovementSpeed                                uint8
+	ReactionDelay, ArmageddonDeadline            int
 	Powers                                       [36]bool
 	Extra                                        [5]uint16
 }
@@ -91,6 +92,8 @@ func DecodeCampaign(data []byte) ([]Level, error) {
 			options.Mana = int(binary.BigEndian.Uint16(p[8:]))
 			options.Attrition = int(binary.BigEndian.Uint16(p[10:]))
 			options.Scenario = decodeScenario(binary.BigEndian.Uint16(p[12:]))
+			options.ReactionDelay = int(binary.BigEndian.Uint16(p[14:]))
+			options.ArmageddonDeadline = int(binary.BigEndian.Uint16(p[16:]))
 			for j := range options.Extra {
 				options.Extra[j] = binary.BigEndian.Uint16(p[12+j*2:])
 			}

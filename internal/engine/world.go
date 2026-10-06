@@ -34,6 +34,7 @@ type Follower struct {
 	Direction                      uint8
 	Frame                          uint16
 	Stage                          uint8
+	LastDevelopedStage             uint8
 	Work                           uint16
 	FoundedAt                      uint64
 	SettleAfter                    uint64
@@ -75,6 +76,7 @@ type World struct {
 	Water                WaterEffects
 	Air                  AirEffects
 	Earth                EarthState
+	AI                   [2]AIState
 	AirVictims           [FollowerCapacity]LightningVictimState
 	Heights              [CornerSize * CornerSize]uint8
 	Tiles                [MapSize * MapSize]Cell
@@ -171,6 +173,7 @@ func (w *World) Step() {
 		return
 	}
 	w.Tick++
+	w.beginAIObservations()
 	for owner := range w.Players {
 		if w.Tick&1 == 0 && w.Players[owner].Mana < 32767 {
 			w.Players[owner].Mana++
@@ -185,9 +188,7 @@ func (w *World) Step() {
 		}
 	}
 	for owner := range w.Players {
-		if w.Players[owner].Computer && w.Tick%4 == 0 {
-			w.computerLand(owner)
-		}
+		w.thinkAI(owner)
 	}
 	for id := 0; id < EffectCapacity; id++ {
 		switch w.effects.Slots[id].Kind {
@@ -205,6 +206,7 @@ func (w *World) Step() {
 	}
 	w.tickWalls()
 	w.tickNatureScenery()
+	w.executeAIOrders()
 	w.repaintFarms()
 	w.summarize()
 	w.RecordCampaignMetrics()
@@ -257,6 +259,7 @@ func (w *World) stepFollower(id int) {
 		return
 	}
 	if f.State == Town {
+		oldStage := f.Stage
 		stage := w.EvaluateTown(id)
 		if stage == 0 || w.Players[f.Owner].Mode != Settle {
 			f.State = Walking
@@ -265,6 +268,7 @@ func (w *World) stepFollower(id int) {
 			return
 		}
 		f.Stage = uint8(stage)
+		w.observeAITown(id, oldStage)
 		f.Frame = uint16(stage)
 		f.Work++
 		if int(f.Work) < w.Landscape.WorkTicks[stage] {
