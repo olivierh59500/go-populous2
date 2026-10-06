@@ -1244,3 +1244,26 @@ register/address seeds. No independent typed animation cursor replaces source
 state. The full suite, focused race tests and vet pass for this checkpoint.
 The B244 award controller and full result-to-ending desktop composition remain
 separate work.
+
+## Complete raw result requester
+
+NativeRuntimeResultState follows381E through ownership, audio pause/cues,
+101 actual VBlank waits, score fields, original requester compile/copy/text,
+real click dispatch and either the B244 award boundary or the10A8C reset
+boundary after the native fade. Its saved D2-D5 values remain full LONGs;
+partial source writes and incoming address-register state are retained.
+
+Forty original parent traces yield4,540 snapshots, including eight runs with
+the initialized shared sound device and music pause. All eight data registers,
+supplied/assigned A0-A6, full BSS and live CODE, both screens/Copper and cursor
+RAM match. Ninety-six separate score-field traces also match. Full tests,
+complete focused race comparisons and vet pass. These references stop at
+real B244 or10A8C entry; their complete children and the desktop result
+continuation remain independent integration work.
+
+Decoded LAND rules can now refresh at the retained result-return boundary
+without releasing the frame or rewriting raw memory. The idle-only refresh
+API remains strict. A regression changes the loaded LAND while that boundary
+is retained, checks that the following simulation sees the new rules, and
+verifies full BSS/CODE preservation and unchanged borrow/continuation state.
+Full tests, focused race tests and vet pass for this cache operation.

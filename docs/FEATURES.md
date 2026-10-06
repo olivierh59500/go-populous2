@@ -21,7 +21,7 @@ power is not sufficient evidence that its original behavior has been ported.
 | Saving | Raw GAM DOS save/load/list/overwrite with actual filesystem counts, partial operations and source pointer ownership; idle cache refresh without World regeneration; legacy typed APIs remain | Interactive save/load and two-player/cross-effect interoperability |
 | Interface | Original raw initial menu/chooser/in-game/options/serial/profile/panel/input/editor/protection and deity/name/password controllers; complete physical file browser; native desktop menu/terrain/protection/deity/file captures | Award controller, result/reset/ending desktop composition and complete interactive transition validation |
 | Multiplayer | Original raw command/serial protocol and retained handshake/resume; paired physical world constructors and commands match; configured asynchronous TCP/serial menu ports in native desktop | Complete paired interactive gameplay, remaining reset UI children and save policy |
-| Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, original result text/layout/wait, saved one-time application and actual raw animation decoder/final Zeus ending | Visual transition validation and full conquest pacing/script/AI parity |
+| Campaign progression | Native identity-based elimination, score/overflow, bolt awards, loss/win world steps, original result text/layout/wait, saved one-time application and actual raw381E result controller and animation decoder/final Zeus ending | Visual transition validation and full conquest pacing/script/AI parity |
 
 ## Power inventory
 
