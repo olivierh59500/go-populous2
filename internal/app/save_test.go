@@ -49,3 +49,22 @@ func TestLoadedCompletedGameReturnsToResultsWithoutAwarding(t *testing.T) {
 		t.Fatal("loading a completed game resumed play or granted rewards")
 	}
 }
+
+func TestLoadedCustomSessionRestoresSetupForTheNextGame(t *testing.T) {
+	g := browserGame(t)
+	g.CustomGame = true
+	g.World.Level.Players[0].Population = 777
+	g.World.Players[1].Computer = false
+	if err := g.saveGame(); err != nil {
+		t.Fatal(err)
+	}
+	old := g.Assets.Levels[0]
+	g.CustomLevel = &old
+	g.CustomComputer = [2]bool{false, true}
+	if err := g.loadGame(); err != nil {
+		t.Fatal(err)
+	}
+	if g.CustomLevel == nil || g.CustomLevel.Players[0].Population != 777 || g.CustomComputer[1] {
+		t.Fatal("loaded custom game retained stale menu setup")
+	}
+}

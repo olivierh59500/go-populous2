@@ -132,9 +132,22 @@ func (g *Game) loadGame() error {
 	g.Screen, g.resultApplied = Playing, false
 	g.CustomGame, g.Paused = session.CustomGame, session.Paused
 	g.LocalSide, g.OriginalSave = session.LocalSide, original
+	g.restoreCustomSetup()
 	g.AnimationSounds = AnimationSoundGate{}
 	g.finishWorld()
 	g.Message = "GAME LOADED"
 	g.messageUntil = g.Updates + 100
 	return nil
+}
+
+func (g *Game) restoreCustomSetup() {
+	g.CustomLevel = nil
+	g.CustomComputer = [2]bool{}
+	if g.CustomGame && g.World != nil {
+		level := g.World.Level
+		g.CustomLevel = &level
+		for owner, player := range g.World.Players {
+			g.CustomComputer[owner] = player.Computer
+		}
+	}
 }

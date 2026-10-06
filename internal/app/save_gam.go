@@ -51,6 +51,7 @@ func (g *Game) loadOriginalGame() error {
 	g.LocalSide, g.LevelIndex = meta.ProfileSide, document.World.Level.Number
 	g.CameraX, g.CameraY = meta.CameraX, meta.CameraY
 	g.CustomGame = meta.GameMode != 2
+	g.restoreCustomSetup()
 	g.Paused, g.resultApplied, g.Screen = false, false, Playing
 	g.Selected, g.Direction = engine.RaiseLower, 0
 	g.AnimationSounds = AnimationSoundGate{}
@@ -76,6 +77,11 @@ func (g *Game) saveOriginalGame() error {
 	document.World = g.World
 	document.Metadata.Profile, document.Metadata.ProfileSide = g.Profile, g.playerSide()
 	document.Metadata.CameraX, document.Metadata.CameraY = g.CameraX, g.CameraY
+	if g.CustomGame {
+		document.Metadata.GameMode = 4
+	} else {
+		document.Metadata.GameMode = 2
+	}
 	data, err := gamcodec.Encode(&document)
 	if err != nil {
 		return err
