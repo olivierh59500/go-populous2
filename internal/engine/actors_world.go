@@ -52,7 +52,7 @@ func (w *World) syncActorRegistry() {
 			active, x, y = a.Active, a.X, a.Y
 		case EffectLightning:
 			if a := w.Air.Markers[id]; a.Active {
-				active, x, y = true, a.X*256+128, a.Y*256+128
+				active, x, y = true, a.X, a.Y
 			} else {
 				a := w.Air.Bolts[id]
 				active, x, y = a.Active, a.X, a.Y

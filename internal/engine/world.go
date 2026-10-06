@@ -74,6 +74,7 @@ type Summary struct{ Population, Towns, Groups, BattlesWon, Mana int }
 // World owns simulation state. All arrays have a geometric or game meaning;
 // none represents CPU memory, a register bank, or a relocated executable.
 type World struct {
+	Editor               bool
 	BirthBlocked         bool
 	NeutralBirthDeadline uint64
 	Scenario             ScenarioState
