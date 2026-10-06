@@ -43,6 +43,7 @@ type NativeGame struct {
 	beam           uint16
 	Commands       *populous2.NativeRuntimeCommandChildren
 	Network        *populous2.NativeNetworkEndpoint
+	NetworkSession *populous2.NativeNetworkSession
 	Transport      *populous2.NativeRuntimeTransport
 	LocalResume    populous2.NativeTransportResumeState
 	NetworkStartup *populous2.NativeRuntimeDirector
@@ -297,10 +298,12 @@ func (g *NativeGame) Close() {
 	if g.player != nil {
 		g.player.Close()
 	}
-	if g.Transport != nil {
+	if g.Transport != nil && g.NetworkSession == nil {
 		g.Transport.Conn.Close()
 	}
-	if g.Network != nil {
+	if g.NetworkSession != nil {
+		g.NetworkSession.Close()
+	} else if g.Network != nil {
 		g.Network.Close()
 	}
 	if g.Files != nil {

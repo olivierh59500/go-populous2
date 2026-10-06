@@ -1,7 +1,6 @@
 package game
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -15,29 +14,30 @@ func (g *NativeGame) SetNetwork(listen, connect string) error {
 	if listen != "" && connect != "" {
 		return fmt.Errorf("choose either listen or connect")
 	}
-	var err error
-	if listen != "" {
-		g.Network, err = populous2.ListenNativeNetwork(listen)
-	} else if connect != "" {
-		g.Network, err = populous2.DialNativeNetwork(context.Background(), connect)
+	if listen == "" && connect == "" {
+		return nil
 	}
-	return err
+	session, err := populous2.NewNativeNetworkSession(listen, connect)
+	if err != nil {
+		return err
+	}
+	g.NetworkSession, g.Network = session, session.Endpoint
+	return nil
 }
 
 func (g *NativeGame) networkReady() error {
 	if g.Network == nil || g.Transport != nil {
 		return nil
 	}
-	connection, ready, err := g.Network.Poll()
+	if g.NetworkSession == nil {
+		return fmt.Errorf("native network session owner missing")
+	}
+	conn, ready, err := g.NetworkSession.Poll()
 	if err != nil {
 		return err
 	}
 	if !ready {
 		return nil
-	}
-	conn, err := populous2.NewNativeSerialConn(connection)
-	if err != nil {
-		return err
 	}
 	waitSite := uint32(0)
 	var waitStart time.Time
@@ -80,6 +80,21 @@ func (g *NativeGame) networkChild(call populous2.NativeFileFrameCall, phase *uin
 }
 
 func (g *NativeGame) serialChild(call populous2.NativeSerialFrameCall, phase *uint32) (populous2.NativeSerialFrameChildResult, error) {
+	// AB4 belongs to entry into the original serial requester. A dead
+	// stream is replaced only after source fallback returned to local mode.
+	if call.Routine == 0xab4 && phase != nil && *phase == 0 && g.Transport != nil {
+		allowed, err := g.Transport.CanRetryHostStream()
+		if err != nil {
+			return populous2.NativeSerialFrameChildResult{}, err
+		}
+		if allowed {
+			_, err := g.NetworkSession.Retry()
+			if err != nil {
+				return populous2.NativeSerialFrameChildResult{}, err
+			}
+			g.Network, g.Transport = g.NetworkSession.Endpoint, nil
+		}
+	}
 	if err := g.networkReady(); err != nil {
 		return populous2.NativeSerialFrameChildResult{}, err
 	}

@@ -71,10 +71,15 @@ type NativeSerialConn struct {
 }
 
 func NewNativeSerialConn(conn net.Conn) (*NativeSerialConn, error) {
+	return newNativeSerialConn(conn, [381]byte{})
+}
+
+func newNativeSerialConn(conn net.Conn, history [381]byte) (*NativeSerialConn, error) {
 	if conn == nil {
 		return nil, fmt.Errorf("native serial connection missing")
 	}
 	c := &NativeSerialConn{conn: conn, baud: 300, readerDone: make(chan struct{})}
+	c.ring.data = history
 	go c.receive()
 	return c, nil
 }
@@ -157,6 +162,18 @@ func (c *NativeSerialConn) send(src []byte) (int, error) {
 	}
 }
 func (c *NativeSerialConn) Baud() uint16 { c.mu.Lock(); defer c.mu.Unlock(); return c.baud }
+
+// TerminalError observes the real receive-pump outcome, including an EOF
+// following a buffered prefix. It does not drain, flush or change the source
+// ring; native controllers must finish their own failure continuation first.
+func (c *NativeSerialConn) TerminalError() error {
+	if c == nil {
+		return fmt.Errorf("native serial connection missing")
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.readError
+}
 func (c *NativeSerialConn) NativeReceiveIndices() (uint16, uint16) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
