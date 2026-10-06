@@ -26,6 +26,8 @@ func testFlatWorld() *World {
 		w.Heights[i] = 1
 	}
 	w.rebuildCells()
+	w.Level.Players[0].Scenario.BuildAnywhere = true
+	w.Level.Players[1].Scenario.BuildAnywhere = true
 	w.Players[0].Mode = Settle
 	w.Players[1].Mode = Settle
 	return w
@@ -208,6 +210,7 @@ func TestDeterministicTwoMinuteSimulation(t *testing.T) {
 
 func TestTerrainPriceCountsPropagationAndExperience(t *testing.T) {
 	w := &World{}
+	w.Level.Players[0].Scenario.BuildAnywhere = true
 	w.Players[0].Mana = 10000
 	if !w.RaiseAt(0, 32, 32) || w.Players[0].Mana != 9980 {
 		t.Fatal("one-corner raise did not cost twenty ledger units")

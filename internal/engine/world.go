@@ -29,6 +29,8 @@ type Follower struct {
 	Hero                           HeroState
 	Disease                        DiseaseState
 	Conversion                     ConversionState
+	TerrainDeath                   TerrainDeathState
+	Neutral                        NeutralState
 	Consecrated                    bool
 	X, Y                           uint8
 	State                          FollowerState
@@ -71,6 +73,7 @@ type Summary struct{ Population, Towns, Groups, BattlesWon, Mana int }
 // World owns simulation state. All arrays have a geometric or game meaning;
 // none represents CPU memory, a register bank, or a relocated executable.
 type World struct {
+	Scenario             ScenarioState
 	Level                Level
 	Landscape            Landscape
 	Nature               NatureState
@@ -80,6 +83,7 @@ type World struct {
 	Air                  AirEffects
 	Earth                EarthState
 	AI                   [2]AIState
+	Wind                 [EffectCapacity]WindEffect
 	AirVictims           [FollowerCapacity]LightningVictimState
 	Heights              [CornerSize * CornerSize]uint8
 	Tiles                [MapSize * MapSize]Cell
@@ -108,7 +112,11 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 			return nil, fmt.Errorf("invalid economy at town stage %d", stage)
 		}
 	}
-	w := &World{Level: level, Landscape: land}
+	scenario, err := DecodeScenarioEvents(level.WorldParameters)
+	if err != nil {
+		return nil, err
+	}
+	w := &World{Level: level, Landscape: land, Scenario: scenario}
 	w.generate(level.Seed)
 	for owner := range w.Magnets {
 		w.Magnets[owner] = MagnetActor{X: 32*256 + 128, Y: 32*256 + 128, Owner: uint8(owner)}
@@ -120,6 +128,11 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 			experience = level.OpponentExperience
 		}
 		w.Players[owner] = Player{Experience: experience, Mana: p.Mana, Mode: Settle, RallyX: 32, RallyY: 32, Computer: owner == 1}
+		if p.FixedMagnet && inside(p.MagnetX, p.MagnetY) {
+			w.Players[owner].RallyX = p.MagnetX
+			w.Players[owner].RallyY = p.MagnetY
+			w.moveMagnet(owner, p.MagnetX, p.MagnetY)
+		}
 		w.compileAIPowers(owner)
 		placed := 0
 		for pass := 0; pass < 2 && placed < p.Groups; pass++ {
@@ -139,9 +152,11 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 				w.linkFollower(id)
 				if placed == 0 {
 					w.Players[owner].Leader = id
-					w.Players[owner].RallyX = at % MapSize
-					w.Players[owner].RallyY = at / MapSize
-					w.moveMagnet(owner, at%MapSize, at/MapSize)
+					if !p.FixedMagnet {
+						w.Players[owner].RallyX = at % MapSize
+						w.Players[owner].RallyY = at / MapSize
+						w.moveMagnet(owner, at%MapSize, at/MapSize)
+					}
 				}
 				placed++
 			}
@@ -209,6 +224,8 @@ func (w *World) Step() {
 			w.tickNatureEffect(id)
 		case EffectFireColumn, EffectFireRain, EffectVolcano, EffectLava:
 			w.tickFireEffect(id)
+		case EffectHurricane:
+			w.tickWind(id)
 		case EffectEarthquake:
 			w.tickEarthEffect(id)
 		case EffectLightning, EffectWhirlwind, EffectStorm:
@@ -219,6 +236,7 @@ func (w *World) Step() {
 	}
 	w.tickWalls()
 	w.tickNatureScenery()
+	w.tickScenario()
 	w.executeAIOrders()
 	w.repaintFarms()
 	w.summarize()
@@ -236,6 +254,10 @@ func (w *World) Step() {
 func (w *World) stepFollower(id int) {
 	f := &w.Followers[id]
 	if f.Owner > 1 {
+		w.tickNeutral(id)
+		return
+	}
+	if w.advanceNeutralVictim(id) {
 		return
 	}
 	if w.tickDisease(id) {
@@ -260,7 +282,9 @@ func (w *World) stepFollower(id int) {
 		w.remove(id)
 		return
 	}
-	tile := int(f.X) + int(f.Y)*MapSize
+	if w.advanceWater(id) {
+		return
+	}
 	if f.State == Fighting {
 		w.stepBattle(id)
 		return
@@ -322,15 +346,7 @@ func (w *World) stepFollower(id int) {
 		}
 		return
 	}
-	if w.Tiles[tile].IsWater() {
-		f.State = Drowning
-		f.Frame = (f.Frame + 1) % 4
-		f.Population -= max(1, w.Level.Players[f.Owner].Attrition)
-		if f.Population <= 0 {
-			w.remove(id)
-		}
-		return
-	}
+
 	f.State = Walking
 	if w.Players[f.Owner].Mode == Settle && w.Tick >= f.SettleAfter {
 		if stage := w.EvaluateTown(id); stage > 0 {
@@ -422,7 +438,7 @@ func abs(x int) int {
 // an extra follower or changing its owner. It is the ordinary town right-click
 // action and is separate from lowering the terrain under the settlement.
 func (w *World) Evacuate(id int) bool {
-	if id <= 0 || id >= FollowerCapacity || w.Followers[id].State != Town {
+	if id <= 0 || id >= FollowerCapacity || w.Followers[id].State != Town || w.Level.Players[w.Followers[id].Owner].Scenario.DisableEmigration {
 		return false
 	}
 	f := &w.Followers[id]

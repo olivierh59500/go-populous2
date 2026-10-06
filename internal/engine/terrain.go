@@ -178,6 +178,9 @@ func (w *World) changeHeight(player, x, y int, raise bool) bool {
 	if player < 0 || player > 1 || !insideCorner(x, y) || w.Players[player].Mana < w.PowerCost(player, RaiseLower) {
 		return false
 	}
+	if !w.terrainPlanAllowed(player, x, y, raise) {
+		return false
+	}
 	h := w.Heights[x+y*CornerSize]
 	if raise && h >= 8 || !raise && h == 0 {
 		return false

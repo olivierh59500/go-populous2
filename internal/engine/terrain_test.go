@@ -32,6 +32,7 @@ func TestTerrainReferenceDigests(t *testing.T) {
 
 func TestTerrainEditsRetainRepresentableSlopesAndRefreshFourCells(t *testing.T) {
 	w := &World{}
+	w.Level.Players[0].Scenario.BuildAnywhere = true
 	w.Players[0].Mana = 10000
 	for repeat := 0; repeat < 6; repeat++ {
 		if !w.RaiseAt(0, 32, 32) {

@@ -20,6 +20,8 @@ const (
 // PlayerOptions gives names to the campaign fields needed by the simulation.
 // Remaining options are retained as data for subsequent scenario features.
 type PlayerOptions struct {
+	MagnetX, MagnetY                             int
+	FixedMagnet                                  bool
 	Scenario                                     ScenarioOptions
 	Groups, Population, Weapons, Mana, Attrition int
 	MovementSpeed                                uint8
@@ -94,6 +96,10 @@ func DecodeCampaign(data []byte) ([]Level, error) {
 			options.Scenario = decodeScenario(binary.BigEndian.Uint16(p[12:]))
 			options.ReactionDelay = int(binary.BigEndian.Uint16(p[14:]))
 			options.ArmageddonDeadline = int(binary.BigEndian.Uint16(p[16:]))
+			magnet := binary.BigEndian.Uint16(p[20:])
+			options.FixedMagnet = int16(magnet) >= 0
+			options.MagnetX = int(p[20])
+			options.MagnetY = int(p[21])
 			for j := range options.Extra {
 				options.Extra[j] = binary.BigEndian.Uint16(p[12+j*2:])
 			}
