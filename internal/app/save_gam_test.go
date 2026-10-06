@@ -49,3 +49,35 @@ func TestPrivateOriginalSaveLoadsThroughTheIndependentInterface(t *testing.T) {
 		t.Fatal("independent session lost original-save interoperability", err)
 	}
 }
+
+func TestPrivateNewIndependentGameExportsAsOriginalSave(t *testing.T) {
+	path := os.Getenv("POPULOUS2_GENERATED_ASSETS_TEST_DIR")
+	if path == "" {
+		t.Skip("provide private generated assets")
+	}
+	assets, err := LoadAssets(os.DirFS(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	world, err := engine.NewWorld(assets.Levels[0], assets.Landscapes[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	for range 20 {
+		world.Step()
+	}
+	g := &Game{Assets: assets, World: world, Profile: engine.NewDeity("GO PLAYER"), SavePath: filepath.Join(t.TempDir(), "new.GAM"), CameraX: 8, CameraY: 4}
+	if err := g.saveGame(); err != nil {
+		t.Fatal(err)
+	}
+	if g.OriginalSave == nil {
+		t.Fatal("fresh GAM export lost its file metadata")
+	}
+	tick := world.Tick
+	if err := g.loadGame(); err != nil {
+		t.Fatal(err)
+	}
+	if g.World.Tick != tick || g.Profile.Name != "GO PLAYER" || g.CustomGame || g.CameraX != 8 || g.CameraY != 4 {
+		t.Fatal("new original-format save lost its session")
+	}
+}

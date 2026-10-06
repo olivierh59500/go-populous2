@@ -60,10 +60,19 @@ func (g *Game) loadOriginalGame() error {
 }
 
 func (g *Game) saveOriginalGame() error {
-	if g.OriginalSave == nil {
-		return fmt.Errorf("GAM export currently requires an imported original save; use JSON for this game")
+	original := g.OriginalSave
+	if original == nil {
+		mode := 2
+		if g.CustomGame {
+			mode = 4
+		}
+		var err error
+		original, err = gamcodec.NewDocument(g.World, g.gamCatalog(), g.Profile, g.playerSide(), mode, g.CameraX, g.CameraY)
+		if err != nil {
+			return err
+		}
 	}
-	document := *g.OriginalSave
+	document := *original
 	document.World = g.World
 	document.Metadata.Profile, document.Metadata.ProfileSide = g.Profile, g.playerSide()
 	document.Metadata.CameraX, document.Metadata.CameraY = g.CameraX, g.CameraY
