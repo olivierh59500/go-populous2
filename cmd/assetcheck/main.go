@@ -7,7 +7,6 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
-	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -27,7 +26,7 @@ func run() error {
 	dir := flag.String("data", "", "external installation directory (default: embedded Amiga data)")
 	output := flag.String("decode", "", "write decompressed resources into a new directory")
 	jsonOutput := flag.Bool("json", false, "write resource table and presence as JSON")
-	images := flag.String("images", "", "write decoded tile/sprite atlases and interface PNGs to a new directory")
+	images := flag.String("images", "", "reference export: write tile/sprite/interface PNGs (currently requires populous.ii)")
 	flag.Parse()
 	files, err := assets.DataFS()
 	if err != nil {
@@ -36,18 +35,7 @@ func run() error {
 	if *dir != "" {
 		files = os.DirFS(*dir)
 	}
-	data, err := fs.ReadFile(files, "populous.ii")
-	if err != nil {
-		return err
-	}
-	exe, err := amiga.ParseExecutable(data)
-	if err != nil {
-		return err
-	}
-	resources, err := populous2.ResourceTable(exe)
-	if err != nil {
-		return err
-	}
+	resources := populous2.AssetResourceCatalog()
 	status, err := populous2.Inventory(files, resources)
 	if err != nil {
 		return err
@@ -71,7 +59,7 @@ func run() error {
 			}
 		}
 		if !*jsonOutput {
-			fmt.Printf("%2d %-16s packed=%t decoded=%7d planar=0x%08x table=0x%x SHA256=%s\n", resource.Index, resource.Name, resource.Packed, len(decoded), resource.PlanarTable, resource.TableOffset, amiga.Digest(decoded))
+			fmt.Printf("%2d %-16s packed=%t decoded=%7d SHA256=%s\n", resource.Index, resource.Name, resource.Packed, len(decoded), amiga.Digest(decoded))
 		}
 	}
 	if *images != "" {
@@ -79,6 +67,7 @@ func run() error {
 		if err != nil {
 			return err
 		}
+		exe := bundle.Executable
 		if err := os.Mkdir(*images, 0755); err != nil {
 			return err
 		}

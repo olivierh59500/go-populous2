@@ -39,12 +39,13 @@ rocks use original age-dependent emergence/burial rectangles when drawn.
 The ten-record native scenario script now creates its original disasters,
 plantings and neutral inventions, one due event per simulation update.
 
-**The supplied two-disk Amiga feature set is implemented in the default native
-runtime.** Original-controller and full-main comparisons cover powers, heroes,
-simulation, menus, audio, campaign results and networking. The decoder and
-portable-machine boundaries are documented; further scenarios can extend the
-recorded fidelity coverage. [The feature inventory](docs/FEATURES.md)
-distinguishes native translations from provisional behavior.
+The current playable build is a Go translation that still requires the original
+Amiga executable for tables, presentation data and register-based controllers.
+It is not yet an asset-only Go recreation in the same architecture as
+`go-populous`. The existing comparison tests validate the translated behavior;
+they do not establish independence from the original executable. See the
+[Go engine migration](docs/GO_ENGINE.md) for the replacement boundaries and
+[feature inventory](docs/FEATURES.md) for the current functional coverage.
 
 ![Go Populous II](screenshots/game.png)
 

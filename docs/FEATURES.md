@@ -2,7 +2,9 @@
 
 The supplied Amiga executable has 29 active power slots. The number 26 refers
 to the external resource catalog, not the number of spells. The Go program is
-complete for the supplied main French Amiga revision. Source-controller and
+playable through a translation that still depends on that executable. An
+independent Go engine using only original asset data remains unfinished; see
+[GO_ENGINE.md](GO_ENGINE.md). Source-controller and
 whole-main comparisons establish the documented scenarios; a selectable
 power alone is not used as evidence of original behavior.
 

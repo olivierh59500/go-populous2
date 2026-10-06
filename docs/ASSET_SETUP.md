@@ -5,6 +5,13 @@ validation fixtures. It does not distribute the original Amiga executable,
 graphics, samples or campaign files. Supply your own Populous II disk images
 before building the game.
 
+The current game also requires executable-based reference tables and
+controllers. Removing the original files from Git does not remove that runtime
+dependency. The asset-only Go engine replacement is tracked in
+[GO_ENGINE.md](GO_ENGINE.md). Inventory and unpacking of the 26 external data
+files already work without the executable; the playable engine and sprite
+reference export do not yet have that independence.
+
 ## Import the two original disks
 
 ### Identifying the disk images

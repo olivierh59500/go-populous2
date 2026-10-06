@@ -1,5 +1,10 @@
 # Native main-game delivery audit
 
+This audit describes the register-based translation. It does not establish a
+standalone Go engine: the playable runtime still reads the original executable
+and retains its memory/register organization. The independent engine migration
+is tracked in [GO_ENGINE.md](GO_ENGINE.md).
+
 The main two-disk Populous II conversion runs through `cmd/populous2` in Go and
 Ebitengine. The executable's supplied French revision determines original
 behavior and resources. `cmd/populous2-native` shares the same launcher;

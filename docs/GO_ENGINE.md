@@ -1,0 +1,65 @@
+# Independent Go engine
+
+The current playable application is implemented in Go but still depends on
+`populous.ii` at runtime. The intended architecture is a standalone Go game,
+using the original graphics, samples, music sequences and campaign data only.
+`go-populous` provides the reference organization: a data loader, explicit
+simulation state, ordinary Go rules, Ebitengine drawing and Go audio replay.
+
+## Current dependency
+
+`Bundle.Executable` holds the parsed HUNK executable. `LoadFS` reads its resource
+and sprite descriptors, gameplay constants, animation definitions and sound
+sequences. `NativeRuntimeHost` then relocates its segments and exposes CODE/BSS
+through shared memory aliases. Menus, rendering, input, audio and simulation
+controllers retain original offsets and register contexts.
+
+Production does not use the local 68000 analysis interpreter. Nevertheless,
+requiring CODE bytes and their instruction/address layout is an executable
+dependency, even when the operation itself is written in Go. Selecting the
+older `cmd/populous2-legacy` command does not remove this dependency: its bundle
+and several World rules also read the executable.
+
+## Replacement boundaries
+
+| Area | Required independent implementation |
+|---|---|
+| Asset loading | Fixed Go file catalog and decoders for packed graphics, sprite differences, landscape and campaign files; explicit image/font/sample/music metadata |
+| Game state | Go terrain, follower, town, deity, projectile and environmental state; no relocated memory ownership or self-modifying CODE aliases |
+| Simulation | Named movement, founding, growth, combat, AI and power operations; explicit deterministic order and timing |
+| Presentation | Go menus/widgets, picking and compositor using decoded art; callbacks identify actions rather than executable procedure addresses |
+| Audio | Go sample mixer and music sequencer using extracted audio data, without executable driver or CIA/register-controller dependency |
+| Campaign | Go world selection, progression, score, experience, awards and ending state |
+| Persistence/network | Explicit Go save and multiplayer state; original GAM compatibility remains a separate codec |
+| Reference validation | Original executable, HUNK addresses and CPU comparisons restricted to optional analysis tools and reference tests |
+
+Original graphics, fonts, palettes, sprite metadata and music sequences that
+happen to be stored inside the original executable can be extracted locally
+as ordinary typed asset data. Executable instructions, procedure dispatch
+addresses and emulated memory images must not become runtime data under
+another filename. Game rules belong in maintainable Go definitions and code.
+
+## Completion checks
+
+The independent application must build and run after `populous.ii` and all
+HUNK/CODE dumps have been removed from its prepared runtime assets. Its
+production dependency graph must exclude executable parsing, relocation,
+register-machine callbacks and address-based instruction dispatch. It must
+retain all original powers, heroes, campaign, menus, audio, save/load and
+multiplayer behavior through ordinary Go subsystems.
+
+The existing translation and finite reference corpora remain useful for
+comparing results during migration. They must not be mistaken for completion
+of the independent engine. Each replacement is validated before the default
+launcher switches to the new engine.
+
+The first boundary now has a Go resource-file catalog. `LoadResourceSetFS`
+lists and unpacks the 26 external files without opening `populous.ii`.
+`cmd/assetcheck` inventory and `-decode` use this path. Its separate `-images`
+reference export still needs executable-based sprite metadata.
+
+Tests open a data filesystem that rejects executable reads and verify the four
+landscapes, tile banks, sprite differences and 1,000 campaign records. This is a
+preparatory change; the complete game still needs the remaining replacements
+above. The next playable slice is an independent menu and early conquest,
+including terrain sculpting, founding and growth, followers, mana and AI.

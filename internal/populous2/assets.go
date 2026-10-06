@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"io/fs"
-	"strings"
 
 	embedded "go-populous2/assets"
 	"go-populous2/internal/amiga"
@@ -106,14 +105,11 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 	if err != nil {
 		return nil, err
 	}
-	b := &Bundle{Executable: exe, Resources: resources, Raw: make(map[string][]byte)}
-	for _, resource := range resources {
-		decoded, err := LoadResource(files, resource)
-		if err != nil {
-			return nil, err
-		}
-		b.Raw[strings.ToLower(resource.Name)] = decoded
+	raw, err := LoadResourceSetFS(files)
+	if err != nil {
+		return nil, err
 	}
+	b := &Bundle{Executable: exe, Resources: resources, Raw: raw}
 	for i := range b.Landscapes {
 		land, err := DecodeLandscape(b.Raw[fmt.Sprintf("land%d.dat", i)])
 		if err != nil {
