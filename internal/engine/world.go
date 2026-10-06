@@ -362,16 +362,7 @@ func (w *World) stepFollower(id int) {
 	}
 
 	f.State = Walking
-	if w.Players[f.Owner].Mode == Settle && w.Tick >= f.SettleAfter {
-		if stage := w.EvaluateTown(id); stage > 0 {
-			f.State = Town
-			f.Stage = uint8(stage)
-			f.Work = 0
-			f.FoundedAt = w.Tick
-			f.Frame = uint16(stage)
-			return
-		}
-	}
+
 	if !f.moving {
 		f.Population -= w.Level.Players[f.Owner].Attrition
 		if f.Population <= 0 {

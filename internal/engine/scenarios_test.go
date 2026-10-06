@@ -79,7 +79,7 @@ func TestNonFatalWaterUsesCampaignAttritionAndReturnsToLand(t *testing.T) {
 	}
 	w.Tiles[20+20*MapSize] = Cell{Corners: [4]uint8{1, 1, 1, 1}, Shape: 15, Code: 15}
 	w.stepFollower(id)
-	if w.Followers[id].State == Drowning || w.Followers[id].Population != 86 {
+	if w.Followers[id].State == Drowning || w.Followers[id].Population != 79 {
 		t.Fatal("rescued follower did not return to ordinary land dispatch")
 	}
 }

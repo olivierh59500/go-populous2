@@ -100,7 +100,11 @@ func TestEmigrationPopulationAccountingAndPoolExhaustion(t *testing.T) {
 func TestWalkingFoundingAndRallyOrders(t *testing.T) {
 	w := testFlatWorld()
 	id := addFollower(w, 8, 8, 0, 100, Walking)
-	w.Step()
+	for range 20 {
+		if w.Followers[id].State != Town {
+			w.Step()
+		}
+	}
 	if w.Followers[id].State != Town {
 		t.Fatal("walking group did not found a town")
 	}

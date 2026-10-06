@@ -8,6 +8,7 @@ import (
 func TestWalkingLegUsesSourceSubcellUnitsAndCrossingAdmission(t *testing.T) {
 	w := testFlatWorld()
 	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Players[0].Mode = Rally
 	if !w.beginLeg(id, 21, 20) {
 		t.Fatal("leg rejected")
 	}
@@ -99,5 +100,21 @@ func TestHostileWallCrossingUsesStrengthAndBreaksBeforeMoving(t *testing.T) {
 				t.Fatal("breaking update committed crossing")
 			}
 		})
+	}
+}
+
+func TestNewbornSearchMovesBeforeClaimingSettlementAndKeepsParentTown(t *testing.T) {
+	w := testFlatWorld()
+	parent := w.allocate(Follower{Owner: 0, X: 20, Y: 20, State: Town, Population: 4000, Stage: 18, Work: 7, MovementSpeed: 20})
+	w.linkFollower(parent)
+	w.Tick = 1
+	w.stepFollower(parent)
+	child := parent + 1
+	if w.Followers[child].State != Walking || w.Followers[child].positionX != w.Followers[parent].positionX {
+		t.Fatal("newborn position")
+	}
+	w.stepFollower(child)
+	if w.Followers[child].State != Walking || w.Followers[parent].State != Town || !w.Followers[child].moving || w.Followers[child].positionX == w.Followers[parent].positionX {
+		t.Fatal("newborn claimed the parent parcel instead of moving")
 	}
 }

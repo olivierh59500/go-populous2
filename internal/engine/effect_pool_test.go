@@ -84,7 +84,7 @@ func TestWorldProcessesFollowersBeforeFireAndSceneryAfterEffects(t *testing.T) {
 	if w.Followers[id].State != Ruin || w.FireDamage.Deaths[id].Frame != 0 {
 		t.Fatal("fire victim advanced before the follower phase ended")
 	}
-	if w.Followers[id].FoundedAt != 1 {
-		t.Fatal("fire ran before the walking follower could found its town")
+	if w.Followers[id].Frame != 0 {
+		t.Fatal("fire death should begin after the follower update")
 	}
 }
