@@ -118,3 +118,19 @@ func TestNewbornSearchMovesBeforeClaimingSettlementAndKeepsParentTown(t *testing
 		t.Fatal("newborn claimed the parent parcel instead of moving")
 	}
 }
+
+func TestOrdinarySearchUsesCellSignsRatherThanTargetCentreFractions(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	f := &w.Followers[id]
+	f.positionX = 20*256 + 7
+	f.positionY = 20*256 + 247
+	f.positionSet = true
+	if !w.beginSearchLeg(id, 21, 20) || f.velocityX != 20 || f.velocityY != 0 || f.legRemaining != 12 {
+		t.Fatal("cross-cell search changed fractional axis velocity")
+	}
+	f.moving = false
+	if !w.beginSearchLeg(id, 20, 20) || f.velocityX != -20 || f.velocityY != -20 || f.legRemaining != 12 {
+		t.Fatal("same-cell search did not use maximum fractional distance")
+	}
+}

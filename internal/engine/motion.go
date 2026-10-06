@@ -120,3 +120,38 @@ func sign(value int) int {
 	}
 	return 0
 }
+
+// beginSearchLeg uses the original ordinary-search target fractions (zero).
+// Velocity signs compare cell coordinates for another-cell targets; only a
+// same-cell contact uses its fractional distance. Hero homing centers its own
+// position separately and does not route through this search constructor.
+func (w *World) beginSearchLeg(id, x, y int) bool {
+	f := &w.Followers[id]
+	f.initialisePosition()
+	if f.MovementSpeed == 0 || !inside(x, y) {
+		return false
+	}
+	speed := int(f.MovementSpeed)
+	dx, dy := x-int(f.X), y-int(f.Y)
+	f.velocityX, f.velocityY = sign(dx)*speed, sign(dy)*speed
+	if dx == 0 && dy == 0 {
+		f.velocityX, f.velocityY = -sign(f.positionX&255)*speed, -sign(f.positionY&255)*speed
+		f.legRemaining = max(f.positionX&255, f.positionY&255) / speed
+	} else {
+		f.legRemaining = 256 / speed
+	}
+	if f.velocityX == 0 && f.velocityY == 0 {
+		return false
+	}
+	for direction, d := range directions {
+		if d == [2]int{sign(f.velocityX), sign(f.velocityY)} {
+			f.Direction = uint8(direction)
+			break
+		}
+	}
+	f.Target = x + y*MapSize
+	f.moving = true
+	f.PreviousX, f.PreviousY = f.X, f.Y
+	f.MoveProgress = 0
+	return true
+}

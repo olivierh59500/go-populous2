@@ -370,7 +370,7 @@ func (w *World) stepFollower(id int) {
 			return
 		}
 		x, y, ok := w.chooseMove(id)
-		if !ok || !w.beginLeg(id, x, y) {
+		if !ok || !w.beginSearchLeg(id, x, y) {
 			f.Frame = (f.Frame + 1) % 4
 			return
 		}
