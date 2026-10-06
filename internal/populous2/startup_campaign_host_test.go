@@ -82,7 +82,7 @@ func TestNativeStartupCampaignHostAgainstOriginalCPU(t *testing.T) {
 	if len(corpus.Cases) != 27 {
 		t.Fatal("whole campaign startup corpus changed")
 	}
-	files, e := fs.Sub(embedded.Files, "amiga")
+	files, e := embedded.DataFS()
 	if e != nil {
 		t.Fatal(e)
 	}

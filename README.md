@@ -63,8 +63,16 @@ distinguishes native translations from provisional behavior.
 ## Run
 
 Go 1.25 or newer and the normal Ebitengine platform prerequisites are required.
-All runtime resources are embedded; local reference disks are not needed to
-build or run the game.
+Original Amiga assets are not included in the repository. Import them from
+your own disk images before building; the prepared files are then embedded
+locally. See [asset setup](docs/ASSET_SETUP.md) for supported revisions and the
+French executable alternative used by the original-reference tests.
+
+```sh
+sh tools/exclude-local-assets.sh
+go run ./cmd/import-assets -adf "/path/to/disk A.adf" -adf "/path/to/disk B.adf"
+go run ./cmd/assetcheck
+```
 
 ```sh
 go run ./cmd/populous2

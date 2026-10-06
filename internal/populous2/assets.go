@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"io/fs"
-	"os"
 	"strings"
 
 	embedded "go-populous2/assets"
@@ -79,12 +78,9 @@ type Bundle struct {
 }
 
 func Load() (*Bundle, error) {
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		return nil, err
-	}
-	if dir := os.Getenv("POPULOUS2_DATA_DIR"); dir != "" {
-		files = os.DirFS(dir)
 	}
 	return LoadFS(files)
 }
@@ -96,7 +92,7 @@ func LoadFS(files fs.FS) (*Bundle, error) {
 	}
 	name, found := paths["POPULOUS.II"]
 	if !found {
-		return nil, fmt.Errorf("Populous II executable populous.ii missing")
+		return nil, fmt.Errorf("Populous II game data are missing: run go run ./cmd/import-assets with your original ADF files and compatible executable (see docs/ASSET_SETUP.md), or set POPULOUS2_DATA_DIR")
 	}
 	data, err := fs.ReadFile(files, name)
 	if err != nil {

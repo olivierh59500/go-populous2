@@ -30,19 +30,23 @@ render or play Populous II.
 of all 27 embedded files. [ressources.json](ressources.json) preserves the 26
 descriptors read from the original resource loader.
 
-The strict Hunk parser reports an invalid segment boundary in disk A's
-`POPULOUS.II`. The supplied French executable parses normally: six segments,
-including one CODE segment and four BSS segments. The conversion uses that
-file without changing either original executable.
+The strict Hunk parser reports a missing HUNK_END boundary in the identified
+disk A `POPULOUS.II`. The local importer restores that structural separator
+for this fingerprint only; the original ADF is unchanged. The resulting English
+revision has bounded menu/game/audio validation. The French executable parses
+normally and remains the reference revision for full CPU comparison fixtures.
+See [ASSET_SETUP.md](ASSET_SETUP.md) for importing either revision.
 
 ## Native comparison fixtures
 
 The isolated analysis harness relocates and executes bounded original routines.
 It stays local and is not part of the game. Tests in `internal/populous2/testdata`
-retain derived numeric states and hashes; they contain no executable bytes or
-original audiovisual payloads. These fixtures establish the specific routines
+retain derived numeric states and hashes. CODE workspace snapshots are stored
+only as SHA-256 digests, with no original executable or audiovisual payloads.
+These fixtures establish the specific routines
 and conditions described in [VALIDATION.md](VALIDATION.md), rather than complete
 gameplay parity.
 
 Original graphics and data remain the property of their respective rights
-holders; the Go code license does not assign them a new license.
+holders; the Go code license does not assign them a new license. Original game
+files are generated locally and excluded from the repository and its history.

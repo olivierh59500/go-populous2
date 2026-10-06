@@ -69,7 +69,7 @@ func TestNativeResourceFramesAgainstOriginalEncodedDiskAndCPU(t *testing.T) {
 		t.Fatal(err)
 	}
 	base := resourceFrameInitialRAM(t)
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		t.Fatal(err)
 	}

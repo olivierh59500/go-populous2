@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"io/fs"
 	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -76,7 +75,7 @@ func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {
 // NewNativeOffline constructs the same source runtime without a GPU image.
 // Its framebuffer and PCM can be exported with StepNative at the PAL cadence.
 func NewNativeOffline(bundle *populous2.Bundle) (*NativeGame, error) {
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		return nil, err
 	}

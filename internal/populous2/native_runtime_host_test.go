@@ -11,7 +11,7 @@ import (
 
 func nativeRuntimeHostTest(t *testing.T) *NativeRuntimeHost {
 	t.Helper()
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +163,7 @@ func TestNativeRuntimeHostRequiresOriginalLayoutAndExplicitAllocationRange(t *te
 	if _, err := NewNativeRuntimeHost(nil, nil, NativeRuntimeHostConfig{}); err == nil {
 		t.Fatal("missing source layout accepted")
 	}
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -183,7 +183,7 @@ func (f nativeRuntimeMissingFX) Open(name string) (fs.File, error) {
 
 func TestNativeRuntimeHostResourceFailureRetainsAllocation(t *testing.T) {
 	h := nativeRuntimeHostTest(t)
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		t.Fatal(err)
 	}

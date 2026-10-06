@@ -1,0 +1,6 @@
+# Original data are local build inputs, never part of source archives.
+assets/amiga/*.pak export-ignore
+assets/amiga/*.dat export-ignore
+assets/amiga/*.dif export-ignore
+assets/amiga/*.pif export-ignore
+assets/amiga/populous.ii export-ignore

@@ -11,7 +11,7 @@ import (
 )
 
 func TestNativeResourceFilesystemReadsOriginalEncodedAssets(t *testing.T) {
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		t.Fatal(err)
 	}

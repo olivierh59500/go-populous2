@@ -29,7 +29,7 @@ func run() error {
 	jsonOutput := flag.Bool("json", false, "write resource table and presence as JSON")
 	images := flag.String("images", "", "write decoded tile/sprite atlases and interface PNGs to a new directory")
 	flag.Parse()
-	files, err := fs.Sub(assets.Files, "amiga")
+	files, err := assets.DataFS()
 	if err != nil {
 		return err
 	}

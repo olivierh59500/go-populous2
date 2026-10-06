@@ -3,7 +3,6 @@ package populous2
 import (
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"os"
 	"testing"
 
@@ -92,7 +91,7 @@ func TestNativeStartupHostRealBodiesAgainstOriginalCPU(t *testing.T) {
 	}
 	base := resourceFrameInitialRAM(t)
 	copy(base[0x300000:], bundle.Raw["conquest.pak"])
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		t.Fatal(err)
 	}

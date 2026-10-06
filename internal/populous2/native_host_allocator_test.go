@@ -2,7 +2,6 @@ package populous2
 
 import (
 	"bytes"
-	"io/fs"
 	"testing"
 
 	embedded "go-populous2/assets"
@@ -20,7 +19,7 @@ func TestNativeHostStartupAllocationsLoadActualFXAndBackground(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		t.Fatal(err)
 	}

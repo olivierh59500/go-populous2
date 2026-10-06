@@ -85,7 +85,7 @@ func TestNativeResourceHostFrameActualFailureDialogRetry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	files, err := fs.Sub(embedded.Files, "amiga")
+	files, err := embedded.DataFS()
 	if err != nil {
 		t.Fatal(err)
 	}

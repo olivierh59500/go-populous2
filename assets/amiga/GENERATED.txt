@@ -1,0 +1,4 @@
+This directory contains only a placeholder in the source repository.
+Run `go run ./cmd/import-assets -adf /path/to/disk-a.adf -adf /path/to/disk-b.adf`
+to prepare locally supplied game data before building the game.
+See docs/ASSET_SETUP.md for supported inputs and validation.
