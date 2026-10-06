@@ -161,3 +161,79 @@ func TestAILandPoliciesOriginalNumericalCorpus(t *testing.T) {
 		})
 	}
 }
+
+func TestCrossingTerrainRequestPrecedesBlockedWaterAndLastRequestWins(t *testing.T) {
+	w := testFlatWorld()
+	a := addFollower(w, 20, 20, 1, 100, Walking)
+	b := addFollower(w, 30, 30, 1, 100, Walking)
+	w.Tiles[21+20*MapSize] = Cell{}
+	w.beginLeg(a, 21, 20)
+	for range 7 {
+		w.advanceLeg(a)
+	}
+	if w.AI[1].TerrainRequestFollower != a || w.AI[1].TerrainRequestX != 21 || w.Followers[a].X != 20 {
+		t.Fatal("blocked water crossing did not report its terrain request")
+	}
+	w.Tiles[31+30*MapSize] = Cell{BaseAltitude: 0, Shape: 6, Code: 6, Corners: [4]uint8{0, 1, 1, 0}}
+	w.beginLeg(b, 31, 30)
+	for range 7 {
+		w.advanceLeg(b)
+	}
+	if w.AI[1].TerrainRequestFollower != b || w.AI[1].TerrainRequestX != 31 || w.AI[1].TerrainRequestY != 30 {
+		t.Fatal("later crossing did not replace the source request")
+	}
+	w.beginAIObservations()
+	if w.AI[1].TerrainRequestFollower != 0 {
+		t.Fatal("next follower pass retained the terrain request")
+	}
+}
+
+func TestRaisedSlopeDoesNotRequestUrgentTerrainAndCommandBypassesCursorOnly(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 1, 100, Walking)
+	w.Players[1].Mode = Rally
+	w.Tiles[21+20*MapSize] = Cell{BaseAltitude: 1, Shape: 6, Code: 6, Corners: [4]uint8{1, 2, 2, 1}}
+	w.beginLeg(id, 21, 20)
+	for range 7 {
+		w.advanceLeg(id)
+	}
+	if w.AI[1].TerrainRequestFollower != 0 {
+		t.Fatal("raised slope requested sea-level repair")
+	}
+	w.Level.Players[1].Scenario = ScenarioOptions{}
+	w.Players[1].Mana = 1000
+	if w.RaiseAt(1, 30, 30) {
+		t.Fatal("player cursor bypassed BuildAnywhere restriction")
+	}
+	w.AI[1].Order = AIOrder{Kind: AIRaise, X: 30, Y: 30}
+	before := w.Heights[30+30*CornerSize]
+	w.executeAIOrders()
+	if w.Heights[30+30*CornerSize] != before+1 || w.Players[1].Mana != 980 {
+		t.Fatal("AI command did not use original sculpt debit and admission")
+	}
+	w.Level.Players[1].Scenario.ForbidRaise = true
+	w.AI[1].Order = AIOrder{Kind: AIRaise, X: 40, Y: 40}
+	w.executeAIOrders()
+	if w.Heights[40+40*CornerSize] != 1 || w.Players[1].Mana != 980 {
+		t.Fatal("AI command ignored its sculpt prohibition")
+	}
+}
+
+func TestUrgentWaterRequestHasSourcePriorityAndReactionGate(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 1, 100, Walking)
+	a := &w.AI[1]
+	a.WaterRequestFollower = id
+	a.TerrainRequestFollower = id
+	a.TerrainRequestX = 30
+	a.TerrainRequestY = 30
+	a.Reaction = 5
+	if !w.chooseAIUrgent(1) || a.Order.X != 30 {
+		t.Fatal("terrain request was incorrectly gated by reaction")
+	}
+	a.Order = AIOrder{}
+	a.Reaction = 0
+	if !w.chooseAIUrgent(1) || a.Order.X != 20 || a.Order.Y != 20 {
+		t.Fatal("water request did not precede ordinary terrain repair")
+	}
+}

@@ -172,13 +172,13 @@ func (w *World) Cell(x, y int) Cell {
 // RaiseAt and LowerAt admit an order at the base mana cost. Every corner
 // changed by slope propagation is charged; an exhausted ledger clamps to zero.
 // Saturated or invalid requests do not consume mana.
-func (w *World) RaiseAt(player, x, y int) bool { return w.changeHeight(player, x, y, true) }
-func (w *World) LowerAt(player, x, y int) bool { return w.changeHeight(player, x, y, false) }
-func (w *World) changeHeight(player, x, y int, raise bool) bool {
+func (w *World) RaiseAt(player, x, y int) bool { return w.changeHeight(player, x, y, true, true) }
+func (w *World) LowerAt(player, x, y int) bool { return w.changeHeight(player, x, y, false, true) }
+func (w *World) changeHeight(player, x, y int, raise, cursorAdmission bool) bool {
 	if player < 0 || player > 1 || !insideCorner(x, y) || w.Players[player].Mana < w.PowerCost(player, RaiseLower) {
 		return false
 	}
-	if !w.terrainPlanAllowed(player, x, y, raise) {
+	if !w.terrainPlanAllowedCommand(player, x, y, raise, cursorAdmission) {
 		return false
 	}
 	h := w.Heights[x+y*CornerSize]

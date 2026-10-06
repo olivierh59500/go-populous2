@@ -235,6 +235,11 @@ func (w *World) chooseAIMagnet(owner int) bool {
 
 func (w *World) chooseAIUrgent(owner int) bool {
 	a := &w.AI[owner]
+	if id := a.WaterRequestFollower; id > 0 && id < FollowerCapacity && a.Reaction <= 0 {
+		f := w.Followers[id]
+		a.Order = AIOrder{Kind: AIRaise, X: int(f.X), Y: int(f.Y)}
+		return true
+	}
 	if a.Prepared {
 		power, ok := PowerByID(a.PreparedPower)
 		if ok && power.Cost*4 < w.Players[owner].Mana {
@@ -243,17 +248,10 @@ func (w *World) chooseAIUrgent(owner int) bool {
 		}
 		a.Prepared = false
 	}
-	// A threatened walker reports its current parcel; emergency raising is
-	// queued instead of altering terrain during follower simulation.
-	for id := 1; id < FollowerCapacity; id++ {
-		f := w.Followers[id]
-		if f.State == Inactive || int(f.Owner) != owner {
-			continue
-		}
-		if f.State == Drowning && a.Reaction <= 0 {
-			a.Order = AIOrder{Kind: AIRaise, X: int(f.X), Y: int(f.Y)}
-			return true
-		}
+	if a.TerrainRequestFollower != 0 {
+		a.Order = AIOrder{Kind: AIRaise, X: a.TerrainRequestX, Y: a.TerrainRequestY}
+		return true
 	}
+
 	return false
 }

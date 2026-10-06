@@ -9,9 +9,15 @@ import (
 )
 
 // TestIndependentEngineCampaignReferenceOptional compares one complete source
-// physics pass per independent Step. Rendering, input and audio presentation
-// are outside this boundary; gameplay uses the same actual campaign record.
+// main frame per independent Step, including source rendering, clock,
+// simulation and deferred commands with the same actual campaign record.
 func TestIndependentEngineCampaignReferenceOptional(t *testing.T) {
+	compareIndependentMainFrames(t, 160)
+}
+
+// compareIndependentMainFrames includes source rendering, clock advancement,
+// simulation and deferred commands while supplying no player actions.
+func compareIndependentMainFrames(t *testing.T, frames int) {
 	if os.Getenv("POPULOUS2_REFERENCE_COMPARE") != "1" {
 		t.Skip("optional local reference comparison")
 	}
@@ -83,6 +89,18 @@ func TestIndependentEngineCampaignReferenceOptional(t *testing.T) {
 		}
 
 		for owner := 0; owner < 2; owner++ {
+			metric, e := h.Memory.BSS.Read16(0xe76a + (owner+1)*314 + 0x44)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if independent.Players[owner].Statistics.Metric != metric {
+				key := fmt.Sprintf("metric%d", owner)
+				if _, ok := first[key]; !ok {
+					first[key] = pass
+					t.Logf("pass%d %s Go%d reference%d", pass, key, independent.Players[owner].Statistics.Metric, metric)
+				}
+			}
+
 			mana, e := h.Memory.BSS.Read32(0xe76a + (owner+1)*314)
 			if e != nil {
 				t.Fatal(e)
@@ -127,42 +145,33 @@ func TestIndependentEngineCampaignReferenceOptional(t *testing.T) {
 			}
 		}
 	}
-	t.Logf("campaign world %d, landscape %d, seed 0x%x; compare 160 no-input physics passes", sample.Input.World, rawLevel.Terrain, campaign[sample.Input.World].Seed)
+	t.Logf("campaign world %d, landscape %d, seed 0x%x; compare %d no-input integrated main frames", sample.Input.World, rawLevel.Terrain, campaign[sample.Input.World].Seed, frames)
 	compare(0)
-	if err = h.Session.BeginRaw(h.World, c); err != nil {
-		t.Fatal(err)
-	}
-	callbacks := NativeFrameSessionCallbacks{Audio: NativeFrameAudioCallbacks{Command: g.Audio.Command}, DirectSound: func(cue uint16) error { return g.Audio.DirectCue(cue, &h.Session.Frame) }, Bitmap: h.Bitmap}
-	h.Session.directSound = callbacks.DirectSound
-	h.Session.bitmapResolver = h.Bitmap
-	for tick := 0; tick < 160; tick++ {
-		_ = h.Memory.BSS.Write32(0xf40, uint32(tick+1))
-		bitmap, err := h.Session.Presentation.BackBuffer()
-		if err != nil {
+	frame := g.newFrame(t, nil)
+	frame.RenderChildren.Callbacks.SkipCopyProtection = true
+	for tick := 0; tick < frames; tick++ {
+		if err = h.Session.BeginRaw(h.World, c); err != nil {
 			t.Fatal(err)
 		}
-		cb := h.Session.physicsCallbacks(callbacks, bitmap)
-		cb.Swap = func(*NativeFrameRegisterContext) (bool, error) { return false, nil }
-		h.Session.Pass = NativeFramePassState{}
-		done, err := h.Session.Pass.TickFramePass(&h.Session.Frame, cb)
-		if err != nil {
-			t.Fatal(tick, err)
+		complete := false
+		for poll := 0; poll < 32 && !complete; poll++ {
+			input := &h.Session.Presentation.Input
+			if _, err = h.Session.Presentation.VBlank(NativeMouseSample{CounterX: uint8(input.Mouse.CounterX), CounterY: uint8(input.Mouse.CounterY)}, h.Memory.BSS, &h.Session.Frame); err != nil {
+				t.Fatal(err)
+			}
+			complete, err = frame.Advance()
+			if err != nil {
+				t.Fatal(tick, poll, err)
+			}
 		}
-		if done || h.Session.Pass.Stage != NativeFrameSwap {
-			t.Fatal("reference did not stop after one complete physics pass")
+		if !complete {
+			t.Fatal("bounded main frame remained pending")
 		}
+		c = h.Session.Frame
 		independent.Step()
 		compare(tick + 1)
-
-		h.Session.Image.AudioBank = h.Session.Audio.Entries
-		if err = h.ImageAudioCode.SetOwner(NativeImageCodeOwner); err != nil {
-			t.Fatal(err)
-		}
-		if _, err = h.Session.Presentation.Swap(&h.Session.Frame); err != nil {
-			t.Fatal(err)
-		}
-
 	}
+
 	h.Session.finish(nil)
 
 	t.Logf("first normalized discrepancies: %v", first)

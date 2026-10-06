@@ -20,11 +20,14 @@ func (s ScenarioOptions) TerrainEditAllowed(height int, raise bool) bool {
 }
 
 func (w *World) terrainPlanAllowed(owner, x, y int, raise bool) bool {
+	return w.terrainPlanAllowedCommand(owner, x, y, raise, true)
+}
+func (w *World) terrainPlanAllowedCommand(owner, x, y int, raise, cursorAdmission bool) bool {
 	if owner < 0 || owner > 1 || !insideCorner(x, y) {
 		return false
 	}
 	options := w.Level.Players[owner].Scenario
-	if !options.TerrainEditAllowed(int(w.Heights[x+y*CornerSize]), raise) {
+	if cursorAdmission && !options.TerrainEditAllowed(int(w.Heights[x+y*CornerSize]), raise) || raise && options.ForbidRaise || !raise && options.ForbidLower {
 		return false
 	}
 	before := w.Heights
@@ -108,6 +111,9 @@ func (w *World) advanceWater(id int) bool {
 		f.Frame = 1
 		w.clearHeroLinks(id)
 		return true
+	}
+	if water && f.Owner < 2 {
+		w.AI[f.Owner].WaterRequestFollower = id
 	}
 	if !water {
 		f.State = Walking

@@ -61,6 +61,15 @@ func (w *World) advanceLeg(id int) {
 	}
 	nx, ny := f.positionX+f.velocityX, f.positionY+f.velocityY
 	x, y := nx/256, ny/256
+	if nx >= 0 && ny >= 0 && inside(x, y) && (x != int(f.X) || y != int(f.Y)) && f.Owner < 2 {
+		cell := w.Cell(x, y)
+		if cell.BaseAltitude == 0 && cell.Shape&1 == 0 {
+			a := &w.AI[f.Owner]
+			a.TerrainRequestFollower = id
+			a.TerrainRequestX = x
+			a.TerrainRequestY = y
+		}
+	}
 	if nx < 0 || ny < 0 || !inside(x, y) || w.Tiles[x+y*MapSize].IsWater() && !f.ImmuneToDrowning() {
 		f.moving = false
 		f.MoveProgress = 0
@@ -68,6 +77,7 @@ func (w *World) advanceLeg(id int) {
 	}
 	oldX, oldY := int(f.X), int(f.Y)
 	if x != oldX || y != oldY {
+
 		if wall := w.WallAt(x, y); wall >= 0 {
 			switch w.DecideWallCrossing(id, wall) {
 			case WallBlocked:

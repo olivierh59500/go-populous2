@@ -21,6 +21,8 @@ type AIOrder struct {
 	Target         PowerTarget
 }
 type AIState struct {
+	TerrainRequestFollower, TerrainRequestX, TerrainRequestY    int
+	WaterRequestFollower                                        int
 	Choices                                                     [33]AIPowerChoice
 	ChoiceCount, LeaderChoiceCount, ChoiceIndex, MagnetCooldown int
 	Prepared                                                    bool
@@ -54,6 +56,8 @@ func (w *World) beginAIObservations() {
 		w.AI[owner].ExpansionTown = 0
 		w.AI[owner].BestTown = 0
 		w.AI[owner].BestPopulation = 0
+		w.AI[owner].TerrainRequestFollower = 0
+		w.AI[owner].WaterRequestFollower = 0
 	}
 }
 
@@ -165,9 +169,9 @@ func (w *World) executeAIOrders() {
 		w.AI[owner].Order = AIOrder{}
 		switch order.Kind {
 		case AIRaise:
-			w.RaiseAt(owner, order.X, order.Y)
+			w.changeHeight(owner, order.X, order.Y, true, false)
 		case AILower:
-			w.LowerAt(owner, order.X, order.Y)
+			w.changeHeight(owner, order.X, order.Y, false, false)
 		case AIReleaseTown:
 			w.Sprog(owner, order.X, order.Y)
 		case AICastPower:
