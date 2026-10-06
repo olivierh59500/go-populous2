@@ -102,11 +102,11 @@ func (g *Game) drawSelectionPanel() {
 	}
 	f := g.World.Followers[id]
 	land := g.World.Level.Landscape
-	// The original duplicates the selected actor without its map markers or
-	// a second sound trigger. A local renderer copy preserves the live gate.
+	// The selected copy hides its inspect cursor but retains leader/hero status
+	// arrows. A local renderer copy prevents a second sound trigger.
 	preview := *g
 	preview.music = nil
-	preview.drawFollowerArtwork(id, land, panel.ActorX, panel.ActorY, false)
+	preview.drawSelectedFollowerArtwork(id, land, panel.ActorX, panel.ActorY)
 	if f.Weapons >= 0 && f.Weapons < len(panel.Weapons) {
 		preview.drawArtworkLayers(panel.Weapons[f.Weapons].Layers, panel.WeaponX, panel.WeaponY, land)
 	}

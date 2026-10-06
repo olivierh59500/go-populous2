@@ -42,6 +42,38 @@ func TestSelectedArtworkUsesPanelAnchorAndDoesNotChangeWorld(t *testing.T) {
 	}
 }
 
+func TestSelectedPanelRetainsLeaderAndHeroStatusAtLiveActorPhase(t *testing.T) {
+	for _, hero := range []bool{false, true} {
+		w := &engine.World{Tick: 99}
+		w.Followers[1] = engine.Follower{State: engine.Walking, Owner: 0, X: 12, Y: 12, Frame: 1}
+		name := "follower/0/0/north"
+		if hero {
+			w.Followers[1].Hero.Kind = engine.HeroPerseus
+			name = "hero/perseus/north"
+		} else {
+			w.Players[0].Leader = 1
+		}
+		visual := &visualassets.Bundle{Animations: map[string]visualassets.Animation{
+			name:                 {Frames: []visualassets.Frame{{Layers: []visualassets.SpriteLayer{{Sprite: 0}}}, {Layers: []visualassets.SpriteLayer{{Sprite: 1}}}}, Loop: true},
+			"marker/leader-blue": {Frames: []visualassets.Frame{{Layers: []visualassets.SpriteLayer{{Sprite: 2}}}}},
+		}}
+		for _, c := range []color.RGBA{{R: 255, A: 255}, {G: 255, A: 255}, {B: 255, A: 255}} {
+			pixel := image.NewRGBA(image.Rect(0, 0, 1, 1))
+			pixel.SetRGBA(0, 0, c)
+			visual.Sprites[0] = append(visual.Sprites[0], visualassets.Sprite{Image: pixel, AnchorY: 8})
+		}
+		g := &Game{World: w, SelectedFollower: 1, Assets: &Assets{Visual: visual, SelectionPanel: &visualassets.SelectionPanel{ActorX: 282, ActorY: 42, PopulationSprite: -1}}, framebuffer: image.NewRGBA(image.Rect(0, 0, 320, 200))}
+		before := w.Snapshot()
+		g.drawSelectionPanel()
+		if g.framebuffer.RGBAAt(282, 34).G != 255 || g.framebuffer.RGBAAt(278, 26).B != 255 {
+			t.Fatal("panel changed the live phase or hid its leader/hero indicator", hero)
+		}
+		if w.Snapshot() != before {
+			t.Fatal("panel status presentation changed simulation")
+		}
+	}
+}
+
 func TestSelectedGroupAndInspectModeSurviveSessionSave(t *testing.T) {
 	g := browserGame(t)
 	g.SelectedFollower = g.World.Players[0].Leader
