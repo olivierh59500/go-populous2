@@ -88,8 +88,9 @@ go run ./cmd/populous2-native -save-root /path/to/existing/save-directory
 ```
 
 This target uses the original320×200 screen, initial menu/world constructor,
-native simulation/render/input and four-channel audio. Deity/file/result and
-transport integration are still in progress; required missing source operations
+native simulation/render/input, raw GAM file dialogs and four-channel audio.
+Deity/result integration and complete paired gameplay remain in progress;
+required missing source operations
 return explicit errors. The normal command remains available while these paths
 are completed. Diagnostic `-auto-start` clicks the original custom-game button;
 it does not substitute an automatically generated World.
