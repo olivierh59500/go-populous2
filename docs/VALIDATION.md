@@ -1627,3 +1627,23 @@ All configured names are accepted by the pinned Ebitengine backend. Full
 tests, original keyboard/HUD/gameplay-controller race tests and vet pass.
 Bounded menu, file browser, deity and custom-start desktop runs exit0; the
 custom capture reaches the genuine protection requester.
+
+## Paired native GAM save/load with real gameplay progress
+
+Both physical peers now execute actual118 menu commands,446A Save/Load
+actions,3F92 DOS/resource/palette/redraw children and181C0 at menu return
+over the existing TCP connection. Synchronous and asynchronous filesystem
+cases preserve each source EB42 profile and mode6. Each saved file equals
+the original GAM span at save return; after loading, DD6..EB48 equals that
+peer's file exactly. No handshake/world regeneration or network restoration
+is fabricated after load.
+
+Unsaved connection owners, command identity/mode records and EB6A pointers
+remain live. Cache refresh occurs once after complete-frame idle and changes
+no BSS byte. The pre-load world differs from its saved file, proving actual
+restoration;20 following main frames are unpaused, advance F40 exactly20
+and change raw actors. Peers match terrain, overlays, pools, RNG and clock
+throughout. The genuine RNG may remain unchanged when no random call occurs.
+Full tests, real TCP normal/race and vet pass. This is a configured original
+controller/transport composition, with original browser/DOS CPU references
+kept separate.
