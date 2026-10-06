@@ -16,6 +16,13 @@ func (h *NativeRuntimeHost) MainRenderBindings(supplied NativeSessionRenderBindi
 		}
 		supplied.Rules = &rules
 	}
+	logical, err := h.LogicalCode()
+	if err != nil {
+		return supplied, err
+	}
+	if err := supplied.Rules.Frames.BindCode(h.Memory.Code, logical.Read32); err != nil {
+		return supplied, err
+	}
 	land := int(h.World.Level.Terrain)
 	if supplied.Sprites == nil {
 		bank, err := DecodeNativeSpriteBitmapBank(h.Bundle, land)

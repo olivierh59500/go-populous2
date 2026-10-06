@@ -32,4 +32,16 @@ func TestNativeRuntimeRenderBindingsUseActualWindowAndCode(t *testing.T) {
 	if bindings.PaintingAdvance != nil || bindings.Children.TownInfoAdvance != nil || bindings.SelectedOwnership != nil {
 		t.Fatal("renderer acknowledged unsupplied native operations")
 	}
+	if err := h.Memory.Code.Write16(0x26958, 0x1234); err != nil {
+		t.Fatal(err)
+	}
+	if value, err := bindings.Rules.Frames.Images.word(0x26958); err != nil || value != 0x1234 {
+		t.Fatal("renderer animation table detached from active CODE", value, err)
+	}
+	if err := h.Code.Logical().Write32(0x21626+8, 0xf0ee); err != nil {
+		t.Fatal(err)
+	}
+	if value, err := bindings.Rules.Frames.Images.procedure(0x21626 + 8); err != nil || value != 0xf0ee {
+		t.Fatal("renderer procedure did not use linked view", value, err)
+	}
 }
