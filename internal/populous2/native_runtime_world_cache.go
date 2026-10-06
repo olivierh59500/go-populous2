@@ -21,6 +21,14 @@ func (h *NativeRuntimeHost) RefreshWorldCaches() error {
 	if err != nil {
 		return err
 	}
+	mode, err := h.Memory.BSS.Read16(0xeb44)
+	if err != nil {
+		return err
+	}
+	profile, err := h.Memory.BSS.Read16(0xeb42)
+	if err != nil {
+		return err
+	}
 	if int(world) >= len(h.Bundle.Levels) || int(land) >= len(h.Bundle.Landscapes) {
 		return fmt.Errorf("native initialized world/LAND index unavailable")
 	}
@@ -57,6 +65,8 @@ func (h *NativeRuntimeHost) RefreshWorldCaches() error {
 	}
 	h.World.Level = h.Bundle.Levels[world]
 	h.World.Level.Terrain = int(land)
+	h.World.NativeGameMode, h.World.NativeProfileSide = mode, uint8(profile)
+	h.World.Custom = mode != 2
 	h.World.Core.Level.Terrain = uint8(land)
 	h.World.Landscape = landscape
 	h.World.Core.OlympianTowns = towns

@@ -25,6 +25,12 @@ func TestNativeRuntimeWorldCachesChangeWithoutRegeneratingRawState(t *testing.T)
 		if err := h.Memory.BSS.Write16(0xeb22, uint16(land)); err != nil {
 			t.Fatal(err)
 		}
+		if err := h.Memory.BSS.Write16(0xeb44, 6); err != nil {
+			t.Fatal(err)
+		}
+		if err := h.Memory.BSS.Write16(0xeb42, 2); err != nil {
+			t.Fatal(err)
+		}
 		if err := h.Memory.BSS.Write32(0x76f4+26, 0x12345678); err != nil {
 			t.Fatal(err)
 		}
@@ -45,6 +51,9 @@ func TestNativeRuntimeWorldCachesChangeWithoutRegeneratingRawState(t *testing.T)
 		}
 		if h.World.Level.Terrain != land || h.World.Landscape != h.Bundle.Landscapes[land] || h.Session.followerRules.landscape != h.World.Landscape {
 			t.Fatal("loaded LAND rules remained stale")
+		}
+		if h.World.NativeGameMode != 6 || h.World.NativeProfileSide != 2 || !h.World.Custom {
+			t.Fatal("cache refresh retained stale native session metadata")
 		}
 		if err := h.Session.BeginRaw(h.World, NativeFrameRegisterContext{AddressBase: 0x200000}); err != nil {
 			t.Fatal(err)

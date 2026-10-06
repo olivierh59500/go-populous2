@@ -72,3 +72,54 @@ func TestNativeRuntimeTransportPacketsUseRealConnectionsAndRawOwners(t *testing.
 		t.Fatal("native packet bytes/register outputs differ", data, contexts)
 	}
 }
+
+func TestNativeRuntimeTransportMismatchRetainsOriginalErrorRequester(t *testing.T) {
+	left, right := net.Pipe()
+	defer right.Close()
+	h := nativeRuntimeHostTest(t)
+	if _, err := h.InitializePresentation(NativeMouseSample{}); err != nil {
+		t.Fatal(err)
+	}
+	conn, err := NewNativeSerialConn(left)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	transport, err := h.NewTransport(conn, NativeTransportFrameCallbacks{}, func(bool, *NativeFrameRegisterContext) error { return nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, patch := range []nativeHeroPatch{{0xeb28, 4, 0x12345678}, {0x15e, 2, 380}, {0xeb5e, 1, 8}, {0xeb68, 1, 6}} {
+		renderFramePatch(h.Memory.BSS, patch)
+	}
+	written := make(chan error, 1)
+	go func() { _, err := right.Write([]byte{1, 2, 3, 4, 0xde, 0xad, 0xbe, 0xef}); written <- err }()
+	context := NativeCommandRegisterContext{}
+	phase := uint32(0)
+	deadline := time.Now().Add(time.Second)
+	for transport.mismatch == nil {
+		done, err := transport.PacketCallback(0xeb56, 8, &context, &phase)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if done {
+			t.Fatal("mismatched RNG completed without actual dialog")
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("mismatch requester did not begin")
+		}
+		time.Sleep(100 * time.Microsecond)
+	}
+	if err := <-written; err != nil {
+		t.Fatal(err)
+	}
+	if transport.mismatch.Routine != 0x33b2 || transport.mismatch.A[1].Address == 0 {
+		t.Fatal("source error requester context missing")
+	}
+	if random, err := h.Memory.BSS.Read32(0xeb28); err != nil || random != 0x12345678 {
+		t.Fatal("mismatch repaired native RNG", random, err)
+	}
+	if mode, err := h.Memory.BSS.Read8(0xeb5e); err != nil || mode != 8 {
+		t.Fatal("mismatch disconnected before source acknowledgement", mode, err)
+	}
+}
