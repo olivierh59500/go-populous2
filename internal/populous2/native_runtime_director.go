@@ -23,6 +23,17 @@ type NativeRuntimeDirectorCallbacks struct {
 	MenuChild func(NativeStartupResetFrameCall, *uint32) (NativeCommandFrameResult, error)
 }
 
+// NewNativeRuntimeResetDirector retains a source reset inside an already
+// borrowed frame. Decoded caches must be refreshed by the host after return.
+func NewNativeRuntimeResetDirector(entry int) (*NativeRuntimeDirector, error) {
+	if entry != 0x10ad8 && entry != 0x10a8c {
+		return nil, fmt.Errorf("native reset director entry unavailable")
+	}
+	s := &NativeRuntimeDirector{started: true, deferCaches: true}
+	s.Startup.Startup.Entry = entry
+	return s, nil
+}
+
 func (s *NativeRuntimeDirector) Advance(h *NativeRuntimeHost, r *NativeStartupCampaignHostRules, frame *NativeFrameRegisterContext, supplied NativeRuntimeDirectorCallbacks) (out NativeStartupResetFrameStep, failure error) {
 	if s == nil || h == nil || r == nil || frame == nil {
 		return out, fmt.Errorf("native runtime director context missing")

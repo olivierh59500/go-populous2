@@ -121,4 +121,20 @@ func TestNativeRuntimeHandshakeConstructsActualNegotiatedWorlds(t *testing.T) {
 			}
 		}
 	}
+	deadline = time.Now().Add(time.Second)
+	for !transports[0].Resume.Finished || !transports[1].Resume.Finished {
+		if time.Now().After(deadline) {
+			t.Fatal("negotiated actual runtime resume stalled")
+		}
+		for side := range transports {
+			step, err := transports[side].AdvanceResume(&frames[side])
+			if err != nil {
+				t.Fatal(err)
+			}
+			if step.CorruptReturn {
+				t.Fatal("healthy peer stream entered corrupt source return")
+			}
+		}
+		time.Sleep(100 * time.Microsecond)
+	}
 }

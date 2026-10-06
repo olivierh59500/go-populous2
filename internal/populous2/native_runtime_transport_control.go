@@ -8,6 +8,21 @@ func (s *NativeRuntimeTransport) controlCallbacks(frame *NativeFrameRegisterCont
 	}
 	cb := s.Callbacks
 	cb.Frame = frame
+	external := cb.CallTransport
+	cb.CallTransport = func(call NativeFileFrameCall, phase *uint32) (NativeSerialFrameChildResult, error) {
+		if call.Routine == 0x111ae {
+			rules, err := DecodeNativeProfilePanelFrameRules(s.Host.Bundle.Executable)
+			if err != nil {
+				return NativeSerialFrameChildResult{}, err
+			}
+			_, err = rules.SwitchProfile(s.Host.Memory.BSS, call.Frame)
+			return NativeSerialFrameChildResult{Complete: err == nil}, err
+		}
+		if external == nil {
+			return NativeSerialFrameChildResult{}, fmt.Errorf("native transport child%x missing", call.Routine)
+		}
+		return external(call, phase)
+	}
 	return cb, nil
 }
 

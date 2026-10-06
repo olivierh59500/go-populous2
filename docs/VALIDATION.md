@@ -1141,3 +1141,19 @@ delay boundaries, then executes each real mode6 world constructor through
 encoded resources, panel and audio. Terrain, overlays and complete actor pools
 match between peers. This proves host/controller composition; live serial-menu
 wiring, session resumes and full two-player gameplay/save policy remain work.
+
+## Runtime TCP endpoints and negotiated resume
+
+Configured asynchronous TCP endpoints expose only a nonblocking readiness
+poll and the actual connection; they add no packet framing. The retained serial
+menu ports resolve physical A0 buffers and counted temporary words, preserve
+baud configuration without flushing unread bytes, and use original availability
+and disconnect behavior.
+
+Tests verify the real one-byte CR transfer, unchanged caller high words and
+retained receive data. Negotiated runtime worlds additionally exchange the
+actual181C0 resume packet and execute the proven111AE profile child. A separate
+loopback TCP test passes with approved local-socket access under race; the
+sandbox-denied bind is explicitly skipped only for that unavailable environment.
+Live menu connection setup and complete paired gameplay still need wiring and
+validation.

@@ -13,6 +13,8 @@ func main() {
 	capture := flag.String("screenshot", "", "save a native application framebuffer PNG to a new path")
 	captureAfter := flag.Int("capture-update", 100, "native update to capture")
 	autoStart := flag.Bool("auto-start", false, "diagnostic: click the original custom-game menu button")
+	listen := flag.String("listen", "", "listen for native serial bytes over TCP at this address")
+	connect := flag.String("connect", "", "connect native serial bytes over TCP to this address")
 	flag.Parse()
 	bundle, err := populous2.Load()
 	if err != nil {
@@ -23,6 +25,9 @@ func main() {
 		log.Fatal(err)
 	}
 	defer g.Close()
+	if err := g.SetNetwork(*listen, *connect); err != nil {
+		log.Fatal(err)
+	}
 	g.Limit = *frames
 	g.Capture, g.CaptureAfter = *capture, *captureAfter
 	g.AutoStart = *autoStart
