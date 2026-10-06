@@ -64,6 +64,23 @@ func export(files fs.FS, output string) error {
 	}
 	catalog := visualassets.Catalog{Version: visualassets.SchemaVersion, Background: "background.png", Startup: "startup.png", Ending: "ending.png", Animations: make(map[string]visualassets.Animation)}
 	catalog.StartupPalette = presentation.StartupPalette
+	catalog.Towns = &visualassets.TownArt{PopulationDivisors: source.TownCenterArt.PopulationDivisors, FlagSprites: [2][2]int{{89, 90}, {91, 92}}, FlagHeight: 24}
+	for i, offset := range source.TownEvaluator.OverlayOffsets {
+		x := int(int8(uint8(offset)))
+		catalog.Towns.Offsets[i] = [2]int{x, (int(int16(offset)) - x) / 256}
+	}
+	for stage, center := range source.TownCenterArt.Frames {
+		catalog.Towns.Centers[stage] = animation([]populous2.AnimationFrame{center}, false).Frames[0]
+		for layer := range catalog.Towns.Centers[stage].Layers {
+			catalog.Towns.Centers[stage].Layers[layer].Y += 8
+		}
+		for neighbor, code := range source.TownEvaluator.StructureTiles[stage] {
+			if code == 0 {
+				continue
+			}
+			catalog.Towns.Surroundings[stage][neighbor] = animation([]populous2.AnimationFrame{source.TownEvaluator.OverlayFrames[code]}, false).Frames[0]
+		}
+	}
 	if err := os.MkdirAll(output, 0755); err != nil {
 		return err
 	}

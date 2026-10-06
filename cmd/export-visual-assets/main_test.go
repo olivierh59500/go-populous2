@@ -139,6 +139,27 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			t.Fatal("wall artwork differs", name)
 		}
 	}
+	for stage := range source.TownCenterArt.Frames {
+		for owner := range 2 {
+			for _, population := range []uint32{0, 1, 100, 4000, 1 << 24} {
+				for tick := range uint16(2) {
+					want, ok := source.TownCenterArt.Frame(stage, uint8(owner+1), population, tick)
+					if !ok || !reflect.DeepEqual(portable.Towns.CenterLayers(stage, owner, population, uint64(tick)), want.Layers) {
+						t.Fatal("town population artwork differs", stage, owner, population, tick)
+					}
+				}
+			}
+		}
+		for neighbor, code := range source.TownEvaluator.StructureTiles[stage] {
+			if code == 0 {
+				continue
+			}
+			want := animation([]populous2.AnimationFrame{source.TownEvaluator.OverlayFrames[code]}, false).Frames[0]
+			if !reflect.DeepEqual(portable.Towns.Surroundings[stage][neighbor], want) {
+				t.Fatal("town adjacent artwork differs", stage, neighbor)
+			}
+		}
+	}
 	for _, path := range []string{"populous.ii", "POPULOUS.II", "code.bin"} {
 		if _, err := os.Stat(filepath.Join(output, path)); !os.IsNotExist(err) {
 			t.Fatalf("unexpected game program in portable installation: %s", path)

@@ -79,6 +79,7 @@ type Catalog struct {
 	PortraitParts  [3][8]Region              `json:"portrait_parts"`
 	Font           FontDescriptor            `json:"font"`
 	Animations     map[string]Animation      `json:"animations,omitempty"`
+	Towns          *TownArt                  `json:"towns,omitempty"`
 }
 
 type Bundle struct {
@@ -91,6 +92,7 @@ type Bundle struct {
 	PortraitParts               [3][8]*image.RGBA
 	Font                        *Font
 	Animations                  map[string]Animation
+	Towns                       *TownArt
 }
 
 // Portrait assembles independently selectable headpiece, eyes and mouth.

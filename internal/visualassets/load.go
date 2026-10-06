@@ -179,6 +179,57 @@ func loadFS(files fs.FS) (*Bundle, error) {
 	if b.Font, err = loader.font(catalog.Font); err != nil {
 		return nil, err
 	}
+	b.Towns = catalog.Towns
+	if b.Towns != nil {
+		if b.Towns.FlagHeight < 1 || b.Towns.FlagHeight > 128 {
+			return nil, fmt.Errorf("invalid town flag height")
+		}
+		for stage, divisor := range b.Towns.PopulationDivisors {
+			if divisor == 0 || len(b.Towns.Centers[stage].Layers) == 0 {
+				return nil, fmt.Errorf("invalid town center metadata")
+			}
+		}
+		validateLayers := func(frame Frame) error {
+			if len(frame.Layers) > 32 {
+				return fmt.Errorf("town artwork has excessive layers")
+			}
+			for _, layer := range frame.Layers {
+				if layer.Sprite < 0 || layer.X < -512 || layer.X > 512 || layer.Y < -512 || layer.Y > 512 {
+					return fmt.Errorf("invalid town artwork layer")
+				}
+				for _, bank := range b.Sprites {
+					if layer.Sprite >= len(bank) {
+						return fmt.Errorf("town sprite exceeds artwork bank")
+					}
+				}
+			}
+			return nil
+		}
+		for stage, center := range b.Towns.Centers {
+			if err := validateLayers(center); err != nil {
+				return nil, err
+			}
+			for _, frame := range b.Towns.Surroundings[stage] {
+				if err := validateLayers(frame); err != nil {
+					return nil, err
+				}
+			}
+		}
+		for _, offset := range b.Towns.Offsets {
+			if offset[0] < -1 || offset[0] > 1 || offset[1] < -1 || offset[1] > 1 {
+				return nil, fmt.Errorf("town adjacent offset exceeds its eight neighbours")
+			}
+		}
+		for _, flags := range b.Towns.FlagSprites {
+			for _, sprite := range flags {
+				for _, bank := range b.Sprites {
+					if sprite < 0 || sprite >= len(bank) {
+						return nil, fmt.Errorf("town flag sprite missing")
+					}
+				}
+			}
+		}
+	}
 	if len(b.Animations) > 4096 {
 		return nil, fmt.Errorf("too many visual animations")
 	}
