@@ -198,7 +198,7 @@ func (w *World) commandEarthquakeCreation(call NativeCommandCall) (bool, error) 
 
 func (w *World) commandSculpt(call NativeCommandCall) (bool, error) {
 	c, m := call.Context, w.nativeCleanupMemory()
-	rules := NativeCommandRules{Code: append([]byte(nil), w.NativeAI.Code...)}
+	rules := NativeCommandRules{Code: w.NativeAI.Code}
 	raise := call.Routine == 0xd80c
 	if !raise {
 		owner, x, y := uint8(c.D[2]), uint8(c.D[0]), uint8(c.D[1])
@@ -270,7 +270,7 @@ func (w *World) commandSculpt(call NativeCommandCall) (bool, error) {
 		return false, e
 	}
 	if allowed {
-		if _, e := rules.DirectTerrain(raise, c, m); e != nil {
+		if _, e := rules.DirectTerrainWithPoints(raise, c, m, w.nativeTerrainPoint); e != nil {
 			return false, e
 		}
 		w.hydrateCommandTerrainHeights()

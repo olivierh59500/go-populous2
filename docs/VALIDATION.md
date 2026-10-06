@@ -1157,3 +1157,16 @@ loopback TCP test passes with approved local-socket access under race; the
 sandbox-denied bind is explicitly skipped only for that unavailable environment.
 Live menu connection setup and complete paired gameplay still need wiring and
 validation.
+
+## Runtime sculpture scratch and persistent overview updates
+
+The actual command sculpture now keeps its17×17 planner scratch and mask in
+the shared CODE owner. It also sends source terrain-point writes through the
+runtime's persistent22 bitmap, instead of discarding those updates in a private
+CODE copy or omitting minimap painting.
+
+A regression compares the World command path against the CPU-verified raw
+D80C child from identical physical owners: all data registers, BSS, planner
+scratch and overview pixels match. Existing complete direct-terrain/command
+and sculpt-neighbor tests also pass. This covers native path composition;
+broader interactive terrain/disaster behavior remains part of final validation.
