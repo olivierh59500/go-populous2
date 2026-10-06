@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-populous2/internal/engine"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -70,14 +71,35 @@ func (g *Game) loadGame() error {
 		return err
 	}
 	defer file.Close()
-	decoder := json.NewDecoder(file)
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	if info.Size() > 16<<20 {
+		return fmt.Errorf("saved session exceeds 16 MiB")
+	}
+	decoder := json.NewDecoder(io.LimitReader(file, 16<<20))
 	decoder.DisallowUnknownFields()
 	var session savedSession
 	if err := decoder.Decode(&session); err != nil {
 		return err
 	}
+	if err := decoder.Decode(new(any)); err != io.EOF {
+		return fmt.Errorf("saved session has trailing data")
+	}
 	if session.Version != 1 || session.LevelIndex < 0 || session.LevelIndex >= len(g.Assets.Levels) || session.CameraX < 0 || session.CameraX > 56 || session.CameraY < 0 || session.CameraY > 56 || session.Direction > 3 {
 		return fmt.Errorf("unsupported or invalid saved session")
+	}
+	if len(session.Profile.Name) > 16 {
+		return fmt.Errorf("invalid saved deity name")
+	}
+	for _, part := range session.Profile.FaceParts {
+		if part > 7 {
+			return fmt.Errorf("invalid saved deity face")
+		}
+	}
+	if _, ok := engine.PowerByID(session.Selected); !ok {
+		return fmt.Errorf("invalid saved power selection")
 	}
 	world, err := session.World.Restore()
 	if err != nil {

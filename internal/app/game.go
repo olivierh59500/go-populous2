@@ -29,6 +29,7 @@ const (
 	EditorScreen
 	HelpScreen
 	PowerHelpScreen
+	SaveBrowserScreen
 )
 
 // Game holds ordinary Go screen and input state. Original program counters,
@@ -73,6 +74,7 @@ type Game struct {
 	Updates, Limit, CaptureAfter int
 	Capture                      string
 	SavePath                     string
+	SaveBrowser                  *SaveBrowser
 	AutoStart                    bool
 	framebuffer                  *image.RGBA
 	visibleFollowers             [viewSize * viewSize]int
@@ -119,7 +121,9 @@ func (g *Game) Update() error {
 		g.Message, g.messageUntil = err.Error(), g.Updates+250
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
-		if g.Screen == EditorScreen {
+		if g.Screen == SaveBrowserScreen {
+			g.closeSaveBrowser()
+		} else if g.Screen == EditorScreen {
 			g.cancelEditor()
 		} else if g.Screen == OptionsScreen {
 			g.cancelOptions()
@@ -143,6 +147,11 @@ func (g *Game) Update() error {
 	}
 	switch g.Screen {
 	case MainMenu:
+		if clicked && x >= 110 && x < 214 && y >= 175 && y < 192 {
+			if err := g.openSaveBrowser(false); err != nil {
+				g.Message, g.messageUntil = err.Error(), g.Updates+150
+			}
+		}
 		if clicked && x >= 78 && x < 245 {
 			switch {
 			case y >= 86 && y < 101:
@@ -184,17 +193,20 @@ func (g *Game) Update() error {
 			}
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyF9) {
-			if err := g.loadGame(); err != nil {
+			if err := g.openSaveBrowser(false); err != nil {
 				g.Message, g.messageUntil = err.Error(), g.Updates+200
 			}
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyF10) {
-			if err := g.saveGame(); err != nil {
+			if err := g.openSaveBrowser(true); err != nil {
 				g.Message, g.messageUntil = err.Error(), g.Updates+200
 			}
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 			g.PickingPower = !g.PickingPower
+		}
+		if g.Screen != Playing {
+			break
 		}
 		if err := g.updateWorld(x, y, clicked); err != nil {
 			return err
@@ -229,6 +241,8 @@ func (g *Game) Update() error {
 		if err := g.updatePowerHelp(x, y, clicked); err != nil {
 			g.Message, g.messageUntil = err.Error(), g.Updates+100
 		}
+	case SaveBrowserScreen:
+		g.updateSaveBrowser(x, y, clicked)
 	}
 	g.drawFrame()
 	g.image.WritePixels(g.framebuffer.Pix)
@@ -285,8 +299,9 @@ func (g *Game) drawFrame() {
 		g.button("MULTIPLAYER", 78, 120, 168)
 		g.button("CUSTOM GAME", 78, 138, 168)
 		g.button("HELP", 78, 156, 168)
+		g.button("LOAD GAME", 110, 175, 104)
 		if g.Updates < g.messageUntil {
-			g.drawMessage(175)
+			g.drawMessage(0)
 		}
 	case DeityProfile:
 		g.drawProfile()
@@ -316,5 +331,7 @@ func (g *Game) drawFrame() {
 		g.drawHelp()
 	case PowerHelpScreen:
 		g.drawPowerHelp()
+	case SaveBrowserScreen:
+		g.drawSaveBrowser()
 	}
 }
