@@ -65,6 +65,17 @@ type NativeGame struct {
 }
 
 func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {
+	g, err := NewNativeOffline(bundle)
+	if err != nil {
+		return nil, err
+	}
+	g.image = ebiten.NewImage(320, 200)
+	return g, nil
+}
+
+// NewNativeOffline constructs the same source runtime without a GPU image.
+// Its framebuffer and PCM can be exported with StepNative at the PAL cadence.
+func NewNativeOffline(bundle *populous2.Bundle) (*NativeGame, error) {
 	files, err := fs.Sub(embedded.Files, "amiga")
 	if err != nil {
 		return nil, err
@@ -80,7 +91,7 @@ func NewNative(bundle *populous2.Bundle) (*NativeGame, error) {
 		h.Close()
 		return nil, err
 	}
-	return &NativeGame{Host: h, Rules: rules, Registers: populous2.NativeFrameRegisterContext{AddressBase: 0x200000}, image: ebiten.NewImage(320, 200), pixels: make([]byte, 320*200*4), keys: make(map[ebiten.Key]bool)}, nil
+	return &NativeGame{Host: h, Rules: rules, Registers: populous2.NativeFrameRegisterContext{AddressBase: 0x200000}, pixels: make([]byte, 320*200*4), keys: make(map[ebiten.Key]bool)}, nil
 }
 
 func (g *NativeGame) boot() error {
@@ -168,20 +179,70 @@ func (g *NativeGame) Update() error {
 	if g.Limit > 0 && g.Updates >= g.Limit {
 		return ebiten.Termination
 	}
-	err := g.Host.Access.Execute(func() error {
+	x, y := ebiten.CursorPosition()
+	left, right := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft), ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight)
+	err := g.advanceNative(NativeInput{X: x, Y: y, Left: left, Right: right}, true)
+	if err != nil {
+		return err
+	}
+	if g.player == nil {
+		context := audio.CurrentContext()
+		if context == nil {
+			context = audio.NewContext(44100)
+		}
+		player, err := context.NewPlayer(g.Stream)
+		if err != nil {
+			return err
+		}
+		g.player = player
+		g.player.Play()
+	}
+	g.image.WritePixels(g.pixels)
+	return nil
+}
+
+// NativeInput supplies ordinary mouse coordinates and original keyboard wires.
+// It does not expose game-state mutations or bypass gameplay admissions.
+type NativeInput struct {
+	X, Y        int
+	Left, Right bool
+	Keys        []uint8
+}
+
+// StepNative advances the same retained runtime as Update without opening an
+// audio device. A recorder reads exactly one PAL tick of Stream after return.
+// Callers must not mix StepNative with the live Ebitengine Update loop.
+func (g *NativeGame) StepNative(input NativeInput) ([]byte, error) {
+	if g.player != nil {
+		return nil, fmt.Errorf("native offline stepping cannot share a live audio player")
+	}
+	g.Updates++
+	if err := g.advanceNative(input, false); err != nil {
+		return nil, err
+	}
+	return g.pixels, nil
+}
+
+func (g *NativeGame) advanceNative(input NativeInput, desktop bool) error {
+	return g.Host.Access.Execute(func() error {
 		if !g.booted {
 			if err := g.boot(); err != nil {
 				return err
 			}
 		}
-		if err := g.pollKeys(); err != nil {
-			return err
+		if desktop {
+			if err := g.pollKeys(); err != nil {
+				return err
+			}
 		}
-		// Portable raster sampling occurs at the explicitly configured
-		// VBlank edge. It is not a claim of original instruction bus phase.
+		for _, wire := range input.Keys {
+			if err := g.Host.Session.Presentation.Input.KeyboardInterrupt(wire); err != nil {
+				return err
+			}
+		}
+		// Portable raster sampling occurs at the configured VBlank edge.
 		g.beam = 0
-		x, y := ebiten.CursorPosition()
-		left, right := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft), ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight)
+		x, y, left, right := input.X, input.Y, input.Left, input.Right
 		if (g.AutoStart || g.AutoMenuAction != 0) && g.Frame == nil && g.Updates >= 100 && !g.autoClicked {
 			var err error
 			action := g.AutoMenuAction
@@ -271,23 +332,6 @@ func (g *NativeGame) Update() error {
 		}
 		return g.Host.Session.Presentation.WriteRGBA(g.pixels, true)
 	})
-	if err != nil {
-		return err
-	}
-	if g.player == nil {
-		context := audio.CurrentContext()
-		if context == nil {
-			context = audio.NewContext(44100)
-		}
-		player, err := context.NewPlayer(g.Stream)
-		if err != nil {
-			return err
-		}
-		g.player = player
-		g.player.Play()
-	}
-	g.image.WritePixels(g.pixels)
-	return nil
 }
 
 // helpPreviewActive covers each retained owner of the original $517A help
