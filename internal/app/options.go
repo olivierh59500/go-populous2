@@ -171,6 +171,16 @@ func (g *Game) updateOptions(x, y int, clicked bool) error {
 			return nil
 		}
 	}
+	if y >= 28 && y < 45 && x >= 144 && x < 176 {
+		// Editor opens the existing live world or committed custom setup;
+		// the unapplied options draft is discarded, as on Cancel.
+		if err := g.openEditor(); err != nil {
+			return err
+		}
+		g.Editor.Return = g.Options.Return
+		g.Options = nil
+		return nil
+	}
 	if y >= 28 && y < 45 {
 		if x >= 16 && x < 144 {
 			s.Owner = 0
@@ -219,7 +229,7 @@ func (g *Game) updateOptions(x, y int, clicked bool) error {
 		case 3:
 			p.Mana = max(0, min(1000000, p.Mana+delta*1000))
 		case 4:
-			p.ReactionDelay = max(0, min(1000, p.ReactionDelay+delta))
+			p.ReactionDelay = max(0, min(15, p.ReactionDelay+delta))
 		case 5:
 			s.Draft.Landscape = (s.Draft.Landscape + delta + 4) % 4
 		case 6:
@@ -244,6 +254,7 @@ func (g *Game) drawOptions() {
 	g.text(title, 72, 10)
 	g.button("BLUE", 16, 29, 128)
 	g.button("RED", 176, 29, 128)
+	g.button("EDIT", 144, 29, 32)
 	g.button("RULES", 16, 49, 92)
 	g.button("POWERS", 112, 49, 92)
 	g.button("SETUP", 208, 49, 96)

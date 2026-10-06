@@ -145,3 +145,47 @@ func TestOptionsAndEditorRejectMultiplayerMutation(t *testing.T) {
 		t.Fatal("network rejection mutated simulation")
 	}
 }
+
+func TestOptionsReactionButtonsRespectOriginalZeroToFifteenRange(t *testing.T) {
+	g := menuTestGame(t)
+	if err := g.openOptions(); err != nil {
+		t.Fatal(err)
+	}
+	g.Options.Page = 2
+	g.Options.Draft.Players[0].ReactionDelay = 15
+	if err := g.updateOptions(200, 116, true); err != nil {
+		t.Fatal(err)
+	}
+	if g.Options.Draft.Players[0].ReactionDelay != 15 {
+		t.Fatal("reaction exceeded the original maximum")
+	}
+	g.Options.Draft.Players[0].ReactionDelay = 0
+	if err := g.updateOptions(24, 116, true); err != nil {
+		t.Fatal(err)
+	}
+	if g.Options.Draft.Players[0].ReactionDelay != 0 {
+		t.Fatal("reaction went below original minimum")
+	}
+}
+
+func TestOptionsEditorEntryDiscardsDraftAndKeepsLiveWorld(t *testing.T) {
+	g := menuTestGame(t)
+	before := g.World.Snapshot()
+	if err := g.openOptions(); err != nil {
+		t.Fatal(err)
+	}
+	g.Options.Draft.Players[0].Population = 9999
+	if err := g.updateOptions(160, 34, true); err != nil {
+		t.Fatal(err)
+	}
+	if g.Screen != EditorScreen || g.Editor == nil || g.Options != nil || g.Editor.Return != Playing {
+		t.Fatal("visible editor entry did not transition coherently")
+	}
+	if g.World.Snapshot() != before || g.Editor.Draft.Level.Players[0].Population != g.World.Level.Players[0].Population {
+		t.Fatal("editor entry applied an uncommitted options draft")
+	}
+	g.cancelEditor()
+	if g.Screen != Playing || g.World.Snapshot() != before {
+		t.Fatal("editor return lost live world")
+	}
+}
