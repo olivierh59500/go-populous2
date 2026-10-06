@@ -1610,3 +1610,20 @@ change. A bounded native-default desktop run exits0 and its original menu
 framebuffer was visually inspected. This promotion follows stock/campaign/
 result/terrain CPU parity and native TCP validation, but is not itself a claim
 that the final host-input and paired-save audit has completed.
+
+## Reachable native desktop keyboard
+
+Ninety-five configured portable keys feed original raw-code transitions.
+Character codes are checked against executable100F4/10154 and native key
+constants. Modifier aliases are merged before620 events, so releasing one
+Control key cannot clear a second held Control key. Punctuation, path separators,
+Delete, keypad0/decimal/operators/Enter and modifier keys reach source input.
+
+F11 maps to native Help5F, held while selecting a power; the source2472
+controller enters its genuine517A help child. Home/End provide the original
+keypad-parenthesis shortcuts and emit source commands14/18. Headless tests
+verify real character translation, modifier counters and controller output.
+All configured names are accepted by the pinned Ebitengine backend. Full
+tests, original keyboard/HUD/gameplay-controller race tests and vet pass.
+Bounded menu, file browser, deity and custom-start desktop runs exit0; the
+custom capture reaches the genuine protection requester.

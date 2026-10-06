@@ -144,7 +144,27 @@ from full campaign fidelity; their pacing is not evidence of original gameplay.
 The native integration target is validated against complete source main-frame
 sequences, with remaining coverage tracked in docs/FEATURES.md.
 
-## Controls
+## Native controls
+
+The default game follows the original mouse requesters and raw keyboard input.
+Menus, result screens and deity controls use their visible original buttons.
+
+| Action | Input |
+|---|---|
+| Raise/lower terrain | Left/right click on the projected vertex |
+| Select an element category | F1–F6 or the original HUD |
+| Select a power | Digits1–5 or the original HUD |
+| Move the camera | Arrow/keypad keys or the world overview |
+| Toggle overview/detail | Numpad Enter |
+| Change view size | Numpad + / − |
+| Original control shortcuts | Home / End (native keypad parentheses aliases) |
+| Spell help | Hold F11 (native Help) while selecting a power |
+| Save/load, game/serial options | Original menu buttons |
+| Text fields | Native translated letters, punctuation, modifiers and edit keys |
+
+## Legacy diagnostic controls
+
+These shortcuts apply only to `cmd/populous2-legacy`.
 
 | Action | Input |
 |---|---|
@@ -168,8 +188,9 @@ sequences, with remaining coverage tracked in docs/FEATURES.md.
 
 Prices shown are the actual mana balance costs, including the original
 per-element experience reductions. The native score and sample bank play
-through the Go audio reader. Hardware timing and all sound-event bindings
-still need verification.
+through the original four-channel device/CIA and Paula DMA translations.
+Independent CPU/register/DMA/PCM comparisons verify replay and queued/direct
+events; host audio output does not reproduce an analog Amiga signal path.
 
 F5/F9 and the startup Load action open the original `.GAM` file requester,
 with directory/name fields, twelve visible rows, overwrite confirmation and
@@ -210,9 +231,8 @@ retains unidentified deity fields. Earlier saves initialize those records from
 their existing player state. Version 17 also retains native direct-raising and
 allocation-inhibition latches. The World loop uses native contact, combat and
 retained aftermath controllers, complete terrain prepass, water/conversion/
-burning states, magnet/captive routes and native crossing admission. Combined
-hero/environment interactions and the complete campaign still remain under
-integration. Version 18 includes native town production/emigration,
+burning states, magnet/captive routes and native crossing admission. Controlled original hero/environment compositions and complete native main
+frames have comparison corpora; their documented inputs bound the evidence. Version 18 includes native town production/emigration,
 rare-birth neutral records, their separate owner and effect creator state,
 and the original rare-creation deadline. Version 19 retains environmental
 controller ownership independently of stale kind bytes, including directed
@@ -246,8 +266,8 @@ water/hero handlers still need their complete World integrations.
 The deity screen uses the original three-part face artwork, eight variants per
 part, five starting bolts and one experience unit per allocated bolt. Click the
 profile code to enter an original sixteen-letter password. The separate name
-field is not included in that code. Campaign scoring and experience awards
-still require their full native statistic integration.
+field is not included in that code. Campaign statistics, score/overflow/exception handling and bolt/experience
+awards execute their original retained result/progression controllers.
 
 ## Native data and verification
 

@@ -2,8 +2,9 @@
 
 This is a conversion in progress. The native integration target executes Go
 translations of the original register-bearing startup, rendering, input,
-simulation, menus, audio and result/progression controllers. The original-game runtime is the default command; the inherited diagnostic
-engine remains separately available as cmd/populous2-legacy.
+simulation, menus, audio and result/progression controllers. The original-game
+runtime is the default command; the inherited diagnostic engine remains
+separately available as cmd/populous2-legacy.
 [FEATURES.md](FEATURES.md) tracks the complete original feature inventory and
 all 29 powers. [NATIVE_RULES.md](NATIVE_RULES.md) records the newer translations.
 
