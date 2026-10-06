@@ -23,6 +23,27 @@ type EarthState struct {
 	Roads     [MapSize * MapSize]RoadParcel
 	Walls     [WallCapacity]WallActor
 	WallHeads [2]uint16
+	Quakes    [EffectCapacity]QuakeEffect
+	Cracks    [MapSize * MapSize]CrackParcel
+}
+
+type QuakePhase uint8
+
+const (
+	QuakeGrowing QuakePhase = iota
+	QuakeWaiting
+	QuakeFading
+)
+
+type QuakeEffect struct {
+	Active                                   bool
+	Owner                                    uint8
+	X, Y, Direction, Descriptor, Life, Delay int
+	Phase                                    QuakePhase
+}
+type CrackParcel struct {
+	Active     bool
+	Descriptor uint8
 }
 
 var roadOffsets = [4][2]int{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}
@@ -34,11 +55,15 @@ func (s *EarthState) TileCode(x, y int) (uint8, bool) {
 		return 0, false
 	}
 	p := s.Roads[x+y*MapSize]
+	if crack := s.Cracks[x+y*MapSize]; crack.Active {
+		return 172 + crack.Descriptor, true
+	}
 	return p.Code, p.Active
 }
 func (w *World) ClearEarthTerrain(x, y int) {
 	if inside(x, y) {
 		w.Earth.Roads[x+y*MapSize] = RoadParcel{}
+		w.Earth.Cracks[x+y*MapSize] = CrackParcel{}
 	}
 }
 func roadCode(code uint8) bool { return code >= 197 && code <= 216 }
@@ -267,4 +292,189 @@ func (w *World) BreakWall(id int) bool {
 	return true
 }
 
-func (w *World) tickEarthEffect(id int) { _ = id }
+func (w *World) tickEarthEffect(id int) {
+	if w.effects.Slots[id].Kind == EffectEarthquake {
+		w.tickEarthquake(id)
+	}
+}
+
+// CastBatholith samples one point from the same random word for both axes.
+// Its raise and boulder branches are independent of the follower's commands.
+func (w *World) CastBatholith(owner, x, y int) error {
+	if owner < 0 || owner > 1 || !inside(x, y) {
+		return fmt.Errorf("invalid batholith target")
+	}
+	bits := w.random.next()
+	x += int(bits&7) - 4
+	if !inside(x, y) {
+		return fmt.Errorf("batholith sample lies outside the world")
+	}
+	y += int(bits>>8&7) - 4
+	if !inside(x, y) {
+		return fmt.Errorf("batholith sample lies outside the world")
+	}
+	if int(w.random.next()%9)-4 >= 0 {
+		w.directEarthTerrain(x, y, true)
+		return nil
+	}
+	variant := uint8(w.random.next() % 8 / 2)
+	code := w.Cell(x, y).Code
+	if code == 0 || roadCode(code) || w.Occupants[x+y*MapSize] != 0 || w.Nature.sceneryAt(x, y) >= 0 {
+		return nil
+	}
+	id := -1
+	for index, a := range w.Nature.Scenery {
+		if a.Kind == SceneryNone {
+			id = index
+			break
+		}
+	}
+	if id < 0 {
+		return nil
+	}
+	if w.random.next()%90 == 0 {
+		variant = 0
+	}
+	w.Nature.Scenery[id] = SceneryActor{Kind: SceneryBoulder, X: uint8(x), Y: uint8(y), Age: 24, Variant: variant}
+	return nil
+}
+
+var quakeOffsets = [16][2]int{{0, -1}, {0, 1}, {0, -1}, {0, 1}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0}, {1, 0}, {0, 1}, {0, -1}, {-1, 0}, {1, 0}, {0, -1}, {-1, 0}, {0, 1}}
+var quakeBranches = [16][6]uint8{
+	{0, 0, 2, 2, 8, 14}, {1, 1, 3, 3, 11, 12}, {2, 2, 0, 0, 8, 14}, {3, 3, 1, 1, 11, 12},
+	{4, 4, 6, 6, 9, 13}, {5, 5, 7, 7, 10, 15}, {6, 6, 4, 4, 9, 13}, {7, 7, 5, 5, 10, 15},
+	{5, 5, 7, 7, 10, 15}, {1, 1, 3, 3, 11, 12}, {0, 0, 2, 2, 8, 14}, {4, 4, 6, 6, 9, 13},
+	{5, 5, 7, 7, 10, 15}, {0, 0, 2, 2, 8, 14}, {4, 4, 6, 6, 9, 13}, {1, 1, 3, 3, 11, 12},
+}
+
+func (w *World) paintCrack(x, y, descriptor int) {
+	at := x + y*MapSize
+	w.Earth.Roads[at] = RoadParcel{}
+	w.Earth.Cracks[at] = CrackParcel{Active: true, Descriptor: uint8(descriptor)}
+	w.Nature.Ground[at] = GroundParcel{}
+	w.Water.Painted[at] = false
+	w.FireDamage.Painted[at] = false
+}
+
+// surfaceQuake reports the pre-lowering height. Flat ground receives crack
+// art immediately; a higher slope lowers once and grows again on a later pass.
+func (w *World) surfaceQuake(e *QuakeEffect) int {
+	c := w.Cell(e.X, e.Y)
+	if c.Code >= 172 && c.Code <= 196 {
+		return 0
+	}
+	if flowersNatureCode(c.Code) {
+		w.paintCrack(e.X, e.Y, e.Descriptor)
+		return 0
+	}
+	height := int(c.BaseAltitude&7) + int(c.Shape&1)
+	if height == 0 {
+		e.Active = false
+		return -1
+	}
+	if height > 1 {
+		w.directEarthTerrain(e.X, e.Y, false)
+	}
+	return height
+}
+
+// Direct natural terrain changes clear parcel decorations whose corner
+// geometry changed. Permanent basalt retains its updated surface shape.
+func (w *World) directEarthTerrain(x, y int, raise bool) {
+	before := w.Heights
+	w.directFireTerrain(x, y, raise)
+	for cy := 0; cy < MapSize; cy++ {
+		for cx := 0; cx < MapSize; cx++ {
+			at := cx + cy*CornerSize
+			if before[at] != w.Heights[at] || before[at+1] != w.Heights[at+1] || before[at+CornerSize] != w.Heights[at+CornerSize] || before[at+CornerSize+1] != w.Heights[at+CornerSize+1] {
+				w.ClearEarthTerrain(cx, cy)
+				w.ClearWaterTerrain(cx, cy)
+			}
+		}
+	}
+}
+
+func (w *World) createEarthquake(owner uint8, x, y, direction, strength int) int {
+	if owner > 2 || !inside(x, y) || direction < 0 || direction >= 16 {
+		return -1
+	}
+	id := w.allocateEffect(EffectEarthquake, owner)
+	if id < 0 {
+		return -1
+	}
+	e := QuakeEffect{Active: true, Owner: owner, X: x, Y: y, Direction: direction, Descriptor: direction / 2, Life: strength, Delay: 2}
+	w.Earth.Quakes[id] = e
+	if w.surfaceQuake(&w.Earth.Quakes[id]) < 0 {
+		w.releaseEffect(id)
+	}
+	return id
+}
+
+func (w *World) CastEarthquake(owner, x, y, direction int) error {
+	if owner < 0 || owner > 1 || !inside(x, y) || direction < 0 || direction > 3 {
+		return fmt.Errorf("invalid earthquake target")
+	}
+	// The original action charges even when no active front is admitted.
+	w.createEarthquake(uint8(owner), x, y, int([4]uint8{0, 5, 1, 4}[direction]), 33+int(w.Players[owner].Experience[Earth]))
+	return nil
+}
+
+func (w *World) tickEarthquake(id int) {
+	e := &w.Earth.Quakes[id]
+	if !e.Active {
+		return
+	}
+	finish := func() { e.Active = false; w.releaseEffect(id) }
+	previousLife := e.Life
+	e.Life = int(int16(uint16(e.Life) - 1))
+	if e.Phase != QuakeFading && previousLife <= 1 {
+		e.Phase = QuakeFading
+		e.Life = 49
+		previousLife = 50
+	}
+	if e.Phase == QuakeFading && previousLife <= 1 {
+		finish()
+		return
+	}
+	if e.Phase == QuakeWaiting {
+		if w.surfaceQuake(e) < 0 {
+			finish()
+		}
+		return
+	}
+	previousDelay := e.Delay
+	e.Delay = int(int16(uint16(e.Delay) - 1))
+	if previousDelay > 1 {
+		return
+	}
+	e.Delay = 4
+	height := w.surfaceQuake(e)
+	if height < 0 {
+		finish()
+		return
+	}
+	if e.Phase == QuakeFading {
+		if height != 0 {
+			return
+		}
+		next := e.Descriptor
+		if next < 16 {
+			next += 8
+		}
+		if next != e.Descriptor {
+			e.Descriptor = next
+			w.paintCrack(e.X, e.Y, next)
+		}
+		return
+	}
+	if height > 1 {
+		return
+	}
+	e.Phase = QuakeWaiting
+	direction := int(quakeBranches[e.Direction][w.random.next()%6])
+	d := quakeOffsets[e.Direction]
+	child := w.createEarthquake(e.Owner, e.X+d[0], e.Y+d[1], direction, e.Life)
+	if child >= id {
+		w.Earth.Quakes[child].Life++
+	}
+}
