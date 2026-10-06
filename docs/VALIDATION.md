@@ -1285,3 +1285,34 @@ previously reached protection requester. This checks launch/render regression,
 not a graphical result transition. B244 remains an explicit required child
 until its award sequence is proved and bound. A stock custom-game zero-divisor
 precondition is under separate source audit; no score default hides it.
+
+## Configured native simulation composition
+
+A corpus of124 original CPU runs across all four LAND banks yields20,176
+checkpoints:19,992 ordered simulation passes and184 source command calls.
+Actual encoded startup/resource/world initialization precedes each run.
+The test then sets each god to1,000,000 mana and six255 experience bytes,
+selects view8 and sends source power packets at32/32. All29 power dispatches
+are exercised; original admission rules may produce a no-op. Ten follower
+state values and18 FX state values occur, with broader family-specific
+references kept separate.
+
+Every checkpoint matches all eight data registers, full BSS/RNG, live CODE,
+both screen allocations and heap. The simulation includes followers, AI,
+effects, walls, forest, scripts and audio through182CE, with actual072E swaps.
+F40 is stepped explicitly once per simulation pass. Full main rendering,
+110CC, gameplay input and the381E body are outside this configured corpus;
+28 genuine result entry boundaries remain explicit.
+
+This composition exposed detached town cache/scratch writes at13352 and the
+missing15B7A color write before active FX dispatch. The borrowed session now
+shares the real town evaluator with founding, combat and recovery routines,
+restores the previous evaluator on completion/error, and uses raw F42 timing.
+The source active-effect color write precedes dispatch even for a no-draw
+actor. Existing isolated callers retain their established behavior.
+
+The paired120-frame integration now supplies real VBlanks and digit-button
+clicks when the original314A protection requester appears. Correct submission
+runs its source fade and LAND reload; no protection flag or child success is
+injected. Full tests, configured gameplay race tests, ownership/error tests,
+paired frame race tests and vet pass.
