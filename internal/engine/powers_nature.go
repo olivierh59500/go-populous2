@@ -285,6 +285,13 @@ func (w *World) CastFungus(owner, x, y int) error {
 }
 
 func (w *World) tickNature() {
+	w.tickNatureScenery()
+	for id := range w.Nature.Fungi {
+		w.tickNatureEffect(id)
+	}
+}
+
+func (w *World) tickNatureScenery() {
 	for id := range w.Nature.Scenery {
 		a := &w.Nature.Scenery[id]
 		if a.Kind == SceneryNone {
@@ -338,29 +345,30 @@ func (w *World) tickNature() {
 			}
 		}
 	}
-	for id := range w.Nature.Fungi {
-		f := &w.Nature.Fungi[id]
-		if !f.Active {
-			continue
-		}
-		if f.Collecting {
-			f.Wait--
-			if f.Wait > 0 {
-				continue
-			}
-			f.Collecting = false
-			w.Nature.PendingFungus[f.Owner] = 0
-			f.Wait = f.Period
-		}
+}
+
+func (w *World) tickNatureEffect(id int) {
+	f := &w.Nature.Fungi[id]
+	if !f.Active || w.effects.Slots[id].Kind != EffectFungus {
+		return
+	}
+	if f.Collecting {
 		f.Wait--
-		if f.Wait >= 0 {
-			if f.Wait%(f.Period/3) == 0 {
-				w.ageFungus(f)
-			}
-		} else {
-			f.Wait = f.Period
-			w.generateFungus(id, f)
+		if f.Wait > 0 {
+			return
 		}
+		f.Collecting = false
+		w.Nature.PendingFungus[f.Owner] = 0
+		f.Wait = f.Period
+	}
+	f.Wait--
+	if f.Wait >= 0 {
+		if f.Wait%(f.Period/3) == 0 {
+			w.ageFungus(f)
+		}
+	} else {
+		f.Wait = f.Period
+		w.generateFungus(id, f)
 	}
 }
 
