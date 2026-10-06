@@ -1411,3 +1411,18 @@ producer and hit comparison now use canonical bound CODE; unbound standalone
 API behavior remains compatible. Focused coherence/error regressions, full
 tests, stock race comparisons and vet pass. Long gameplay, natural result/
 reset continuation and full campaign fidelity remain separate requirements.
+
+## Native editor screen-export binding
+
+The native desktop's input-child fallback now binds1A55A to an explicitly
+configured existing export directory. The original controller writes its
+104-byte ILBM header, native palette and200 interleaved four-plane rows,
+retains IO/caller state and advances the source filename byte once.
+Existing files are preserved and handles close with the application.
+
+Two successive runtime exports verify the actual32,104-byte files, row/plane
+order and complete caller D/A preservation. The independent108-case source
+export corpus and filesystem failure/replace tests remain green. Full tests,
+focused race tests, vet and a native build pass. A later macOS binary launch
+failed in Ebitengine monitor initialization before application entry, so it
+is not counted as a graphical export check.
