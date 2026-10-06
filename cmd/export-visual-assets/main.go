@@ -365,6 +365,26 @@ func export(files fs.FS, output string) error {
 		}
 		catalog.Animations[name] = animation(frames, true)
 	}
+	for name, start := range map[string]int{"combat/attack": 0x1c8, "combat/death": 0x1e74, "combat/hero-death": 0x9d4, "combat/victory-blue": 0x1b2c, "combat/victory-red": 0x1cd0, "death/water": 0x196c, "death/fatal": 0x7dc} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[name] = animation(frames, name == "combat/attack")
+	}
+	for hero, name := range heroes {
+		for role, table := range map[string][6]uint16{"death/water": source.CommonPrepass.Swimming, "death/fatal": source.CommonPrepass.Fatal} {
+			start := table[hero]
+			if start == 0 {
+				continue
+			}
+			frames, err := populous2.DecodeAnimation(source.Executable, int(start))
+			if err != nil {
+				return err
+			}
+			catalog.Animations[role+"/"+name] = animation(frames, false)
+		}
+	}
 	catalog.FileCompatibility = exportSaveCompatibility(source, catalog)
 	data, err := json.MarshalIndent(catalog, "", "  ")
 	if err != nil {

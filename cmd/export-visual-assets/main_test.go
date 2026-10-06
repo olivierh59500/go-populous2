@@ -140,6 +140,15 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			t.Fatal("wall artwork differs", name)
 		}
 	}
+	for name, start := range map[string]int{"combat/attack": 0x1c8, "combat/death": 0x1e74, "combat/hero-death": 0x9d4, "combat/victory-blue": 0x1b2c, "combat/victory-red": 0x1cd0, "death/water": 0x196c, "death/fatal": 0x7dc} {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(portable.Animations[name], animation(frames, name == "combat/attack")) {
+			t.Fatal("combat/terrain artwork changed", name)
+		}
+	}
 	if portable.TileRasters != source.RenewNative.Raster {
 		t.Fatal("tile surface metadata changed during import")
 	}
