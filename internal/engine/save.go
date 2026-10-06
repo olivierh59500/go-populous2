@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-const SnapshotVersion = 1
+const SnapshotVersion = 2
 const maximumSnapshotBytes = 16 << 20
 
 // SavedWorld contains the World's exported, named simulation fields. Private
@@ -39,8 +39,9 @@ type Snapshot struct {
 	Motion       [FollowerCapacity]FollowerMotionSnapshot `json:"motion"`
 	Random       uint32                                   `json:"random"`
 	Reservations [EffectCapacity]EffectReservation        `json:"reservations"`
-	// Construction is accepted for version-one compatibility. The retired
-	// terrain planner no longer reads these fields; new saves leave it empty.
+	// Construction is accepted when migrating version-one saves. The retired
+	// AI construction cache is discarded; version-two saves omit it. Active
+	// world state, AI state, motion and random state are preserved unchanged.
 	Construction *ConstructionSnapshot `json:"construction,omitempty"`
 }
 
@@ -92,8 +93,11 @@ func ReadSnapshot(input io.Reader) (*World, error) {
 }
 
 func (s Snapshot) Restore() (*World, error) {
-	if s.Version != SnapshotVersion {
+	if s.Version != 1 && s.Version != SnapshotVersion {
 		return nil, fmt.Errorf("unsupported snapshot version %d", s.Version)
+	}
+	if s.Version == SnapshotVersion && s.Construction != nil {
+		return nil, fmt.Errorf("version-two snapshot contains a retired construction cache")
 	}
 	w := World(s.World)
 	w.random = randomState(s.Random)

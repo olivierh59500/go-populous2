@@ -233,6 +233,7 @@ func TestSnapshotVersionOneRetiredConstructionFieldsRemainReadable(t *testing.T)
 	w.Players[0].RallyX, w.Players[0].RallyY = 32, 32
 	w.Players[1].RallyX, w.Players[1].RallyY = 32, 32
 	s := w.Snapshot()
+	s.Version = 1
 	s.Construction = &ConstructionSnapshot{}
 	s.Construction.TerrainTargets[100] = 3
 	s.Construction.TerrainTargetSet[100] = true
@@ -244,7 +245,7 @@ func TestSnapshotVersionOneRetiredConstructionFieldsRemainReadable(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if restored.Snapshot().Construction != nil || !reflect.DeepEqual(w, restored) {
+	if restored.Snapshot().Version != 2 || restored.Snapshot().Construction != nil || !reflect.DeepEqual(w, restored) {
 		t.Fatal("retired planner data altered the current simulation")
 	}
 }
