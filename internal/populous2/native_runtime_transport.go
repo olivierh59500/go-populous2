@@ -13,6 +13,7 @@ type NativeRuntimeTransport struct {
 	Transfer  NativeTransportIOState
 	packets   [2]*NativeSerialPacket
 	mismatch  *NativeErrorFrameState
+	palette   *NativeFramePaletteState
 	Callbacks NativeTransportFrameCallbacks
 	Ownership func(bool, *NativeFrameRegisterContext) error
 }

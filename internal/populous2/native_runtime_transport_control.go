@@ -10,6 +10,9 @@ func (s *NativeRuntimeTransport) controlCallbacks(frame *NativeFrameRegisterCont
 	cb.Frame = frame
 	external := cb.CallTransport
 	cb.CallTransport = func(call NativeFileFrameCall, phase *uint32) (NativeSerialFrameChildResult, error) {
+		if call.Routine == 0x102e4 {
+			return s.advancePalette(call, phase)
+		}
 		if call.Routine == 0x111ae {
 			rules, err := DecodeNativeProfilePanelFrameRules(s.Host.Bundle.Executable)
 			if err != nil {
