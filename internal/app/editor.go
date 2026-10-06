@@ -77,6 +77,7 @@ func (g *Game) applyEditor() error {
 	}
 	candidate.Editor = false
 	g.World = candidate
+	g.CustomGame = true
 	g.Screen = Playing
 	g.Editor = nil
 	return nil

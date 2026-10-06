@@ -87,6 +87,28 @@ func TestOptionsKeyboardBoundaryRowsDoNotMutateSetup(t *testing.T) {
 	}
 }
 
+func TestMenuOptionsEditCustomSetupWithoutMutatingPausedWorld(t *testing.T) {
+	g := menuTestGame(t)
+	g.Screen = MainMenu
+	draft := g.Assets.Levels[0]
+	draft.Players[0].Population = 999
+	g.CustomLevel = &draft
+	before := *g.World
+	if err := g.openOptions(); err != nil {
+		t.Fatal(err)
+	}
+	if g.Options.Live || g.Options.Draft.Players[0].Population != 999 {
+		t.Fatal("menu options selected an old paused world instead of custom setup")
+	}
+	g.Options.Draft.Players[0].Population = 1234
+	if err := g.applyOptions(); err != nil {
+		t.Fatal(err)
+	}
+	if *g.World != before || g.CustomLevel.Players[0].Population != 1234 {
+		t.Fatal("menu setup mutated paused gameplay or lost next-game settings")
+	}
+}
+
 func TestOptionsAndEditorRejectMultiplayerMutation(t *testing.T) {
 	g := menuTestGame(t)
 	g.Network = &NetworkController{}

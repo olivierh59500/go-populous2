@@ -17,6 +17,7 @@ type OptionsState struct {
 	Return        Screen
 	Music, Sound  bool
 	SelectedPower engine.PowerID
+	Live          bool
 }
 
 func (g *Game) openOptions() error {
@@ -25,7 +26,12 @@ func (g *Game) openOptions() error {
 	}
 	level := g.Assets.Levels[g.LevelIndex]
 	computer := [2]bool{false, true}
-	if g.World != nil {
+	live := g.World != nil && g.Screen == Playing
+	if !live && g.CustomLevel != nil {
+		level = *g.CustomLevel
+		computer = g.CustomComputer
+	}
+	if live {
 		level = g.World.Level
 		for owner, p := range g.World.Players {
 			computer[owner] = p.Computer
@@ -36,7 +42,7 @@ func (g *Game) openOptions() error {
 		musicEnabled = g.music.IsMusicEnabled()
 		soundEnabled = g.music.IsSoundEnabled()
 	}
-	g.Options = &OptionsState{Draft: level, Computer: computer, Return: g.Screen, Music: musicEnabled, Sound: soundEnabled}
+	g.Options = &OptionsState{Draft: level, Computer: computer, Return: g.Screen, Music: musicEnabled, Sound: soundEnabled, Live: live}
 	g.Screen = OptionsScreen
 	return nil
 }
@@ -111,7 +117,7 @@ func (g *Game) applyOptions() error {
 		}
 		d.Players[owner].Extra[0] = scenarioWord(p.Scenario)
 	}
-	if g.World != nil {
+	if g.Options.Live && g.World != nil {
 		// Changing the landscape changes its real economy and artwork together.
 		g.World.Level = d
 		g.World.Landscape = g.Assets.Landscapes[d.Landscape]
