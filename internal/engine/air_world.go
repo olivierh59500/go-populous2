@@ -154,7 +154,14 @@ func (w *World) AdvanceLightningVictim(id int) bool {
 		if f.IsHero() {
 			f.State = Walking
 		} else {
-			if stage := w.TownStage(int(f.Owner), int(f.X), int(f.Y), id); stage > 0 {
+			f.Stage = 0
+			f.LastDevelopedStage = 0
+			f.FoundedAt = w.Tick
+			f.positionX = int(f.X)*256 + 128
+			f.positionY = int(f.Y)*256 + 128
+			f.positionSet = true
+			w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, f.positionX, f.positionY)
+			if stage := w.EvaluateTown(id); stage > 0 {
 				f.State = Town
 				f.Stage = uint8(stage)
 			} else {
@@ -163,6 +170,7 @@ func (w *World) AdvanceLightningVictim(id int) bool {
 			}
 		}
 	case LightningVictimRetainDeath:
+		w.PrepareFollowerDeath(id)
 		f.State = Ruin
 		f.moving = false
 	case LightningVictimResume:

@@ -138,6 +138,7 @@ func (w *World) tickNeutral(id int) {
 				if v.State == Town {
 					w.clearTownFarms(other)
 				}
+				w.PrepareFollowerDeath(other)
 				v.State = Ruin
 				v.Population = 0
 				v.Neutral.VictimTime = 400

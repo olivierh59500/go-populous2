@@ -101,6 +101,7 @@ func (w *World) advanceWater(id int) bool {
 	}
 	if !alive {
 		frames := f.WaterDeathFrames()
+		w.PrepareFollowerDeath(id)
 		f.TerrainDeath = TerrainDeathState{Active: true, Frame: 1, Frames: uint16(frames)}
 		f.State = Ruin
 		f.Population = 0

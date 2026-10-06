@@ -497,6 +497,7 @@ func (w *World) EnterNatureHazard(id int) bool {
 		default:
 			return false
 		}
+		w.PrepareFollowerDeath(id)
 		w.Nature.Deaths[id] = death
 		w.Nature.DeathFrames[id] = 0
 		f.State = Ruin

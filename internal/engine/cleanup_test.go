@@ -51,3 +51,50 @@ func TestTownDestructionScorchesOnlyItsOwnedFarmFootprint(t *testing.T) {
 		t.Fatal("town destruction overwrote enemy farmland")
 	}
 }
+
+func TestHazardHitChargesRetainedCleanupBeforeTerminal(t *testing.T) {
+	for _, hazard := range []string{"swamp", "water", "fire", "monster"} {
+		t.Run(hazard, func(t *testing.T) {
+			w := testFlatWorld()
+			id := addFollower(w, 20, 20, 0, 100, Walking)
+			w.Players[0].Leader = id
+			w.Players[0].Statistics.Metric = 100
+			switch hazard {
+			case "swamp":
+				w.Nature.Ground[20+20*MapSize] = GroundParcel{Mark: GroundSwamp}
+				w.EnterNatureHazard(id)
+			case "water":
+				w.Tiles[20+20*MapSize] = Cell{}
+				w.Level.Players[0].Scenario.FatalWater = true
+				w.advanceWater(id)
+			case "fire":
+				w.damageFireParcel(20, 20, false)
+			case "monster":
+				monster, _ := w.CreateNeutral(NeutralMonster, 19, 19)
+				w.tickNeutral(monster)
+			}
+			if !w.Followers[id].CleanupPrepared || w.Players[0].Statistics.LeaderLosses != 1 || w.Players[0].Statistics.Metric != 88 || w.Followers[id].State == Inactive {
+				t.Fatal("hazard deferred statistics until actor removal")
+			}
+			w.remove(id)
+			if w.Players[0].Statistics.LeaderLosses != 1 || w.Players[0].Statistics.Metric != 88 {
+				t.Fatal("hazard terminal charged cleanup twice")
+			}
+		})
+	}
+}
+
+func TestLightningTownReformUsesSettlementEvaluationAndKeepsWork(t *testing.T) {
+	w := testFlatWorld()
+	id := w.allocate(Follower{Owner: 0, X: 20, Y: 20, State: Town, Population: 1000, Stage: 9, Work: 7, positionSet: true, positionX: 20*256 + 173, positionY: 20*256 + 147})
+	w.linkFollower(id)
+	competitor := w.allocate(Follower{Owner: 1, X: 21, Y: 20, State: Town, Population: 200, Stage: 9})
+	w.linkFollower(competitor)
+	w.Tick = 123
+	w.AirVictims[id] = LightningVictimState{Phase: LightningVictimTownHit, Bolt: 0, Frames: 2}
+	w.AdvanceLightningVictim(id)
+	f := w.Followers[id]
+	if f.State != Town || f.Stage != 18 || f.Work != 7 || f.FoundedAt != 123 || f.positionX != 20*256+128 || f.positionY != 20*256+128 || w.Followers[competitor].State != Walking {
+		t.Fatal("lightning reform used a read-only support preview instead of the source settlement body")
+	}
+}

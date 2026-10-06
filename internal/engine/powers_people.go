@@ -65,6 +65,7 @@ func (w *World) tickDisease(id int) bool {
 	if f.Population > 0 {
 		return false
 	}
+	w.PrepareFollowerDeath(id)
 	f.Disease.Dying = true
 	f.Disease.DeathFrame = 0
 	f.State = Ruin
