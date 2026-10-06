@@ -53,6 +53,12 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
 		g.CameraY = min(56, g.CameraY+1)
 	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+		g.Selected = engine.PapalMagnet
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyF1) {
+		g.Selected = engine.RaiseLower
+	}
 	for i, key := range []ebiten.Key{ebiten.Key1, ebiten.Key2, ebiten.Key3, ebiten.Key4} {
 		if inpututil.IsKeyJustPressed(key) {
 			w.SetMode(0, []engine.Mode{engine.Settle, engine.Rally, engine.Join, engine.Fight}[i])
@@ -69,14 +75,11 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	if clicked || right {
 		x, y, ok := g.pickCorner(mouseX, mouseY)
 		if ok {
-			changed := false
-			if right {
-				changed = w.LowerAt(0, x, y)
-			} else {
-				changed = w.RaiseAt(0, x, y)
-			}
-			if changed {
+			err := w.Cast(0, g.Selected, engine.PowerTarget{X: x, Y: y, Lower: right})
+			if err == nil {
 				g.music.TriggerCue(78)
+			} else {
+				g.Message, g.messageUntil = err.Error(), g.Updates+100
 			}
 		}
 	}
@@ -157,6 +160,9 @@ func (g *Game) drawWorld() {
 	summary := w.Summaries()
 	g.text(fmt.Sprintf("POP %d", summary[0].Population), 8, 181)
 	g.text(fmt.Sprintf("MANA %d", summary[0].Mana), 8, 191)
+	if g.Updates < g.messageUntil {
+		g.text("ACTION UNAVAILABLE", 144, 191)
+	}
 }
 
 func (g *Game) animation(name string, frame, x, y, land int) {

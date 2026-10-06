@@ -99,3 +99,26 @@ Generated artwork and audio remain local and excluded from Git. Import tools
 may inspect the original executable to recover its actual art/music data; the
 independent game neither opens that file nor receives a substitute instruction
 or memory image.
+
+## Subsequent simulation slices
+
+The follower layer now uses continuous fixed-point positions, explicit motion
+legs, ordered search rings, occupancy pressure and reciprocal combat state.
+Tests compare terrain digests and selected numeric movement/damage results;
+whole-game follower parity is still being expanded.
+
+Nature and fire controllers are being migrated into named Go effect states.
+All families reserve from one 250-slot effect budget, while scenery has its
+separate 200-slot budget. Their presence in source does not make a power
+available: admission stays disabled until the world interactions, victim states,
+rendering and full casting path have been bound and checked.
+
+| Family | Current independent boundary | Remaining integration |
+|---|---|---|
+| Nature | Sampled forest/restoration/swamp placement and timed fungus generations; original central fungus maps compared | Hero immunity, complete scenario options, border semantics and presentation/admission |
+| Fire | Fixed-point columns, rain, volcano and lava controllers with typed habitat callbacks; original column traces compared | Shared terrain damage, burning victims, heroes, linked environmental interactions and presentation/admission |
+| Followers | Typed movement, ordered decisions, towns, pressure and reciprocal combat | Remaining special followers, complete contact/hero/hazard compositions and fidelity coverage |
+
+The early independent menu intentionally exposes the migrated conquest path;
+missing editor, results, network or other modes are not simulated by acknowledging
+unimplemented actions.

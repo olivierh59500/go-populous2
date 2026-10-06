@@ -34,6 +34,9 @@ type Game struct {
 	CameraX, CameraY             int
 	PortraitParts                [3]uint8
 	DeityName                    string
+	Selected                     engine.PowerID
+	Message                      string
+	messageUntil                 int
 	Updates, Limit, CaptureAfter int
 	Capture                      string
 	AutoStart                    bool
@@ -170,7 +173,6 @@ func (g *Game) drawFrame() {
 		draw.Draw(g.framebuffer, image.Rect(73, 80, 249, 147), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 		g.button("CREATE YOUR DEITY", 78, 85, 168)
 		g.button("CONQUEST", 78, 102, 168)
-		g.text("GO ENGINE", 124, 128)
 	case DeityProfile:
 		draw.Draw(g.framebuffer, g.framebuffer.Bounds(), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 		g.text("YOUR DEITY", 112, 15)
