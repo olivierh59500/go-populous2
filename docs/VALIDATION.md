@@ -1027,3 +1027,18 @@ command persistence and rejection of an omitted runtime input callback. The
 shared image/audio authority regression now also traverses the actual input
 suffix and its real terrain-height child. Concrete HUD/modal children and the
 live application loop remain integration work.
+
+## Initial menu and startup director
+
+NativeRuntimeDirector composes10A10, the actual3B64 menu, retained3CBA chooser,
+world constructor, physical resource loading, panel and audio through one live
+runtime. Menu deity/file and transport operations remain mandatory supplied
+children; no typed screen or successful empty callback replaces them.
+
+Integration tests navigate real requester buttons using original mouse-counter
+samples and VBlanks. Both the custom path and conquest→chooser→proceed path
+reach actual startup completion with native mode and closed filesystem handles.
+Only required portable hardware/ownership operations are supplied by the host;
+all menu/palette/resource/world/panel/audio bodies execute their translations.
+These composition checks do not replace the individual full-register CPU
+proofs or complete interactive campaign/play validation.
