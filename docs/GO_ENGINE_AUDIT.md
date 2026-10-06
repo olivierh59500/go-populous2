@@ -27,10 +27,11 @@ are imported or implemented through named asset/game fields. Animation cues are
 connected through a transition gate, and music and sound effects can be muted
 separately.
 
-The remaining user-visible checks are more specific than the original broad
-list: interactive world-code entry and opponent briefing, animated power-help
-previews, complete original GAM continuation/export coverage, and final visual,
-audio, interaction and mobile validation of the assembled application. The
+The remaining checks are more specific than the original broad list:
+whole-game follower/contact and AI fidelity, complete original GAM
+continuation/export coverage, and final visual, audio, interaction and mobile
+validation of the assembled application. World-code entry, opponent setup
+details and real, separately paced power-help previews are connected. The
 default launcher switch and release packaging still require the assembled
 independent target to pass those checks. A catalogue flag or isolated test is
 not a substitute for those final integration checks.
@@ -78,7 +79,8 @@ the independent version becomes the default.
 
 ## Available power families
 
-At review time, 26 of the 29 catalogue entries are enabled. An enabled flag
+At the initial review, 26 of the 29 catalogue entries were enabled. All 29
+commands are now admitted. An enabled flag
 means an action is admitted by the Go dispatcher; it does not establish full
 parity for every interaction with every other power.
 
@@ -92,7 +94,7 @@ parity for every interaction with every other power.
 | Water | Basalt, Whirlpool, Baptism, Helen, Tsunami | None |
 
 Storm, Wind and Volcano already have portions of their controllers in source.
-Their player admission and full presentation remain disabled. Completion
+Their admission, mixed-pool scheduling and artwork are now connected. Completion
 requires their actual casting paths, shared-pool order, victims, ground changes,
 audio cues and visible artwork to work together. Wind movement still needs the
 ordered mixed-actor traversal that can visit a moved follower later in the
