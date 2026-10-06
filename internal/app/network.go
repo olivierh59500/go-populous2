@@ -277,6 +277,7 @@ func (g *Game) pollNetwork() error {
 		g.World, g.Screen = world, Playing
 		if first {
 			leader := world.Players[status.Side].Leader
+			g.SelectedFollower, g.Inspecting = leader, false
 			if leader > 0 {
 				f := world.Followers[leader]
 				g.CameraX = max(0, min(56, int(f.X)-3))

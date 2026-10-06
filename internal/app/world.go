@@ -44,6 +44,7 @@ func (g *Game) startConquest() error {
 	g.Paused = false
 	g.AnimationSounds = AnimationSoundGate{}
 	g.resultApplied = false
+	g.SelectedFollower, g.Inspecting = world.Players[g.playerSide()].Leader, false
 	leader := world.Players[0].Leader
 	if leader > 0 {
 		f := world.Followers[leader]
@@ -71,6 +72,10 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 			return nil
 		}
 	}
+	g.refreshSelectedFollower()
+	if g.handleSelectionPanelClick(mouseX, mouseY, clicked) {
+		return nil
+	}
 	if g.PickingPower {
 		if clicked {
 			if mouseY >= 47 && mouseY < 63 && mouseX >= 24 && mouseX < 296 {
@@ -91,6 +96,14 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 			if err != nil {
 				g.Message, g.messageUntil = err.Error(), g.Updates+150
 			}
+			return nil
+		}
+		if id := g.pickFollower(mouseX, mouseY); id != 0 {
+			g.SelectedFollower = id
+			if g.Inspecting {
+				return nil
+			}
+		} else if g.Inspecting && mouseX >= 104 && mouseY >= 45 && mouseY < 178 {
 			return nil
 		}
 	}
@@ -255,6 +268,7 @@ func (g *Game) drawWorld() {
 	g.drawLightningBeams(land)
 	g.minimap(land)
 	g.drawHUDControls()
+	g.drawSelectionPanel()
 	summary := w.Summaries()[g.playerSide()]
 	g.text(fmt.Sprintf("POP %d", summary.Population), 8, 181)
 	g.text(fmt.Sprintf("MANA %d", summary.Mana), 8, 191)

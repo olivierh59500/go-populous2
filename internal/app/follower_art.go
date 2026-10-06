@@ -6,9 +6,14 @@ import (
 )
 
 func (g *Game) drawFollowerActor(id, land int) {
+	f := g.World.Followers[id]
+	x, y := g.followerRenderAnchor(f)
+	g.drawFollowerArtwork(id, land, x, y, true)
+}
+
+func (g *Game) drawFollowerArtwork(id, land, ax, ay int, markers bool) {
 	w := g.World
 	f := w.Followers[id]
-	ax, ay := g.followerRenderAnchor(f)
 	if state := f.CombatAftermath; state.Kind != engine.CombatAftermathNone {
 		key := "combat/death"
 		switch state.Kind {
@@ -99,13 +104,14 @@ func (g *Game) drawFollowerActor(id, land int) {
 		}
 		g.animation(key, int(w.Nature.DeathFrames[id]), ax, ay, land)
 	} else {
-		ax, ay = g.followerRenderAnchor(f)
 		name := fmt.Sprintf("follower/%d/%d/%s", f.Owner, f.AppearanceVariant, compassNames[f.Direction&7])
 		if f.IsHero() {
 			name = fmt.Sprintf("hero/%s/%s", heroNames[f.Hero.Kind], compassNames[f.Direction&7])
 		}
 		g.animation(name, int(f.Frame), ax, ay, land)
-		g.drawLeaderMarker(id, ax, ay, land, name, int(f.Frame))
+		if markers {
+			g.drawLeaderMarker(id, ax, ay, land, name, int(f.Frame))
+		}
 	}
 	if f.Disease.Infected {
 		g.animation("plague", int(f.Disease.Frame), ax, ay, land)

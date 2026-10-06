@@ -10,7 +10,11 @@ var hudModes = [4]engine.Mode{engine.Settle, engine.Rally, engine.Join, engine.F
 // handleHUDClick consumes controls before terrain picking. The same named
 // commands serve the mouse and keyboard, including the joining player's camp.
 func (g *Game) handleHUDClick(x, y int) (bool, error) {
-	if x < 4 || x >= 104 || y < 76 || y >= 174 {
+	if x >= 4 && x < 104 && y >= 68 && y < 76 {
+		g.Inspecting = !g.Inspecting
+		return true, nil
+	}
+	if x < 4 || x >= 104 || y < 77 || y >= 174 {
 		return false, nil
 	}
 	if y < 96 {
@@ -44,6 +48,11 @@ func (g *Game) handleHUDClick(x, y int) (bool, error) {
 }
 
 func (g *Game) drawHUDControls() {
+	label := "INSPECT [I]"
+	if g.Inspecting {
+		label = "INSPECT ON"
+	}
+	g.text(label, 8, 68)
 	g.button("POWERS", 4, 77, 100)
 	for i, name := range [4]string{"BUILD", "RALLY", "JOIN", "FIGHT"} {
 		g.button(name, 4+(i%2)*50, 98+(i/2)*20, 48)

@@ -31,8 +31,9 @@ func (g *Game) drawHelp() {
 		"O: OPTIONS     P: MAP EDITOR",
 		"F9: LOAD       F10: SAVE",
 		"SPACE: PAUSE / RESUME",
+		"I: INSPECT GROUPS / TOWNS",
 	} {
-		g.text(text, 32, 35+row*12)
+		g.text(text, 32, 32+row*10)
 	}
 	if power, ok := engine.PowerByID(g.Selected); ok {
 		g.text(strings.ToUpper(power.Name), 32, 105)

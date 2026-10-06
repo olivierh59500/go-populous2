@@ -159,6 +159,12 @@ func export(files fs.FS, output string) error {
 			startup.SetRGBA(x, y, presentation.StartupPalette[presentation.StartupPixels[x+y*320]])
 		}
 	}
+	if err := exportPointers(output, source); err != nil {
+		return err
+	}
+	if err := exportSelectedPanel(source, output); err != nil {
+		return err
+	}
 	if err := exportStartupMenu(output, presentation); err != nil {
 		return err
 	}

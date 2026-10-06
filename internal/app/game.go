@@ -67,6 +67,8 @@ type Game struct {
 	editingWorldCode             bool
 	worldCodeInput               string
 	Selected                     engine.PowerID
+	SelectedFollower             int
+	Inspecting                   bool
 	Category                     engine.Element
 	PickingPower                 bool
 	Paused                       bool
@@ -199,6 +201,9 @@ func (g *Game) Update() error {
 			g.Message, g.messageUntil = err.Error(), g.Updates+150
 		}
 	case Playing:
+		if inpututil.IsKeyJustPressed(ebiten.KeyI) {
+			g.Inspecting = !g.Inspecting
+		}
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) && g.Network == nil {
 			g.Paused = !g.Paused
 		}
@@ -265,6 +270,8 @@ func (g *Game) Update() error {
 		g.updateSaveBrowser(x, y, clicked)
 	}
 	g.drawFrame()
+	g.updateSystemPointerVisibility()
+	g.drawGamePointer(x, y)
 	g.image.WritePixels(g.framebuffer.Pix)
 	return nil
 }

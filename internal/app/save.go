@@ -23,6 +23,8 @@ type savedSession struct {
 	CustomGame       bool
 	Paused           bool
 	LocalSide        int
+	SelectedFollower int
+	Inspecting       bool
 	OriginalGAM      []byte `json:"original_gam,omitempty"`
 }
 
@@ -38,6 +40,7 @@ func (g *Game) saveGame() error {
 	}
 	session := savedSession{Version: 1, World: g.World.Snapshot(), Profile: g.Profile, CameraX: g.CameraX, CameraY: g.CameraY, LevelIndex: g.LevelIndex, Selected: g.Selected, Direction: g.Direction, CustomGame: g.CustomGame, Paused: g.Paused}
 	session.LocalSide = g.playerSide()
+	session.SelectedFollower, session.Inspecting = g.SelectedFollower, g.Inspecting
 	if g.OriginalSave != nil {
 		session.OriginalGAM = append([]byte(nil), g.OriginalSave.Metadata.Original...)
 	}
@@ -102,7 +105,7 @@ func (g *Game) loadGame() error {
 	if err := decoder.Decode(new(any)); err != io.EOF {
 		return fmt.Errorf("saved session has trailing data")
 	}
-	if session.Version != 1 || session.LevelIndex < 0 || session.LevelIndex >= len(g.Assets.Levels) || session.CameraX < 0 || session.CameraX > 56 || session.CameraY < 0 || session.CameraY > 56 || session.Direction > 3 || session.LocalSide < 0 || session.LocalSide > 1 {
+	if session.Version != 1 || session.LevelIndex < 0 || session.LevelIndex >= len(g.Assets.Levels) || session.CameraX < 0 || session.CameraX > 56 || session.CameraY < 0 || session.CameraY > 56 || session.Direction > 3 || session.LocalSide < 0 || session.LocalSide > 1 || session.SelectedFollower < 0 || session.SelectedFollower >= engine.FollowerCapacity {
 		return fmt.Errorf("unsupported or invalid saved session")
 	}
 	if len(session.Profile.Name) > 16 {
@@ -132,6 +135,8 @@ func (g *Game) loadGame() error {
 	g.Screen, g.resultApplied = Playing, false
 	g.CustomGame, g.Paused = session.CustomGame, session.Paused
 	g.LocalSide, g.OriginalSave = session.LocalSide, original
+	g.SelectedFollower, g.Inspecting = session.SelectedFollower, session.Inspecting
+	g.refreshSelectedFollower()
 	g.restoreCustomSetup()
 	g.AnimationSounds = AnimationSoundGate{}
 	g.finishWorld()
