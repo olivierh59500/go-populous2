@@ -41,6 +41,7 @@ func (w *World) stepContact(id int) {
 	f.ContactWith = 0
 	other := &w.Followers[target]
 	if f.Owner == other.Owner {
+		w.InheritDiseaseMerge(id, target)
 		other.Population += f.Population
 		w.remove(id)
 		return

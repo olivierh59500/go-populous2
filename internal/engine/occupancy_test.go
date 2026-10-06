@@ -52,3 +52,37 @@ func TestNeutralFollowerDoesNotIndexPlayerLedger(t *testing.T) {
 		t.Fatal("neutral actor entered deity statistics")
 	}
 }
+
+func TestFollowerMovementKeepsMixedActorLinksAndFractionalCoordinates(t *testing.T) {
+	w := testFlatWorld()
+	w.Magnets[0] = MagnetActor{Owner: 0, X: 21*256 + 128, Y: 20*256 + 128}
+	w.Actors.Link(ActorRef{Kind: ActorMagnet, Index: 0}, w.Magnets[0].X, w.Magnets[0].Y)
+	id := w.allocate(Follower{X: 20, Y: 20, State: Walking, Population: 100, MovementSpeed: 20})
+	w.linkFollower(id)
+	w.beginLeg(id, 21, 20)
+	for range 7 {
+		w.advanceLeg(id)
+	}
+	ref := ActorRef{Kind: ActorFollower, Index: uint16(id)}
+	x, y, ok := w.Actors.Position(ref)
+	if !ok || x != w.Followers[id].positionX || y != w.Followers[id].positionY || w.Actors.Next(ref).Kind != ActorMagnet {
+		t.Fatal("follower crossing lost marker membership or fixed position")
+	}
+	w.remove(id)
+	if w.Actors.Heads[21+20*MapSize].Kind != ActorMagnet {
+		t.Fatal("follower death removed magnet")
+	}
+}
+
+func TestMagnetRelocationMovesRealActorWithoutPressure(t *testing.T) {
+	w := testFlatWorld()
+	id := addFollower(w, 20, 20, 0, 100, Walking)
+	w.Players[0].Leader = id
+	if !w.PlaceMagnet(0, 30, 30) {
+		t.Fatal("placement failed")
+	}
+	x, y, ok := w.Actors.Position(ActorRef{Kind: ActorMagnet, Index: 0})
+	if !ok || x != 30*256+128 || y != 30*256+128 || w.Pressure[30+30*MapSize] != 0 {
+		t.Fatal("magnet position or pressure")
+	}
+}

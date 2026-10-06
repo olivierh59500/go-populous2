@@ -86,6 +86,7 @@ func (w *World) advanceLeg(id int) {
 		}
 		w.moveFollowerCell(id, x, y)
 		f.positionX, f.positionY = nx, ny
+		w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, nx, ny)
 		if other != 0 {
 			if f.Hero.CaptiveOf != 0 {
 				return
@@ -96,6 +97,7 @@ func (w *World) advanceLeg(id int) {
 
 	}
 	f.positionX, f.positionY = nx, ny
+	w.Actors.Move(ActorRef{Kind: ActorFollower, Index: uint16(id)}, nx, ny)
 	// This field remains available for UI consumers; Position is authoritative.
 	f.MoveProgress = uint8(min(255, max(abs(nx-(int(f.PreviousX)*256+128)), abs(ny-(int(f.PreviousY)*256+128)))))
 }

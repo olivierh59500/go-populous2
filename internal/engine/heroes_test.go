@@ -385,3 +385,23 @@ func TestAllSixHeroesPursueWithTheirDistinctContactBehaviour(t *testing.T) {
 		})
 	}
 }
+
+func TestArmageddonHeroRequestsDirectTerrainWithoutManaCost(t *testing.T) {
+	w := testFlatWorld()
+	hero := addFollower(w, 20, 20, 0, 1000, Walking)
+	enemy := addFollower(w, 24, 20, 1, 100, Town)
+	for y := 20; y <= 21; y++ {
+		for x := 21; x <= 22; x++ {
+			w.Heights[x+y*CornerSize] = 0
+		}
+	}
+	w.rebuildCells()
+	w.Armageddon = true
+	w.Players[0].Mana = 0
+	w.Followers[hero].Hero = HeroState{Kind: HeroPerseus, Phase: HeroPursuing, Target: enemy}
+	before := w.Heights[21+20*CornerSize]
+	w.stepHero(hero)
+	if w.Heights[21+20*CornerSize] <= before || w.Players[0].Mana != 0 {
+		t.Fatal("Armageddon hero did not raise blocking ground directly")
+	}
+}

@@ -21,9 +21,14 @@ type AIOrder struct {
 	Target         PowerTarget
 }
 type AIState struct {
-	Reaction, ExpansionCooldown, ReleaseCooldown int
-	ExpansionTown, BestTown, BestPopulation      int
-	Order                                        AIOrder
+	Choices                                                     [33]AIPowerChoice
+	ChoiceCount, LeaderChoiceCount, ChoiceIndex, MagnetCooldown int
+	Prepared                                                    bool
+	PreparedPower                                               PowerID
+	PreparedTarget                                              PowerTarget
+	Reaction, ExpansionCooldown, ReleaseCooldown                int
+	ExpansionTown, BestTown, BestPopulation                     int
+	Order                                                       AIOrder
 }
 
 var expansionParcels = [60][2]int{
@@ -58,6 +63,7 @@ func (w *World) thinkAI(owner int) {
 	}
 	a := &w.AI[owner]
 	a.Reaction--
+	w.chooseAIUrgent(owner)
 	if a.Reaction > 0 {
 		return
 	}
@@ -67,6 +73,9 @@ func (w *World) thinkAI(owner int) {
 	}
 	if w.chooseAIExpansion(owner) || w.chooseAIRelease(owner) {
 		return
+	}
+	if !w.chooseAIOffensive(owner) {
+		w.chooseAIMagnet(owner)
 	}
 }
 

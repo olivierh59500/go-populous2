@@ -21,11 +21,14 @@ const (
 	Drowning
 	Ruin
 	Airborne
+	Converting
 )
 
 type Follower struct {
 	Owner                          uint8
 	Hero                           HeroState
+	Disease                        DiseaseState
+	Conversion                     ConversionState
 	Consecrated                    bool
 	X, Y                           uint8
 	State                          FollowerState
@@ -85,8 +88,11 @@ type World struct {
 	Footsteps            [MapSize * MapSize]uint16
 	Pressure             [MapSize * MapSize]uint8
 	Followers            [FollowerCapacity]Follower
+	Actors               ActorRegistry
+	Magnets              [2]MagnetActor
 	Players              [2]Player
 	Tick                 uint64
+	Armageddon           bool
 	Result               int // Zero ongoing, one blue victory, two red victory.
 	random               randomState
 	effects              effectPool
@@ -104,12 +110,17 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 	}
 	w := &World{Level: level, Landscape: land}
 	w.generate(level.Seed)
+	for owner := range w.Magnets {
+		w.Magnets[owner] = MagnetActor{X: 32*256 + 128, Y: 32*256 + 128, Owner: uint8(owner)}
+		w.Actors.Link(ActorRef{Kind: ActorMagnet, Index: uint16(owner)}, w.Magnets[owner].X, w.Magnets[owner].Y)
+	}
 	for owner, p := range level.Players {
 		experience := [6]uint8{}
 		if owner == 1 {
 			experience = level.OpponentExperience
 		}
 		w.Players[owner] = Player{Experience: experience, Mana: p.Mana, Mode: Settle, RallyX: 32, RallyY: 32, Computer: owner == 1}
+		w.compileAIPowers(owner)
 		placed := 0
 		for pass := 0; pass < 2 && placed < p.Groups; pass++ {
 			for n := 1; n < MapSize*MapSize && placed < p.Groups; n++ {
@@ -130,6 +141,7 @@ func NewWorld(level Level, land Landscape) (*World, error) {
 					w.Players[owner].Leader = id
 					w.Players[owner].RallyX = at % MapSize
 					w.Players[owner].RallyY = at / MapSize
+					w.moveMagnet(owner, at%MapSize, at/MapSize)
 				}
 				placed++
 			}
@@ -162,6 +174,7 @@ func (w *World) SetRally(owner, x, y int) bool {
 	}
 	w.Players[owner].RallyX = x
 	w.Players[owner].RallyY = y
+	w.moveMagnet(owner, x, y)
 	w.Players[owner].Mode = Rally
 	return true
 }
@@ -198,7 +211,7 @@ func (w *World) Step() {
 			w.tickFireEffect(id)
 		case EffectEarthquake:
 			w.tickEarthEffect(id)
-		case EffectLightning, EffectWhirlwind:
+		case EffectLightning, EffectWhirlwind, EffectStorm:
 			w.tickAirEffect(id)
 		case EffectBasalt, EffectWhirlpool, EffectTidalWave:
 			w.tickWaterEffect(id)
@@ -223,6 +236,12 @@ func (w *World) Step() {
 func (w *World) stepFollower(id int) {
 	f := &w.Followers[id]
 	if f.Owner > 1 {
+		return
+	}
+	if w.tickDisease(id) {
+		return
+	}
+	if w.advanceConversion(id) {
 		return
 	}
 	if w.AdvanceAirCarry(id) {
@@ -291,7 +310,7 @@ func (w *World) stepFollower(id int) {
 		if !ok {
 			return
 		}
-		child := Follower{Owner: f.Owner, X: uint8(x), Y: uint8(y), PreviousX: uint8(f.X), PreviousY: uint8(f.Y), State: Walking, Population: emigrant, Weapons: stage, Search: stage * 2, MovementSpeed: f.MovementSpeed}
+		child := Follower{Disease: f.Disease, Owner: f.Owner, X: uint8(x), Y: uint8(y), PreviousX: uint8(f.X), PreviousY: uint8(f.Y), State: Walking, Population: emigrant, Weapons: stage, Search: stage * 2, MovementSpeed: f.MovementSpeed}
 		next := w.allocate(child)
 		if next == 0 {
 			return
@@ -437,5 +456,14 @@ func (w *World) PlaceMagnet(owner, x, y int) bool {
 	}
 	w.Players[owner].RallyX = x
 	w.Players[owner].RallyY = y
+	w.moveMagnet(owner, x, y)
 	return true
+}
+
+func (w *World) moveMagnet(owner, x, y int) {
+	if owner < 0 || owner > 1 || !inside(x, y) {
+		return
+	}
+	w.Magnets[owner] = MagnetActor{X: x*256 + 128, Y: y*256 + 128, Owner: uint8(owner)}
+	w.Actors.Move(ActorRef{Kind: ActorMagnet, Index: uint16(owner)}, w.Magnets[owner].X, w.Magnets[owner].Y)
 }

@@ -7,6 +7,8 @@ func (w *World) linkFollower(id int) {
 		return
 	}
 	f := &w.Followers[id]
+	f.initialisePosition()
+	w.Actors.Link(ActorRef{Kind: ActorFollower, Index: uint16(id)}, f.positionX, f.positionY)
 	at := int(f.X) + int(f.Y)*MapSize
 	head := int(w.Occupants[at])
 	if head == id {
@@ -20,6 +22,7 @@ func (w *World) linkFollower(id int) {
 	w.Occupants[at] = uint16(id)
 }
 func (w *World) unlinkFollower(id int) {
+	w.Actors.Unlink(ActorRef{Kind: ActorFollower, Index: uint16(id)})
 	if id <= 0 || id >= FollowerCapacity {
 		return
 	}
@@ -47,6 +50,8 @@ func (w *World) moveFollowerCell(id, x, y int) {
 	f := &w.Followers[id]
 	w.unlinkFollower(id)
 	f.X, f.Y = uint8(x), uint8(y)
+	f.positionX = x*256 + (f.positionX & 255)
+	f.positionY = y*256 + (f.positionY & 255)
 	w.linkFollower(id)
 	w.Footsteps[x+y*MapSize]++
 	w.Pressure[x+y*MapSize] += 8

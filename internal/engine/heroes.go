@@ -245,6 +245,13 @@ func (w *World) stepHero(id int) {
 		return
 	}
 	if !w.heroCanEnter(id, int(f.X)+dx, int(f.Y)+dy) {
+		if w.Armageddon {
+			x, y := int(f.X)+dx, int(f.Y)+dy
+			if inside(x, y) && (w.Cell(x, y).IsWater() || f.Hero.Kind == HeroPerseus && !settlementLand(w.Cell(x, y).Code)) {
+				w.raiseCorner(x, y)
+				w.rebuildCells()
+			}
+		}
 		selected := false
 		for _, d := range heroAlternatives[3*dx+dy+4] {
 			if d == [2]int{-dx, -dy} {
