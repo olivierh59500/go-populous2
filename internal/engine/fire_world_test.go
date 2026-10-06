@@ -118,3 +118,36 @@ func TestFireWorldLavaBurningDamagesPopulationGradually(t *testing.T) {
 		t.Fatal("depleted burning follower retained occupancy")
 	}
 }
+
+func TestFireWorldConsecratedFollowerResistsFireBeforeHeroChecks(t *testing.T) {
+	for _, kind := range []HeroKind{HeroNone, HeroPerseus, HeroAdonis, HeroHeracles, HeroOdysseus, HeroAchilles, HeroHelen} {
+		w := testFlatWorld()
+		id := addFollower(w, 32, 32, 0, 1000, Walking)
+		w.Followers[id].Hero.Kind = kind
+		w.Followers[id].Consecrated = true
+		before := w.Followers[id]
+		if w.BurnFireCell(32, 32) != 0 || w.Followers[id] != before {
+			t.Fatalf("direct fire damaged a consecrated follower of hero kind %d", kind)
+		}
+		w.pushFireParcel(32, 32, 20, 0)
+		if w.Followers[id] != before || w.FireDamage.Deaths[id].Mode != FireVictimAlive {
+			t.Fatalf("lava pushed or damaged a consecrated follower of hero kind %d", kind)
+		}
+	}
+}
+
+func TestFireWorldLavaCreatesBasaltImmediatelyAtBaseLifetime(t *testing.T) {
+	w := testFlatWorld()
+	for i := range w.Heights {
+		w.Heights[i] = 0
+	}
+	w.rebuildCells()
+	w.Players[0].Experience[Water] = 255
+	result := w.Fire.CreateLava(0, 32, 32, 1, worldFireHabitat{w})
+	if result != 1 || w.effects.Slots[0].Kind != EffectBasalt || !w.Water.Basalt[0].Active || w.Water.Basalt[0].Life != 100 {
+		t.Fatal("lava did not immediately create base-lifetime basalt without water experience")
+	}
+	if w.Cell(32, 32).Code != 224 {
+		t.Fatal("lava's basalt handoff did not paint the parcel immediately")
+	}
+}

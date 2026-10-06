@@ -186,6 +186,8 @@ func export(files fs.FS, output string) error {
 	for name, start := range map[string]int{
 		"death/swamp":          source.FungusHazards.OrdinaryAnimation,
 		"death/fungus":         source.FungusHazards.OrdinaryAnimation,
+		"death/fire":           0x178,
+		"death/burning":        0x564,
 		"scenery/burning-tree": 0xf10,
 		"fire-column/emerging": 0x1a0,
 		"fire-column/active":   0x4b8,
@@ -206,9 +208,23 @@ func export(files fs.FS, output string) error {
 		if err != nil {
 			return err
 		}
-		catalog.Animations[name] = animation(frames, name == "fire-column/active" || strings.HasPrefix(name, "lava/"))
+		catalog.Animations[name] = animation(frames, name == "fire-column/active" || name == "death/burning" || strings.HasPrefix(name, "lava/"))
 	}
 	for hero, name := range heroes {
+		if start := source.FireColumns.HeroDeath[hero]; start != 0 {
+			frames, err := populous2.DecodeAnimation(source.Executable, start)
+			if err != nil {
+				return err
+			}
+			catalog.Animations["death/fire/"+name] = animation(frames, false)
+		}
+		if start := source.LavaRules.Burning[hero]; start != 0 {
+			frames, err := populous2.DecodeAnimation(source.Executable, int(start))
+			if err != nil {
+				return err
+			}
+			catalog.Animations["death/burning/"+name] = animation(frames, true)
+		}
 		if start := source.FungusHazards.HeroDeath[hero]; start != 0 {
 			frames, err := populous2.DecodeAnimation(source.Executable, start)
 			if err != nil {
@@ -223,6 +239,13 @@ func export(files fs.FS, output string) error {
 			}
 			catalog.Animations["death/swamp/"+name] = animation(frames, false)
 		}
+	}
+	for stage, start := range source.FireColumns.TownDeath {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			return err
+		}
+		catalog.Animations[fmt.Sprintf("ruin/town/%d", stage)] = animation(frames, false)
 	}
 	for side := range 2 {
 		for stage := range source.TownCenterArt.Frames {

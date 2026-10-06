@@ -17,21 +17,13 @@ type FireVictimDeath struct {
 	TownStage     uint8
 }
 
-type BasaltRequest struct {
-	Owner     uint8
-	X, Y      int
-	Direction int
-}
-
 // FireDamageState retains victims and temporary painted terrain independently
 // of the moving effect controllers. Terrain edits clear the painted override;
 // scorched ground is represented by the shared nature ground state.
 type FireDamageState struct {
-	Deaths        [FollowerCapacity]FireVictimDeath
-	Painted       [MapSize * MapSize]bool
-	Tiles         [MapSize * MapSize]uint8
-	PendingBasalt [EffectCapacity]BasaltRequest
-	BasaltCount   int
+	Deaths  [FollowerCapacity]FireVictimDeath
+	Painted [MapSize * MapSize]bool
+	Tiles   [MapSize * MapSize]uint8
 }
 
 type worldFireHabitat struct{ world *World }
@@ -76,11 +68,7 @@ func (h worldFireHabitat) Paint(x, y int, tile uint8) {
 	}
 }
 func (h worldFireHabitat) CreateBasalt(owner uint8, x, y, direction int) {
-	d := &h.world.FireDamage
-	if d.BasaltCount < len(d.PendingBasalt) {
-		d.PendingBasalt[d.BasaltCount] = BasaltRequest{owner, x, y, direction}
-		d.BasaltCount++
-	}
+	h.world.CreateBasalt(owner, x, y, direction, 100)
 }
 func (h worldFireHabitat) PushByLava(x, y, dx, dy int) { h.world.pushFireParcel(x, y, dx, dy) }
 
@@ -203,7 +191,7 @@ func (w *World) damageFireParcel(x, y int, treeSpread bool) int {
 		if f.State == Inactive || f.State == Ruin || int(f.X) != x || int(f.Y) != y {
 			continue
 		}
-		if f.State != Town && (f.ImmuneToBurning() || treeSpread && f.IsHero()) {
+		if f.State != Town && (f.Consecrated || f.ImmuneToBurning() || treeSpread && f.IsHero()) {
 			continue
 		}
 		death := FireVictimDeath{Mode: FireVictimDying, Frames: 9}
@@ -281,7 +269,7 @@ func (w *World) AdvanceFireDeath(id int) bool {
 func (w *World) pushFireParcel(x, y, dx, dy int) {
 	for id := 1; id < FollowerCapacity; id++ {
 		f := &w.Followers[id]
-		if f.State == Inactive || int(f.X) != x || int(f.Y) != y || f.ImmuneToBurning() {
+		if f.State == Inactive || int(f.X) != x || int(f.Y) != y || f.Consecrated || f.ImmuneToBurning() {
 			continue
 		}
 		if f.State == Town {

@@ -110,14 +110,23 @@ func TestPrivateArtworkExportRoundTrip(t *testing.T) {
 			}
 		}
 	}
-	for name, start := range map[string]int{"death/fungus": source.FungusHazards.OrdinaryAnimation, "death/swamp": source.FungusHazards.OrdinaryAnimation, "fire-column/emerging": 0x1a0, "fire-column/active": 0x4b8, "fire-column/ending": 0x660} {
+	for name, start := range map[string]int{"death/fungus": source.FungusHazards.OrdinaryAnimation, "death/swamp": source.FungusHazards.OrdinaryAnimation, "death/fire": 0x178, "death/burning": 0x564, "fire-column/emerging": 0x1a0, "fire-column/active": 0x4b8, "fire-column/ending": 0x660} {
 		frames, err := populous2.DecodeAnimation(source.Executable, start)
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := animation(frames, name == "fire-column/active")
+		want := animation(frames, name == "fire-column/active" || name == "death/burning")
 		if !reflect.DeepEqual(portable.Animations[name], want) {
 			t.Fatalf("semantic phase artwork changed: %s", name)
+		}
+	}
+	for stage, start := range source.FireColumns.TownDeath {
+		frames, err := populous2.DecodeAnimation(source.Executable, start)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(portable.Animations[fmt.Sprintf("ruin/town/%d", stage)], animation(frames, false)) {
+			t.Fatalf("town ruin artwork changed at stage %d", stage)
 		}
 	}
 	for _, path := range []string{"populous.ii", "POPULOUS.II", "code.bin"} {
