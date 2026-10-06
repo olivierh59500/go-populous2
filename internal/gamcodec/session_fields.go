@@ -29,9 +29,20 @@ func decodeAIStatistics(r fileReader, s *engine.Snapshot, owner int) error {
 	p.Population, p.Towns, p.BattlesWon = int(p.Statistics.Population), int(r.word(god+0x24)), int(p.Statistics.BattleWins)
 	p.Computer = r.word(god+0x1a) == 4 || r.word(god+0x1a) == 0x12
 	options := &s.World.Level.Players[owner]
+	options.Groups = int(r.word(god + 0x5a))
+	options.Population = int(r.word(god + 0x5c))
+	options.MovementSpeed = uint8(r.word(god + 0x5e))
+	options.Weapons = int(uint8(r.word(god + 0x60)))
+	options.Mana = int(r.word(god + 0x62))
+	for index := range options.Extra {
+		options.Extra[index] = r.word(god + 0x66 + index*2)
+	}
 	options.Scenario = decodeScenarioFlags(r.word(0xeb2c + owner*2))
 	options.ReactionDelay = int(r.word(god + 0x68))
 	options.ArmageddonDeadline = int(r.word(god + 0x6a))
+	magnet := r.word(god + 0x6e)
+	options.FixedMagnet = int16(magnet) >= 0
+	options.MagnetX, options.MagnetY = int(uint8(magnet>>8)), int(uint8(magnet))
 	a := &s.World.AI[owner]
 	a.Reaction = int(int16(r.word(god + 0x4c)))
 	a.ExpansionCooldown = int(int16(r.word(god + 0x2c)))
@@ -97,6 +108,30 @@ func encodeAIStatistics(data []byte, w *engine.World, owner int) error {
 	word(0xeb2c+owner*2, scenarioFlags(w.Level.Players[owner].Scenario))
 	word(god+0x68, uint16(w.Level.Players[owner].ReactionDelay))
 	word(god+0x6a, uint16(w.Level.Players[owner].ArmageddonDeadline))
+	options := w.Level.Players[owner]
+	if options.ReactionDelay < 0 || options.ReactionDelay > 65535 || options.ArmageddonDeadline < 0 || options.ArmageddonDeadline > 65535 || options.Weapons > 255 {
+		return fmt.Errorf("GAM custom player option is outside its file range")
+	}
+	for offset, value := range map[int]int{0x5a: options.Groups, 0x5c: options.Population, 0x5e: int(options.MovementSpeed), 0x60: options.Weapons, 0x62: options.Mana, 0x64: options.Attrition} {
+		if value < 0 || value > 65535 {
+			return fmt.Errorf("GAM player template value is outside its word field")
+		}
+		word(god+offset, uint16(value))
+	}
+	for index, value := range options.Extra {
+		word(god+0x66+index*2, value)
+	}
+	word(god+0x66, scenarioFlags(options.Scenario))
+	word(god+0x68, uint16(options.ReactionDelay))
+	word(god+0x6a, uint16(options.ArmageddonDeadline))
+	magnet := uint16(0xffff)
+	if options.FixedMagnet {
+		if options.MagnetX < 0 || options.MagnetX > 63 || options.MagnetY < 0 || options.MagnetY > 63 {
+			return fmt.Errorf("GAM fixed magnet target is invalid")
+		}
+		magnet = uint16(options.MagnetX<<8 | options.MagnetY)
+	}
+	word(god+0x6e, magnet)
 	a := w.AI[owner]
 	for offset, value := range map[int]int{0x4c: a.Reaction, 0x2c: a.ExpansionCooldown, 0x30: a.ReleaseCooldown, 0x28: a.MagnetCooldown, 0x20: a.BestPopulation, 0x26: a.ChoiceIndex * 4, 0x94: a.ChoiceCount, 0x96: a.LeaderChoiceCount} {
 		word(god+offset, uint16(int16(value)))

@@ -29,3 +29,31 @@ func TestGAMAIAndCampaignStatisticsRoundTrip(t *testing.T) {
 		t.Fatal("GAM AI/statistics fields did not retain named state")
 	}
 }
+
+func TestGAMCustomPlayerTemplateDoesNotRevertToCampaignDefaults(t *testing.T) {
+	catalog := continuationCatalog()
+	w := continuationWorld(t, catalog)
+	options := &w.Level.Players[0]
+	options.Groups, options.Population, options.MovementSpeed, options.Weapons, options.Mana, options.Attrition = 7, 1234, 48, 5, 4321, 9
+	options.ReactionDelay, options.ArmageddonDeadline = 37, 900
+	options.FixedMagnet, options.MagnetX, options.MagnetY = true, 11, 22
+	options.Scenario = engine.ScenarioOptions{SeaLevelOnly: true, ForbidLower: true, HideEnemy: true, ShallowSwamps: true}
+	options.Extra = [5]uint16{594, 37, 900, 81, 11<<8 | 22}
+	options.Powers[engine.FireColumn] = false
+	options.Powers[engine.Baptism] = true
+	document, err := NewDocument(w, catalog, engine.NewDeity("CUSTOM"), 0, 4, 1, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := Encode(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, err := Decode(data, catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if restored.World.Level.Players[0] != *options {
+		t.Fatalf("custom template reverted to campaign defaults: %+v / %+v", restored.World.Level.Players[0], *options)
+	}
+}
