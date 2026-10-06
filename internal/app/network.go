@@ -273,7 +273,7 @@ func (g *Game) pollNetwork() error {
 	}
 	world, results, status := g.Network.Poll()
 	if world != nil {
-		first := g.World == nil || g.Screen != Playing
+		first := g.World == nil || g.Screen == MainMenu || g.Screen == NetworkSetup || g.Screen == ConquestBriefing
 		g.World, g.Screen = world, Playing
 		if first {
 			leader := world.Players[status.Side].Leader
@@ -283,6 +283,7 @@ func (g *Game) pollNetwork() error {
 				g.CameraY = max(0, min(56, int(f.Y)-3))
 			}
 		}
+		g.finishWorld()
 	}
 	for _, result := range results {
 		if result.Side == status.Side && result.Error != "" {
@@ -297,7 +298,7 @@ func (g *Game) pollNetwork() error {
 	return nil
 }
 func (g *Game) advanceNetwork() {
-	if g.Network != nil && g.World != nil && g.Updates%4 == 0 {
+	if g.Network != nil && g.World != nil && g.World.Result == 0 && g.Updates%4 == 0 {
 		g.Network.BeginRound(g.World)
 	}
 }

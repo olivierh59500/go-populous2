@@ -19,6 +19,9 @@ const viewSize = 8
 var compassNames = [8]string{"north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"}
 
 func (g *Game) startConquest() error {
+	if g.Network != nil && g.Network.Status().Ready {
+		return fmt.Errorf("leave the current two-player game before starting another")
+	}
 	level := g.Assets.Levels[g.LevelIndex]
 	if g.CustomGame && g.CustomLevel != nil {
 		level = *g.CustomLevel
@@ -61,13 +64,7 @@ func (g *Game) updateWorld(mouseX, mouseY int, clicked bool) error {
 	} else if !g.Paused && g.Updates%4 == 0 {
 		w.Step()
 		if w.Result != 0 {
-			var scoreError error
-			g.ResultScore, scoreError = engine.ScoreCampaign(uint32(w.Tick), w.Players[0].Statistics, w.Players[1].Statistics)
-			g.ResultScoreError = ""
-			if scoreError != nil {
-				g.ResultScoreError = scoreError.Error()
-			}
-			g.resultAt, g.Screen = g.Updates, CampaignResult
+			g.finishWorld()
 			return nil
 		}
 	}
@@ -381,7 +378,7 @@ func (g *Game) drawWorld() {
 		g.text(strings.ToUpper(power.Name), 144, 181)
 	}
 	if g.Updates < g.messageUntil {
-		g.text("ACTION UNAVAILABLE", 144, 191)
+		g.drawMessage(178)
 	}
 	if g.PickingPower {
 		g.drawPowerMenu()

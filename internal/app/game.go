@@ -285,6 +285,9 @@ func (g *Game) drawFrame() {
 		g.button("MULTIPLAYER", 78, 120, 168)
 		g.button("CUSTOM GAME", 78, 138, 168)
 		g.button("HELP", 78, 156, 168)
+		if g.Updates < g.messageUntil {
+			g.drawMessage(175)
+		}
 	case DeityProfile:
 		g.drawProfile()
 	case ConquestBriefing:

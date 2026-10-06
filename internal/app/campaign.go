@@ -15,7 +15,11 @@ func (g *Game) applyCampaignResult() error {
 	if g.resultApplied {
 		return nil
 	}
-	if g.CustomGame {
+	if g.CustomGame || g.Network != nil {
+		if g.Network != nil {
+			g.Network.Close()
+			g.Network = nil
+		}
 		g.resultApplied, g.Screen = true, MainMenu
 		return nil
 	}
@@ -39,18 +43,35 @@ func (g *Game) applyCampaignResult() error {
 	return nil
 }
 
+// finishWorld uses the local camp for both the verdict and score. Network
+// victories are standalone games and do not advance the solo conquest.
+func (g *Game) finishWorld() {
+	if g.World == nil || g.World.Result == 0 || g.Screen == CampaignResult {
+		return
+	}
+	side := g.playerSide()
+	score, err := engine.ScoreCampaign(uint32(g.World.Tick), g.World.Players[side].Statistics, g.World.Players[1-side].Statistics)
+	g.ResultScore, g.ResultScoreError = score, ""
+	if err != nil {
+		g.ResultScoreError = err.Error()
+	}
+	g.resultApplied = false
+	g.resultAt, g.Screen = g.Updates, CampaignResult
+}
+
 func (g *Game) drawCampaignResult() {
 	g.drawWorld()
 	draw.Draw(g.framebuffer, image.Rect(24, 21, 296, 181), image.NewUniform(color.RGBA{40, 45, 18, 255}), image.Point{}, draw.Src)
 	title := "CONQUEST WON"
-	if g.World.Result != 1 {
+	side := g.playerSide()
+	if g.World.Result != side+1 {
 		title = "CONQUEST LOST"
 	}
 	g.text(title, 104, 29)
 	if g.ResultScoreError != "" {
 		g.text("SCORE UNAVAILABLE", 88, 140)
 	}
-	local, opponent := g.World.Players[0].Statistics, g.World.Players[1].Statistics
+	local, opponent := g.World.Players[side].Statistics, g.World.Players[1-side].Statistics
 	for index, line := range []string{
 		fmt.Sprintf("YOUR PEAK PEOPLE %d", local.PeakPopulation),
 		fmt.Sprintf("ENEMY PEAK PEOPLE %d", opponent.PeakPopulation),
