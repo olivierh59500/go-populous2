@@ -1390,3 +1390,24 @@ result controller. The existing result host then runs the original10A8C reset
 menus and refreshes LAND rules before simulation continues. End-to-end winning
 result, long campaign pacing and broader interactive save/network transitions
 remain final validation requirements.
+
+## Stock full-main parity
+
+The native runtime now replays1,000 complete original custom-game main frames
+from actual boot, interrupt-vector installation, encoded resource loading and
+initial-menu selection. The exact mouse/IRQ and retained-poll stream is used
+by both source CPU capture and RuntimeDirector/NewFrame. The original
+protection question at frame8 is answered through genuine button inputs.
+No mode, options, mana, experience, seed or source output is patched.
+
+Fourteen strict checkpoints cover startup, the first12 complete main frames
+and frame1000. All eight data registers, full BSS, live CODE, both screen/
+Copper banks, cursor RAM, allocation heap and low vectors match. The previous
+OS interrupt handler remains an explicit preserving host boundary, with the
+original CODE3EA word1 retained.
+
+This proof exposed the detached town hit-height word at E8CE. Its actual
+producer and hit comparison now use canonical bound CODE; unbound standalone
+API behavior remains compatible. Focused coherence/error regressions, full
+tests, stock race comparisons and vet pass. Long gameplay, natural result/
+reset continuation and full campaign fidelity remain separate requirements.
