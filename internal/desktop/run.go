@@ -37,7 +37,7 @@ func Run() {
 	}
 	bundle, err := app.LoadAssets(files)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("load portable game assets: %v; prepare assets with cmd/export-visual-assets and cmd/export-audio-assets, or select their directory with -data", err)
 	}
 	game, err := app.New(bundle)
 	if err != nil {
