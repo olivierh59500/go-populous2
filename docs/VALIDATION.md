@@ -1227,3 +1227,20 @@ It then advances the existing120 paired complete gameplay frames. Focused
 regressions also check local caller registers and the original failed-receive
 stack return. Focused normal/race tests, vet and a native desktop build
 pass on the isolated change.
+
+## Raw campaign animation and ending
+
+RunNativeProgressionAnimation executes the actual106F8 interpreter against
+physical resource operands, mutable10880 dispatch state, Copper and both
+screens. Seven hundred and twenty original CPU calls cover JUDGE and END,
+three incoming register/address seeds and120 frames per seed. Complete data
+and supplied address registers, BSS, CODE, Copper/screens and pointers match.
+
+NativeRuntimeEndingState follows the actualB142 controller with encoded END
+loading, retained HUNK5 decoder context, original AA24 scroll, two font draws,
+screen swaps, four VBlank gates and click termination. Six original runs
+produce612 complete snapshots across three retained scroll phases and two
+register/address seeds. No independent typed animation cursor replaces source
+state. The full suite, focused race tests and vet pass for this checkpoint.
+The B244 award controller and full result-to-ending desktop composition remain
+separate work.
