@@ -73,6 +73,7 @@ func (w *World) CreateBasalt(owner uint8, x, y, direction, life int) bool {
 	}
 	w.Water.Painted[x+y*MapSize], w.Water.Tiles[x+y*MapSize] = true, 224
 	w.Water.Basalt[id] = BasaltEffect{Active: true, Owner: owner, X: x, Y: y, Direction: direction, Life: life, Delay: int(w.random.next()%18) + 4}
+	w.syncEffectActor(id)
 	return true
 }
 

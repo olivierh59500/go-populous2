@@ -52,7 +52,7 @@ func TestActualFireAndLightningCreatorsLinkImmediately(t *testing.T) {
 
 func TestUnmappedControllersNeverJoinActorRegistry(t *testing.T) {
 	w := testFlatWorld()
-	for _, kind := range []EffectKind{EffectVolcano, EffectFungus, EffectBasalt, EffectWhirlpool, EffectEarthquake} {
+	for _, kind := range []EffectKind{EffectVolcano, EffectFungus, EffectWhirlpool, EffectEarthquake} {
 		id := w.allocateEffect(kind, 0)
 		w.syncEffectActor(id)
 		if _, _, linked := w.Actors.Position(ActorRef{Kind: ActorEffect, Index: uint16(id)}); linked {
@@ -79,5 +79,25 @@ func TestRealCrossFamilyCreatorsPrependWithoutFamilyRebuild(t *testing.T) {
 	marker := ActorRef{Kind: ActorEffect, Index: uint16(w.Air.MarkerSlots[0] - 1)}
 	if w.Actors.Heads[x+y*MapSize] != marker || w.Actors.Next(marker).Kind != ActorScenery || w.Actors.Next(w.Actors.Next(marker)) != (ActorRef{Kind: ActorEffect, Index: 0}) {
 		t.Fatal("creators were reordered by family instead of insertion time")
+	}
+}
+
+func TestBasaltCreatorLinksMappedImpactAndTerminalUnlinks(t *testing.T) {
+	w := &World{Editor: true}
+	if !w.CreateBasalt(0, 20, 20, 1, 2) {
+		t.Fatal("basalt creation")
+	}
+	ref := ActorRef{Kind: ActorEffect, Index: 0}
+	x, y, linked := w.Actors.Position(ref)
+	if !linked || x != 20*256+128 || y != 20*256+128 || w.Actors.Heads[20+20*MapSize] != ref {
+		t.Fatal("basalt impact omitted its original map insertion")
+	}
+	w.tickWaterEffect(0)
+	w.tickWaterEffect(0)
+	if _, _, linked = w.Actors.Position(ref); linked || w.effects.Slots[0].Kind != EffectNone {
+		t.Fatal("completed basalt retained mixed membership")
+	}
+	if !w.Water.Painted[20+20*MapSize] || w.Water.Tiles[20+20*MapSize] != 224 {
+		t.Fatal("terminal basalt removed permanent terrain")
 	}
 }

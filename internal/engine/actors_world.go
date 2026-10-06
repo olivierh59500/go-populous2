@@ -70,10 +70,13 @@ func (w *World) syncEffectActor(id int) {
 	case EffectStorm:
 		a := w.Air.Storms[id]
 		active, x, y = a.Active, a.X, a.Y
+	case EffectBasalt:
+		a := w.Water.Basalt[id]
+		active, x, y = a.Active, a.X*256+128, a.Y*256+128
 	case EffectTidalWave:
 		a := w.Water.Waves[id]
 		active, x, y = a.Active, a.X, a.Y
-		// Volcano, fungus, basalt, whirlpool and quake are unmapped controllers.
+		// Volcano, fungus, whirlpool and quake are unmapped controllers.
 	}
 	ref := ActorRef{Kind: ActorEffect, Index: uint16(id)}
 	if active {
